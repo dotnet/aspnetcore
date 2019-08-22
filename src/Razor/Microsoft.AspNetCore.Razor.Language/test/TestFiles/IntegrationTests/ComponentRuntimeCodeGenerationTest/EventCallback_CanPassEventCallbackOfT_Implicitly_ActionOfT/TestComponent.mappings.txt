@@ -1,14 +1,14 @@
-Source Location: (46:2,7 [105] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (90:3,7 [103] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
-    private void Increment(UIMouseEventArgs e) {
+    private void Increment(MouseEventArgs e) {
         counter++;
     }
 |
-Generated Location: (1243:30,7 [105] )
+Generated Location: (1411:37,7 [103] )
 |
     private int counter;
-    private void Increment(UIMouseEventArgs e) {
+    private void Increment(MouseEventArgs e) {
         counter++;
     }
 |

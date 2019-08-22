@@ -14,15 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenComponent<Test.MyComponent>(0);
-            __builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       () => Increment()
-
-#line default
-#line hidden
-#nullable disable
-            ));
+            __builder.AddAttribute(1, "@onclick", "() => Increment()");
             __builder.CloseComponent();
         }
         #pragma warning restore 1998

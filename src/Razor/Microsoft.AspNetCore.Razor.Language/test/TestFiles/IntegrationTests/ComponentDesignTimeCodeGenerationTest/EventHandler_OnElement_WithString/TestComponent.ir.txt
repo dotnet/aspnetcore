@@ -5,6 +5,7 @@ Document -
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        UsingDirective - (1:0,1 [41] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components.Web
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
@@ -14,7 +15,9 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (6:0,6 [14] x:\dir\subdir\Test\TestComponent.cshtml) -  onclick=" - "
-                        HtmlAttributeValue - (16:0,16 [3] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (16:0,16 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - foo
+                HtmlContent - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (42:0,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (44:1,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (50:1,6 [14] x:\dir\subdir\Test\TestComponent.cshtml) -  onclick=" - "
+                        HtmlAttributeValue - (60:1,16 [3] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (60:1,16 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - foo

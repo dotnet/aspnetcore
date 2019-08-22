@@ -31,13 +31,15 @@ namespace Microsoft.CodeAnalysis.Razor
         // don't want to update the tests when that happens.
         protected static TagHelperDescriptor[] ExcludeBuiltInComponents(TagHelperDescriptorProviderContext context)
         {
-            return context.Results
+            var results =
+             context.Results
+                .Where(c => c.AssemblyName != "Microsoft.AspNetCore.Razor.Test.ComponentShim")
+                .Where(c => !c.DisplayName.StartsWith("Microsoft.AspNetCore.Components.Web"))
                 .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.Bind")
-                .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.BindAttributes")
-                .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.EventHandlers")
-                .Where(c => !c.GetTypeName().StartsWith("Microsoft.AspNetCore.Components.Routing"))
                 .OrderBy(c => c.Name)
                 .ToArray();
+
+            return results;
         }
 
         protected static TagHelperDescriptor[] AssertAndExcludeFullyQualifiedNameMatchComponents(

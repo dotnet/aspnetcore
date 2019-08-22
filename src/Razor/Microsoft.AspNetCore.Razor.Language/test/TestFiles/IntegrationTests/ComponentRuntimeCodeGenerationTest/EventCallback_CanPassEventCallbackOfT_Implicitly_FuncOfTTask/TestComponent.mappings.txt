@@ -1,15 +1,15 @@
-Source Location: (46:2,7 [141] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (90:3,7 [139] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
-    private Task Increment(UIMouseEventArgs e) {
+    private Task Increment(MouseEventArgs e) {
         counter++;
         return Task.CompletedTask;
     }
 |
-Generated Location: (1243:30,7 [141] )
+Generated Location: (1411:37,7 [139] )
 |
     private int counter;
-    private Task Increment(UIMouseEventArgs e) {
+    private Task Increment(MouseEventArgs e) {
         counter++;
         return Task.CompletedTask;
     }

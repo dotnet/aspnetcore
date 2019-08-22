@@ -1181,6 +1181,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
@@ -1210,6 +1211,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
@@ -1240,6 +1242,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @bind=""@CurrentDate"" @bind:event=""oninput"" @bind:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -1258,6 +1261,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @bind-value=""@CurrentDate"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -1996,20 +2000,22 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent OnClick=""@(EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment))""/>
+@using Microsoft.AspNetCore.Components.Web
+<MyComponent OnClick=""@(EventCallback.Factory.Create<MouseEventArgs>(this, Increment))""/>
 
 @code {
     private int counter;
@@ -2173,13 +2179,14 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2208,24 +2215,26 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
 @code {
     private int counter;
-    private void Increment(UIMouseEventArgs e) {
+    private void Increment(MouseEventArgs e) {
         counter++;
     }
 }");
@@ -2243,13 +2252,14 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2279,24 +2289,26 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
 @code {
     private int counter;
-    private Task Increment(UIMouseEventArgs e) {
+    private Task Increment(MouseEventArgs e) {
         counter++;
         return Task.CompletedTask;
     }
@@ -2315,24 +2327,26 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""@Increment""/>
 
 @code {
     private int counter;
-    private void Increment(UIChangeEventArgs e) {
+    private void Increment(ChangeEventArgs e) {
         counter++;
     }
 }");
@@ -2398,7 +2412,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        public Action<EventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2440,10 +2454,11 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <DynamicElement @onclick=""OnClick"" />
 
 @code {
-    private Action<UIMouseEventArgs> OnClick { get; set; }
+    private Action<MouseEventArgs> OnClick { get; set; }
 }");
 
             // Assert
@@ -2465,7 +2480,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        public Action<EventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2476,7 +2491,7 @@ namespace Test
 
 @code {
     private int counter;
-    private void Increment(UIEventArgs e) {
+    private void Increment(EventArgs e) {
         counter++;
     }
 }");
@@ -2494,6 +2509,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input onclick=""foo"" />");
 
             // Assert
@@ -2509,6 +2525,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""() => { }"" />");
 
             // Assert
@@ -2524,6 +2541,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""x => { }"" />");
 
             // Assert
@@ -2539,6 +2557,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
     void OnClick() {
@@ -2558,9 +2577,10 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    void OnClick(UIMouseEventArgs e) {
+    void OnClick(MouseEventArgs e) {
     }
 }");
 
@@ -2577,9 +2597,10 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    void OnClick(UIEventArgs e) {
+    void OnClick(EventArgs e) {
     }
 }");
 
@@ -2597,6 +2618,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
     Task OnClick() 
@@ -2619,9 +2641,10 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    Task OnClick(UIMouseEventArgs e) 
+    Task OnClick(MouseEventArgs e) 
     {
         return Task.CompletedTask;
     }
@@ -2641,6 +2664,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""@(async () => await Task.Delay(10))"" />
 ");
 
@@ -2658,6 +2682,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""@(async (e) => await Task.Delay(10))"" />
 ");
 
@@ -2689,9 +2714,10 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    void OnClick(UIMouseEventArgs e) {
+    void OnClick(MouseEventArgs e) {
     }
 }");
 
@@ -2708,9 +2734,10 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onCLICK=""OnClick"" />
 @code {
-    void OnClick(UIMouseEventArgs e) {
+    void OnClick(MouseEventArgs e) {
     }
 }");
 
@@ -4551,6 +4578,7 @@ namespace New.Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <div>
   <a onclick=""test()"" @onclick=""() => {}"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
@@ -4591,6 +4619,7 @@ namespace New.Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" value=""17"" @bind=""@text""></input>
 </div>
@@ -4615,6 +4644,7 @@ namespace New.Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" Value=""17"" @bind=""@text""></input>
 </div>
@@ -4638,6 +4668,7 @@ namespace New.Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <div>
   <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""() => {}""></input>
 </div>
@@ -5011,11 +5042,12 @@ Welcome to your new app.
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
-    public void OnComponentHover(UIMouseEventArgs e)
+    public void OnComponentHover(MouseEventArgs e)
     {
     }
 }

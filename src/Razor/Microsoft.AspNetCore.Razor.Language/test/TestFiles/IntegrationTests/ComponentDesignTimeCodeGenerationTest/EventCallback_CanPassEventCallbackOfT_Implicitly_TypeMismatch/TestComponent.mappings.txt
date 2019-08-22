@@ -1,19 +1,24 @@
-Source Location: (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (1:0,1 [41] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components.Web|
+Generated Location: (320:12,0 [41] )
+|using Microsoft.AspNetCore.Components.Web|
+
+Source Location: (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |Increment|
-Generated Location: (1175:25,23 [9] )
+Generated Location: (1343:32,23 [9] )
 |Increment|
 
-Source Location: (46:2,7 [106] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (90:3,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
-    private void Increment(UIChangeEventArgs e) {
+    private void Increment(ChangeEventArgs e) {
         counter++;
     }
 |
-Generated Location: (1682:45,7 [106] )
+Generated Location: (1850:52,7 [104] )
 |
     private int counter;
-    private void Increment(UIChangeEventArgs e) {
+    private void Increment(ChangeEventArgs e) {
         counter++;
     }
 |

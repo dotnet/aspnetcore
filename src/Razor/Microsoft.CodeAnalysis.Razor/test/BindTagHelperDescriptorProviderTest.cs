@@ -24,9 +24,9 @@ namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Configure(RenderHandle renderHandle) { }
+        public void Attach(RenderHandle renderHandle) { }
 
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -149,9 +149,9 @@ namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Configure(RenderHandle renderHandle) { }
+        public void Attach(RenderHandle renderHandle) { }
 
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -271,9 +271,9 @@ namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Configure(RenderHandle renderHandle) { }
+        public void Attach(RenderHandle renderHandle) { }
 
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -523,7 +523,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [BindInputElement(null, null, ""myprop"", ""myevent"")]
+    [BindInputElement(null, null, ""myprop"", ""myevent"", false, null)]
     public class BindAttributes
     {
     }
@@ -579,7 +579,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [BindInputElement(""checkbox"", null, ""myprop"", ""myevent"")]
+    [BindInputElement(""checkbox"", null, ""myprop"", ""myevent"", false, null)]
     public class BindAttributes
     {
     }
@@ -647,7 +647,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    [BindInputElement(""checkbox"", ""somevalue"", ""myprop"", ""myevent"")]
+    [BindInputElement(""checkbox"", ""somevalue"", ""myprop"", ""myevent"", false, null)]
     public class BindAttributes
     {
     }

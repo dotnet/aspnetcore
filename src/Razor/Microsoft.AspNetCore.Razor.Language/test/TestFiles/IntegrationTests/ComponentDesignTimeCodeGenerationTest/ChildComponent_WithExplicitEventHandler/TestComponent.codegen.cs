@@ -20,7 +20,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __o = new System.Action<Microsoft.AspNetCore.Components.UIEventArgs>(
+            __o = new System.Action<System.EventArgs>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                        Increment
@@ -45,7 +45,7 @@ __o = typeof(MyComponent);
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
     private int counter;
-    private void Increment(UIEventArgs e) {
+    private void Increment(EventArgs e) {
         counter++;
     }
 

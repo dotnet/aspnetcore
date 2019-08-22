@@ -8,18 +8,11 @@ Document -
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute -  - type=" - "
+                    HtmlAttribute - (6:0,6 [12] x:\dir\subdir\Test\TestComponent.cshtml) -  type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
-                    HtmlAttribute - (26:0,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+                    HtmlAttribute - (18:0,18 [21] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind=" - "
+                        CSharpExpressionAttributeValue - (26:0,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (26:0,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, 
-                            IntermediateToken -  - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
             CSharpCode - (51:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (51:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

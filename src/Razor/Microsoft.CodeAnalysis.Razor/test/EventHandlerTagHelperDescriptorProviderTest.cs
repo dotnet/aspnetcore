@@ -18,10 +18,11 @@ namespace Microsoft.CodeAnalysis.Razor
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
-    [EventHandler(""onclick"", typeof(Action<UIMouseEventArgs>))]
+    [EventHandler(""onclick"", typeof(Action<MouseEventArgs>))]
     public class EventHandlers
     {
     }
@@ -61,7 +62,7 @@ namespace Test
 
             Assert.Equal(
                 "Sets the '@onclick' attribute to the provided string or delegate value. " +
-                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
+                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.Web.MouseEventArgs>'.",
                 item.Documentation);
 
             // These are all trivially derived from the assembly/namespace/type name
@@ -107,15 +108,15 @@ namespace Test
 
             Assert.Equal(
                 "Sets the '@onclick' attribute to the provided string or delegate value. " +
-                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
+                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.Web.MouseEventArgs>'.",
                 attribute.Documentation);
 
             Assert.Equal("@onclick", attribute.Name);
             Assert.Equal("onclick", attribute.GetPropertyName());
-            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>> Test.EventHandlers.onclick", attribute.DisplayName);
+            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.Action<Microsoft.AspNetCore.Components.Web.MouseEventArgs>> Test.EventHandlers.onclick", attribute.DisplayName);
 
             // Defined from the property type
-            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>>", attribute.TypeName);
+            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.Action<Microsoft.AspNetCore.Components.Web.MouseEventArgs>>", attribute.TypeName);
             Assert.False(attribute.IsStringProperty);
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);

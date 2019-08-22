@@ -487,12 +487,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
     <!--
-    Called after ComputeRefAssembliesToPublish but before CopyFilesToPublishDirectory - this target is called when
+    Called after ComputeResolvedFilesToPublishList but before CopyFilesToPublishDirectory - this target is called when
     publishing the project to get a list of files to the output directory.
   -->
   <Target
     Name="_StaticWebAssetsComputeFilesToPublish"
-    AfterTargets="ComputeRefAssembliesToPublish"
+    AfterTargets="ComputeResolvedFilesToPublishList"
     DependsOnTargets="ResolveStaticWebAssetsInputs">
 
     <ItemGroup>

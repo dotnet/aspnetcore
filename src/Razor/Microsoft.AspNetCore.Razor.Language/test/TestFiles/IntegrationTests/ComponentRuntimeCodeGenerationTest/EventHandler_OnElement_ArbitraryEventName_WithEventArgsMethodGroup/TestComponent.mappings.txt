@@ -1,11 +1,11 @@
-Source Location: (37:1,7 [44] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (81:2,7 [42] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    void OnClick(UIEventArgs e) {
+    void OnClick(EventArgs e) {
     }
 |
-Generated Location: (1050:30,7 [44] )
+Generated Location: (1216:37,7 [42] )
 |
-    void OnClick(UIEventArgs e) {
+    void OnClick(EventArgs e) {
     }
 |
 

@@ -15,11 +15,9 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml) - onclick - AttributeStructure.DoubleQuotes
-                        CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => Increment()
-                            IntermediateToken -  - CSharp - )
+                    ComponentAttribute -  - @onclick - AttributeStructure.DoubleQuotes
+                        HtmlContent - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - () => Increment()
                 HtmlContent - (43:0,43 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (43:0,43 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
             CSharpCode - (54:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)

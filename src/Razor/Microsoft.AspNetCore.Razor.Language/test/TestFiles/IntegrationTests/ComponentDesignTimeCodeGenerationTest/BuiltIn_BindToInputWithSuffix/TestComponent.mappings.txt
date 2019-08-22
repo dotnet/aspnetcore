@@ -1,13 +1,18 @@
-Source Location: (21:0,21 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (1:0,1 [41] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components.Web|
+Generated Location: (320:12,0 [41] )
+|using Microsoft.AspNetCore.Components.Web|
+
+Source Location: (65:1,21 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |CurrentDate|
-Generated Location: (943:25,21 [11] )
+Generated Location: (1107:32,21 [11] )
 |CurrentDate|
 
-Source Location: (72:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (116:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |
-Generated Location: (1322:36,7 [77] )
+Generated Location: (1486:43,7 [77] )
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |

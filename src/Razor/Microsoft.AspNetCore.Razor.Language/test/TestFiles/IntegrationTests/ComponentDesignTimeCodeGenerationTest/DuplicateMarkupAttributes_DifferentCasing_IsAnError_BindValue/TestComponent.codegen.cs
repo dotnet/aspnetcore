@@ -8,6 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Microsoft.AspNetCore.Components.Web;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
@@ -22,7 +29,7 @@ namespace Test
         {
             __o = Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                                         text
 
 #line default
@@ -33,7 +40,7 @@ namespace Test
         }
         #pragma warning restore 1998
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private string text = "hi";
 
