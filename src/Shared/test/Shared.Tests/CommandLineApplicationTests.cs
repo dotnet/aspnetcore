@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 
@@ -71,6 +70,30 @@ namespace Microsoft.Extensions.Internal
             var ex = Assert.Throws<CommandParsingException>(() => app.Execute("test", "one", "two", "three"));
 
             Assert.Contains("three", ex.Message);
+        }
+
+        [Fact]
+        public void ExtraArgumentAddedToRemaining()
+        {
+            CommandArgument first = null;
+            CommandArgument second = null;
+
+            var app = new CommandLineApplication();
+
+            var testCommand = app.Command("test", c =>
+            {
+                first = c.Argument("first", "First argument");
+                second = c.Argument("second", "Second argument");
+                c.OnExecute(() => 0);
+            },
+            throwOnUnexpectedArg: false);
+
+            app.Execute("test", "one", "two", "three");
+
+            Assert.Equal("one", first.Value);
+            Assert.Equal("two", second.Value);
+            var remaining = Assert.Single(testCommand.RemainingArguments);
+            Assert.Equal("three", remaining);
         }
 
         [Fact]
@@ -258,6 +281,145 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
+        public void AllowArgumentBeforeNoValueOption()
+        {
+            var app = new CommandLineApplication();
+            var argument = app.Argument("first", "first argument");
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            app.Execute("one", "--first");
+
+            Assert.Equal("one", argument.Value);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowArgumentAfterNoValueOption()
+        {
+            var app = new CommandLineApplication();
+            var argument = app.Argument("first", "first argument");
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            app.Execute("--first", "one");
+
+            Assert.Equal("one", argument.Value);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowArgumentBeforeSingleValueOption()
+        {
+            var app = new CommandLineApplication();
+            var argument = app.Argument("first", "first argument");
+            var option = app.Option("--first <value>", "first option", CommandOptionType.SingleValue);
+
+            app.Execute("one", "--first", "two");
+
+            Assert.Equal("one", argument.Value);
+            Assert.Equal("two", option.Value());
+        }
+
+        [Fact]
+        public void AllowArgumentAfterSingleValueOption()
+        {
+            var app = new CommandLineApplication();
+            var argument = app.Argument("first", "first argument");
+            var option = app.Option("--first <value>", "first option", CommandOptionType.SingleValue);
+
+            app.Execute("--first", "one", "two");
+
+            Assert.Equal("two", argument.Value);
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeNoValueOption_Default()
+        {
+            var arguments = new[] { "UnexpectedArg", "--first" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(arguments);
+
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+            Assert.False(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeNoValueOption_Continue()
+        {
+            var unexpectedArg = "UnexpectedArg";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(unexpectedArg, "--first");
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedArg, arg);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentAfterNoValueOption()
+        {
+            var unexpectedArg = "UnexpectedArg";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute("--first", unexpectedArg);
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedArg, arg);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeSingleValueOption_Default()
+        {
+            var arguments = new[] { "UnexpectedArg", "--first", "one" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(arguments);
+
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentBeforeSingleValueOption_Continue()
+        {
+            var unexpectedArg = "UnexpectedArg";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(unexpectedArg, "--first", "one");
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedArg, arg);
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedArgumentAfterSingleValueOption()
+        {
+            var unexpectedArg = "UnexpectedArg";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute("--first", "one", unexpectedArg);
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedArg, arg);
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
         public void ThrowsExceptionOnUnexpectedLongOptionByDefault()
         {
             var unexpectedOption = "--UnexpectedOption";
@@ -288,6 +450,183 @@ namespace Microsoft.Extensions.Internal
             app.Execute("test", unexpectedOption);
             var arg = Assert.Single(testCmd.RemainingArguments);
             Assert.Equal(unexpectedOption, arg);
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeNoValueOption_Default()
+        {
+            var arguments = new[] { "--unexpected", "--first" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(arguments);
+
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeNoValueOption_Continue()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(unexpectedOption, "--first");
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionAfterNoValueOption()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute("--first", unexpectedOption);
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeSingleValueOption_Default()
+        {
+            var arguments = new[] { "--unexpected", "--first", "one" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(arguments);
+
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionBeforeSingleValueOption_Continue()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(unexpectedOption, "--first", "one");
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionAfterSingleValueOption()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute("--first", "one", unexpectedOption);
+
+            var arg = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeNoValueOption_Default()
+        {
+            var arguments = new[] { "--unexpected", "value", "--first" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(arguments);
+
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeNoValueOption_Continue()
+        {
+            var unexpectedOption = "--unexpected";
+            var unexpectedValue = "value";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute(unexpectedOption, unexpectedValue, "--first");
+
+            Assert.Equal(new[] { unexpectedOption, unexpectedValue }, app.RemainingArguments.ToArray());
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueAfterNoValueOption()
+        {
+            var unexpectedOption = "--unexpected";
+            var unexpectedValue = "value";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.NoValue);
+
+            // (does not throw)
+            app.Execute("--first", unexpectedOption, unexpectedValue);
+
+            Assert.Equal(new[] { unexpectedOption, unexpectedValue }, app.RemainingArguments.ToArray());
+            Assert.True(option.HasValue());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeSingleValueOption_Default()
+        {
+            var unexpectedOption = "--unexpected";
+            var unexpectedValue = "value";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(unexpectedOption, unexpectedValue, "--first", "one");
+
+            Assert.Equal(
+                new[] { unexpectedOption, unexpectedValue, "--first", "one" },
+                app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueBeforeSingleValueOption_Continue()
+        {
+            var unexpectedOption = "--unexpected";
+            var unexpectedValue = "value";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute(unexpectedOption, unexpectedValue, "--first", "one");
+
+            Assert.Equal(
+                new[] { unexpectedOption, unexpectedValue },
+                app.RemainingArguments.ToArray());
+            Assert.Equal("one", option.Value());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedLongOptionWithValueAfterSingleValueOption()
+        {
+            var unexpectedOption = "--unexpected";
+            var unexpectedValue = "value";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var option = app.Option("--first", "first option", CommandOptionType.SingleValue);
+
+            // (does not throw)
+            app.Execute("--first", "one", unexpectedOption, unexpectedValue);
+
+            Assert.Equal(new[] { unexpectedOption, unexpectedValue }, app.RemainingArguments.ToArray());
+            Assert.Equal("one", option.Value());
         }
 
         [Fact]
@@ -374,12 +713,34 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeSubcommand()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication();
+
+            CommandLineApplication subCmd = null;
+            var testCmd = app.Command("k", c =>
+            {
+                subCmd = c.Command("run", _ => { });
+                c.OnExecute(() => 0);
+            },
+            throwOnUnexpectedArg: false);
+
+            // (does not throw)
+            app.Execute("k", unexpectedOption, "run");
+
+            Assert.Empty(app.RemainingArguments);
+            Assert.Equal(new[] { unexpectedOption, "run" }, testCmd.RemainingArguments.ToArray());
+            Assert.Empty(subCmd.RemainingArguments);
+        }
+
+        [Fact]
         public void AllowNoThrowBehaviorOnUnexpectedOptionAfterSubcommand()
         {
             var unexpectedOption = "--unexpected";
-            CommandLineApplication subCmd = null;
             var app = new CommandLineApplication();
 
+            CommandLineApplication subCmd = null;
             var testCmd = app.Command("k", c =>
             {
                 subCmd = c.Command("run", _ => { }, throwOnUnexpectedArg: false);
@@ -388,9 +749,42 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("k", "run", unexpectedOption);
+
+            Assert.Empty(app.RemainingArguments);
             Assert.Empty(testCmd.RemainingArguments);
             var arg = Assert.Single(subCmd.RemainingArguments);
             Assert.Equal(unexpectedOption, arg);
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeValidCommand_Default()
+        {
+            var arguments = new[] { "--unexpected", "run" };
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var commandRan = false;
+            app.Command("run", c => c.OnExecute(() => { commandRan = true; return 0; }));
+            app.OnExecute(() => 0);
+
+            app.Execute(arguments);
+
+            Assert.False(commandRan);
+            Assert.Equal(arguments, app.RemainingArguments.ToArray());
+        }
+
+        [Fact]
+        public void AllowNoThrowBehaviorOnUnexpectedOptionBeforeValidCommand_Continue()
+        {
+            var unexpectedOption = "--unexpected";
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var commandRan = false;
+            app.Command("run", c => c.OnExecute(() => { commandRan = true; return 0; }));
+            app.OnExecute(() => 0);
+
+            app.Execute(unexpectedOption, "run");
+
+            Assert.True(commandRan);
+            var remaining = Assert.Single(app.RemainingArguments);
+            Assert.Equal(unexpectedOption, remaining);
         }
 
         [Fact]
@@ -530,6 +924,91 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expectedRemaining, app.RemainingArguments.ToArray());
         }
 
+        [Theory]
+        [InlineData(new string[0], new string[0], null, false)]
+        [InlineData(new[] { "--" }, new[] { "--" }, null, false)]
+        [InlineData(new[] { "-t", "val" }, new string[0], "val", false)]
+        [InlineData(new[] { "-t", "val", "--" }, new[] { "--" }, "val", false)]
+        [InlineData(new[] { "--top", "val", "--", "a" }, new[] { "--", "a" }, "val", false)]
+        [InlineData(new[] { "-t", "val", "--", "a", "--", "b" }, new[] { "--", "a", "--", "b" }, "val", false)]
+        [InlineData(new[] { "--help", "--" }, new string[0], null, true)]
+        [InlineData(new[] { "--version", "--" }, new string[0], null, true)]
+        public void ArgumentSeparator_TreatedAsUexpected(
+            string[] input,
+            string[] expectedRemaining,
+            string topLevelValue,
+            bool isShowingInformation)
+        {
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var optHelp = app.HelpOption("--help");
+            var optVersion = app.VersionOption("--version", "1", "1.0");
+            var optTop = app.Option("-t|--top <TOP>", "arg for command", CommandOptionType.SingleValue);
+
+            app.Execute(input);
+
+            Assert.Equal(topLevelValue, optTop.Value());
+            Assert.Equal(expectedRemaining, app.RemainingArguments.ToArray());
+            Assert.Equal(isShowingInformation, app.IsShowingInformation);
+
+            // Help and Version options never get values; parsing ends when encountered.
+            Assert.False(optHelp.HasValue());
+            Assert.False(optVersion.HasValue());
+        }
+
+        [Theory]
+        [InlineData(new[] { "--", "a", "--top", "val" }, new[] { "--", "a", "--top", "val" }, null, false)]
+        [InlineData(new[] { "--", "--help" }, new[] { "--", "--help" }, null, false)]
+        [InlineData(new[] { "--", "--version" }, new[] { "--", "--version" }, null, false)]
+        [InlineData(new[] { "unexpected", "--", "--version" }, new[] { "unexpected", "--", "--version" }, null, false)]
+        public void ArgumentSeparator_TreatedAsUexpected_Default(
+            string[] input,
+            string[] expectedRemaining,
+            string topLevelValue,
+            bool isShowingInformation)
+        {
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var optHelp = app.HelpOption("--help");
+            var optVersion = app.VersionOption("--version", "1", "1.0");
+            var optTop = app.Option("-t|--top <TOP>", "arg for command", CommandOptionType.SingleValue);
+
+            app.Execute(input);
+
+            Assert.Equal(topLevelValue, optTop.Value());
+            Assert.Equal(expectedRemaining, app.RemainingArguments.ToArray());
+            Assert.Equal(isShowingInformation, app.IsShowingInformation);
+
+            // Help and Version options never get values; parsing ends when encountered.
+            Assert.False(optHelp.HasValue());
+            Assert.False(optVersion.HasValue());
+        }
+
+        [Theory]
+        [InlineData(new[] { "--", "a", "--top", "val" }, new[] { "--", "a" }, "val", false)]
+        [InlineData(new[] { "--", "--help" }, new[] { "--" }, null, true)]
+        [InlineData(new[] { "--", "--version" }, new[] { "--" }, null, true)]
+        [InlineData(new[] { "unexpected", "--", "--version" }, new[] { "unexpected", "--" }, null, true)]
+        public void ArgumentSeparator_TreatedAsUexpected_Continue(
+            string[] input,
+            string[] expectedRemaining,
+            string topLevelValue,
+            bool isShowingInformation)
+        {
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
+            var optHelp = app.HelpOption("--help");
+            var optVersion = app.VersionOption("--version", "1", "1.0");
+            var optTop = app.Option("-t|--top <TOP>", "arg for command", CommandOptionType.SingleValue);
+
+            app.Execute(input);
+
+            Assert.Equal(topLevelValue, optTop.Value());
+            Assert.Equal(expectedRemaining, app.RemainingArguments.ToArray());
+            Assert.Equal(isShowingInformation, app.IsShowingInformation);
+
+            // Help and Version options never get values; parsing ends when encountered.
+            Assert.False(optHelp.HasValue());
+            Assert.False(optVersion.HasValue());
+        }
+
         [Fact]
         public void HelpTextIgnoresHiddenItems()
         {
@@ -607,20 +1086,18 @@ Examples:
         [InlineData(new[] { "-h", "-f" }, "some flag")]
         public void HelpAndVersionOptionStopProcessing(string[] input, string expectedOutData)
         {
-            using (var outWriter = new StringWriter())
-            {
-                var app = new CommandLineApplication { Out = outWriter };
-                app.HelpOption("-h --help");
-                app.VersionOption("-V --version", "1", "1.0");
-                var optFlag = app.Option("-f |--flag", "some flag", CommandOptionType.NoValue);
+            using var outWriter = new StringWriter();
+            var app = new CommandLineApplication { Out = outWriter };
+            app.HelpOption("-h --help");
+            app.VersionOption("-V --version", "1", "1.0");
+            var optFlag = app.Option("-f |--flag", "some flag", CommandOptionType.NoValue);
 
-                app.Execute(input);
+            app.Execute(input);
 
-                outWriter.Flush();
-                var outData = outWriter.ToString();
-                Assert.Contains(expectedOutData, outData);
-                Assert.False(optFlag.HasValue());
-            }
+            outWriter.Flush();
+            var outData = outWriter.ToString();
+            Assert.Contains(expectedOutData, outData);
+            Assert.False(optFlag.HasValue());
         }
 
         // disable inaccurate analyzer error https://github.com/xunit/xunit/issues/1274
