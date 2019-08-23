@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             base.OnModelCreating(builder);
 
-            builder.ApplyConfiguration(new UserConfiguration<TUser, TUserRole, TKey>());
+            builder.ApplyConfiguration(new UserWithRolesConfiguration<TUser, TUserRole, TKey>());
             builder.ApplyConfiguration(new RoleConfiguration<TRole, TUserRole, TRoleClaim, TKey>());
             builder.ApplyConfiguration(new RoleClaimConfiguration<TRoleClaim, TKey>());
             builder.ApplyConfiguration(new UserRoleConfiguration<TUserRole, TKey>());                
