@@ -1,15 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
   <PropertyGroup>
-    <_ApiDescriptionClientAssemblyTarget
-        Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_ApiDescriptionClientAssemblyTarget>
-    <_ApiDescriptionClientAssemblyTarget
-        Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_ApiDescriptionClientAssemblyTarget>
-    <_ApiDescriptionClientAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionClientAssemblyTarget)/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionClientAssemblyPath>
-    <_ApiDescriptionClientAssemblyTarget />
+    <_ApiDescriptionClientAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionClientAssemblyPath>
   </PropertyGroup>
-  <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
-  <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
+  <UsingTask TaskName="GetCurrentOpenApiReference" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
+  <UsingTask TaskName="GetOpenApiReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
 
   <!--
     Settings users may update as they see fit.
@@ -98,6 +93,13 @@
 
     <!-- OpenApiProjectReference items may include all OpenApiReference metadata. -->
     <OpenApiProjectReference>
+      <!--
+        Semicolon-separated list of global properties to remove in a @(ProjectReference) item created for this
+        @(OpenApiProjectReference). These properties, along with Configuration, Platform, RuntimeIdentifier and
+        TargetFrameworks, are also removed when invoking the 'OpenApiGetDocuments' target in the referenced project.
+      -->
+      <GlobalPropertiesToRemove>TargetFramework</GlobalPropertiesToRemove>
+
       <!--
         Name of the class to generate. Defaults to match filename in %(OutputPath). To avoid compilation errors,
         override only if the referenced project has a single registered document.

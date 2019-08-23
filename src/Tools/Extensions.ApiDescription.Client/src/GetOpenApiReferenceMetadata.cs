@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
     /// Adds or corrects ClassName, FirstForGenerator, Namespace, and OutputPath metadata in OpenApiReference items.
     /// Also stores final metadata as SerializedMetadata.
     /// </summary>
-    public class GetFileReferenceMetadata : Task
+    public class GetOpenApiReferenceMetadata : Task
     {
         private const string TypeScriptLanguageName = "TypeScript";
 
