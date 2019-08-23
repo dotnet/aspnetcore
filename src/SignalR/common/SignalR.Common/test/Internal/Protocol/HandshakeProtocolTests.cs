@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"protocol\":\"firstProtocol\",\"protocol\":\"secondProtocol\",\"version\":1}\u001e", "secondProtocol", 1)]
         [InlineData("{\"protocol\":\"firstProtocol\",\"protocol\":\"secondProtocol\",\"version\":1,\"version\":75}\u001e", "secondProtocol", 75)]
         [InlineData("{\"protocol\":\"dummy\",\"version\":1,\"ignoredField\":99}\u001e", "dummy", 1)]
-
         public void ParsingHandshakeRequestMessageSuccessForValidMessages(string json, string protocol, int version)
         {
             var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
