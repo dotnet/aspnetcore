@@ -8,7 +8,8 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Internal
 {
     /// <summary>
-    /// This type is for internal uses only and is not meant to be consumed by any other library.
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [DebuggerDisplay("{Name,nq}")]
     public class Entry : IEquatable<Entry>
