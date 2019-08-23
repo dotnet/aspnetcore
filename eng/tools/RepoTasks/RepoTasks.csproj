@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" Version="5.1.0-rtm.5921" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
