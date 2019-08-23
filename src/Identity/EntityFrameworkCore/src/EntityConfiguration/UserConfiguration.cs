@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
          where TUser : IdentityUser<TKey>
          where TUserRole : IdentityUserRole<TKey>
          where TKey : IEquatable<TKey>
-
     {
         public virtual void Configure(EntityTypeBuilder<TUser> builder)
         {
