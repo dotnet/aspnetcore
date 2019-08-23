@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR.Crankier.Server;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
             app.Command("server", cmd =>
             {
                 var logLevelOption = cmd.Option("--log <LOG_LEVEL>", "The LogLevel to use.", CommandOptionType.SingleValue);
+                var azureSignalRConnectionString = cmd.Option("--azure-signalr-connectionstring <CONNECTION_STRING>", "Azure SignalR Connection string to use", CommandOptionType.SingleValue);
 
                 cmd.OnExecute(() =>
                 {
@@ -30,18 +32,28 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
                     {
                         return InvalidArg(logLevelOption);
                     }
-                    return Execute(logLevel);
+
+                    if (azureSignalRConnectionString.HasValue() && string.IsNullOrWhiteSpace(azureSignalRConnectionString.Value()))
+                    {
+                        return InvalidArg(azureSignalRConnectionString);
+                    }
+
+                    return Execute(logLevel, azureSignalRConnectionString.Value());
                 });
             });
         }
 
-        private static int Execute(LogLevel logLevel)
+        private static int Execute(LogLevel logLevel, string azureSignalRConnectionString)
         {
             Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
 
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-                .Build();
+            var configBuilder = new ConfigurationBuilder()
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_");
+
+            if (azureSignalRConnectionString != null)
+                configBuilder.AddInMemoryCollection(new [] { new KeyValuePair<string, string>("Azure:SignalR:ConnectionString", azureSignalRConnectionString) });
+            
+            var config = configBuilder.Build();
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,15 +12,23 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
     public class Startup
     {
         private readonly IConfiguration _config;
+        private readonly string _azureSignalrConnectionString;
         public Startup(IConfiguration configuration)
         {
             _config = configuration;
+            _azureSignalrConnectionString = configuration.GetSection("Azure:SignalR").GetValue<string>("ConnectionString", null);
+            if (_azureSignalrConnectionString != null)
+                Console.WriteLine("Using Azure SignalR");
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var signalrBuilder = services.AddSignalR()
-                .AddMessagePackProtocol();
+            var signalrBuilder = services.AddSignalR();
+
+            if (_azureSignalrConnectionString != null)
+                signalrBuilder.AddAzureSignalR();
+
+            signalrBuilder.AddMessagePackProtocol();
 
             services.AddSingleton<ConnectionCounter>();
 
@@ -30,10 +39,19 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
         {
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
+            if (_azureSignalrConnectionString != null)
             {
-                endpoints.MapHub<EchoHub>("/echo");
-            });
+                app.UseAzureSignalR(routes => {
+                    routes.MapHub<EchoHub>("/echo");
+                });
+            }
+            else
+            {
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapHub<EchoHub>("/echo");
+                });
+            }
         }
     }
 }
