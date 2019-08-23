@@ -43,7 +43,7 @@
         BuildInParallel="$(BuildInParallel)"
         Projects="@(OpenApiProjectReference)"
         RebaseOutputs="true"
-        RemoveProperties="Configuration;Platform;RuntimeIdentifier;TargetFrameworks;%(OpenApiProjectReference.GlobalPropertiesToRemove)">
+        RemoveProperties="RuntimeIdentifier;TargetFrameworks;%(OpenApiProjectReference.GlobalPropertiesToRemove)">
       <Output TaskParameter="TargetOutputs" ItemName="_Temporary" />
     </MSBuild>
 

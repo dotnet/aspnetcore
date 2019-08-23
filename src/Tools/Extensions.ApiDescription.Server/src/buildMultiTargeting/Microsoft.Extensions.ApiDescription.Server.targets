@@ -32,9 +32,8 @@
         RemoveProperties="RuntimeIdentifier" />
   </Target>
 
-  <!-- DispatchToInnerBuilds is last target outer Build depends on. -->
   <Target Name="_GenerateOpenApiDocuments"
-      AfterTargets="DispatchToInnerBuilds"
+      BeforeTargets="Build"
       Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' "
       DependsOnTargets="GenerateOpenApiDocuments" />
 
