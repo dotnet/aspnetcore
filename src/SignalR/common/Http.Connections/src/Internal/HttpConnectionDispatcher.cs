@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
+        private static readonly int _protocolVersion = 1;
 
         public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
         {
@@ -308,9 +309,36 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
-            var response = new NegotiationResponse();
-            response.ConnectionId = connectionId;
-            response.AvailableTransports = new List<AvailableTransport>();
+            var response = new NegotiationResponse
+            {
+                ConnectionId = connectionId,
+                AvailableTransports = new List<AvailableTransport>(),
+            };
+
+            if (context.Request.Query.TryGetValue("version", out var queryStringVersion))
+            {
+                // Set the negotiate response to the protocol we use.
+                var clientProtocolVersion = int.Parse(queryStringVersion.ToString());
+                if (clientProtocolVersion < options.MinimumProtocolVersion)
+                {
+                    response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
+                    NegotiateProtocol.WriteResponse(response, writer);
+                    return;
+                }
+                else if (clientProtocolVersion > _protocolVersion)
+                {
+                    response.Version = _protocolVersion;
+                }
+                else
+                {
+                    response.Version = clientProtocolVersion;
+                }
+            } else if (options.MinimumProtocolVersion > 0)
+            {
+                response.Error = $"The client requested version '0', but the server does not support this version.";
+                NegotiateProtocol.WriteResponse(response, writer);
+                return;
+            }
 
             if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
             {

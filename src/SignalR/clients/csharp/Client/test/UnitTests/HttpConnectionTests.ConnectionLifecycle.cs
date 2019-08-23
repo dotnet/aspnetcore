@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var httpHandler = new TestHttpMessageHandler();
 
                     var connectResponseTcs = new TaskCompletionSource<object>();
-                    httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", async (_, __) =>
+                    httpHandler.OnGet("/?version=1&id=00000000-0000-0000-0000-000000000000", async (_, __) =>
                     {
                         await connectResponseTcs.Task;
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);

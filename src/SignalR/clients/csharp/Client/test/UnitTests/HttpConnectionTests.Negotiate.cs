@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData("http://fakeuri.org/", "http://fakeuri.org/negotiate")]
-            [InlineData("http://fakeuri.org/?q=1/0", "http://fakeuri.org/negotiate?q=1/0")]
-            [InlineData("http://fakeuri.org?q=1/0", "http://fakeuri.org/negotiate?q=1/0")]
-            [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate")]
-            [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate")]
-            [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0")]
+            [InlineData("http://fakeuri.org/", "http://fakeuri.org/negotiate?version=1")]
+            [InlineData("http://fakeuri.org/?q=1/0", "http://fakeuri.org/negotiate?q=1/0&version=1")]
+            [InlineData("http://fakeuri.org?q=1/0", "http://fakeuri.org/negotiate?q=1/0&version=1")]
+            [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate?version=1")]
+            [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate?version=1")]
+            [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0&version=1")]
             public async Task CorrectlyHandlesQueryStringWhenAppendingNegotiateToUrl(string requestedUrl, string expectedNegotiate)
             {
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -172,10 +172,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                 }
 
-                Assert.Equal("http://fakeuri.org/negotiate", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat/negotiate", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/negotiate?version=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat/negotiate?version=1", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?version=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?version=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
                 Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
             }
 
@@ -278,10 +278,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                 }
 
-                Assert.Equal("http://fakeuri.org/negotiate", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat/negotiate", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/negotiate?version=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat/negotiate?version=1", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?version=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?version=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
                 // Delete request
                 Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
             }

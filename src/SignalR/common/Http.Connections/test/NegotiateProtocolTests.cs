@@ -13,13 +13,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class NegotiateProtocolTests
     {
         [Theory]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null)]
-        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0], null, null)]
-        [InlineData("{\"url\": \"http://foo.com/chat\"}", null, null, "http://foo.com/chat", null)]
-        [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token")]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null)]
-        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken)
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 0)]
+        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0], null, null, 0)]
+        [InlineData("{\"url\": \"http://foo.com/chat\"}", null, null, "http://foo.com/chat", null, 0)]
+        [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token", 0)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
+        [InlineData("{\"version\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123)]
+        [InlineData("{\"version\":123,\"version\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321)]
+        [InlineData("{\"ignore\":123,\"version\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"version\":123}", "123", new string[0], null, null, 123)]
+        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
             var response = NegotiateProtocol.ParseResponse(responseData);
@@ -28,6 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Equal(availableTransports?.Length, response.AvailableTransports?.Count);
             Assert.Equal(url, response.Url);
             Assert.Equal(accessToken, response.AccessToken);
+            Assert.Equal(version, response.Version);
 
             if (response.AvailableTransports != null)
             {
