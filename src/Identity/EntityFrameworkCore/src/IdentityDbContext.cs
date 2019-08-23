@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
@@ -120,36 +121,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<TUser>(b =>
-            {
-                b.HasMany<TUserRole>().WithOne().HasForeignKey(ur => ur.UserId).IsRequired();
-            });
 
-            builder.Entity<TRole>(b =>
-            {
-                b.HasKey(r => r.Id);
-                b.HasIndex(r => r.NormalizedName).HasName("RoleNameIndex").IsUnique();
-                b.ToTable("AspNetRoles");
-                b.Property(r => r.ConcurrencyStamp).IsConcurrencyToken();
-
-                b.Property(u => u.Name).HasMaxLength(256);
-                b.Property(u => u.NormalizedName).HasMaxLength(256);
-
-                b.HasMany<TUserRole>().WithOne().HasForeignKey(ur => ur.RoleId).IsRequired();
-                b.HasMany<TRoleClaim>().WithOne().HasForeignKey(rc => rc.RoleId).IsRequired();
-            });
-
-            builder.Entity<TRoleClaim>(b =>
-            {
-                b.HasKey(rc => rc.Id);
-                b.ToTable("AspNetRoleClaims");
-            });
-
-            builder.Entity<TUserRole>(b =>
-            {
-                b.HasKey(r => new { r.UserId, r.RoleId });
-                b.ToTable("AspNetUserRoles");
-            });
+            builder.ApplyConfiguration(new UserConfiguration<TUser, TUserRole, TKey>());
+            builder.ApplyConfiguration(new RoleConfiguration<TRole, TUserRole, TRoleClaim, TKey>());
+            builder.ApplyConfiguration(new RoleClaimConfiguration<TRoleClaim, TKey>());
+            builder.ApplyConfiguration(new UserRoleConfiguration<TUserRole, TKey>());      
+          
         }
     }
 }
