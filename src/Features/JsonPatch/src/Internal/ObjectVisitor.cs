@@ -7,6 +7,10 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ObjectVisitor
     {
         private readonly IAdapterFactory _adapterFactory;
@@ -30,7 +34,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
         /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
         public ObjectVisitor(ParsedPath path, IContractResolver contractResolver, IAdapterFactory adapterFactory)
-        { 
+        {
             _path = path;
             _contractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
             _adapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
@@ -55,7 +59,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                     adapter = null;
                     return false;
                 }
-                
+
                 // If we hit a null on an interior segment then we need to stop traversing.
                 if (next == null)
                 {
