@@ -12,11 +12,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
          where TKey : IEquatable<TKey>
     {
         public virtual void Configure(EntityTypeBuilder<TRoleClaim> builder)
-        {
-         
+        {         
                 builder.HasKey(rc => rc.Id);
-                builder.ToTable("AspNetRoleClaims");
-            
+                builder.ToTable("AspNetRoleClaims");            
         }
     }
 }
