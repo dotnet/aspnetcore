@@ -6,7 +6,9 @@
       Without this here, we see regular failures with 'error MSB4236: The SDK 'Yarn.MSBuild' specified could not be found.'
       Since this project is evaluated before .npmproj files are loaded, this should cause the package to end
       up in the NuGet cache ahead of time.
+
+      This is not needed in source build.
     -->
-    <PackageReference Include="Yarn.MSBuild" Version="1.15.2" />
+    <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Yarn.MSBuild" Version="1.15.2" />
   </ItemGroup>
 </Project>
