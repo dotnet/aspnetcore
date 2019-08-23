@@ -10,7 +10,13 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    // Workaround used to handle the fact that the options have not been parsed at configuration time
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
+    /// <remarks>
+    /// Workaround used to handle the fact that the options have not been parsed at configuration time
+    /// </remarks>
     public class InitCommandFactory : ICommand
     {
         public CommandLineOptions Options { get; }
@@ -42,6 +48,10 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         }
     }
 
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class InitCommand : ICommand
     {
         public string OverrideId { get; }
