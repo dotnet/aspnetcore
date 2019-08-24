@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { userId = userId, code = code },
+                    values: new { area = "Identity", userId = userId, code = code },
                     protocol: Request.Scheme);
             }
 

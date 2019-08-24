@@ -14,22 +14,5 @@ jobs:
       name: setReleaseVars
       displayName: Set Release Configs Vars
       inputs:
-        targetType: inline
-        script: |
-          # This is needed to make Write-PipelineSetVariable works in this context
-          $ci = $true
-
-          . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
-
-          $Content = Get-Content "$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt"
-
-          $BarId = $Content | Select -Index 0
-
-          $Channels = ""            
-          $Content | Select -Index 1 | ForEach-Object { $Channels += "$_ ," }
-            
-          $IsStableBuild = $Content | Select -Index 2
-
-          Write-PipelineSetVariable -Name 'BARBuildId' -Value $BarId
-          Write-PipelineSetVariable -Name 'InitialChannels' -Value "$Channels"
-          Write-PipelineSetVariable -Name 'IsStableBuild' -Value $IsStableBuild
+        filePath: $(Build.SourcesDirectory)/eng/common/post-build/setup-maestro-vars.ps1
+        arguments: -ReleaseConfigsPath '$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt'

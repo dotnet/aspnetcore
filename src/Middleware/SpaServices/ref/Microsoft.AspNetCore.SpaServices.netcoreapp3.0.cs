@@ -3,33 +3,41 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class SpaRouteExtensions
     {
         public static void MapSpaFallbackRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, object defaults, object constraints = null, object dataTokens = null) { }
         public static void MapSpaFallbackRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string templatePrefix, object defaults, object constraints = null, object dataTokens = null) { }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class WebpackDevMiddleware
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void UseWebpackDevMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder appBuilder, Microsoft.AspNetCore.SpaServices.Webpack.WebpackDevMiddlewareOptions options = null) { }
     }
 }
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial interface ISpaPrerenderer
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.SpaServices.Prerendering.RenderToStringResult> RenderToString(string moduleName, string exportName = null, object customDataParameter = null, int timeoutMilliseconds = 0);
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class JavaScriptModuleExport
     {
         public JavaScriptModuleExport(string moduleName) { }
         public string ExportName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ModuleName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class Prerenderer
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.SpaServices.Prerendering.RenderToStringResult> RenderToString(string applicationBasePath, Microsoft.AspNetCore.NodeServices.INodeServices nodeServices, System.Threading.CancellationToken applicationStoppingToken, Microsoft.AspNetCore.SpaServices.Prerendering.JavaScriptModuleExport bootModule, string requestAbsoluteUrl, string requestPathAndQuery, object customDataParameter, int timeoutMilliseconds, string requestPathBase) { throw null; }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(Attributes="asp-prerender-module")]
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class PrerenderTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public PrerenderTagHelper(System.IServiceProvider serviceProvider) { }
@@ -47,6 +55,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class RenderToStringResult
     {
         public RenderToStringResult() { }
@@ -59,6 +68,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 }
 namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class WebpackDevMiddlewareOptions
     {
         public WebpackDevMiddlewareOptions() { }
@@ -75,8 +85,10 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class PrerenderingServiceCollectionExtensions
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void AddSpaPrerenderer(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { }
     }
 }

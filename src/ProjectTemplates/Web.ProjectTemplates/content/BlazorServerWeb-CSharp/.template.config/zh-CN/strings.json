@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor Server 应用",
+    "description": "用于创建 Blazor 服务器应用的项目模板，该应用会在 ASP.NET Core 应用内运行服务器端并对通过 SignalR 连接进行用户交互进行处理。此模板可用于具有丰富动态用户界面(UI)的 Web 应用。"
+  }
+}

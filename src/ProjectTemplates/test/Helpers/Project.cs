@@ -24,6 +24,9 @@ namespace Templates.Test.Helpers
 
         public const string DefaultFramework = "netcoreapp3.0";
 
+        public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "ContinuousIntegrationBuild");
+
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
         public string ProjectName { get; set; }

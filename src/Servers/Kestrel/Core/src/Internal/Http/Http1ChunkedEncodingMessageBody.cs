@@ -44,9 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            OnAdvance(_readResult, consumed, examined);
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
-            OnDataRead(dataLength);
         }
 
         public override bool TryRead(out ReadResult readResult)
@@ -63,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
 
             readResult = _readResult;
+            CountBytesRead(readResult.Buffer.Length);
 
             if (_readResult.IsCompleted)
             {

@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         }
 
         public async Task<IEnumerable<string>> PrerenderComponentAsync(
-            ParameterCollection parameters,
+            ParameterView parameters,
             HttpContext httpContext,
             Type componentType)
         {
@@ -77,8 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                     authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
                 }
 
-                var helper = (UriHelperBase)httpContext.RequestServices.GetRequiredService<IUriHelper>();
-                helper.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+                var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
+                navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
             }
         }
 
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         private string GetContextBaseUri(HttpRequest request)
         {
             var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
-            
+
             // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
             // it has to end with a trailing slash
             return result.EndsWith("/") ? result : result += "/";

@@ -5,6 +5,8 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
+    // The dynamic table is defined as a queue where items are inserted at the front and removed from the back.
+    // It's implemented as a circular buffer that appends to the end and trims from the front. Thus index are reversed.
     internal class DynamicTable
     {
         private HeaderField[] _buffer;
@@ -35,7 +37,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     throw new IndexOutOfRangeException();
                 }
 
-                return _buffer[_insertIndex == 0 ? _buffer.Length - 1 : _insertIndex - index - 1];
+                var modIndex = _insertIndex - index - 1;
+                if (modIndex < 0)
+                {
+                    modIndex += _buffer.Length;
+                }
+
+                return _buffer[modIndex];
             }
         }
 

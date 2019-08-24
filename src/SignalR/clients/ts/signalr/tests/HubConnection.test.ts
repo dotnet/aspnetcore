@@ -1273,18 +1273,22 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    hubConnection.serverTimeoutInMilliseconds = 400;
+                    const timeoutInMilliseconds = 400;
+                    hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
 
-                    for (let i = 0; i < 12; i++) {
-                        await pingAndWait(connection);
-                    }
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 10);
+
+                    await delayUntil(timeoutInMilliseconds * 2);
 
                     await connection.stop();
+                    clearInterval(pingInterval);
 
                     const error = await p.promise;
 
@@ -1317,11 +1321,6 @@ describe("HubConnection", () => {
         });
     });
 });
-
-async function pingAndWait(connection: TestConnection): Promise<void> {
-    await connection.receive({ type: MessageType.Ping });
-    await delayUntil(50);
-}
 
 class TestProtocol implements IHubProtocol {
     public readonly name: string = "TestProtocol";

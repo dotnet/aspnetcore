@@ -14,10 +14,10 @@ else
 }
 
 @code {
-    [Parameter] public string StringAttributeBefore { get; private set; }
-    [Parameter] public bool BoolAttributeBefore { get; private set; }
-    [Parameter] public string StringAttributeAfter { get; private set; }
-    [Parameter] public bool? BoolAttributeAfter { get; private set; }
+    [Parameter] public string StringAttributeBefore { get; set; }
+    [Parameter] public bool BoolAttributeBefore { get; set; }
+    [Parameter] public string StringAttributeAfter { get; set; }
+    [Parameter] public bool? BoolAttributeAfter { get; set; }
 
-    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; private set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> UnmatchedValues { get; set; }
 }

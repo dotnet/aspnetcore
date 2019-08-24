@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -383,7 +384,7 @@ namespace Microsoft.AspNetCore.Components.Test
             [CascadingParameter] T CascadingParameter { get; set; }
             [Parameter] public string RegularParameter { get; set; }
 
-            public override async Task SetParametersAsync(ParameterCollection parameters)
+            public override async Task SetParametersAsync(ParameterView parameters)
             {
                 NumSetParametersCalls++;
                 await base.SetParametersAsync(parameters);

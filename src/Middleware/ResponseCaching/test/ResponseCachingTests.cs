@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -461,58 +462,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public async Task ServesFreshContent_IfSetCookie_IsSpecified()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue");
-
-            foreach (var builder in builders)
-            {
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
-                    var subsequentResponse = await client.GetAsync("");
-
-                    await AssertFreshResponseAsync(initialResponse, subsequentResponse);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
-        {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(app =>
-            {
-                app.Use(async (context, next) =>
-                {
-                    context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                    await next.Invoke();
-                });
-            });
-
-            foreach (var builder in builders)
-            {
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
-                    var subsequentResponse = await client.GetAsync("");
-
-                    await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task ServesFreshContent_IfIHttpSendFileFeature_Used()
-        {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(
-                app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                        await next.Invoke();
-                    });
-                },
-                contextAction: async context => await context.Features.Get<IHttpSendFileFeature>().SendFileAsync("dummy", 0, 0, CancellationToken.None));
 
             foreach (var builder in builders)
             {

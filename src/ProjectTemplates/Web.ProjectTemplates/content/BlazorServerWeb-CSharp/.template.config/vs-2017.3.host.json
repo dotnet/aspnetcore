@@ -61,5 +61,6 @@
   "excludeLaunchSettings": false,
   "azureReplyUrlPortName": "HttpsPort",
   "minFullFrameworkVersion": "4.6.1",
-  "disableHttpsSymbol": "NoHttps"
+  "disableHttpsSymbol": "NoHttps",
+  "supportsDocker": true
 }

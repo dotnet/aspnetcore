@@ -368,6 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         protected PageBase() { }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider MetadataProvider { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.RazorPages.PageContext PageContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
@@ -500,6 +501,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         protected PageModel() { }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider MetadataProvider { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState { get { throw null; } }
         [Microsoft.AspNetCore.Mvc.RazorPages.PageContextAttribute]
         public Microsoft.AspNetCore.Mvc.RazorPages.PageContext PageContext { get { throw null; } set { } }

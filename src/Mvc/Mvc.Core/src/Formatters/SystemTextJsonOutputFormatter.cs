@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,20 +18,32 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
-
         /// <summary>
         /// Initializes a new <see cref="SystemTextJsonOutputFormatter"/> instance.
         /// </summary>
-        /// <param name="options">The <see cref="JsonOptions"/>.</param>
-        public SystemTextJsonOutputFormatter(JsonOptions options)
+        /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
+        public SystemTextJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
         {
-            SerializerOptions = options.JsonSerializerOptions;
+            SerializerOptions = jsonSerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
+        }
+
+        internal static SystemTextJsonOutputFormatter CreateFormatter(JsonOptions jsonOptions)
+        {
+            var jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
+
+            if (jsonSerializerOptions.Encoder is null)
+            {
+                // If the user hasn't explicitly configured the encoder, use the less strict encoder that does not encode all non-ASCII characters.
+                jsonSerializerOptions = jsonSerializerOptions.Copy(JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
+            }
+
+            return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
         }
 
         /// <summary>

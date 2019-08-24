@@ -15,13 +15,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             // Arrange
             var clientError = new UnsupportedMediaTypeResult();
-            var factory = new ProblemDetailsClientErrorFactory(Options.Create(new ApiBehaviorOptions
+            var problemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(new ApiBehaviorOptions
             {
                 ClientErrorMapping =
                 {
                     [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
             }));
+            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
             // Act
             var result = factory.GetClientError(GetActionContext(), clientError);
@@ -31,7 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Equal(new[] { "application/problem+json", "application/problem+xml" }, objectResult.ContentTypes);
             var problemDetails = Assert.IsType<ProblemDetails>(objectResult.Value);
             Assert.Equal(415, problemDetails.Status);
-            Assert.Equal("about:blank", problemDetails.Type);
             Assert.Null(problemDetails.Title);
             Assert.Null(problemDetails.Detail);
             Assert.Null(problemDetails.Instance);
@@ -42,13 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             // Arrange
             var clientError = new UnsupportedMediaTypeResult();
-            var factory = new ProblemDetailsClientErrorFactory(Options.Create(new ApiBehaviorOptions
+            var problemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(new ApiBehaviorOptions
             {
                 ClientErrorMapping =
                 {
                     [415] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
             }));
+            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
             // Act
             var result = factory.GetClientError(GetActionContext(), clientError);
@@ -71,13 +72,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             using (new ActivityReplacer())
             {
                 var clientError = new UnsupportedMediaTypeResult();
-                var factory = new ProblemDetailsClientErrorFactory(Options.Create(new ApiBehaviorOptions
+                var problemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(new ApiBehaviorOptions
                 {
                     ClientErrorMapping =
                 {
-                    [415] = new ClientErrorData { Link = "Some link", Title = "Summary" },
+                    [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
                 }));
+                var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
                 // Act
                 var result = factory.GetClientError(GetActionContext(), clientError);
@@ -96,13 +98,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             // Arrange
             var clientError = new UnsupportedMediaTypeResult();
-            var factory = new ProblemDetailsClientErrorFactory(Options.Create(new ApiBehaviorOptions
+            var problemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(new ApiBehaviorOptions
             {
                 ClientErrorMapping =
                 {
-                    [415] = new ClientErrorData { Link = "Some link", Title = "Summary" },
+                    [405] = new ClientErrorData { Link = "Some link", Title = "Summary" },
                 },
             }));
+            var factory = new ProblemDetailsClientErrorFactory(problemDetailsFactory);
 
             // Act
             var result = factory.GetClientError(GetActionContext(), clientError);

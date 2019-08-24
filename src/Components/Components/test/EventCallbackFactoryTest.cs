@@ -645,7 +645,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new NotImplementedException();
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 throw new NotImplementedException();
             }

@@ -13,8 +13,12 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub<App>("app");
             });
+        }
+
+        public class App : Microsoft.AspNetCore.Components.ComponentBase
+        {
         }
     }
 }

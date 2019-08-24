@@ -6,13 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -21,60 +20,59 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger _logger;
         private readonly CircuitIdFactory _circuitIdFactory;
+        private readonly CircuitOptions _options;
+        private readonly ILogger _logger;
 
         public DefaultCircuitFactory(
             IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
-            CircuitIdFactory circuitIdFactory)
+            CircuitIdFactory circuitIdFactory,
+            IOptions<CircuitOptions> options)
         {
             _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
-            _loggerFactory = loggerFactory;
-            _logger = _loggerFactory.CreateLogger<CircuitFactory>();
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _circuitIdFactory = circuitIdFactory ?? throw new ArgumentNullException(nameof(circuitIdFactory));
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+
+            _logger = _loggerFactory.CreateLogger<DefaultCircuitFactory>();
         }
 
         public override CircuitHost CreateCircuitHost(
             HttpContext httpContext,
             CircuitClientProxy client,
-            string uriAbsolute,
-            string baseUriAbsolute,
+            string baseUri,
+            string uri,
             ClaimsPrincipal user)
         {
-            var components = ResolveComponentMetadata(httpContext, client);
+            // We do as much intialization as possible eagerly in this method, which makes the error handling
+            // story much simpler. If we throw from here, it's handled inside the initial hub method.
+            var components = ResolveComponentMetadata(httpContext);
 
             var scope = _scopeFactory.CreateScope();
-            var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
-            var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
             jsRuntime.Initialize(client);
-            componentContext.Initialize(client);
 
-            var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
+            var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
             {
-                uriHelper.AttachJsRuntime(jsRuntime);
-                uriHelper.InitializeState(
-                    uriAbsolute,
-                    baseUriAbsolute);
+                navigationManager.AttachJsRuntime(jsRuntime);
+                navigationManager.Initialize(baseUri, uri);
 
                 navigationInterception.AttachJSRuntime(jsRuntime);
             }
             else
             {
-                uriHelper.InitializeState(uriAbsolute, baseUriAbsolute);
+                navigationManager.Initialize(baseUri, uri);
             }
 
-            var rendererRegistry = new RendererRegistry();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,
-                rendererRegistry,
+                _options,
                 jsRuntime,
                 client,
-                encoder,
                 _loggerFactory.CreateLogger<RemoteRenderer>());
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
@@ -84,8 +82,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = new CircuitHost(
                 _circuitIdFactory.CreateCircuitId(),
                 scope,
+                _options,
                 client,
-                rendererRegistry,
                 renderer,
                 components,
                 jsRuntime,
@@ -100,28 +98,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        internal static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
+        public static IReadOnlyList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext)
         {
-            if (!client.Connected)
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint == null)
             {
-                // This is the prerendering case. Descriptors will be registered by the prerenderer.
-                return new List<ComponentDescriptor>();
+                throw new InvalidOperationException(
+                    $"{nameof(ComponentHub)} doesn't have an associated endpoint. " +
+                    "Use 'app.UseEndpoints(endpoints => endpoints.MapBlazorHub<App>(\"app\"))' to register your hub.");
             }
-            else
-            {
-                var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
-                var endpoint = endpointFeature?.Endpoint;
-                if (endpoint == null)
-                {
-                    throw new InvalidOperationException(
-                        $"{nameof(ComponentHub)} doesn't have an associated endpoint. " +
-                        "Use 'app.UseEndpoints(endpoints => endpoints.MapBlazorHub<App>(\"app\"))' to register your hub.");
-                }
 
-                var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
-
-                return componentsMetadata;
-            }
+            return endpoint.Metadata.GetOrderedMetadata<ComponentDescriptor>();
         }
 
         private static class Log

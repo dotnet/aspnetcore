@@ -1,3 +1,3 @@
 @page "/show-uri"
-@inject IUriHelper UriHelper
-The current URL is <strong>@UriHelper.GetAbsoluteUri()</strong>
+@inject NavigationManager NavigationManager
+The current URL is <strong>@NavigationManager.Uri</strong>

@@ -361,6 +361,23 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RejectsClashingKeysEvenIfAllPairsMatch()
+        {
+            // This sort of scenario would happen if you accidentally used a constant value for @key
+
+            // Arrange
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key1", "attrib1b");
+
+            AddWithKey(newTree, "key1", "attrib1a");
+            AddWithKey(newTree, "key1", "attrib1b");
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+        }
+
+        [Fact]
         public void HandlesInsertionOfUnkeyedItemsAroundKey()
         {
             // The fact that the new sequence numbers are descending makes this
@@ -835,9 +852,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RecognizesAttributeEventHandlerValuesChanged()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
-            Action<UIEventArgs> removedHandler = _ => { };
-            Action<UIEventArgs> addedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
+            Action<EventArgs> removedHandler = _ => { };
+            Action<EventArgs> addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "onfoo", retainedHandler);
             oldTree.AddAttribute(2, "onbar", removedHandler);
@@ -1575,7 +1592,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1601,7 +1618,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -2222,7 +2239,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public string NonParameterProperty { get; set; }
 
             public void Attach(RenderHandle renderHandle) { }
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 parameters.SetParameterProperties(this);
                 return Task.CompletedTask;
@@ -2235,7 +2252,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class CaptureSetParametersComponent : IComponent
@@ -2246,7 +2263,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 SetParametersCallCount++;
                 return Task.CompletedTask;
@@ -2260,14 +2277,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class NonDisposableComponent : IComponent
         {
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private static void AssertEdit(

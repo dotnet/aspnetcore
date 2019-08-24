@@ -7,10 +7,13 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static void UseSpa(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.SpaServices.ISpaBuilder> configuration) { }
     }
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public static partial class SpaPrerenderingExtensions
     {
+        [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
         public static void UseSpaPrerendering(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, System.Action<Microsoft.AspNetCore.Builder.SpaPrerenderingOptions> configuration) { }
     }
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial class SpaPrerenderingOptions
     {
         public SpaPrerenderingOptions() { }
@@ -38,12 +41,14 @@ namespace Microsoft.AspNetCore.SpaServices
         public SpaOptions() { }
         public Microsoft.AspNetCore.Http.PathString DefaultPage { get { throw null; } set { } }
         public Microsoft.AspNetCore.Builder.StaticFileOptions DefaultPageStaticFileOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string PackageManagerCommand { get { throw null; } set { } }
         public string SourcePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan StartupTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial class AngularCliBuilder : Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder
     {
         public AngularCliBuilder(string npmScript) { }
@@ -57,6 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
 }
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial interface ISpaPrerendererBuilder
     {
         System.Threading.Tasks.Task Build(Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder);

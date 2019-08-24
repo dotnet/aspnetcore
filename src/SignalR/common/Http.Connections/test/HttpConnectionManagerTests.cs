@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#pragma warning disable CS0618 // TODO: Remove when we replace the events
-
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
@@ -100,11 +98,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var transportInputTcs = new TaskCompletionSource<object>();
                 var transportOutputTcs = new TaskCompletionSource<object>();
 
-                connection.Transport.Input.OnWriterCompleted((_, __) => transportInputTcs.TrySetResult(null), null);
-                connection.Transport.Output.OnReaderCompleted((_, __) => transportOutputTcs.TrySetResult(null), null);
-                connection.Application.Input.OnWriterCompleted((_, __) => applicationInputTcs.TrySetResult(null), null);
-                connection.Application.Output.OnReaderCompleted((_, __) => applicationOutputTcs.TrySetResult(null), null);
-
                 try
                 {
                     await connection.DisposeAsync(closeGracefully).OrTimeout();
@@ -114,7 +107,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     // Ignore the exception that bubbles out of the failing task
                 }
 
-                await Task.WhenAll(applicationInputTcs.Task, applicationOutputTcs.Task, transportInputTcs.Task, transportOutputTcs.Task).OrTimeout();
+                var result = await connection.Transport.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
+
+                result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
+
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await connection.Transport.Input.ReadAsync());
+                Assert.Equal("Reading is not allowed after reader was completed.", exception.Message);
+
+                exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await connection.Application.Input.ReadAsync());
+                Assert.Equal("Reading is not allowed after reader was completed.", exception.Message);
             }
         }
 
@@ -342,16 +345,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-                connection.Application.Output.OnReaderCompleted((error, state) =>
-                {
-                    tcs.TrySetResult(null);
-                },
-                null);
-
                 appLifetime.StopApplication();
 
-                // Connection should be disposed so this should complete immediately
-                await tcs.Task.OrTimeout();
+                var result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
             }
         }
 
@@ -368,16 +365,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-                connection.Application.Output.OnReaderCompleted((error, state) =>
-                {
-                    tcs.TrySetResult(null);
-                },
-                null);
-
                 appLifetime.StopApplication();
 
-                // Connection should be disposed so this should complete immediately
-                await tcs.Task.OrTimeout();
+                var result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
             }
         }
 

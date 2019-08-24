@@ -20,7 +20,17 @@ namespace NegotiateAuthSample
                 options.FallbackPolicy = options.DefaultPolicy;
             });
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-                .AddNegotiate();
+                .AddNegotiate(options =>
+                {
+                    options.Events = new NegotiateEvents()
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            // context.SkipHandler();
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

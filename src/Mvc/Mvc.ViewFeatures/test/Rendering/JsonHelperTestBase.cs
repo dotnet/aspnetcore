@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             var htmlString = Assert.IsType<HtmlString>(result);
-            Assert.Equal(expectedOutput, htmlString.ToString());
+            Assert.Equal(expectedOutput, htmlString.ToString(), ignoreCase: true);
         }
 
         [Fact]
@@ -71,14 +71,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 HTML = $"Hello pingüino"
             };
-            var expectedOutput = "{\"html\":\"Hello ping\\u00fcino\"}";
+            var expectedOutput = "{\"html\":\"Hello pingüino\"}";
 
             // Act
             var result = helper.Serialize(obj);
 
             // Assert
             var htmlString = Assert.IsType<HtmlString>(result);
-            Assert.Equal(expectedOutput, htmlString.ToString());
+            Assert.Equal(expectedOutput, htmlString.ToString(), ignoreCase: true);
         }
 
         [Fact]
@@ -91,6 +91,26 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 HTML = $"Hello &nbsp; &lt;John&gt;"
             };
             var expectedOutput = "{\"html\":\"Hello \\u0026nbsp; \\u0026lt;John\\u0026gt;\"}";
+
+            // Act
+            var result = helper.Serialize(obj);
+
+            // Assert
+            var htmlString = Assert.IsType<HtmlString>(result);
+            Assert.Equal(expectedOutput, htmlString.ToString());
+        }
+
+
+        [Fact]
+        public virtual void Serialize_WithHTMLNonAsciiAndControlChars()
+        {
+            // Arrange
+            var helper = GetJsonHelper();
+            var obj = new
+            {
+                HTML = "<b>Hello \n pingüino</b>"
+            };
+            var expectedOutput = "{\"html\":\"\\u003cb\\u003eHello \\n pingüino\\u003c/b\\u003e\"}";
 
             // Act
             var result = helper.Serialize(obj);
