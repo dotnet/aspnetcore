@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _dataWriterLock = new object();
         private readonly PipeWriter _pipeWriter;
         private readonly PipeReader _pipeReader;
-        private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
+        private readonly Task<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
         private bool _suffixSent;
@@ -205,16 +205,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                if (_completed)
+                if (!_completed)
                 {
-                    return _dataWriteProcessingTask;
+                    _completed = true;
+                    _suffixSent = true;
+
+                    _pipeWriter.Complete();
                 }
 
-                _completed = true;
-                _suffixSent = true;
-
-                _pipeWriter.Complete();
-                return _dataWriteProcessingTask;
+                return new ValueTask<FlushResult>(_dataWriteProcessingTask);
             }
         }
 
@@ -358,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
         }
 
-        private async ValueTask<FlushResult> ProcessDataWrites()
+        private async Task<FlushResult> ProcessDataWrites()
         {
             FlushResult flushResult = default;
             try
