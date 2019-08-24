@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            if (!_currentFlush.IsCompletedSuccessfully)
+            if (!_currentFlush.IsCompleted)
             {
                 return new ValueTask<FlushResult>(_currentFlush);
             }
