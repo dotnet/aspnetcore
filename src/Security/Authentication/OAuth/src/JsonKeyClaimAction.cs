@@ -36,14 +36,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
             {
                 return;
             }
-            if (value.Type == JsonValueType.Array)
+            if (value.ValueKind == JsonValueKind.Array)
             {
                 foreach (var v in value.EnumerateArray())
                 {
                     AddClaim(v.ToString(), identity, issuer);
                 }
             }
-            else if (value.Type == JsonValueType.Object || value.Type == JsonValueType.Undefined)
+            else if (value.ValueKind == JsonValueKind.Object || value.ValueKind == JsonValueKind.Undefined)
             {
                 // Skip, because they were previously skipped
             }

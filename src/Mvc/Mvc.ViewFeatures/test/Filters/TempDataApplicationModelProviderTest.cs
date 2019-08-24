@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
@@ -48,20 +47,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         }
 
         [Fact]
-        public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties()
+        public void OnProvidersExecuting_ThrowsIfThePropertyTypeIsUnsupported()
         {
             // Arrange
-            var type = typeof(TestController_NullableNonPrimitiveTempDataProperty);
+            var type = typeof(TestController_InvalidProperties);
+            var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
+                Environment.NewLine +
+                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
             var provider = CreateProvider();
 
             var context = GetContext(type);
 
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            var controller = Assert.Single(context.Result.Controllers);
-            Assert.IsType<ControllerSaveTempDataPropertyFilterFactory>(Assert.Single(controller.Filters));
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
         }
 
         [Fact]
@@ -109,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 
         private static TempDataApplicationModelProvider CreateProvider()
         {
-            var tempDataSerializer = Mock.Of<TempDataSerializer>(s => s.CanSerializeType(It.IsAny<Type>()) == true);
+            var tempDataSerializer = new DefaultTempDataSerializer();
             return new TempDataApplicationModelProvider(tempDataSerializer);
         }
 
@@ -129,12 +128,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             public DateTime? DateTime { get; set; }
         }
 
-        public class TestController_NullableNonPrimitiveTempDataProperty
-        {
-            [TempData]
-            public DateTime? DateTime { get; set; }
-        }
-
         public class TestController_OneTempDataProperty
         {
             public string Test { get; set; }
@@ -147,6 +140,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         {
             [TempData]
             public string Test { get; private set; }
+        }
+
+        public class TestController_InvalidProperties
+        {
+            [TempData]
+            public ModelStateDictionary ModelState { get; set; }
+
+            [TempData]
+            public int SomeProperty { get; set; }
+
+            [TempData]
+            public TimeZoneInfo TimeZone { get; set; }
         }
     }
 }

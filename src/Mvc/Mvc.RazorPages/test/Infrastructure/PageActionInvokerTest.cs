@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1388,6 +1389,58 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         #endregion
 
+        #region Logs
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task InvokeAction_ForPage_Logs(bool hasPageModel)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = hasPageModel 
+                ? CreateDescriptorForPageModelPage() 
+                : CreateDescriptorForSimplePage();
+            actionDescriptor.ViewEnginePath = "/Pages/Foo";
+            actionDescriptor.RouteValues.Add("page", "foo");
+            var invoker = CreateInvoker(null, actionDescriptor, logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var pageName = $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)} ({typeof(PageActionInvokerTest).Assembly.GetName().Name})";
+            var pagePath = actionDescriptor.ViewEnginePath;
+            var methodFullName = hasPageModel
+                ? $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPageModel)}.{nameof(TestPageModel.OnGetHandler1)}"
+                : $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)}.{nameof(TestPage.OnGetHandler1)}";
+            var methodName = nameof(TestPage.OnGetHandler1);
+            var resultName = typeof(PageResult).FullName;
+            var factoryType = hasPageModel ? "page model" : "page";
+
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{page = \"foo\"}}. Executing page {pagePath}", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executed {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executing handler method {methodFullName} - ModelState is Valid", m),
+                m => Assert.Equal($"Executed handler method {methodName}, returned result {resultName}.", m),
+                m => Assert.Equal($"Before executing action result {resultName}.", m),
+                m => Assert.Equal($"After executing action result {resultName}.", m),
+                m => Assert.StartsWith($"Executed page {pagePath} in ", m));
+        }
+
+        #endregion
+
         protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
@@ -1635,13 +1688,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     new HandlerMethodDescriptor()
                     {
                         HttpMethod = "GET",
-                        MethodInfo = typeof(PageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler1)),
+                        MethodInfo = typeof(TestPageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler1)),
                         Parameters = new List<HandlerParameterDescriptor>(),
                     },
                     new HandlerMethodDescriptor()
                     {
                         HttpMethod = "GET",
-                        MethodInfo = typeof(PageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler2)),
+                        MethodInfo = typeof(TestPageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler2)),
                         Parameters = new List<HandlerParameterDescriptor>(),
                     },
                 },

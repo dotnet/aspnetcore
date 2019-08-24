@@ -10,23 +10,26 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IHttpRequestFeature,
-                                        IHttpResponseFeature,
-                                        IResponseBodyPipeFeature,
-                                        IRequestBodyPipeFeature,
-                                        IHttpUpgradeFeature,
-                                        IHttpConnectionFeature,
-                                        IHttpRequestLifetimeFeature,
-                                        IHttpRequestIdentifierFeature,
-                                        IHttpBodyControlFeature,
-                                        IHttpMaxRequestBodySizeFeature,
-                                        IHttpResponseStartFeature
+                                          IHttpResponseFeature,
+                                          IHttpResponseBodyFeature,
+                                          IRequestBodyPipeFeature,
+                                          IHttpUpgradeFeature,
+                                          IHttpConnectionFeature,
+                                          IHttpRequestLifetimeFeature,
+                                          IHttpRequestIdentifierFeature,
+                                          IHttpRequestTrailersFeature,
+                                          IHttpBodyControlFeature,
+                                          IHttpMaxRequestBodySizeFeature,
+                                          IEndpointFeature,
+                                          IRouteValuesFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -94,38 +97,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Stream IHttpRequestFeature.Body
         {
-            get
-            {
-                return RequestBody;
-            }
-            set
-            {
-                RequestBody = value;
-                var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReaderOptions(
-                    minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize,
-                    minimumReadThreshold: KestrelMemoryPool.MinimumSegmentSize / 4,
-                    _context.MemoryPool));
-                RequestBodyPipeReader = requestPipeReader;
-
-                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
-                if (_wrapperObjectsToDispose == null)
-                {
-                    _wrapperObjectsToDispose = new List<IDisposable>();
-                }
-                _wrapperObjectsToDispose.Add(requestPipeReader);
-            }
+            get => RequestBody;
+            set => RequestBody = value;
         }
 
         PipeReader IRequestBodyPipeFeature.Reader
         {
             get
             {
+                if (!ReferenceEquals(_requestStreamInternal, RequestBody))
+                {
+                    _requestStreamInternal = RequestBody;
+                    RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeReader)self).Complete();
+                        return Task.CompletedTask;
+                    }, RequestBodyPipeReader);
+                }
+
                 return RequestBodyPipeReader;
             }
-            set
+        }
+
+        bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
+
+        IHeaderDictionary IHttpRequestTrailersFeature.Trailers
+        {
+            get
             {
-                RequestBodyPipeReader = value;
-                RequestBody = new ReadOnlyPipeStream(RequestBodyPipeReader);
+                if (!RequestTrailersAvailable)
+                {
+                    throw new InvalidOperationException(CoreStrings.RequestTrailersNotAvailable);
+                }
+                return RequestTrailers;
             }
         }
 
@@ -223,39 +229,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        PipeWriter IResponseBodyPipeFeature.Writer
-        {
-            get
-            {
-                return ResponsePipeWriter;
-            }
-            set
-            {
-                ResponsePipeWriter = value;
-                ResponseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
-            }
-        }
-
         Stream IHttpResponseFeature.Body
         {
-            get
-            {
-                return ResponseBody;
-            }
-            set
-            {
-                ResponseBody = value;
-                var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize, _context.MemoryPool);
-                ResponsePipeWriter = responsePipeWriter;
-
-                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
-                if (_wrapperObjectsToDispose == null)
-                {
-                    _wrapperObjectsToDispose = new List<IDisposable>();
-                }
-                _wrapperObjectsToDispose.Add(responsePipeWriter);
-            }
+            get => ResponseBody;
+            set => ResponseBody = value;
         }
+
+        PipeWriter IHttpResponseBodyFeature.Writer => ResponseBodyPipeWriter;
+
+        Endpoint IEndpointFeature.Endpoint
+        {
+            get => _endpoint;
+            set => _endpoint = value;
+        }
+
+        RouteValueDictionary IRouteValuesFeature.RouteValues
+        {
+            get => _routeValues ??= new RouteValueDictionary();
+            set => _routeValues = value;
+        }
+
+        Stream IHttpResponseBodyFeature.Stream => ResponseBody;
 
         protected void ResetHttp1Features()
         {
@@ -267,6 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
@@ -302,11 +297,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = "Switching Protocols";
-            ResponseHeaders["Connection"] = "Upgrade";
+            ResponseHeaders[HeaderNames.Connection] = "Upgrade";
 
             await FlushAsync();
 
-            return bodyControl.Upgrade();
+            return _bodyControl.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()
@@ -314,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ApplicationAbort();
         }
 
-        Task IHttpResponseStartFeature.StartAsync(CancellationToken cancellationToken)
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
         {
             if (HasResponseStarted)
             {
@@ -324,6 +319,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             cancellationToken.ThrowIfCancellationRequested();
 
             return InitializeResponseAsync(0);
+        }
+
+        void IHttpResponseBodyFeature.DisableBuffering()
+        {
+        }
+
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        {
+            return SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
+        }
+
+        Task IHttpResponseBodyFeature.CompleteAsync()
+        {
+            return CompleteAsync();
         }
     }
 }

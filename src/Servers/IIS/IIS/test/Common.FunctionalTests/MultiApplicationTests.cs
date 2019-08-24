@@ -10,10 +10,9 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class MultiApplicationTests : IISFunctionalTestBase
@@ -48,6 +47,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.35 - ANCM Multiple In-Process Applications in same Process", await result2.Content.ReadAsStringAsync());
+            }
+
             EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
         }
 
@@ -69,6 +74,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.34 - ANCM Mixed Hosting Models Not Supported", await result2.Content.ReadAsStringAsync());
+            }
+
             EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
         }
 

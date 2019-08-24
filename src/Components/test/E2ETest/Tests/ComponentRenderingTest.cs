@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override void InitializeAsyncCore()
         {
-            Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
+            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
         }
 
         [Fact]
@@ -459,8 +459,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanUseJsInteropForRefElementsDuringOnAfterRender()
         {
             var appElement = MountTestComponent<AfterRenderInteropComponent>();
-            var inputElement = appElement.FindElement(By.TagName("input"));
-            Assert.Equal("Value set after render", inputElement.GetAttribute("value"));
+            Browser.Equal("Value set after render", () => Browser.FindElement(By.TagName("input")).GetAttribute("value"));
         }
 
         [Fact]
@@ -588,6 +587,63 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             appElement.FindElement(By.Id("run-async-with-dispatch")).Click();
 
             Browser.Equal("First Second Third Fourth Fifth", () => result.Text);
+        }
+
+        [Fact]
+        public void CanPerformInteropImmediatelyOnComponentInsertion()
+        {
+            var appElement = MountTestComponent<InteropOnInitializationComponent>();
+            Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-get-by-interop")).Text);
+            Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanUseAddMultipleAttributes()
+        {
+            var appElement = MountTestComponent<DuplicateAttributesComponent>();
+
+            var selector = By.CssSelector("#duplicate-on-element > div");
+            WaitUntilExists(selector);
+
+            var element = appElement.FindElement(selector);
+            Assert.Equal(string.Empty, element.GetAttribute("bool")); // attribute is present
+            Assert.Equal("middle-value", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+
+            selector = By.CssSelector("#duplicate-on-element-override > div");
+            element = appElement.FindElement(selector);
+            Assert.Null(element.GetAttribute("bool")); // attribute is not present
+            Assert.Equal("other-text", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+        }
+
+        [Fact]
+        public void CanPatchRenderTreeToMatchLatestDOMState()
+        {
+            var appElement = MountTestComponent<MovingCheckboxesComponent>();
+            var incompleteItemsSelector = By.CssSelector(".incomplete-items li");
+            var completeItemsSelector = By.CssSelector(".complete-items li");
+            WaitUntilExists(incompleteItemsSelector);
+
+            // Mark first item as done; observe the remaining incomplete item appears unchecked
+            // because the diff algoritm explicitly unchecks it
+            appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
+            Browser.True(() =>
+            {
+                var incompleteLIs = appElement.FindElements(incompleteItemsSelector);
+                return incompleteLIs.Count == 1
+                    && !incompleteLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
+            });
+
+            // Mark first done item as not done; observe the remaining complete item appears checked
+            // because the diff algoritm explicitly re-checks it
+            appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
+            Browser.True(() =>
+            {
+                var completeLIs = appElement.FindElements(completeItemsSelector);
+                return completeLIs.Count == 2
+                    && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
+            });
         }
 
         static IAlert SwitchToAlert(IWebDriver driver)

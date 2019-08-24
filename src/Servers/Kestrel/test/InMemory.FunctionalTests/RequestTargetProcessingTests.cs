@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal("/\u0041\u030A/B/\u0041\u030A", context.Request.Path.Value);
 
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
 
@@ -88,7 +87,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -100,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var method = (HttpMethod)intMethod;
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 Assert.Equal(requestTarget, context.Features.Get<IHttpRequestFeature>().RawTarget);
                 Assert.Empty(context.Request.Path.Value);
@@ -129,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
     }

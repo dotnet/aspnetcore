@@ -656,11 +656,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.NO_ERROR, null);
@@ -904,11 +900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await SendDataAsync(1, _helloWorldBytes, endStream: false);
@@ -922,6 +914,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
                     CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
                 });
+        }
+
+        [Fact]
+        public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1; 
+            var firstRequestBlock = new TaskCompletionSource<object>();
+            var firstRequestReceived = new TaskCompletionSource<object>();
+            var makeFirstRequestWait = false;
+            await InitializeConnectionAsync(async context =>
+            {
+                if (!makeFirstRequestWait)
+                {
+                    makeFirstRequestWait = true;
+                    firstRequestReceived.SetResult(null);
+                    await firstRequestBlock.Task.DefaultTimeout();
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await SendRstStreamAsync(1);
+
+            await firstRequestReceived.Task.DefaultTimeout();
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            firstRequestBlock.SetResult(null);
+
+            await StopConnectionAsync(3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+            var tcs = new TaskCompletionSource<object>();
+            await InitializeConnectionAsync(async context =>
+            {
+                await tcs.Task.DefaultTimeout();
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendRstStreamAsync(1);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+            await SendRstStreamAsync(3);
+            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+
+            await WaitForStreamErrorAsync(
+                expectedStreamId: 5,
+                expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
+                expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
+
+            tcs.SetResult(null);
+
+            await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -940,11 +992,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
@@ -1069,11 +1117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             // Relieve connection backpressure to receive the rest of the first streams body.
@@ -1107,11 +1151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -1126,11 +1166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
@@ -1150,11 +1186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
@@ -1171,11 +1203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
@@ -1195,11 +1223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
@@ -1210,7 +1234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task HEADERS_Received_WithTrailers_Discarded(bool sendData)
+        public async Task HEADERS_Received_WithTrailers_Available(bool sendData)
         {
             await InitializeConnectionAsync(_readTrailersApplication);
 
@@ -1225,11 +1249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // The second stream should end first, since the first one is waiting for the request body.
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             if (sendData)
@@ -1241,19 +1261,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
 
-            // Make sure the trailers are missing. https://github.com/aspnet/KestrelHttpServer/issues/2630
+            // Make sure the trailers are in the trailers collection.
             foreach (var header in _requestTrailers)
             {
                 Assert.False(_receivedHeaders.ContainsKey(header.Key));
+                Assert.True(_receivedTrailers.ContainsKey(header.Key));
+                Assert.Equal(header.Value, _receivedTrailers[header.Key]);
             }
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
@@ -1327,22 +1345,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             finishFirstRequest.TrySetResult(null);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
@@ -1368,11 +1378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
@@ -1415,11 +1421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             // Try to re-use the stream ID (http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1)
@@ -1462,11 +1464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             // Stream 1 was implicitly closed by opening stream 3 before (http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1)
@@ -1690,11 +1688,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -1839,11 +1833,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -3349,11 +3339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_twoContinuationsRequestHeaders);
@@ -3364,7 +3350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CONTINUATION_Received_WithTrailers_Discarded(bool sendData)
+        public async Task CONTINUATION_Received_WithTrailers_Available(bool sendData)
         {
             await InitializeConnectionAsync(_readTrailersApplication);
 
@@ -3379,11 +3365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // The second stream should end first, since the first one is waiting for the request body.
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 3);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
             if (sendData)
@@ -3406,18 +3388,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
 
-            // Make sure the trailers are missing. https://github.com/aspnet/KestrelHttpServer/issues/2630
+            // Make sure the trailers are in the trailers collection.
             Assert.False(_receivedHeaders.ContainsKey("trailer-1"));
             Assert.False(_receivedHeaders.ContainsKey("trailer-2"));
+            Assert.True(_receivedTrailers.ContainsKey("trailer-1"));
+            Assert.True(_receivedTrailers.ContainsKey("trailer-2"));
+            Assert.Equal("1", _receivedTrailers["trailer-1"]);
+            Assert.Equal("2", _receivedTrailers["trailer-2"]);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
@@ -3503,11 +3485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -3522,7 +3500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 12361,
-                withFlags: (byte)Http2HeadersFrameFlags.NONE,
+                withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
                 withStreamId: 1);
             var continuationFrame1 = await ExpectAsync(Http2FrameType.CONTINUATION,
                 withLength: 12306,
@@ -3531,10 +3509,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var continuationFrame2 = await ExpectAsync(Http2FrameType.CONTINUATION,
                 withLength: 8204,
                 withFlags: (byte)Http2ContinuationFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
@@ -3685,15 +3659,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             // Send a blocked request
-            var tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             task = tcs.Task;
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
@@ -3821,7 +3791,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void IOExceptionDuringFrameProcessingLoggedAsInfo()
+        public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
         {
             CreateConnection();
 
@@ -3830,9 +3800,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
+            Assert.All(TestApplicationErrorLogger.Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
-            Assert.Equal(LogLevel.Information, logMessage.LogLevel);
+            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.EventId == 20);
+
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
         }
@@ -3875,11 +3846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, null);
@@ -3929,6 +3896,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, headers, endStream: false);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // These would be refused if the cool-down period had expired
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+                case Http2FrameType.WINDOW_UPDATE:
+                    await SendWindowUpdateAsync(1, 1024);
+                    break;
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                case Http2FrameType.CONTINUATION:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        [InlineData((int)(Http2FrameType.CONTINUATION))]
+        public async Task ResetStream_ResetsAndDrainsRequest(int intFinalFrameType)
+        {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appReset);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.CANCEL, "The HTTP/2 stream was reset by the application with error code CANCEL.");
 
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)

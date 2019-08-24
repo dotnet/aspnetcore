@@ -18,6 +18,6 @@ namespace Templates.Test.SpaTemplateTest
 
         [Fact]
         public Task ReactReduxTemplate_Works_NetCore()
-            => SpaTemplateImplAsync("reactredux", "reactredux",useLocalDb: false, usesAuth: false);
+            => SpaTemplateImplAsync("reactredux", "reactredux", useLocalDb: false, usesAuth: false);
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var responseHeaders = _responseHeaders;
             responseHeaders.HeaderContentEncoding = "gzip";
             responseHeaders.HeaderContentType = "text/html; charset=utf-8";
-            _responseHeadersDict["Strict-Transport-Security"] = "max-age=31536000; includeSubdomains";
+            _responseHeadersDict[HeaderNames.StrictTransportSecurity] = "max-age=31536000; includeSubdomains";
             responseHeaders.HeaderVary = "Accept-Encoding";
             _responseHeadersDict["X-Powered-By"] = "ASP.NET";
 
@@ -142,7 +143,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public override void CancelPendingFlush() { }
             public override void Complete(Exception exception = null)  { }
             public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default) => default;
-            public override void OnReaderCompleted(Action<Exception, object> callback, object state) { }
         }
 
         public enum BenchmarkTypes

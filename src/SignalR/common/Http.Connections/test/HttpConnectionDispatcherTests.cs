@@ -10,18 +10,19 @@ using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -627,6 +628,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Connection.LocalPort = 4563;
                     context.Connection.RemoteIpAddress = IPAddress.IPv6Any;
                     context.Connection.RemotePort = 43456;
+                    context.SetEndpoint(new Endpoint(null, null, "TestName"));
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseConnectionHandler<HttpContextConnectionHandler>();
@@ -679,6 +681,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     Assert.Equal(Stream.Null, connectionHttpContext.Response.Body);
                     Assert.NotNull(connectionHttpContext.Response.Headers);
                     Assert.Equal("application/xml", connectionHttpContext.Response.ContentType);
+                    var endpointFeature = connectionHttpContext.Features.Get<IEndpointFeature>();
+                    Assert.NotNull(endpointFeature);
+                    Assert.Equal("TestName", endpointFeature.Endpoint.DisplayName);
                 }
             }
         }
@@ -1062,6 +1067,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2040", "All")]
         public async Task MultipleRequestsToActiveConnectionId409ForLongPolling()
         {
             using (StartVerifiableLog())
@@ -1339,8 +1345,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact]
-        public async Task UnauthorizedConnectionFailsToStartEndPoint()
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task LongPollingKeepsWindowsIdentityBetweenRequests()
         {
             using (StartVerifiableLog())
             {
@@ -1352,16 +1359,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
-                });
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-                });
                 services.AddLogging();
                 var sp = services.BuildServiceProvider();
                 context.Request.Path = "/foo";
@@ -1376,324 +1373,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
                 var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+
+                var windowsIdentity = WindowsIdentity.GetAnonymous();
+                context.User = new WindowsPrincipal(windowsIdentity);
 
                 // would get stuck if EndPoint was running
                 await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthenticatedUserWithoutPermissionCausesForbidden()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.LongPolling;
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
-                });
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-                });
-                services.AddLogging();
-                var sp = services.BuildServiceProvider();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-
-                var builder = new ConnectionBuilder(sp);
-                builder.UseConnectionHandler<TestConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-
-                context.User = new ClaimsPrincipal(new ClaimsIdentity("authenticated"));
-
-                // would get stuck if EndPoint was running
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
-
-                Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedConnectionCanConnectToEndPoint()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.LongPolling;
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy =>
-                    {
-                        policy.RequireClaim(ClaimTypes.NameIdentifier);
-                    });
-                });
-                services.AddLogging();
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-                });
-                var sp = services.BuildServiceProvider();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                context.Response.Body = new MemoryStream();
-
-                var builder = new ConnectionBuilder(sp);
-                builder.UseConnectionHandler<TestConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-
-                // "authorize" user
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                var currentUser = connection.User;
 
                 var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connectionHandlerTask.OrTimeout();
-                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-
-                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
                 await connectionHandlerTask.OrTimeout();
 
-                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
-            }
-        }
-
-        [Fact]
-        public async Task AllPoliciesRequiredForAuthorizedEndPoint()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.LongPolling;
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy =>
-                    {
-                        policy.RequireClaim(ClaimTypes.NameIdentifier);
-                    });
-                    o.AddPolicy("secondPolicy", policy =>
-                    {
-                        policy.RequireClaim(ClaimTypes.StreetAddress);
-                    });
-                });
-                services.AddLogging();
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-                });
-                var sp = services.BuildServiceProvider();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                context.Response.Body = new MemoryStream();
-
-                var builder = new ConnectionBuilder(sp);
-                builder.UseConnectionHandler<TestConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-                options.AuthorizationData.Add(new AuthorizeAttribute("secondPolicy"));
-
-                // partially "authorize" user
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
-
-                // would get stuck if EndPoint was running
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
-
-                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
-
-                // reset HttpContext
-                context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                context.Request.Query = qs;
-                context.Response.Body = new MemoryStream();
-                // fully "authorize" user
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-                {
-                new Claim(ClaimTypes.NameIdentifier, "name"),
-                new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW")
-            }));
-
-                // First poll
-                var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                Assert.True(connectionHandlerTask.IsCompleted);
-                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-
-                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
-
-                await connectionHandlerTask.OrTimeout();
+                // This is the important check
+                Assert.Same(currentUser, connection.User);
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.LongPolling;
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy =>
-                    {
-                        policy.RequireClaim(ClaimTypes.NameIdentifier);
-                        policy.AddAuthenticationSchemes("Default");
-                    });
-                });
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddLogging();
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-                });
-                var sp = services.BuildServiceProvider();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                context.Response.Body = new MemoryStream();
-
-                var builder = new ConnectionBuilder(sp);
-                builder.UseConnectionHandler<TestConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-
-                // "authorize" user
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
-
-                // Initial poll
-                var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                Assert.True(connectionHandlerTask.IsCompleted);
-                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-
-                connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
-
-                await connectionHandlerTask.OrTimeout();
-
-                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedConnectionWithRejectedSchemesFailsToConnectToEndPoint()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var connection = manager.CreateConnection();
-                connection.TransportType = HttpTransportType.LongPolling;
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorization(o =>
-                {
-                    o.AddPolicy("test", policy =>
-                    {
-                        policy.RequireClaim(ClaimTypes.NameIdentifier);
-                        policy.AddAuthenticationSchemes("Default");
-                    });
-                });
-                services.AddAuthorizationPolicyEvaluator();
-                services.AddLogging();
-                services.AddAuthenticationCore(o =>
-                {
-                    o.DefaultScheme = "Default";
-                    o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler));
-                });
-                var sp = services.BuildServiceProvider();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                context.RequestServices = sp;
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                context.Response.Body = new MemoryStream();
-
-                var builder = new ConnectionBuilder(sp);
-                builder.UseConnectionHandler<TestConnectionHandler>();
-                var app = builder.Build();
-                var options = new HttpConnectionDispatcherOptions();
-                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-
-                // "authorize" user
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
-
-                // would block if EndPoint was executed
-                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
-
-                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
             }
         }
 
@@ -2074,12 +1771,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8138")]
+        [Fact]
         public async Task ErrorDuringPollWillCloseConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return (writeContext.LoggerName == typeof(LongPollingTransport).FullName &&
+                return (writeContext.LoggerName.Equals("Microsoft.AspNetCore.Http.Connections.Internal.Transports.LongPollingTransport") &&
                        writeContext.EventId.Name == "LongPollingTerminated") ||
                        (writeContext.LoggerName == typeof(HttpConnectionManager).FullName &&
                        writeContext.EventId.Name == "FailedDispose");
@@ -2113,50 +1810,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
                 Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
-            }
-        }
-
-        private class RejectHandler : TestAuthenticationHandler
-        {
-            protected override bool ShouldAccept => false;
-        }
-
-        private class TestAuthenticationHandler : IAuthenticationHandler
-        {
-            private HttpContext HttpContext;
-            private AuthenticationScheme _scheme;
-
-            protected virtual bool ShouldAccept => true;
-
-            public Task<AuthenticateResult> AuthenticateAsync()
-            {
-                if (ShouldAccept)
-                {
-                    return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(HttpContext.User, _scheme.Name)));
-                }
-                else
-                {
-                    return Task.FromResult(AuthenticateResult.NoResult());
-                }
-            }
-
-            public Task ChallengeAsync(AuthenticationProperties properties)
-            {
-                HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return Task.CompletedTask;
-            }
-
-            public Task ForbidAsync(AuthenticationProperties properties)
-            {
-                HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return Task.CompletedTask;
-            }
-
-            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-            {
-                HttpContext = context;
-                _scheme = scheme;
-                return Task.CompletedTask;
             }
         }
 

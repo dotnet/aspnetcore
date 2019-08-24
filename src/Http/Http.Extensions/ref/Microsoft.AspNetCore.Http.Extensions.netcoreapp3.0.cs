@@ -9,9 +9,14 @@ namespace Microsoft.AspNetCore.Http
         public static Microsoft.AspNetCore.Http.Headers.RequestHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
         public static Microsoft.AspNetCore.Http.Headers.ResponseHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse response) { throw null; }
     }
+    public static partial class HttpContextServerVariableExtensions
+    {
+        public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
+    }
     public static partial class ResponseExtensions
     {
         public static void Clear(this Microsoft.AspNetCore.Http.HttpResponse response) { }
+        public static void Redirect(this Microsoft.AspNetCore.Http.HttpResponse response, string location, bool permanent, bool preserveMethod) { }
     }
     public static partial class SendFileResponseExtensions
     {
@@ -50,7 +55,6 @@ namespace Microsoft.AspNetCore.Http.Extensions
     }
     public static partial class StreamCopyOperation
     {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) { throw null; }
         public static System.Threading.Tasks.Task CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, System.Threading.CancellationToken cancel) { throw null; }
     }

@@ -35,21 +35,3 @@ namespace Microsoft.AspNetCore.WebSockets
         public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddWebSockets(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.WebSocketOptions> configure) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.WebSockets.Internal
-{
-    public static partial class Constants
-    {
-        public static partial class Headers
-        {
-            public const string Connection = "Connection";
-            public const string ConnectionUpgrade = "Upgrade";
-            public const string SecWebSocketAccept = "Sec-WebSocket-Accept";
-            public const string SecWebSocketKey = "Sec-WebSocket-Key";
-            public const string SecWebSocketProtocol = "Sec-WebSocket-Protocol";
-            public const string SecWebSocketVersion = "Sec-WebSocket-Version";
-            public const string SupportedVersion = "13";
-            public const string Upgrade = "Upgrade";
-            public const string UpgradeWebSocket = "websocket";
-        }
-    }
-}

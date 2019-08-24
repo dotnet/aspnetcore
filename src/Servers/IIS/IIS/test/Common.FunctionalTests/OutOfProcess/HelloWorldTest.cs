@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class HelloWorldTests : IISFunctionalTestBase
@@ -26,13 +26,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes();
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ServerConfigActionList.Add(
-                (element, _) => {
+                (element, _) =>
+                {
                     element
                         .RequiredElement("system.webServer")
                         .RequiredElement("security")
@@ -65,10 +66,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal("null", responseText);
 
-            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
+            // Trailing slash
+            Assert.StartsWith(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
             Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
             var expectedDll = "aspnetcorev2.dll";
-            Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));
+            Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m => m.FileName.Contains(expectedDll));
 
             if (DeployerSelector.HasNewHandler && variant.HostingModel == HostingModel.InProcess)
             {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -89,5 +90,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// Used as the default scheme by <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultForbidScheme { get; set; }
+
+        /// <summary>
+        /// If true, SignIn should throw if attempted with a ClaimsPrincipal.Identity.IsAuthenticated = false.
+        /// </summary>
+        public bool RequireAuthenticatedSignIn { get; set; } = true;
     }
 }

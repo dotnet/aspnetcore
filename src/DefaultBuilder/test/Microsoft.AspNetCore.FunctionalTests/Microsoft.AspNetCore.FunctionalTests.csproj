@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/10424 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,8 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\CreateDefaultBuilderApp\CreateDefaultBuilderApp.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\CreateDefaultBuilderOfTApp\CreateDefaultBuilderOfTApp.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\DependencyInjectionApp\DependencyInjectionApp.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\StartRequestDelegateUrlApp\StartRequestDelegateUrlApp.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\StartRouteBuilderUrlApp\StartRouteBuilderUrlApp.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\StartWithIApplicationBuilderUrlApp\StartWithIApplicationBuilderUrlApp.csproj" ReferenceOutputAssemblies="false" />
 
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />

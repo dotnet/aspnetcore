@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class NodeServicesTest : IDisposable
     {
         private readonly INodeServices _nodeServices;
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.NodeServices
         }
 
         private static string ModulePath(string testModuleName)
-            => $"../../../js/{testModuleName}";
+            => Path.Combine(AppContext.BaseDirectory, "js", testModuleName);
 
         public void Dispose()
         {

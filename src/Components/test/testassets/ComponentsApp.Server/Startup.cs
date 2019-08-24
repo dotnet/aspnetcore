@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-
 namespace ComponentsApp.Server
 {
     public class Startup
@@ -16,7 +15,10 @@ namespace ComponentsApp.Server
         {
             services.AddMvc();
             services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
-            services.AddRazorComponents();
+            services.AddServerSideBlazor(options =>
+            {
+                options.DetailedErrors = true;
+            });
 
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
         }
@@ -29,10 +31,15 @@ namespace ComponentsApp.Server
             }
 
             app.UseStaticFiles();
-            app.UseRouting(builder =>
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                builder.MapRazorPages();
-                builder.MapComponentHub<App.App>("app");
+                endpoints.MapRazorPages();
+                endpoints.MapControllers();
+                endpoints.MapBlazorHub<ComponentsApp.App.App>("app");
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }

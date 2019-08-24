@@ -84,6 +84,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+        public static unsafe string GetHeaderName(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                }
+            }
+
+            return asciiString;
+        }
+
         public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
         {
             if (span.IsEmpty)
@@ -398,15 +422,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            switch (httpVersion)
+            return httpVersion switch
             {
-                case HttpVersion.Http10:
-                    return Http10Version;
-                case HttpVersion.Http11:
-                    return Http11Version;
-                default:
-                    return null;
-            }
+                HttpVersion.Http10 => Http10Version,
+                HttpVersion.Http11 => Http11Version,
+                _ => null,
+            };
         }
         public static string MethodToString(HttpMethod method)
         {
@@ -421,15 +442,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string SchemeToString(HttpScheme scheme)
         {
-            switch (scheme)
+            return scheme switch
             {
-                case HttpScheme.Http:
-                    return HttpUriScheme;
-                case HttpScheme.Https:
-                    return HttpsUriScheme;
-                default:
-                    return null;
-            }
+                HttpScheme.Http => HttpUriScheme,
+                HttpScheme.Https => HttpsUriScheme,
+                _ => null,
+            };
         }
 
         public static bool IsHostHeaderValid(string hostText)

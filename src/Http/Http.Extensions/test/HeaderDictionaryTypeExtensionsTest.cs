@@ -99,24 +99,24 @@ namespace Microsoft.AspNetCore.Http.Headers
         }
 
         [Fact]
-        public void GetListT_KnownTypeWithMissingValue_Null()
+        public void GetListT_KnownTypeWithMissingValue_EmptyList()
         {
             var context = new DefaultHttpContext();
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void GetListT_KnownTypeWithInvalidValue_Null()
+        public void GetListT_KnownTypeWithInvalidValue_EmptyList()
         {
             var context = new DefaultHttpContext();
             context.Request.Headers[HeaderNames.Accept] = "invalid";
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -131,22 +131,22 @@ namespace Microsoft.AspNetCore.Http.Headers
         }
 
         [Fact]
-        public void GetListT_UnknownTypeWithTryParseListAndInvalidValue_Null()
+        public void GetListT_UnknownTypeWithTryParseListAndInvalidValue_EmptyList()
         {
             var context = new DefaultHttpContext();
             context.Request.Headers["custom"] = "invalid";
 
             var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
-            Assert.Null(results);
+            Assert.Empty(results);
         }
 
         [Fact]
-        public void GetListT_UnknownTypeWithTryParseListAndMissingValue_Null()
+        public void GetListT_UnknownTypeWithTryParseListAndMissingValue_EmptyList()
         {
             var context = new DefaultHttpContext();
 
             var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
-            Assert.Null(results);
+            Assert.Empty(results);
         }
 
         [Fact]

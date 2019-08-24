@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
     /// <summary>
     ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
     /// </summary>
+    [DesignerCategory("Code")]
     public class WebHostService : ServiceBase
     {
         private readonly IWebHost _host;

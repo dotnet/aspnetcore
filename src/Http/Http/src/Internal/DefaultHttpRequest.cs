@@ -10,10 +10,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public sealed class DefaultHttpRequest : HttpRequest
+    internal sealed class DefaultHttpRequest : HttpRequest
     {
+        private const string Http = "http";
+        private const string Https = "https";
+
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
         private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
@@ -110,14 +113,14 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override bool IsHttps
         {
-            get { return string.Equals(Constants.Https, Scheme, StringComparison.OrdinalIgnoreCase); }
-            set { Scheme = value ? Constants.Https : Constants.Http; }
+            get { return string.Equals(Https, Scheme, StringComparison.OrdinalIgnoreCase); }
+            set { Scheme = value ? Https : Http; }
         }
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"]); }
-            set { Headers["Host"] = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
+            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -174,7 +177,6 @@ namespace Microsoft.AspNetCore.Http.Internal
         public override PipeReader BodyReader
         {
             get { return RequestBodyPipeFeature.Reader; }
-            set { RequestBodyPipeFeature.Reader = value; }
         }
 
         struct FeatureInterfaces

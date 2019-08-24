@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,10 +26,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             _serverFixture.BuildWebHostMethod = ComponentsApp.Server.Program.BuildWebHost;
         }
 
-        protected override void InitializeAsyncCore()
+        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
+
+        public override async Task InitializeAsync()
         {
+            await base.InitializeAsync();
+
+            // Capture the last log timestamp so that we can filter logs when we
+            // check for duplicate connections.
+            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
+            if (lastLog != null)
+            {
+                LastLogTimeStamp = lastLog.Timestamp;
+            }
+
             Navigate("/", noReload: false);
-            WaitUntilLoaded();
+            Browser.True(() => ((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
         }
 
         [Fact]
@@ -39,9 +52,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void DoesNotStartTwoConnections()
+        {
+            Browser.True(() =>
+            {
+                var logs = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
+                var curatedLogs = logs.Where(l => l.Timestamp > LastLogTimeStamp);
+
+                return curatedLogs.Count(e => e.Message.Contains("blazorpack")) == 1;
+            });
+        }
+
+        [Fact]
         public void HasHeading()
         {
-            Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Hello, world!", () => Browser.FindElement(By.CssSelector("h1#index")).Text);
         }
 
         [Fact]
@@ -96,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Navigate to "Fetch Data"
             Browser.FindElement(By.LinkText("Fetch data")).Click();
-            Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Weather forecast", () => Browser.FindElement(By.CssSelector("h1#fetch-data")).Text);
 
             // Wait until loaded
             var tableSelector = By.CssSelector("table.table");
@@ -113,28 +138,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
         public void ReconnectUI()
         {
             Browser.FindElement(By.LinkText("Counter")).Click();
+
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(@"
-window.modalDisplayState = [];
-window.Blazor.circuitHandlers.push({
-    onConnectionUp: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display),
-    onConnectionDown: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display)
-});
-window.Blazor._internal.forceCloseConnection();");
+            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => (long)javascript.ExecuteScript("console.log(window.modalDisplayState); return window.modalDisplayState.length") == 2);
+            // We should see the 'reconnecting' UI appear
+            var reconnectionDialog = WaitUntilReconnectionDialogExists();
+            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
 
-            var states = (string)javascript.ExecuteScript("return window.modalDisplayState.join(',')");
-
-            Assert.Equal("block,none", states);
+            // Then it should disappear
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
         public void RendersContinueAfterReconnect()
         {
             Browser.FindElement(By.LinkText("Ticker")).Click();
@@ -144,16 +165,17 @@ window.Blazor._internal.forceCloseConnection();");
             var initialValue = element.Text;
 
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(@"
-window.connectionUp = false;
-window.Blazor.circuitHandlers.push({
-    onConnectionUp: () => window.connectionUp = true
-});
-window.Blazor._internal.forceCloseConnection();");
+            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => (bool)javascript.ExecuteScript("return window.connectionUp"));
+            // We should see the 'reconnecting' UI appear
+            var reconnectionDialog = WaitUntilReconnectionDialogExists();
+            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
 
+            // Then it should disappear
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
+
+            // We should receive a render that occurred while disconnected
             var currentValue = element.Text;
             Assert.NotEqual(initialValue, currentValue);
 
@@ -162,10 +184,33 @@ window.Blazor._internal.forceCloseConnection();");
                 _ => element.Text != currentValue);
         }
 
-        private void WaitUntilLoaded()
+        // Since we've removed stateful prerendering, the name which is passed in
+        // during prerendering cannot be retained. The first interactive render
+        // will remove it.
+        [Fact]
+        public void RendersDoNotPreserveState()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.FindElement(By.LinkText("Greeter")).Click();
+            Browser.Equal("Hello", () => Browser.FindElement(By.ClassName("greeting")).Text);
+        }
+
+        [Fact]
+        public void ErrorsStopTheRenderingProcess()
+        {
+            Browser.FindElement(By.LinkText("Error")).Click();
+            Browser.Equal("Error", () => Browser.FindElement(By.CssSelector("h1")).Text);
+
+            Browser.FindElement(By.Id("cause-error")).Click();
+            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
+                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        }
+
+        private IWebElement WaitUntilReconnectionDialogExists()
+        {
+            IWebElement reconnectionDialog = null;
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => (reconnectionDialog = driver.FindElement(By.Id("components-reconnect-modal"))) != null);
+            return reconnectionDialog;
         }
     }
 }

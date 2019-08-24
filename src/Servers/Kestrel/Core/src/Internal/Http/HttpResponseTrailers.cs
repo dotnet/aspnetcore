@@ -22,10 +22,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
+        {
+            ValidateHeaderNameCharacters(key);
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

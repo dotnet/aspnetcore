@@ -15,7 +15,6 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Routing"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
-    <Reference Include="Microsoft.Extensions.DependencyModel"  />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources"  />

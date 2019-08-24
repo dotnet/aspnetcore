@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -133,8 +132,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var serviceProvider = new TestServiceProvider();
             serviceProvider.AddService<IMyService1>(new MyService1Impl());
             serviceProvider.AddService<IMyService2>(new MyService2Impl());
-            var componentFactory = new ComponentFactory(serviceProvider);
-            var component = componentFactory.InstantiateComponent(componentType);
+            var componentFactory = new ComponentFactory();
+            var component = componentFactory.InstantiateComponent(serviceProvider, componentType);
             var frames = GetRenderTree(component);
 
             // Assert 2: Rendered component behaves correctly
@@ -148,13 +147,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public class TestLayout : IComponent
         {
             [Parameter]
-            RenderFragment Body { get; set; }
+            public RenderFragment Body { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 return Task.CompletedTask;
             }

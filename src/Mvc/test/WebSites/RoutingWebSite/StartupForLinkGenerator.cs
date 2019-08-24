@@ -39,10 +39,13 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
-                routes.MapRazorPages();
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+
+                endpoints.MapControllerRoute("routewithnomvcparameters", "/routewithnomvcparameters/{custom}");
             });
         }
     }

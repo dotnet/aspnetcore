@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             if (_options.Cookie.Path != null)
             {
-                options.Path = _options.Cookie.Path.ToString();
+                options.Path = _options.Cookie.Path;
             }
             else
             {

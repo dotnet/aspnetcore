@@ -4,51 +4,52 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public abstract class ServerAbortTests: FixtureLoggedTest
+    [Collection(PublishedSitesCollection.Name)]
+    public class ServerAbortOutOfProcessTests : IISFunctionalTestBase
     {
-        private readonly IISTestSiteFixture _fixture;
-
-        [Collection(IISTestSiteCollection.Name)]
-        public class InProc: ServerAbortTests
+        public ServerAbortOutOfProcessTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            public InProc(IISTestSiteFixture fixture) : base(fixture) { }
-        }
-
-        [Collection(OutOfProcessTestSiteCollection.Name)]
-        public class OutOfProcess: ServerAbortTests
-        {
-            public OutOfProcess(OutOfProcessTestSiteFixture fixture) : base(fixture) { }
-        }
-
-        protected ServerAbortTests(IISTestSiteFixture fixture) : base(fixture)
-        {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
-        public async Task ClosesConnectionOnServerAbort()
+        public async Task ClosesConnectionOnServerAbortOutOfProcess()
         {
             try
             {
-                var response = await _fixture.Client.GetAsync("/Abort").DefaultTimeout();
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
-                // 502 is expected for outofproc but not for inproc
-                if (_fixture.DeploymentResult.DeploymentParameters.HostingModel == HostingModel.OutOfProcess)
-                {
-                    Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
-                    // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
-                    Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
-                }
-                else
-                {
-                    Assert.True(false, "Should not reach here");
-                }
+                var deploymentResult = await DeployAsync(deploymentParameters);
+
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+
+                Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+                // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
+                Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
+            }
+            catch (HttpRequestException)
+            {
+                // Connection reset is expected
+            }
+        }
+
+        [ConditionalFact]
+        public async Task ClosesConnectionOnServerAbortInProcess()
+        {
+            try
+            {
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                var response = await deploymentResult.HttpClient.GetAsync("/Abort").DefaultTimeout();
+
+                Assert.True(false, "Should not reach here");
             }
             catch (HttpRequestException)
             {

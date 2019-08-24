@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers["Authorization"];
+                    string authorization = Request.Headers[HeaderNames.Authorization];
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 // https://tools.ietf.org/html/rfc6750#section-3.1
                 // WWW-Authenticate: Bearer realm="example", error="invalid_token", error_description="The access token expired"
                 var builder = new StringBuilder(Options.Challenge);
-                if (Options.Challenge.IndexOf(" ", StringComparison.Ordinal) > 0)
+                if (Options.Challenge.IndexOf(' ') > 0)
                 {
                     // Only add a comma after the first param, if any
                     builder.Append(',');
@@ -265,6 +265,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        {
+            var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
+            Response.StatusCode = 403;
+            return Events.Forbidden(forbiddenContext);
+        }
+        
         private static string CreateErrorDescription(Exception authFailure)
         {
             IEnumerable<Exception> exceptions;

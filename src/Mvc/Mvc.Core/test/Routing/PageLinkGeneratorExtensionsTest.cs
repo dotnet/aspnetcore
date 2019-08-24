@@ -207,14 +207,7 @@ namespace Microsoft.AspNetCore.Routing
         private HttpContext CreateHttpContext(object ambientValues = null)
         {
             var httpContext = new DefaultHttpContext();
-
-            var feature = new EndpointSelectorContext
-            {
-                RouteValues = new RouteValueDictionary(ambientValues)
-            };
-
-            httpContext.Features.Set<IEndpointFeature>(feature);
-            httpContext.Features.Set<IRouteValuesFeature>(feature);
+            httpContext.Request.RouteValues = new RouteValueDictionary(ambientValues);
             return httpContext;
         }
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+
+        // see https://tools.ietf.org/html/rfc7232#section-4.1
+        private static readonly string[] HeadersToIncludeIn304 =
+            new[] { "Cache-Control", "Content-Location", "Date", "ETag", "Expires", "Vary" };
 
         private readonly RequestDelegate _next;
         private readonly ResponseCachingOptions _options;
@@ -30,17 +34,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
             ILoggerFactory loggerFactory,
-            IResponseCachingPolicyProvider policyProvider,
-            IResponseCachingKeyProvider keyProvider)
+            ObjectPoolProvider poolProvider)
             : this(
                 next,
                 options,
                 loggerFactory,
-                policyProvider,
+                new ResponseCachingPolicyProvider(),
                 new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions
                 {
                     SizeLimit = options.Value.SizeLimit
-                })), keyProvider)
+                })),
+                new ResponseCachingKeyProvider(poolProvider, options))
         { }
 
         // for testing
@@ -156,6 +160,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     _logger.NotModifiedServed();
                     context.HttpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+
+                    if (context.CachedResponseHeaders != null)
+                    {
+                        foreach (var key in HeadersToIncludeIn304)
+                        {
+                            if (context.CachedResponseHeaders.TryGetValue(key, out var values))
+                            {
+                                context.HttpContext.Response.Headers[key] = values;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -418,13 +433,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 () => StartResponseAsync(context));
             context.HttpContext.Response.Body = context.ResponseCachingStream;
 
-            // Shim IHttpSendFileFeature
-            context.OriginalSendFileFeature = context.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (context.OriginalSendFileFeature != null)
-            {
-                context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCachingStream));
-            }
-
             // Add IResponseCachingFeature
             AddResponseCachingFeature(context.HttpContext);
         }
@@ -436,9 +444,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Unshim response stream
             context.HttpContext.Response.Body = context.OriginalResponseStream;
-
-            // Unshim IHttpSendFileFeature
-            context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
             // Remove IResponseCachingFeature
             RemoveResponseCachingFeature(context.HttpContext);

@@ -57,7 +57,7 @@ namespace MusicStore
 
             // Add EF services to the services container
             services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                options.UseSqlite("Data Source=MusicStore.db"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -142,22 +142,31 @@ namespace MusicStore
             // Add static files to the request pipeline
             app.UseStaticFiles();
 
-            // Add MVC to the request pipeline
-            app.UseMvc(routes =>
+            // Add the endpoint routing matcher middleware to the request pipeline
+            app.UseRouting();
+
+            // Add cookie-based authentication to the request pipeline
+            app.UseAuthentication();
+
+            // Add the authorization middleware to the request pipeline
+            app.UseAuthorization();
+
+            // Add endpoints to the request pipeline
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "areaRoute",
-                    template: "{area:exists}/{controller}/{action}",
+                    pattern: "{area:exists}/{controller}/{action}",
                     defaults: new { action = "Index" });
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
+                    pattern: "{controller}/{action}/{id?}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "api",
-                    template: "{controller}/{id?}");
+                    pattern: "{controller}/{id?}");
             });
 
             //Populates the MusicStore sample data

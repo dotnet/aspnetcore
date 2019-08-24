@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -20,44 +21,44 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder routes)
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <returns>An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
+        public static ControllerActionEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            return GetOrCreateDataSource(routes);
+            return GetOrCreateDataSource(endpoints).DefaultBuilder;
         }
 
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and adds the default route
         /// <c>{controller=Home}/{action=Index}/{id?}</c>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder routes)
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            var dataSource = GetOrCreateDataSource(routes);
-            dataSource.AddRoute(new ConventionalRouteEntry(
+            var dataSource = GetOrCreateDataSource(endpoints);
+            return dataSource.AddRoute(
                 "default",
                 "{controller=Home}/{action=Index}/{id?}",
                 defaults: null,
                 constraints: null,
-                dataTokens: null));
-
-            return dataSource;
+                dataTokens: null);
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Builder
         /// with the given <paramref name="name"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
         /// <param name="pattern">The URL pattern of the route.</param>
         /// <param name="defaults">
@@ -80,28 +81,31 @@ namespace Microsoft.AspNetCore.Builder
         /// An object that contains data tokens for the route. The object's properties represent the names and
         /// values of the data tokens.
         /// </param>
-        public static void MapControllerRoute(
-            this IEndpointRouteBuilder routes,
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapControllerRoute(
+            this IEndpointRouteBuilder endpoints,
             string name,
             string pattern,
             object defaults = null,
             object constraints = null,
             object dataTokens = null)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            var dataSource = GetOrCreateDataSource(routes);
-            dataSource.AddRoute(new ConventionalRouteEntry(
+            var dataSource = GetOrCreateDataSource(endpoints);
+            return dataSource.AddRoute(
                 name,
                 pattern,
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
-                new RouteValueDictionary(dataTokens)));
+                new RouteValueDictionary(dataTokens));
         }
 
         /// <summary>
@@ -109,7 +113,7 @@ namespace Microsoft.AspNetCore.Builder
         /// with the given <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
         /// <param name="areaName">The area name.</param>
         /// <param name="pattern">The URL pattern of the route.</param>
@@ -125,8 +129,11 @@ namespace Microsoft.AspNetCore.Builder
         /// An object that contains data tokens for the route. The object's properties represent the names and
         /// values of the data tokens.
         /// </param>
-        public static void MapAreaControllerRoute(
-            this IEndpointRouteBuilder routes,
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapAreaControllerRoute(
+            this IEndpointRouteBuilder endpoints,
             string name,
             string areaName,
             string pattern,
@@ -134,9 +141,9 @@ namespace Microsoft.AspNetCore.Builder
             object constraints = null,
             object dataTokens = null)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (string.IsNullOrEmpty(areaName))
@@ -150,7 +157,7 @@ namespace Microsoft.AspNetCore.Builder
             var constraintsDictionary = new RouteValueDictionary(constraints);
             constraintsDictionary["area"] = constraintsDictionary["area"] ?? new StringRouteConstraint(areaName);
 
-            routes.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
+            return endpoints.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
         }
 
         /// <summary>
@@ -158,7 +165,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, and <paramref name="controller"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
         /// <remarks>
@@ -183,14 +190,14 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToController(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToController(
+            this IEndpointRouteBuilder endpoints,
             string action,
             string controller)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (action == null)
@@ -203,18 +210,20 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -222,7 +231,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, and <paramref name="controller"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
@@ -251,15 +260,15 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToController(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToController(
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
             string controller)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -277,18 +286,20 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -296,7 +307,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, <paramref name="controller"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
         /// <param name="area">The area name.</param>
@@ -322,15 +333,15 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaController(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToAreaController(
+            this IEndpointRouteBuilder endpoints,
             string action,
             string controller,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (action == null)
@@ -343,18 +354,20 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             });
+            return builder;
         }
 
         /// <summary>
@@ -362,7 +375,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, <paramref name="controller"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
@@ -392,16 +405,16 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaController(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToAreaController(
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
             string controller,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -419,18 +432,62 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             });
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a controller action using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a controller action using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            EnsureControllerServices(endpoints);
+
+            // Called for side-effect to make sure that the data source is registered.
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+
+            endpoints.Map(
+                pattern, 
+                context =>
+                {
+                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                })
+                .Add(b =>
+                {
+                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer)));
+                });
         }
 
         private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)
@@ -443,25 +500,25 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static void EnsureControllerServices(IEndpointRouteBuilder routes)
+        private static void EnsureControllerServices(IEndpointRouteBuilder endpoints)
         {
-            var marker = routes.ServiceProvider.GetService<MvcMarkerService>();
+            var marker = endpoints.ServiceProvider.GetService<MvcMarkerService>();
             if (marker == null)
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
                     nameof(IServiceCollection),
-                    "AddMvc",
+                    "AddControllers",
                     "ConfigureServices(...)"));
             }
         }
 
-        private static ControllerActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder routes)
+        private static ControllerActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
         {
-            var dataSource = routes.DataSources.OfType<ControllerActionEndpointDataSource>().FirstOrDefault();
+            var dataSource = endpoints.DataSources.OfType<ControllerActionEndpointDataSource>().FirstOrDefault();
             if (dataSource == null)
             {
-                dataSource = routes.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSource>();
-                routes.DataSources.Add(dataSource);
+                dataSource = endpoints.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSource>();
+                endpoints.DataSources.Add(dataSource);
             }
 
             return dataSource;

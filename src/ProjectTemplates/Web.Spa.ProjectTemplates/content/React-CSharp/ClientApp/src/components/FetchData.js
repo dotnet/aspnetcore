@@ -17,7 +17,7 @@ export class FetchData extends Component {
 
   static renderForecastsTable(forecasts) {
     return (
-      <table className='table table-striped'>
+      <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
           <tr>
             <th>Date</th>
@@ -28,8 +28,8 @@ export class FetchData extends Component {
         </thead>
         <tbody>
           {forecasts.map(forecast =>
-            <tr key={forecast.dateFormatted}>
-              <td>{forecast.dateFormatted}</td>
+            <tr key={forecast.date}>
+              <td>{forecast.date}</td>
               <td>{forecast.temperatureC}</td>
               <td>{forecast.temperatureF}</td>
               <td>{forecast.summary}</td>
@@ -47,7 +47,7 @@ export class FetchData extends Component {
 
     return (
       <div>
-        <h1>Weather forecast</h1>
+        <h1 id="tabelLabel" >Weather forecast</h1>
         <p>This component demonstrates fetching data from the server.</p>
         {contents}
       </div>
@@ -57,13 +57,13 @@ export class FetchData extends Component {
   async populateWeatherData() {
     ////#if (IndividualLocalAuth)
     const token = await authService.getAccessToken();
-    const response = await fetch('api/SampleData/WeatherForecasts', {
+    const response = await fetch('weatherforecast', {
       headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
     });
     const data = await response.json();
     this.setState({ forecasts: data, loading: false });
     ////#else
-    const response = await fetch('api/SampleData/WeatherForecasts');
+    const response = await fetch('weatherforecast');
     const data = await response.json();
     this.setState({ forecasts: data, loading: false });
     ////#endif

@@ -1,7 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -10,6 +16,113 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class MvcCoreLoggerExtensionsTest
     {
+        public static object[][] RouteValuesTestData { get; } = new object[][]
+        {
+            new object[]{ "{}" },
+            new object[]{ "{foo = \"bar\"}", new KeyValuePair<string, string>("foo", "bar") },
+            new object[]{ "{foo = \"bar\", other = \"value\"}",
+                new KeyValuePair<string, string>("foo", "bar"),
+                new KeyValuePair<string, string>("other", "value") },
+        };
+
+        public static object[][] PageRouteValuesTestData { get; } = new object[][]
+        {
+            new object[]{ "{page = \"bar\"}", new KeyValuePair<string, string>("page", "bar") },
+            new object[]{ "{page = \"bar\", other = \"value\"}",
+                new KeyValuePair<string, string>("page", "bar"),
+                new KeyValuePair<string, string>("other", "value") },
+        };
+
+        [Theory]
+        [MemberData(nameof(RouteValuesTestData))]
+        public void ExecutingAction_ForControllerAction_WithGivenRouteValues_LogsActionAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var action = new Controllers.ControllerActionDescriptor
+            {
+                // Using a generic type to verify the use of a clean name
+                ControllerTypeInfo = typeof(ValueTuple<int, string>).GetTypeInfo(),
+                MethodInfo = typeof(object).GetMethod(nameof(ToString)),
+            };
+
+            foreach (var routeValue in routeValues)
+            {
+                action.RouteValues.Add(routeValue);
+            }
+
+            // Act
+            logger.ExecutingAction(action);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                $"Route matched with {expectedRouteValuesLogMessage}. " +
+                "Executing controller action with signature System.String ToString() on controller System.ValueTuple<int, string> (System.Private.CoreLib).",
+                write.State.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(RouteValuesTestData))]
+        public void ExecutingAction_ForAction_WithGivenRouteValues_LogsActionAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var action = new ActionDescriptor
+            {
+                DisplayName = "foobar",
+            };
+
+            foreach (var routeValue in routeValues)
+            {
+                action.RouteValues.Add(routeValue);
+            }
+
+            // Act
+            logger.ExecutingAction(action);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                $"Route matched with {expectedRouteValuesLogMessage}. Executing action {action.DisplayName}",
+                write.State.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(PageRouteValuesTestData))]
+        public void ExecutingAction_ForPage_WithGivenRouteValues_LogsPageAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var action = new ActionDescriptor
+            {
+                DisplayName = "/Pages/Foo",
+            };
+
+            foreach (var routeValue in routeValues)
+            {
+                action.RouteValues.Add(routeValue);
+            }
+
+            // Act
+            logger.ExecutingAction(action);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                $"Route matched with {expectedRouteValuesLogMessage}. Executing page {action.DisplayName}",
+                write.State.ToString());
+        }
+
         [Fact]
         public void LogsFilters_OnlyWhenLogger_IsEnabled()
         {
@@ -279,6 +392,93 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(
                 "Execution plan of result filters (in the following order): " +
                 $"{resultFilter.GetType()}, {asyncResultFilter.GetType()}, {orderedResultFilter.GetType()} (Order: -100)",
+                write.State.ToString());
+        }
+
+        [Fact]
+        public void NoFormatter_LogsListOfContentTypes()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var mediaTypes = new MediaTypeCollection
+            {
+                "application/problem+json",
+                "application/problem+xml",
+            };
+
+            var httpContext = Mock.Of<HttpContext>();
+            var context = new Mock<OutputFormatterCanWriteContext>(httpContext);
+
+            context.SetupGet(x => x.ContentType).Returns("application/json");
+
+            // Act
+            logger.NoFormatter(context.Object, mediaTypes);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                "No output formatter was found for content types " +
+                "'application/problem+json, application/problem+xml, application/json'" +
+                " to write the response.",
+                write.State.ToString());
+        }
+
+        [Fact]
+        public void ExecutingControllerFactory_LogsControllerName()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var context = new ControllerContext
+            {
+                ActionDescriptor = new Controllers.ControllerActionDescriptor
+                {
+                    // Using a generic type to verify the use of a clean name
+                    ControllerTypeInfo = typeof(ValueTuple<int, string>).GetTypeInfo()
+                }
+            };
+
+            // Act
+            logger.ExecutingControllerFactory(context);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                "Executing controller factory for controller " +
+                "System.ValueTuple<int, string> (System.Private.CoreLib)",
+                write.State.ToString());
+        }
+
+        [Fact]
+        public void ExecutedControllerFactory_LogsControllerName()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var context = new ControllerContext
+            {
+                ActionDescriptor = new Controllers.ControllerActionDescriptor
+                {
+                    // Using a generic type to verify the use of a clean name
+                    ControllerTypeInfo = typeof(ValueTuple<int, string>).GetTypeInfo()
+                }
+            };
+
+            // Act
+            logger.ExecutedControllerFactory(context);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                "Executed controller factory for controller " +
+                "System.ValueTuple<int, string> (System.Private.CoreLib)",
                 write.State.ToString());
         }
 

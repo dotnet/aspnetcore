@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <!-- https://github.com/aspnet/AspNetCore/issues/8044 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <TestDependsOnNode>true</TestDependsOnNode>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Content Include="js\**\*" />   
   </ItemGroup>
 
 </Project>

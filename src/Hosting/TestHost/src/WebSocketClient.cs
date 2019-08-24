@@ -8,19 +8,17 @@ using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     public class WebSocketClient
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
-        internal WebSocketClient(PathString pathBase, IHttpApplication<Context> application)
+        internal WebSocketClient(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
@@ -47,11 +45,12 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         internal bool AllowSynchronousIO { get; set; }
+        internal bool PreserveExecutionContext { get; set; }
 
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             WebSocketFeature webSocketFeature = null;
-            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
             contextBuilder.Configure(context =>
             {
                 var request = context.Request;
@@ -59,6 +58,12 @@ namespace Microsoft.AspNetCore.TestHost
                 scheme = (scheme == "ws") ? "http" : scheme;
                 scheme = (scheme == "wss") ? "https" : scheme;
                 request.Scheme = scheme;
+                if (!request.Host.HasValue)
+                {
+                    request.Host = uri.IsDefaultPort
+                        ? new HostString(HostString.FromUriComponent(uri).Host)
+                        : HostString.FromUriComponent(uri);
+                }
                 request.Path = PathString.FromUriComponent(uri);
                 request.PathBase = PathString.Empty;
                 if (request.Path.StartsWithSegments(_pathBase, out var remainder))

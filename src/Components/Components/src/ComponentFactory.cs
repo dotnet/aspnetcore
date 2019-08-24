@@ -1,44 +1,41 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Reflection;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
+    /// <remarks>
+    /// The <see cref="Instance"/> property on this type is used as a static global cache. Ensure any changes to this type
+    /// are thread safe and can be safely cached statically.
+    /// </remarks>
     internal class ComponentFactory
     {
-        private readonly static BindingFlags _injectablePropertyBindingFlags
+        private static readonly BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IDictionary<Type, Action<IComponent>> _cachedInitializers
-            = new ConcurrentDictionary<Type, Action<IComponent>>();
+        private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers
+            = new ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>>();
 
-        public ComponentFactory(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider
-                ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        public static readonly ComponentFactory Instance = new ComponentFactory();
 
-        public IComponent InstantiateComponent(Type componentType)
+        public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
         {
-            if (!typeof(IComponent).IsAssignableFrom(componentType))
+            var instance = Activator.CreateInstance(componentType);
+            if (!(instance is IComponent component))
             {
-                throw new ArgumentException($"The type {componentType.FullName} does not " +
-                    $"implement {nameof(IComponent)}.", nameof(componentType));
+                throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
             }
 
-            var instance = (IComponent)Activator.CreateInstance(componentType);
-            PerformPropertyInjection(instance);
-            return instance;
+            PerformPropertyInjection(serviceProvider, component);
+            return component;
         }
 
-        private void PerformPropertyInjection(IComponent instance)
+        private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
         {
             // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
             // We might generate the initializer more than once for a given type, but would
@@ -47,42 +44,45 @@ namespace Microsoft.AspNetCore.Components
             if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
             {
                 initializer = CreateInitializer(instanceType);
-                _cachedInitializers[instanceType] = initializer;
+                _cachedInitializers.TryAdd(instanceType, initializer);
             }
 
-            initializer(instance);
+            initializer(serviceProvider, instance);
         }
 
-        private Action<IComponent> CreateInitializer(Type type)
+        private Action<IServiceProvider, IComponent> CreateInitializer(Type type)
         {
             // Do all the reflection up front
             var injectableProperties =
                 MemberAssignment.GetPropertiesIncludingInherited(type, _injectablePropertyBindingFlags)
-                .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
+                .Where(p => p.IsDefined(typeof(InjectAttribute)));
+
             var injectables = injectableProperties.Select(property =>
             (
                 propertyName: property.Name,
                 propertyType: property.PropertyType,
-                setter: MemberAssignment.CreatePropertySetter(type, property)
+                setter: MemberAssignment.CreatePropertySetter(type, property, cascading: false)
             )).ToArray();
+
+            return Initialize;
 
             // Return an action whose closure can write all the injected properties
             // without any further reflection calls (just typecasts)
-            return instance =>
+            void Initialize(IServiceProvider serviceProvider, IComponent component)
             {
-                foreach (var injectable in injectables)
+                foreach (var (propertyName, propertyType, setter) in injectables)
                 {
-                    var serviceInstance = _serviceProvider.GetService(injectable.propertyType);
+                    var serviceInstance = serviceProvider.GetService(propertyType);
                     if (serviceInstance == null)
                     {
                         throw new InvalidOperationException($"Cannot provide a value for property " +
-                            $"'{injectable.propertyName}' on type '{type.FullName}'. There is no " +
-                            $"registered service of type '{injectable.propertyType}'.");
+                            $"'{propertyName}' on type '{type.FullName}'. There is no " +
+                            $"registered service of type '{propertyType}'.");
                     }
 
-                    injectable.setter.SetValue(instance, serviceInstance);
+                    setter.SetValue(component, serviceInstance);
                 }
-            };
+            }
         }
     }
 }

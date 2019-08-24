@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public enum ValidationSummary
     {
-        All = 2,
-        ModelOnly = 1,
         None = 0,
+        ModelOnly = 1,
+        All = 2,
     }
 }
 namespace Microsoft.AspNetCore.Mvc.TagHelpers

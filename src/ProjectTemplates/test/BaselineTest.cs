@@ -111,6 +111,11 @@ namespace Templates.Test
             text += LanguageRegex.Match(arguments)
                 .Groups.TryGetValue("language", out var language) ? language.Value.Replace("#", "Sharp") : "";
 
+            if (arguments.Contains("--support-pages-and-views true"))
+            {
+                text += "supportpagesandviewstrue";
+            }
+
             return text;
         }
 

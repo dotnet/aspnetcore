@@ -4,7 +4,6 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -103,7 +102,7 @@ class NegotiateResponse {
         return error;
     }
 
-    public String getFinalUrl(){
+    public String getFinalUrl() {
         return finalUrl;
     }
 

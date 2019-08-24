@@ -20,36 +20,36 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds a health checks endpoint to the <see cref="IEndpointRouteBuilder"/> with the specified template.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
         /// <param name="pattern">The URL pattern of the health checks endpoint.</param>
         /// <returns>A convention routes for the health checks endpoint.</returns>
         public static IEndpointConventionBuilder MapHealthChecks(
-           this IEndpointRouteBuilder routes,
+           this IEndpointRouteBuilder endpoints,
            string pattern)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            return MapHealthChecksCore(routes, pattern, null);
+            return MapHealthChecksCore(endpoints, pattern, null);
         }
 
         /// <summary>
         /// Adds a health checks endpoint to the <see cref="IEndpointRouteBuilder"/> with the specified template and options.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
         /// <param name="pattern">The URL pattern of the health checks endpoint.</param>
         /// <param name="options">A <see cref="HealthCheckOptions"/> used to configure the health checks.</param>
         /// <returns>A convention routes for the health checks endpoint.</returns>
         public static IEndpointConventionBuilder MapHealthChecks(
-           this IEndpointRouteBuilder routes,
+           this IEndpointRouteBuilder endpoints,
            string pattern,
            HealthCheckOptions options)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (options == null)
@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return MapHealthChecksCore(routes, pattern, options);
+            return MapHealthChecksCore(endpoints, pattern, options);
         }
 
-        private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder routes, string pattern, HealthCheckOptions options)
+        private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder endpoints, string pattern, HealthCheckOptions options)
         {
-            if (routes.ServiceProvider.GetService(typeof(HealthCheckService)) == null)
+            if (endpoints.ServiceProvider.GetService(typeof(HealthCheckService)) == null)
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
                     nameof(IServiceCollection),
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Builder
 
             var args = options != null ? new[] { Options.Create(options) } : Array.Empty<object>();
 
-            var pipeline = routes.CreateApplicationBuilder()
+            var pipeline = endpoints.CreateApplicationBuilder()
                .UseMiddleware<HealthCheckMiddleware>(args)
                .Build();
 
-            return routes.Map(pattern, pipeline).WithDisplayName(DefaultDisplayName);
+            return endpoints.Map(pattern, pipeline).WithDisplayName(DefaultDisplayName);
         }
     }
 }

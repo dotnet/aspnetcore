@@ -59,12 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 routeName: "OrdersApi");
             var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
 
-            // Set the endpoint feature and current context just as a normal request to MVC app would be
-            var endpointFeature = new EndpointSelectorContext();
-            urlHelper.ActionContext.HttpContext.Features.Set<IEndpointFeature>(endpointFeature);
-            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(endpointFeature);
-            endpointFeature.Endpoint = endpoint1;
-            endpointFeature.RouteValues = new RouteValueDictionary
+            urlHelper.ActionContext.HttpContext.SetEndpoint(endpoint1);
+            urlHelper.ActionContext.HttpContext.Request.RouteValues = new RouteValueDictionary
             {
                 ["controller"] = "Orders",
                 ["action"] = "GetById",
@@ -149,13 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         protected override IUrlHelper CreateUrlHelper(ActionContext actionContext)
         {
             var httpContext = actionContext.HttpContext;
-            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
-            {
-                Endpoint = new Endpoint(
-                    context => Task.CompletedTask,
-                    EndpointMetadataCollection.Empty,
-                    null)
-            });
+           httpContext.SetEndpoint(new Endpoint(context => Task.CompletedTask, EndpointMetadataCollection.Empty, null));
 
             var urlHelperFactory = httpContext.RequestServices.GetRequiredService<IUrlHelperFactory>();
             var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);

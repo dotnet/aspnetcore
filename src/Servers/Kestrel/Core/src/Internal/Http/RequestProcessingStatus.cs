@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         ParsingHeaders,
         AppStarted,
         HeadersCommitted,
-        HeadersFlushed
+        HeadersFlushed,
+        ResponseCompleted
     }
 }

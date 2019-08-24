@@ -12,6 +12,17 @@ namespace Microsoft.AspNetCore.Testing.xunit
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class SkipOnHelixAttribute : Attribute, ITestCondition
     {
+        public SkipOnHelixAttribute(string issueUrl)
+        {
+            if (string.IsNullOrEmpty(issueUrl))
+            {
+                throw new ArgumentException();
+            }
+            IssueUrl = issueUrl;
+        }
+
+        public string IssueUrl { get; }
+
         public bool IsMet
         {
             get
@@ -33,7 +44,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         }
 
         public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
-        
+
         public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
     }
 }

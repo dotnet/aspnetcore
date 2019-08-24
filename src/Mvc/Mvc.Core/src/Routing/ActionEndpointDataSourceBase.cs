@@ -14,7 +14,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IEndpointConventionBuilder, IDisposable
+    internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IDisposable
     {
         private readonly IActionDescriptorCollectionProvider _actions;
 
@@ -23,19 +23,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // all of the threading behaviors.
         protected readonly object Lock = new object();
 
+        // Protected for READS and WRITES.
+        protected readonly List<Action<EndpointBuilder>> Conventions;
+
         private List<Endpoint> _endpoints;
         private CancellationTokenSource _cancellationTokenSource;
         private IChangeToken _changeToken;
         private IDisposable _disposable;
 
-        // Protected for READS and WRITES.
-        private readonly List<Action<EndpointBuilder>> _conventions;
 
         public ActionEndpointDataSourceBase(IActionDescriptorCollectionProvider actions)
         {
             _actions = actions;
 
-            _conventions = new List<Action<EndpointBuilder>>();
+            Conventions = new List<Action<EndpointBuilder>>();
         }
 
         public override IReadOnlyList<Endpoint> Endpoints
@@ -64,19 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 _disposable = ChangeToken.OnChange(
                     () => collectionProviderWithChangeToken.GetChangeToken(),
                     UpdateEndpoints);
-            }
-        }
-
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            if (convention == null)
-            {
-                throw new ArgumentNullException(nameof(convention));
-            }
-
-            lock (Lock)
-            {
-                _conventions.Add(convention);
             }
         }
 
@@ -113,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             lock (Lock)
             {
-                var endpoints = CreateEndpoints(_actions.ActionDescriptors.Items, _conventions);
+                var endpoints = CreateEndpoints(_actions.ActionDescriptors.Items, Conventions);
                 
                 // See comments in DefaultActionDescriptorCollectionProvider. These steps are done
                 // in a specific order to ensure callers always see a consistent state.

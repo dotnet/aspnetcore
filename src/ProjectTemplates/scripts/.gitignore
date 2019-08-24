@@ -2,6 +2,7 @@ package-lock.json
 tmp/
 CustomHive/
 angular/
+blazorserver/
 mvc/
 razor/
 react/

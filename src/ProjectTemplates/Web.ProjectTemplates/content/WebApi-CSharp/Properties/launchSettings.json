@@ -1,12 +1,12 @@
 ﻿{
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
-    //#if (WindowsAuth) 
-    "windowsAuthentication": true, 
-    "anonymousAuthentication": false, 
-    //#else 
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    //#if (WindowsAuth)
+    "windowsAuthentication": true,
+    "anonymousAuthentication": false,
+    //#else
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
     //#endif
     "iisExpress": {
       "applicationUrl": "http://localhost:8080",
@@ -21,7 +21,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "weatherforecast",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -29,7 +29,7 @@
     "Company.WebApplication1": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "weatherforecast",
       //#if(RequiresHttps)
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       //#else

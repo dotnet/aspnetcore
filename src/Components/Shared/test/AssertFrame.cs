@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             Assert.Equal(attributeValue, frame.AttributeValue);
         }
 
-        public static void Attribute(RenderTreeFrame frame, string attributeName, Action<UIEventArgs> attributeEventHandlerValue, int? sequence = null)
+        public static void Attribute(RenderTreeFrame frame, string attributeName, Action<EventArgs> attributeEventHandlerValue, int? sequence = null)
         {
             AssertFrame.Attribute(frame, attributeName, sequence);
             Assert.Equal(attributeEventHandlerValue, frame.AttributeValue);
@@ -109,14 +109,21 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             AssertFrame.Sequence(frame, sequence);
         }
 
-        public static void Whitespace(RenderTreeFrame frame, int? sequence = null)
+        public static void MarkupWhitespace(RenderTreeFrame frame, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.Markup, frame.FrameType);
+            AssertFrame.Sequence(frame, sequence);
+            Assert.True(string.IsNullOrWhiteSpace(frame.TextContent));
+        }
+
+        public static void TextWhitespace(RenderTreeFrame frame, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);
             AssertFrame.Sequence(frame, sequence);
             Assert.True(string.IsNullOrWhiteSpace(frame.TextContent));
         }
 
-        public static void ElementReferenceCapture(RenderTreeFrame frame, Action<ElementRef> action, int? sequence = null)
+        public static void ElementReferenceCapture(RenderTreeFrame frame, Action<ElementReference> action, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.ElementReferenceCapture, frame.FrameType);
             Assert.Same(action, frame.ElementReferenceCaptureAction);

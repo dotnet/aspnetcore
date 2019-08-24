@@ -18,14 +18,11 @@ using Xunit.Abstractions;
 
 namespace Interop.FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
-        SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
     public class H2SpecTests : LoggedTest
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7299
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2225", FlakyOn.Helix.All)]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()
@@ -60,6 +57,8 @@ namespace Interop.FunctionalTests
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
+                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
+
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
                     string skip = null;
@@ -76,13 +75,17 @@ namespace Interop.FunctionalTests
                         Skip = skip,
                     });
 
-                    dataset.Add(new H2SpecTestCase
+                    // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
+                    if (supportsAlpn)
                     {
-                        Id = testcase.Item1,
-                        Description = testcase.Item2,
-                        Https = true,
-                        Skip = skip,
-                    });
+                        dataset.Add(new H2SpecTestCase
+                        {
+                            Id = testcase.Item1,
+                            Description = testcase.Item2,
+                            Https = true,
+                            Skip = skip,
+                        });
+                    }
                 }
 
                 return dataset;

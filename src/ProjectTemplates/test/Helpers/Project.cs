@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,9 +17,15 @@ using Xunit.Sdk;
 
 namespace Templates.Test.Helpers
 {
+    [DebuggerDisplay("{ToString(),nq}")]
     public class Project
     {
+        private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+
         public const string DefaultFramework = "netcoreapp3.0";
+
+        public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "ContinuousIntegrationBuild");
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -28,39 +36,61 @@ namespace Templates.Test.Helpers
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", DefaultFramework);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", DefaultFramework, "publish");
 
+        private string TemplateServerDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Server");
+        private string TemplateClientDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Client");
+        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", DefaultFramework);
+        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", DefaultFramework, "publish");
+        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", DefaultFramework, "publish");
+
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
 
-        internal async Task<ProcessEx> RunDotNetNewAsync(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
+        internal async Task<ProcessEx> RunDotNetNewAsync(
+            string templateName,
+            string auth = null,
+            string language = null,
+            bool useLocalDB = false,
+            bool noHttps = false,
+            string[] args = null,
+            // Used to set special options in MSBuild
+            IDictionary<string, string> environmentVariables = null)
         {
             var hiveArg = $"--debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-            var args = $"new {templateName} {hiveArg}";
-
+            var argString = $"new {templateName} {hiveArg}";
+            environmentVariables ??= new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(auth))
             {
-                args += $" --auth {auth}";
+                argString += $" --auth {auth}";
             }
 
             if (!string.IsNullOrEmpty(language))
             {
-                args += $" -lang {language}";
+                argString += $" -lang {language}";
             }
 
             if (useLocalDB)
             {
-                args += $" --use-local-db";
+                argString += $" --use-local-db";
             }
 
             if (noHttps)
             {
-                args += $" --no-https";
+                argString += $" --no-https";
+            }
+
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    argString += " " + arg;
+                }
             }
 
             // Save a copy of the arguments used for better diagnostic error messages later.
             // We omit the hive argument and the template output dir as they are not relevant and add noise.
-            ProjectArguments = args.Replace(hiveArg, "");
+            ProjectArguments = argString.Replace(hiveArg, "");
 
-            args += $" -o {TemplateOutputDir}";
+            argString += $" -o {TemplateOutputDir}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -68,7 +98,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
+                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return execution;
             }
@@ -78,7 +108,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -94,7 +124,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}", packageOptions);
                 await result.Exited;
                 return result;
             }
@@ -104,7 +134,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -115,7 +145,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug", packageOptions);
                 await result.Exited;
                 return result;
             }
@@ -125,27 +155,73 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal AspNetProcess StartBuiltProjectAsync()
+        internal AspNetProcess StartBuiltServerAsync()
         {
             var environment = new Dictionary<string, string>
             {
-                ["ASPNETCORE_URLS"] = $"http://127.0.0.1:0;https://127.0.0.1:0",
                 ["ASPNETCORE_ENVIRONMENT"] = "Development"
             };
 
-            var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment);
+            var projectDll = Path.Combine(TemplateServerDir, $"{ProjectName}.Server.dll");
+            return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, published: false);
         }
 
-        internal AspNetProcess StartPublishedProjectAsync()
+        internal AspNetProcess StartBuiltClientAsync(AspNetProcess serverProcess)
         {
             var environment = new Dictionary<string, string>
             {
-                ["ASPNETCORE_URLS"] = $"http://127.0.0.1:0;https://127.0.0.1:0",
+                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+            };
+
+            var projectDll = Path.Combine(TemplateClientDebugDir, $"{ProjectName}.Client.dll {serverProcess.ListeningUri.Port}");
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: false);
+        }
+
+        internal AspNetProcess StartPublishedServerAsync()
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+            };
+
+            var projectDll = $"{ProjectName}.Server.dll";
+            return new AspNetProcess(Output, TemplateServerReleaseDir, projectDll, environment);
+        }
+
+        internal AspNetProcess StartPublishedClientAsync()
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+            };
+
+            var projectDll = $"{ProjectName}.Client.dll";
+            return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
+        }
+
+        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true)
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
+            };
+
+            var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
+        }
+
+        internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
             };
 
             var projectDll = $"{ProjectName}.dll";
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment);
+            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
         internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)
@@ -240,6 +316,31 @@ namespace Templates.Test.Helpers
             }
         }
 
+        internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
+        {
+            var assembly = typeof(ProjectFactoryFixture).Assembly;
+
+            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
+
+            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            await DotNetNewLock.WaitAsync();
+            try
+            {
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                await result.Exited;
+                return result;
+            }
+            finally
+            {
+                DotNetNewLock.Release();
+            }
+        }
+
         // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
         public void AssertEmptyMigration(string migration)
         {
@@ -266,6 +367,27 @@ namespace Templates.Test.Helpers
             {
                 return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
             }
+        }
+
+        public void AssertFileExists(string path, bool shouldExist)
+        {
+            var fullPath = Path.Combine(TemplateOutputDir, path);
+            var doesExist = File.Exists(fullPath);
+
+            if (shouldExist)
+            {
+                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
+            }
+            else
+            {
+                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
+            }
+        }
+
+        public string ReadFile(string path)
+        {
+            AssertFileExists(path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
         internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
@@ -384,5 +506,7 @@ namespace Templates.Test.Helpers
                 }
             }
         }
+
+        public override string ToString() => $"{ProjectName}: {TemplateOutputDir}";
     }
 }

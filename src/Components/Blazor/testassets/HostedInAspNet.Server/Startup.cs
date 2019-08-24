@@ -25,7 +25,15 @@ namespace HostedInAspNet.Server
                 app.UseBlazorDebugging();
             }
 
-            app.UseBlazor<Client.Program>();
+            app.UseStaticFiles();
+            app.UseClientSideBlazorFiles<Client.Program>();
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapFallbackToClientSideBlazor<Client.Program>("index.html");
+            });
         }
     }
 }

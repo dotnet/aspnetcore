@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class HostedServiceExecutor
+    internal class HostedServiceExecutor
     {
         private readonly IEnumerable<IHostedService> _services;
         private readonly ILogger<HostedServiceExecutor> _logger;

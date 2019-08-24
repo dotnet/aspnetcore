@@ -1,27 +1,43 @@
-<Project DefaultTargets="Test">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
 
-  <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19105.2" />
+  <PropertyGroup>
+    <!--
+      When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
+      This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
+    -->
+    <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+  </PropertyGroup>
 
-  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
-  <Import Project="$(RepositoryRoot)\build\repo.props" />
+  <Import Project="..\targets\Helix.Common.props" />
+  <Import Project="..\Build.props" />
 
   <ItemGroup>
-    <HelixTargetQueue Include="@(HelixAvailibleTargetQueue)" />
+    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
   </ItemGroup>
 
   <PropertyGroup>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
-    <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
-    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
-    <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">false</WaitForWorkItemCompletion>
-    <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
-    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
-    <Creator>aspnetcore</Creator>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+    <HelixType>ci</HelixType>
+    <Creator>aspnetcore</Creator>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
+    <HelixType>dev</HelixType>
+    <Creator>$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
   </PropertyGroup>
 
   <Target Name="Gather" BeforeTargets="Build">

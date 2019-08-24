@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
             httpContext.Request.ContentType = "application/json";
 
             var formatterContext = CreateInputFormatterContext(typeof(JsonPatchDocument<Customer>), httpContext);
@@ -52,18 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             Assert.False(result.HasError);
             var patchDocument = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
-            Assert.Equal("add", patchDocument.Operations[0].op);
-            Assert.Equal("Customer/Name", patchDocument.Operations[0].path);
-            Assert.Equal("John", patchDocument.Operations[0].value);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-            patchDocument = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
             Assert.Equal("add", patchDocument.Operations[0].op);
             Assert.Equal("Customer/Name", patchDocument.Operations[0].path);
             Assert.Equal("John", patchDocument.Operations[0].value);

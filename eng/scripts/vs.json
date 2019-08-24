@@ -1,6 +1,6 @@
 {
-    "channelUri": "https://aka.ms/vs/16/pre/channel",
-    "channelId": "VisualStudio.16.Preview",
+    "channelUri": "https://aka.ms/vs/16/release/channel",
+    "channelId": "VisualStudio.16.Release",
     "includeRecommended": false,
     "addProductLang": [
         "en-US"
@@ -15,8 +15,6 @@
         "Microsoft.VisualStudio.Component.Azure.Storage.Emulator",
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-        "Microsoft.VisualStudio.Component.VC.v141.ATL",
-        "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
         "Microsoft.VisualStudio.Component.Windows10SDK.17134",
         "Microsoft.VisualStudio.Workload.ManagedDesktop",
         "Microsoft.VisualStudio.Workload.NativeDesktop",

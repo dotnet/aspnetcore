@@ -117,16 +117,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection[typeof(IHttpRequestFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseFeature)] = CreateHttp1Connection();
-            _collection[typeof(IResponseBodyPipeFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpResponseBodyFeature)] = CreateHttp1Connection();
             _collection[typeof(IRequestBodyPipeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestIdentifierFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestLifetimeFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpRequestTrailersFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpConnectionFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMaxRequestBodySizeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinRequestBodyDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinResponseDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
-            _collection[typeof(IHttpResponseStartFeature)] = CreateHttp1Connection();
+            _collection[typeof(IRouteValuesFeature)] = CreateHttp1Connection();
+            _collection[typeof(IEndpointFeature)] = CreateHttp1Connection();
 
             CompareGenericGetterToIndexer();
 
@@ -138,16 +140,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection.Set<IHttpRequestFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseFeature>(CreateHttp1Connection());
-            _collection.Set<IResponseBodyPipeFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpResponseBodyFeature>(CreateHttp1Connection());
             _collection.Set<IRequestBodyPipeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestIdentifierFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestLifetimeFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpRequestTrailersFeature>(CreateHttp1Connection());
             _collection.Set<IHttpConnectionFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMaxRequestBodySizeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinRequestBodyDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinResponseDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
-            _collection.Set<IHttpResponseStartFeature>(CreateHttp1Connection());
+            _collection.Set<IRouteValuesFeature>(CreateHttp1Connection());
+            _collection.Set<IEndpointFeature>(CreateHttp1Connection());
 
             CompareGenericGetterToIndexer();
 
@@ -155,12 +159,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void Http2StreamFeatureCollectionDoesNotIncludeMinRateFeatures()
+        public void Http2StreamFeatureCollectionDoesNotIncludeIHttpMinResponseDataRateFeature()
         {
-            Assert.Null(_http2Collection.Get<IHttpMinRequestBodyDataRateFeature>());
             Assert.Null(_http2Collection.Get<IHttpMinResponseDataRateFeature>());
-
-            Assert.NotNull(_collection.Get<IHttpMinRequestBodyDataRateFeature>());
             Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
         }
 
@@ -173,11 +174,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(upgradeFeature.IsUpgradableRequest);
         }
 
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesIncludeIHttpMinRequestBodyDataRateFeature()
+        {
+            var minRateFeature = _http2Collection.Get<IHttpMinRequestBodyDataRateFeature>();
+
+            Assert.NotNull(minRateFeature);
+
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate = new MinDataRate(1, TimeSpan.FromSeconds(2)));
+
+            // You can set the MinDataRate to null though.
+            minRateFeature.MinDataRate = null;
+
+            // But you still cannot read the property;
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
+        }
+
         private void CompareGenericGetterToIndexer()
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);
             Assert.Same(_collection.Get<IHttpResponseFeature>(), _collection[typeof(IHttpResponseFeature)]);
-            Assert.Same(_collection.Get<IResponseBodyPipeFeature>(), _collection[typeof(IResponseBodyPipeFeature)]);
+            Assert.Same(_collection.Get<IHttpResponseBodyFeature>(), _collection[typeof(IHttpResponseBodyFeature)]);
             Assert.Same(_collection.Get<IRequestBodyPipeFeature>(), _collection[typeof(IRequestBodyPipeFeature)]);
             Assert.Same(_collection.Get<IHttpRequestIdentifierFeature>(), _collection[typeof(IHttpRequestIdentifierFeature)]);
             Assert.Same(_collection.Get<IHttpRequestLifetimeFeature>(), _collection[typeof(IHttpRequestLifetimeFeature)]);
@@ -186,7 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(_collection.Get<IHttpMinRequestBodyDataRateFeature>(), _collection[typeof(IHttpMinRequestBodyDataRateFeature)]);
             Assert.Same(_collection.Get<IHttpMinResponseDataRateFeature>(), _collection[typeof(IHttpMinResponseDataRateFeature)]);
             Assert.Same(_collection.Get<IHttpBodyControlFeature>(), _collection[typeof(IHttpBodyControlFeature)]);
-            Assert.Same(_collection.Get<IHttpResponseStartFeature>(), _collection[typeof(IHttpResponseStartFeature)]);
         }
 
         private int EachHttpProtocolFeatureSetAndUnique()

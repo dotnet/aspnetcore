@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public class HttpConnectionContext : ConnectionContext,
+    internal class HttpConnectionContext : ConnectionContext,
                                          IConnectionIdFeature,
                                          IConnectionItemsFeature,
                                          IConnectionTransportFeature,
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        public bool TryActivatePersistentConnection(
+        internal bool TryActivatePersistentConnection(
             ConnectionDelegate connectionDelegate,
             IHttpTransport transport,
             ILogger dispatcherLogger)
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         nonClonedContext.Response.RegisterForDispose(timeoutSource);
                         nonClonedContext.Response.RegisterForDispose(tokenSource);
 
-                        var longPolling = new LongPollingTransport(timeoutSource.Token, Application.Input, loggerFactory);
+                        var longPolling = new LongPollingServerTransport(timeoutSource.Token, Application.Input, loggerFactory);
 
                         // Start the transport
                         TransportTask = longPolling.ProcessRequestAsync(nonClonedContext, tokenSource.Token);

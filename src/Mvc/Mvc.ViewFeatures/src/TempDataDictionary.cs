@@ -146,21 +146,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return;
             }
 
-            // Because it is not possible to delete while enumerating, a copy of the keys must be taken.
-            // Use the size of the dictionary as an upper bound to avoid creating more than one copy of the keys.
-            var removeCount = 0;
-            var keys = new string[_data.Count];
+            // In .NET Core 3.0 a Dictionary can have items removed during enumeration 
+            // https://github.com/dotnet/coreclr/pull/18854
             foreach (var entry in _data)
             {
                 if (!_initialKeys.Contains(entry.Key) && !_retainedKeys.Contains(entry.Key))
                 {
-                    keys[removeCount] = entry.Key;
-                    removeCount++;
+                    _data.Remove(entry.Key);
                 }
-            }
-            for (var i = 0; i < removeCount; i++)
-            {
-                _data.Remove(keys[i]);
             }
 
             _provider.SaveTempData(_context, _data);

@@ -1,5 +1,6 @@
 using System;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
@@ -29,19 +30,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Format = transferFormat;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if ((Format & transferFormat) == 0)
             {
                 throw new InvalidOperationException($"The '{transferFormat}' transfer format is not supported by this transport.");
             }
-            
+
             var options = ClientPipeOptions.DefaultOptions;
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
             _transport = pair.Transport;
             Application = pair.Application;
             await _startHandler();
+
+            // To test canceling the token from the onTransportStart Func.
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Start a loop to read from the pipe
             Receiving = ReceiveLoop();

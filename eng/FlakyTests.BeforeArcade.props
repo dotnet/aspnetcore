@@ -6,13 +6,13 @@
   </PropertyGroup>
 
   <!-- Azure Pipelines Flakiness -->
-  <PropertyGroup Condition="'$(AGENT_OS)' != ''">
+  <PropertyGroup Condition="'$(TF_BUILD)' != ''">
     <_FlakyRunAdditionalArgs>$(_FlakyRunAdditionalArgs) -trait "Flaky:AzP:All=true" -trait "Flaky:AzP:OS:$(AGENT_OS)=true"</_FlakyRunAdditionalArgs>
     <_NonFlakyRunAdditionalArgs>$(_NonFlakyRunAdditionalArgs) -notrait "Flaky:AzP:All=true" -notrait "Flaky:AzP:OS:$(AGENT_OS)=true"</_NonFlakyRunAdditionalArgs>
   </PropertyGroup>
 
   <PropertyGroup>
-    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == ''">$(_NonFlakyRunAdditionalArgs)</TestRunnerAdditionalArguments>
-    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == 'true'">$(_FlakyRunAdditionalArgs)</TestRunnerAdditionalArguments>
+    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == ''">$(_NonFlakyRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
+    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == 'true'">$(_FlakyRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
   </PropertyGroup>
 </Project>

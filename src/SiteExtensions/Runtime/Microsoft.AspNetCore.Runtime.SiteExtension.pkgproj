@@ -5,14 +5,15 @@
     <PackageType>AzureSiteExtension</PackageType>
     <ContentTargetFolders>content</ContentTargetFolders>
 
-    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
-    <Title>ASP.NET Core $(TrimmedVersion) ($(TargetArchitecture)) Runtime </Title>
+    <Title>ASP.NET Core $(AspNetCoreMajorMinorVersion) ($(TargetArchitecture)) Runtime </Title>
     <Description>This site extension installs Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
-    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
+    <PackageId>AspNetCoreRuntime.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
     <IsShippingPackage>true</IsShippingPackage>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,8 +31,8 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
 
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
 
   </ItemGroup>
 

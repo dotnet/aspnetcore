@@ -15,23 +15,22 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -45,23 +44,32 @@ namespace Microsoft.AspNetCore.Mvc
         // For these kind of multi registration service types, we want to make sure that MVC will still add its
         // services if the implementation type is different.
         [Fact]
-        public void MultiRegistrationServiceTypes_AreRegistered_MultipleTimes()
+        public void AddMvc_MultiRegistrationServiceTypes_AreRegistered_MultipleTimes()
         {
             // Arrange
             var services = new ServiceCollection();
             services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            RegisterMockMultiRegistrationServices(services);
 
+            // Act
+            services.AddMvc();
+
+            // Assert
+            VerifyMultiRegistrationServices(services);
+        }
+
+        private void RegisterMockMultiRegistrationServices(IServiceCollection services)
+        {
             // Register a mock implementation of each service, AddMvcServices should add another implementation.
             foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
                 services.Add(ServiceDescriptor.Transient(serviceType.Key, mockType));
             }
+        }
 
-            // Act
-            services.AddMvc();
-
-            // Assert
+        private void VerifyMultiRegistrationServices(IServiceCollection services)
+        {
             foreach (var serviceType in MultiRegistrationServiceTypes)
             {
                 AssertServiceCountEquals(services, serviceType.Key, serviceType.Value.Length + 1);
@@ -74,23 +82,78 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
+        public void AddMvc_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
         {
             // Arrange
             var services = new ServiceCollection();
             services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            RegisterMockSingleRegistrationServices(services);
 
+            // Act
+            services.AddMvc();
+
+            // Assert
+            VerifySingleRegistrationServices(services);
+        }
+
+        [Fact]
+        public void AddControllers_AddRazorPages_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            RegisterMockSingleRegistrationServices(services);
+
+            // Act
+            services.AddControllers();
+            services.AddRazorPages();
+
+            // Assert
+            VerifySingleRegistrationServices(services);
+        }
+
+        [Fact]
+        public void AddControllersWithViews_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            RegisterMockSingleRegistrationServices(services);
+
+            // Act
+            services.AddControllers();
+
+            // Assert
+            VerifySingleRegistrationServices(services);
+        }
+
+        [Fact]
+        public void AddRazorPages_SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+            RegisterMockSingleRegistrationServices(services);
+
+            // Act
+            services.AddRazorPages();
+
+            // Assert
+            VerifySingleRegistrationServices(services);
+        }
+
+        private void RegisterMockSingleRegistrationServices(IServiceCollection services)
+        {
             // Register a mock implementation of each service, AddMvcServices should not replace it.
             foreach (var serviceType in SingleRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType);
                 services.Add(ServiceDescriptor.Transient(serviceType, mockType));
             }
+        }
 
-            // Act
-            services.AddMvc();
-
-            // Assert
+        private void VerifySingleRegistrationServices(IServiceCollection services)
+        {
             foreach (var singleRegistrationType in SingleRegistrationServiceTypes)
             {
                 AssertServiceCountEquals(services, singleRegistrationType, 1);
@@ -98,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void AddMvcServicesTwice_DoesNotAddDuplicates()
+        public void AddMvc_Twice_DoesNotAddDuplicates()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -109,6 +172,87 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddMvc();
 
             // Assert
+            VerifyAllServices(services);
+        }
+
+        [Fact]
+        public void AddControllersAddRazorPages_Twice_DoesNotAddDuplicates()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+
+            // Act
+            services.AddControllers();
+            services.AddRazorPages();
+            services.AddControllers();
+            services.AddRazorPages();
+
+            // Assert
+            VerifyAllServices(services);
+        }
+
+        [Fact]
+        public void AddControllersWithViews_Twice_DoesNotAddDuplicates()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+
+            // Act
+            services.AddControllersWithViews();
+            services.AddControllersWithViews();
+
+            // Assert
+            VerifyAllServices(services);
+        }
+
+        [Fact]
+        public void AddRazorPages_Twice_DoesNotAddDuplicates()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
+
+            // Act
+            services.AddRazorPages();
+            services.AddRazorPages();
+
+            // Assert
+            VerifyAllServices(services);
+        }
+
+        [Fact]
+        public void AddControllersWithViews_AddsDocumentedServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddControllersWithViews();
+
+            // Assert
+            // Adds controllers
+            Assert.Contains(services, s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(ControllerActionInvokerProvider));
+            // Adds ApiExplorer
+            Assert.Contains(services, s => s.ServiceType == typeof(IApiDescriptionGroupCollectionProvider));
+            // Adds CORS
+            Assert.Contains(services, s => s.ServiceType == typeof(CorsAuthorizationFilter));
+            // Adds DataAnnotations
+            Assert.Contains(services, s => s.ServiceType == typeof(IConfigureOptions<MvcOptions>) && s.ImplementationType == typeof(MvcDataAnnotationsMvcOptionsSetup));
+            // Adds FormatterMappings
+            Assert.Contains(services, s => s.ServiceType == typeof(FormatFilter));
+            // Adds Views
+            Assert.Contains(services, s => s.ServiceType == typeof(IHtmlHelper));
+            // Adds Razor
+            Assert.Contains(services, s => s.ServiceType == typeof(IRazorViewEngine));
+            // Adds CacheTagHelper
+            Assert.Contains(services, s => s.ServiceType == typeof(CacheTagHelperMemoryCacheFactory));
+
+            // No Razor Pages
+            Assert.Empty(services.Where(s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider)));
+        }
+
+        private void VerifyAllServices(IServiceCollection services)
+        {
             var singleRegistrationServiceTypes = SingleRegistrationServiceTypes;
             foreach (var service in services)
             {
@@ -449,7 +593,8 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.True(
                 (expectedServiceRegistrationCount == actual),
                 $"Expected service type '{serviceType}' to be registered {expectedServiceRegistrationCount}" +
-                $" time(s) but was actually registered {actual} time(s).");
+                $" time(s) but was actually registered {actual} time(s)." + 
+                string.Join(Environment.NewLine, serviceDescriptors.Select(sd => sd.ImplementationType)));
         }
 
         private void AssertContainsSingle(

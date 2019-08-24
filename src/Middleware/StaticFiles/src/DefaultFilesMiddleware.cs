@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            
+
             _next = next;
             _options = options.Value;
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
@@ -80,15 +80,13 @@ namespace Microsoft.AspNetCore.StaticFiles
                         {
                             // If the path matches a directory but does not end in a slash, redirect to add the slash.
                             // This prevents relative links from breaking.
-                            if (!Helpers.PathEndsInSlash(context.Request.Path))
+                            if (!Helpers.PathEndsInSlash(context.Request.Path) && _options.RedirectToAppendTrailingSlash)
                             {
-                                context.Response.StatusCode = 301;
-                                context.Response.Headers[HeaderNames.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
+                                Helpers.RedirectToPathWithSlash(context);
                                 return Task.CompletedTask;
                             }
-
                             // Match found, re-write the url. A later middleware will actually serve the file.
-                            context.Request.Path = new PathString(context.Request.Path.Value + defaultFile);
+                            context.Request.Path = new PathString(Helpers.GetPathValueWithSlash(context.Request.Path) + defaultFile);
                             break;
                         }
                     }

@@ -33,11 +33,14 @@ namespace SecurityWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseRouting(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

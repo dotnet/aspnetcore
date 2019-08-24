@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.Text.Encodings.Web" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 

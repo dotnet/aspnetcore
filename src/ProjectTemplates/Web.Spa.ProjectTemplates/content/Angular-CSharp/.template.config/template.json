@@ -6,6 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular",
+  "precedence": "5000",
   "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.3.0",
   "name": "ASP.NET Core with Angular",
   "preferNameDirectory": true,

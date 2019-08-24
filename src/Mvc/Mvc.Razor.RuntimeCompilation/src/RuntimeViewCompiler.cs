@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 _fileProvider.Watch(normalizedPath),
             };
 
-            var projectItem = _projectEngine.FileSystem.GetItem(normalizedPath);
+            var projectItem = _projectEngine.FileSystem.GetItem(normalizedPath, fileKind: null);
             if (!projectItem.Exists)
             {
                 _logger.ViewCompilerCouldNotFindFileAtPath(normalizedPath);
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
         protected virtual CompiledViewDescriptor CompileAndEmit(string relativePath)
         {
-            var projectItem = _projectEngine.FileSystem.GetItem(relativePath);
+            var projectItem = _projectEngine.FileSystem.GetItem(relativePath, fileKind: null);
             var codeDocument = _projectEngine.Process(projectItem);
             var cSharpDocument = codeDocument.GetCSharpDocument();
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public static class CertificateLoader
     {
@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     foundCertificate = foundCertificates
                         .OfType<X509Certificate2>()
                         .Where(IsCertificateAllowedForServerAuth)
+                        .Where(DoesCertificateHaveAnAccessiblePrivateKey)
                         .OrderByDescending(certificate => certificate.NotAfter)
                         .FirstOrDefault();
 
@@ -79,6 +80,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return !hasEkuExtension;
         }
+
+        internal static bool DoesCertificateHaveAnAccessiblePrivateKey(X509Certificate2 certificate)
+            => certificate.HasPrivateKey;
 
         private static void DisposeCertificates(X509Certificate2Collection certificates, X509Certificate2 except)
         {

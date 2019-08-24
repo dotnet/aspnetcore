@@ -55,19 +55,13 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 hubConnectionBuilder.AddMessagePackProtocol();
             }
 
-            var delegateConnectionFactory = new DelegateConnectionFactory(format =>
+            var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
             {
                 var connection = new DefaultConnectionContext();
                 // prevents keep alive time being activated
                 connection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestConnectionInherentKeepAliveFeature());
                 connection.Transport = _pipe;
-                return Task.FromResult<ConnectionContext>(connection);
-            },
-            connection =>
-            {
-                connection.Transport.Output.Complete();
-                connection.Transport.Input.Complete();
-                return Task.CompletedTask;
+                return new ValueTask<ConnectionContext>(connection);
             });
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 

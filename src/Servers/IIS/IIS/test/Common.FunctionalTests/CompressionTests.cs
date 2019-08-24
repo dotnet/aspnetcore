@@ -5,41 +5,53 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    [Collection(IISCompressionSiteCollection.Name)]
-    public abstract class CompressionTests : FixtureLoggedTest
+    [Collection(PublishedSitesCollection.Name)]
+    public class CompressionTests : IISFunctionalTestBase
     {
-        private readonly IISTestSiteFixture _fixture;
-
-        [Collection(IISTestSiteCollection.Name)]
-        public class InProc: CompressionTests
+        public CompressionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            public InProc(IISTestSiteFixture fixture) : base(fixture) { }
-        }
-
-        [Collection(OutOfProcessTestSiteCollection.Name)]
-        public class OutOfProcess: CompressionTests
-        {
-            public OutOfProcess(OutOfProcessTestSiteFixture fixture) : base(fixture) { }
-        }
-
-        protected CompressionTests(IISTestSiteFixture fixture) : base(fixture)
-        {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
-        public async Task PassesThroughCompression()
+        public async Task PassesThroughCompressionOutOfProcess()
         {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
             var request = new HttpRequestMessage(HttpMethod.Get, "/CompressedData");
 
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 
-            var response = await _fixture.Client.SendAsync(request);
+            var response = await deploymentResult.HttpClient.SendAsync(request);
+            Assert.Equal("gzip", response.Content.Headers.ContentEncoding.Single());
+            Assert.Equal(
+                new byte[] {
+                    0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                    0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
+                await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [ConditionalFact]
+        public async Task PassesThroughCompressionInProcess()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/CompressedData");
+
+            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+            var response = await deploymentResult.HttpClient.SendAsync(request);
             Assert.Equal("gzip", response.Content.Headers.ContentEncoding.Single());
             Assert.Equal(
                 new byte[] {

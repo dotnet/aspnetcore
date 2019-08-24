@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Hello");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Hello");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", regularParameterValue);
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", providedValue);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Unchanging value");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -188,16 +189,25 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent(builder =>
             {
-                builder.OpenComponent<CascadingValue<string>>(0);
-                builder.AddAttribute(1, "Value", providedValue);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                // At the outer level, have an unrelated fixed cascading value to show we can deal with combining both types
+                builder.OpenComponent<CascadingValue<int>>(0);
+                builder.AddAttribute(1, "Value", 123);
+                builder.AddAttribute(2, "IsFixed", true);
+                builder.AddAttribute(3, "ChildContent", new RenderFragment(builder2 =>
                 {
-                    if (displayNestedComponent)
+                    // Then also have a non-fixed cascading value so we can show that unsubscription works
+                    builder2.OpenComponent<CascadingValue<string>>(0);
+                    builder2.AddAttribute(1, "Value", providedValue);
+                    builder2.AddAttribute(2, "ChildContent", new RenderFragment(builder3 =>
                     {
-                        childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
-                        childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
-                        childBuilder.CloseComponent();
-                    }
+                        if (displayNestedComponent)
+                        {
+                            builder3.OpenComponent<SecondCascadingParameterConsumerComponent<string, int>>(0);
+                            builder3.AddAttribute(1, "RegularParameter", "Goodbye");
+                            builder3.CloseComponent();
+                        }
+                    }));
+                    builder2.CloseComponent();
                 }));
                 builder.CloseComponent();
             });
@@ -219,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(2, renderer.Batches.Count);
             var secondBatch = renderer.Batches[1];
             Assert.Equal(1, nestedComponent.NumRenders);
-            Assert.Equal(2, secondBatch.DiffsByComponentId.Count); // Root + CascadingValue, but not nested one
+            Assert.Equal(3, secondBatch.DiffsByComponentId.Count); // Root + CascadingValue + CascadingValue, but not nested component
 
             // We *did* send updated params during the first render where it was removed,
             // because the params are sent before the disposal logic runs. We could avoid
@@ -249,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", providedValue);
                 builder.AddAttribute(2, "IsFixed", true);
-                builder.AddAttribute(3, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(3, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     if (shouldIncludeChild)
                     {
@@ -372,9 +382,9 @@ namespace Microsoft.AspNetCore.Components.Test
             public int NumRenders { get; private set; }
 
             [CascadingParameter] T CascadingParameter { get; set; }
-            [Parameter] string RegularParameter { get; set; }
+            [Parameter] public string RegularParameter { get; set; }
 
-            public override async Task SetParametersAsync(ParameterCollection parameters)
+            public override async Task SetParametersAsync(ParameterView parameters)
             {
                 NumSetParametersCalls++;
                 await base.SetParametersAsync(parameters);
@@ -385,6 +395,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 NumRenders++;
                 builder.AddContent(0, $"CascadingParameter={CascadingParameter}; RegularParameter={RegularParameter}");
             }
+        }
+
+        class SecondCascadingParameterConsumerComponent<T1, T2> : CascadingParameterConsumerComponent<T1>
+        {
+            [CascadingParameter] T2 SecondCascadingParameter { get; set; }
         }
     }
 }

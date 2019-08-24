@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
@@ -50,10 +47,15 @@ namespace BasicWebSite.Controllers
                 }
             };
 
-        [HttpGet("/components")]
-        [HttpGet("/components/routable")]
+        [HttpGet("/components/{**slug}")]
+        [HttpGet("/components/routable/{**slug}")]
         public IActionResult Index()
         {
+            // Override the path so that the router finds the RoutedPage component
+            // as the client router doesn't support optional parameters.
+            Request.Path = Request.Path.StartsWithSegments("/components/routable") ?
+                PathString.FromUriComponent("/components/routable") : Request.Path;
+
             return View();
         }
 
@@ -62,6 +64,12 @@ namespace BasicWebSite.Controllers
         public IActionResult WeatherData()
         {
             return Ok(_weatherData);
+        }
+
+        [HttpGet("/components/Navigation")]
+        public IActionResult Navigation()
+        {
+            return View();
         }
 
         private class WeatherRow

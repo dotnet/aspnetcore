@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     public class CorsEndpointConventionBuilderExtensionsTests
     {
         [Fact]
-        public void WithCorsPolicy_Name_MetadataAdded()
+        public void RequireCors_Name_MetadataAdded()
         {
             // Arrange
             var testConventionBuilder = new TestEndpointConventionBuilder();
 
             // Act
-            testConventionBuilder.WithCorsPolicy("TestPolicyName");
+            testConventionBuilder.RequireCors("TestPolicyName");
 
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public void WithCorsPolicy_Policy_MetadataAdded()
+        public void RequireCors_Policy_MetadataAdded()
         {
             // Arrange
             var testConventionBuilder = new TestEndpointConventionBuilder();
 
             // Act
-            testConventionBuilder.WithCorsPolicy(builder => builder.AllowAnyOrigin());
+            testConventionBuilder.RequireCors(builder => builder.AllowAnyOrigin());
 
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
@@ -55,6 +55,19 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(metadata.Policy.AllowAnyOrigin);
         }
 
+        [Fact]
+        public void RequireCors_ChainedCall_ReturnedBuilderIsDerivedType()
+        {
+            // Arrange
+            var testConventionBuilder = new TestEndpointConventionBuilder();
+
+            // Act
+            var builder = testConventionBuilder.RequireCors("TestPolicyName");
+
+            // Assert
+            Assert.True(builder.TestProperty);
+        }
+
         private class TestEndpointBuilder : EndpointBuilder
         {
             public override Endpoint Build()
@@ -66,6 +79,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
+            public bool TestProperty { get; } = true;
 
             public void Add(Action<EndpointBuilder> convention)
             {

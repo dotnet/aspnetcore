@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Client = factory
                 .WithWebHostBuilder(builder => builder.ConfigureLogging(l => l.Services.AddSingleton<ILoggerFactory>(loggerProvider)))
                 .CreateDefaultClient();
+            // These tests want to verify runtime compilation and formatting in the HTML of the error page
+            Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
         }
 
         public HttpClient Client { get; }

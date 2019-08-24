@@ -29,9 +29,10 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<EchoHub>("/echo");
+                endpoints.MapHub<EchoHub>("/echo");
             });
         }
 

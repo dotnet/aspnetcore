@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
         public static readonly string TokenEndpoint = "https://www.googleapis.com/oauth2/v4/token";
 
+        // https://developers.google.com/apis-explorer/#search/oauth2/oauth2/v2/
         public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
     }
 }

@@ -67,10 +67,12 @@ namespace JwtSample
         {
             app.UseFileServer();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<Broadcaster>("/broadcast");
-                routes.MapGet("/generatetoken", context =>
+                endpoints.MapHub<Broadcaster>("/broadcast");
+                endpoints.MapGet("/generatetoken", context =>
                 {
                     return context.Response.WriteAsync(GenerateToken(context));
                 });

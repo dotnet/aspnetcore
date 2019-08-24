@@ -1,6 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Blazor
+{
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+    public static partial class JSInteropMethods
+    {
+        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
+        public static void NotifyLocationChanged(string uri, bool isInterceptedLink) { }
+    }
+}
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
     public static partial class BlazorWebAssemblyHost
@@ -41,9 +50,9 @@ namespace Microsoft.AspNetCore.Blazor.Http
 {
     public enum FetchCredentialsOption
     {
-        Include = 2,
         Omit = 0,
         SameOrigin = 1,
+        Include = 2,
     }
     public partial class WebAssemblyHttpMessageHandler : System.Net.Http.HttpMessageHandler
     {
@@ -56,26 +65,10 @@ namespace Microsoft.AspNetCore.Blazor.Http
 }
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
-    public partial class WebAssemblyRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
+    public static partial class WebAssemblyEventDispatcher
     {
-        public WebAssemblyRenderer(System.IServiceProvider serviceProvider) : base (default(System.IServiceProvider)) { }
-        public System.Threading.Tasks.Task AddComponentAsync(System.Type componentType, string domElementSelector) { throw null; }
-        public System.Threading.Tasks.Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        protected override void Dispose(bool disposing) { }
-        protected override void HandleException(System.Exception exception) { }
-        protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch batch) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Blazor.Services
-{
-    public partial class WebAssemblyUriHelper : Microsoft.AspNetCore.Components.Services.UriHelperBase
-    {
-        internal WebAssemblyUriHelper() { }
-        public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyUriHelper Instance;
-        protected override void InitializeState() { }
-        protected override void NavigateToCore(string uri, bool forceLoad) { }
-        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string newAbsoluteUri) { }
+        [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
+        public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.Web.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder

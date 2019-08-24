@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
-        internal static void Throw(RequestRejectionReason reason, in StringValues detail)
+        internal static void Throw(RequestRejectionReason reason, StringValues detail)
         {
             throw GetException(reason, detail.ToString());
         }
@@ -139,6 +139,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             BadHttpRequestException ex;
             switch (reason)
             {
+                case RequestRejectionReason.TlsOverHttpError:
+                    ex = new BadHttpRequestException(CoreStrings.HttpParserTlsOverHttpError, StatusCodes.Status400BadRequest, reason);
+                    break;
                 case RequestRejectionReason.InvalidRequestLine:
                     ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(detail), StatusCodes.Status400BadRequest, reason);
                     break;

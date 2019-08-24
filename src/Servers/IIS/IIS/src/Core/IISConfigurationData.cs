@@ -19,5 +19,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public bool fAnonymousAuthEnable;
         [MarshalAs(UnmanagedType.BStr)]
         public string pwzBindings;
+        public int maxRequestBodySize;
     }
 }

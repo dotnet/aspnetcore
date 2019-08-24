@@ -81,6 +81,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
+
+            if (_options.MaxRequestBodySize > _options.IisMaxRequestSizeLimit)
+            {
+                _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
+            }
         }
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)

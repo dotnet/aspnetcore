@@ -59,8 +59,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public void Configure(MvcOptions options)
         {
-            options.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(_jsonOptions.SerializerSettings, _charPool));
+            options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
+            options.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(_jsonOptions.SerializerSettings, _charPool, options));
 
+            options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
             // Register JsonPatchInputFormatter before JsonInputFormatter, otherwise
             // JsonInputFormatter would consume "application/json-patch+json" requests
             // before JsonPatchInputFormatter gets to see them.

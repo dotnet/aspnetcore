@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
         /// in <see cref="RouteConstraintMatcher"/>.</param>
         /// <param name="version">The version of this route.</param>
-        public TreeRouter(
+        internal TreeRouter(
             UrlMatchingTree[] trees,
             IEnumerable<OutboundRouteEntry> linkGenerationEntries,
             UrlEncoder urlEncoder,

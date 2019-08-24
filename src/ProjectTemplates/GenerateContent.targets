@@ -42,13 +42,13 @@
           Inputs="$(MSBuildAllProjects);$(_GenerateContentPropertiesHashFile);@(GeneratedContent)"
           Outputs="@(GeneratedContent->'%(OutputPath)')">
 
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="%(GeneratedContent.Identity)"
       Properties="$(GeneratedContentProperties);%(GeneratedContent.AdditionalProperties)"
       OutputPath="%(GeneratedContent.OutputPath)">
 
       <Output TaskParameter="OutputPath" ItemName="FileWrites" />
       <Output TaskParameter="OutputPath" ItemName="Content" />
-    </Sdk_GenerateFileFromTemplate>
+    </GenerateFileFromTemplate>
   </Target>
 </Project>

@@ -16,22 +16,21 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapFallback("/prefix/{*path:nonfile}", (context) =>
+                endpoints.MapFallback("/prefix/{*path:nonfile}", (context) =>
                 {
                     return context.Response.WriteAsync("FallbackCustomPattern");
                 });
 
-                routes.MapFallback((context) =>
+                endpoints.MapFallback((context) =>
                 {
                     return context.Response.WriteAsync("FallbackDefaultPattern");
                 });
 
-                routes.MapHello("/helloworld", "World");
+                endpoints.MapHello("/helloworld", "World");
             });
-
-            app.UseEndpoint();
         }
     }
 }

@@ -32,7 +32,6 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
         {
         }
 
-        protected virtual int Execute()
-            => 0;
+        protected virtual int Execute() => 0;
     }
 }

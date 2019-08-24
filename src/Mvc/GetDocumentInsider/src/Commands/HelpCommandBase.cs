@@ -9,9 +9,9 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
     {
         public override void Configure(CommandLineApplication command)
         {
-            base.Configure(command);
-
             command.HelpOption("-h|--help");
+            command.VersionOption("--version", ProductInfo.GetVersion);
+            base.Configure(command);
         }
     }
 }

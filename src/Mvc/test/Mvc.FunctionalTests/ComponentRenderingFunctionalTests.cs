@@ -1,12 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AngleSharp.Parser.Html;
 using BasicWebSite;
 using BasicWebSite.Services;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -14,13 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
+        private static readonly Regex ContentWrapperRegex = new Regex(
+            "<!-- M.A.C.Component: {\"circuitId\":\"[^\"]+\",\"rendererId\":\\d+,\"componentId\":\\d+} -->(?<content>.*)<!-- M.A.C.Component: \\d+ -->",
+            RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
+
         public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Factory = fixture;
-            Client = Client ?? CreateClient(fixture);
         }
-
-        public HttpClient Client { get; }
 
         public MvcTestFixture<StartupWithoutEndpointRouting> Factory { get; }
 
@@ -28,68 +32,83 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task Renders_BasicComponent()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/components");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-
-            AssertComponent("\n    <p>Hello world!</p>\n", "Greetings", content);
-        }
-
-        [Fact]
-        public async Task Renders_BasicComponent_UsingRazorComponents_Prerrenderer()
-        {
-            // Arrange & Act
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents()))
-                .CreateClient();
+            var client = CreateClient(Factory);
 
             var response = await client.GetAsync("http://localhost/components");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent("\n    <p>Hello world!</p>\n", "Greetings", content);
+            AssertComponent("<p>Hello world!</p>", "Greetings", content);
         }
 
         [Fact]
         public async Task Renders_RoutingComponent()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/components/routable");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var content = await response.Content.ReadAsStringAsync();
-
-            AssertComponent("\n    Router component\n<p>Routed successfully</p>\n", "Routing", content);
-        }
-
-        [Fact]
-        public async Task Renders_RoutingComponent_UsingRazorComponents_Prerrenderer()
-        {
-            // Arrange & Act
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents()))
-                .CreateClient();
+            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/routable");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
-            AssertComponent("\n    Router component\n<p>Routed successfully</p>\n", "Routing", content);
+            AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
+        }
+
+        [Fact]
+        public async Task Redirects_Navigation_Component()
+        {
+            // Arrange & Act
+            var fixture = Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor()));
+            fixture.ClientOptions.AllowAutoRedirect = false;
+            var client = CreateClient(fixture);
+
+            var response = await client.GetAsync("http://localhost/components/Navigation");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+            Assert.Equal("http://localhost/navigation-redirect", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task Renders_RoutingComponent_UsingRazorComponents_Prerenderer()
+        {
+            // Arrange & Act
+            var client = CreateClient(Factory
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+
+            var response = await client.GetAsync("http://localhost/components/routable");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+
+            AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
+        }
+
+        [Fact]
+        public async Task Renders_ThrowingComponent_UsingRazorComponents_Prerenderer()
+        {
+            // Arrange & Act
+            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+
+            var response = await client.GetAsync("http://localhost/components/throws");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("InvalidTimeZoneException: test", content);
         }
 
         [Fact]
         public async Task Renders_AsyncComponent()
         {
             // Arrange & Act
-            var expectedHtml = @"
-    <h1>Weather forecast</h1>
+            var expectedHtml = @"<h1>Weather forecast</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
@@ -136,26 +155,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 </tr>
         </tbody>
     </table>
-
 ";
-
-            var response = await Client.GetAsync("http://localhost/components");
+            var client = CreateClient(Factory);
+            var response = await client.GetAsync("http://localhost/components");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent(expectedHtml, "FetchData", content);
         }
 
-        private void AssertComponent(string expectedConent, string divId, string responseContent)
+        private void AssertComponent(string expectedContent, string divId, string responseContent)
         {
             var parser = new HtmlParser();
             var htmlDocument = parser.Parse(responseContent);
             var div = htmlDocument.Body.QuerySelector($"#{divId}");
+            var content = div.InnerHtml;
             Assert.Equal(
-                expectedConent.Replace("\r\n","\n"),
-                div.InnerHtml.Replace("\r\n","\n"));
+                expectedContent.Replace("\r\n","\n"),
+                content.Replace("\r\n","\n"));
         }
 
         // A simple delegating handler used in setting up test services so that we can configure
@@ -164,7 +183,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        private HttpClient CreateClient(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+        private HttpClient CreateClient(
+            WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var loopHandler = new LoopHttpHandler();
 

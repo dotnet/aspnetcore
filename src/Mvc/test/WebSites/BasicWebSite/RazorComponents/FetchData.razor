@@ -35,8 +35,8 @@ else
     </table>
 }
 
-@functions {
-    [Parameter] DateTime StartDate { get; set; }
+@code {
+    [Parameter] public DateTime StartDate { get; set; }
 
     WeatherForecast[] forecasts;
 

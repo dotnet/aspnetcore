@@ -7,6 +7,6 @@
     <Compile Include="Microsoft.AspNetCore.Http.Abstractions.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Http.Features"  />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources"  />
-    <Reference Include="System.Text.Encodings.Web"  />
+    <Reference Include="Microsoft.Net.Http.Headers"  />
   </ItemGroup>
 </Project>

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var selector = CreateSelector(actions);
 
             // Act
-            await selector.ApplyAsync(new DefaultHttpContext(), new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(new DefaultHttpContext(), candidateSet);
 
             // Assert
             Assert.True(candidateSet.IsValidCandidate(0));
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.True(candidateSet.IsValidCandidate(0));
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.False(candidateSet.IsValidCandidate(0));
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.False(candidateSet.IsValidCandidate(0));
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.True(candidateSet.IsValidCandidate(0));
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.False(candidateSet.IsValidCandidate(0));
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.False(candidateSet.IsValidCandidate(0));
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.True(candidateSet.IsValidCandidate(0));
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var httpContext = CreateHttpContext("POST");
 
             // Act
-            await selector.ApplyAsync(httpContext, new EndpointSelectorContext(), candidateSet);
+            await selector.ApplyAsync(httpContext, candidateSet);
 
             // Assert
             Assert.True(candidateSet.IsValidCandidate(0));
@@ -358,13 +358,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ActionConstraints = new List<IActionConstraintMetadata>()
                     {
                         new ConsumesAttribute("text/json"),
-                    },
-                },
-                new ActionDescriptor()
-                {
-                    ActionConstraints = new List<IActionConstraintMetadata>()
-                    {
-                        new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(new[]{ "GET", })),
                     },
                 },
             };

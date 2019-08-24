@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "gRPC 服務",
+    "description": "用來建立 gRPC ASP.NET Core 服務的專案範本。"
+  }
+}

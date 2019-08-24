@@ -25,7 +25,7 @@
 
   <Target Name="YarnInstall">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-    <Yarn Command="install" />
+    <Yarn Command="install --mutex network" />
   </Target>
 
   <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

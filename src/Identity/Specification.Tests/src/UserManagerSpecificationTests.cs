@@ -7,7 +7,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -69,12 +70,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
             return builder;
         }
-
-        /// <summary>
-        /// If true, tests that require a database will be skipped.
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool ShouldSkipDbTests() => false;
 
         /// <summary>
         /// Creates the user manager used for tests.
@@ -161,6 +156,35 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        private class EmptyBadValidator : IUserValidator<TUser>,
+            IPasswordValidator<TUser>
+        {
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockAddPassword()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new EmptyBadValidator());
+            IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"));
+        }
+
         /// <summary>
         /// Test.
         /// </summary>
@@ -168,10 +192,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CreateUserWillSetCreateDateOnlyIfSupported()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -185,10 +205,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanDeleteUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -204,10 +220,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanUpdateUserName()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var name = Guid.NewGuid().ToString();
             var user = CreateTestUser(name);
@@ -227,10 +239,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CheckSetUserNameValidatesUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var username = "UpdateAsync" + Guid.NewGuid().ToString();
             var newUsername = "New" + Guid.NewGuid().ToString();
@@ -259,10 +267,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task SetUserNameUpdatesSecurityStamp()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var username = "UpdateAsync" + Guid.NewGuid().ToString();
             var newUsername = "New" + Guid.NewGuid().ToString();
@@ -279,31 +283,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async Task CreateUpdatesSecurityStamp()
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-            var manager = CreateManager();
-            var username = "Create" + Guid.NewGuid().ToString();
-            var user = CreateTestUser(username, useNamePrefixAsUserName: true);
-            var stamp = await manager.GetSecurityStampAsync(user);
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
-        }
-
-        /// <summary>
-        /// Test.
-        /// </summary>
-        /// <returns>Task</returns>
-        [Fact]
         public async Task ResetAuthenticatorKeyUpdatesSecurityStamp()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var username = "Create" + Guid.NewGuid().ToString();
             var user = CreateTestUser(username, useNamePrefixAsUserName: true);
@@ -320,10 +301,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CheckSetEmailValidatesUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             manager.UserValidators.Add(new UserValidator<TUser>());
@@ -347,10 +324,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanUpdatePasswordUsingHasher()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("UpdatePassword");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
@@ -371,10 +344,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanFindById()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -388,10 +357,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task UserValidatorCanBlockCreate()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             manager.UserValidators.Clear();
@@ -407,10 +372,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task UserValidatorCanBlockUpdate()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -427,10 +388,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChainUserValidators()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.UserValidators.Clear();
             var user = CreateTestUser();
@@ -451,10 +408,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData(null)]
         public async Task UserValidatorBlocksShortEmailsWhenRequiresUniqueEmail(string email)
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             manager.Options.User.RequireUniqueEmail = true;
@@ -470,10 +423,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("bogus")]
         public async Task UserValidatorBlocksInvalidEmailsWhenRequiresUniqueEmail(string email)
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("UpdateBlocked", email);
             manager.Options.User.RequireUniqueEmail = true;
@@ -487,10 +436,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorCanBlockAddPassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -508,19 +453,68 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChainPasswordValidators()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.PasswordValidators.Clear();
-            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            manager.PasswordValidators.Add(new EmptyBadValidator());
             manager.PasswordValidators.Add(new AlwaysBadValidator());
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var result = await manager.AddPasswordAsync(user, "pwd");
             IdentityResultAssert.IsFailure(result, AlwaysBadValidator.ErrorMessage);
-            Assert.Equal(2, result.Errors.Count());
+            Assert.Single(result.Errors);
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockChangePassword()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.ChangePasswordAsync(user, "password", "new"));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockCreateUser()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user, "password"));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockResetPasswordWithStaticTokenProvider()
+        {
+            var manager = CreateManager();
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.PasswordResetTokenProvider = "Static";
+            var user = CreateTestUser();
+            const string password = "password";
+            const string newPassword = "newpassword";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            Assert.NotNull(stamp);
+            var token = await manager.GeneratePasswordResetTokenAsync(user);
+            Assert.NotNull(token);
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, token, newPassword));
+            Assert.True(await manager.CheckPasswordAsync(user, password));
+            Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
         /// <summary>
@@ -530,10 +524,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorCanBlockChangePassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
@@ -551,10 +541,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorCanBlockCreateUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             manager.PasswordValidators.Clear();
@@ -570,10 +556,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCreateUserNoPassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var username = "CreateUserTest" + Guid.NewGuid();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(CreateTestUser(username, useNamePrefixAsUserName: true)));
@@ -593,10 +575,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCreateUserAddLogin()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             const string provider = "ZzAuth";
             const string display = "display";
@@ -619,10 +597,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCreateUserLoginAndAddPassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -646,10 +620,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddPasswordFailsIfAlreadyHave()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "Password"));
@@ -666,10 +636,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanCreateUserAddRemoveLogin()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var result = await manager.CreateAsync(user);
@@ -701,10 +667,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanRemovePassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("CanRemovePassword");
             const string password = "password";
@@ -725,10 +687,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChangePassword()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             const string password = "password";
@@ -749,10 +707,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanAddRemoveUserClaim()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -782,10 +736,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task RemoveClaimOnlyAffectsUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var user2 = CreateTestUser();
@@ -819,10 +769,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanReplaceUserClaim()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -846,10 +792,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ReplaceUserClaimOnlyAffectsUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var user2 = CreateTestUser();
@@ -883,10 +825,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangePasswordFallsIfPasswordWrong()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
@@ -902,10 +840,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddDupeUserNameFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var username = "AddDupeUserNameFails" + Guid.NewGuid();
             var user = CreateTestUser(username, useNamePrefixAsUserName: true);
@@ -921,10 +855,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddDupeEmailAllowedByDefault()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(email: "yup@yup.com");
             var user2 = CreateTestUser(email: "yup@yup.com");
@@ -940,10 +870,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddDupeEmailFailsWhenUniqueEmailRequired()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.Options.User.RequireUniqueEmail = true;
             var user = CreateTestUser(email: "FooUser@yup.com");
@@ -959,16 +885,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task UpdateSecurityStampActuallyChanges()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
-            Assert.Null(await manager.GetSecurityStampAsync(user));
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
-            Assert.NotNull(stamp);
             IdentityResultAssert.IsSuccess(await manager.UpdateSecurityStampAsync(user));
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
@@ -980,10 +900,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task AddDupeLoginFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var login = new UserLoginInfo("Provider", "key", "display");
@@ -1003,10 +919,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanFindByEmail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var email = "foouser@test.com";
             var manager = CreateManager();
             var user = CreateTestUser(email: email);
@@ -1022,11 +934,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async virtual Task CanFindUsersViaUserQuerable()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-
             var mgr = CreateManager();
             if (mgr.SupportsQueryableUsers)
             {
@@ -1047,10 +954,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ConfirmEmailFalseByDefaultTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1087,10 +990,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanResetPasswordWithStaticTokenProvider()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             manager.Options.Tokens.PasswordResetTokenProvider = "Static";
@@ -1116,10 +1015,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorCanBlockResetPasswordWithStaticTokenProvider()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             manager.Options.Tokens.PasswordResetTokenProvider = "Static";
@@ -1146,10 +1041,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ResetPasswordWithStaticTokenProviderFailsWithWrongToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             manager.Options.Tokens.PasswordResetTokenProvider = "Static";
@@ -1172,10 +1063,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGenerateAndVerifyUserTokenWithStaticTokenProvider()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             var user = CreateTestUser();
@@ -1204,10 +1091,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanConfirmEmailWithStaticToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             manager.Options.Tokens.EmailConfirmationTokenProvider = "Static";
@@ -1230,10 +1113,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ConfirmEmailWithStaticTokenFailsWithWrongToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Static", new StaticTokenProvider());
             manager.Options.Tokens.EmailConfirmationTokenProvider = "Static";
@@ -1252,10 +1131,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ConfirmTokenFailsAfterPasswordChange()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(namePrefix: "Test");
             Assert.False(await manager.IsEmailConfirmedAsync(user));
@@ -1277,10 +1152,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task SingleFailureLockout()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.Options.Lockout.MaxFailedAccessAttempts = 0;
@@ -1303,10 +1174,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task TwoFailureLockout()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.Options.Lockout.MaxFailedAccessAttempts = 2;
@@ -1332,10 +1199,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ResetAccessCountPreventsLockout()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.Options.Lockout.MaxFailedAccessAttempts = 2;
@@ -1364,10 +1227,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanEnableLockoutManuallyAndLockout()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             mgr.Options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(1);
             mgr.Options.Lockout.AllowedForNewUsers = false;
@@ -1396,10 +1255,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task UserNotLockedOutWithNullDateTimeAndIsSetToNullDate()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -1416,10 +1271,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task LockoutFailsIfNotEnabled()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             mgr.Options.Lockout.AllowedForNewUsers = false;
             var user = CreateTestUser();
@@ -1438,10 +1289,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task LockoutEndToUtcNowMinus1SecInUserShouldNotBeLockedOut()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             var user = CreateTestUser(lockoutEnd: DateTimeOffset.UtcNow.AddSeconds(-1));
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -1456,10 +1303,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task LockoutEndToUtcNowSubOneSecondWithManagerShouldNotBeLockedOut()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -1475,10 +1318,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task LockoutEndToUtcNowPlus5ShouldBeLockedOut()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             var lockoutEnd = DateTimeOffset.UtcNow.AddMinutes(5);
             var user = CreateTestUser(lockoutEnd: lockoutEnd);
@@ -1494,10 +1333,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task UserLockedOutWithDateTimeLocalKindNowPlus30()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var mgr = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await mgr.CreateAsync(user));
@@ -1516,10 +1351,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task SetPhoneNumberTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "123-456-7890");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1537,10 +1368,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChangePhoneNumber()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "123-456-7890");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1560,10 +1387,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangePhoneNumberTokenIsInt()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "123-456-7890");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1578,10 +1401,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangePhoneNumberFailsWithWrongToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "123-456-7890");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1614,10 +1433,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangePhoneNumberWithCustomProvider()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             manager.RegisterTokenProvider("Yes", new YesPhoneNumberProvider());
             manager.Options.Tokens.ChangePhoneNumberTokenProvider = "Yes";
@@ -1638,10 +1453,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangePhoneNumberFailsWithWrongPhoneNumber()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "123-456-7890");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1662,10 +1473,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanVerifyPhoneNumber()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1691,10 +1498,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanChangeEmail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("foouser");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1715,12 +1518,32 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        public async Task CanChangeEmailOnlyIfEmailSame()
+        {
+            var manager = CreateManager();
+            var user = CreateTestUser("foouser");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var newEmail = await manager.GetUserNameAsync(user) + "@en.vec";
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var token2 = await manager.GenerateChangeEmailTokenAsync(user, "should@fail.com");
+            IdentityResultAssert.IsSuccess(await manager.ChangeEmailAsync(user, newEmail, token1));
+            Assert.True(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), newEmail);
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "should@fail.com", token2));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task CanChangeEmailWithDifferentTokenProvider()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager(context: null, services: null,
                 configureServices: s => s.Configure<IdentityOptions>(
                     o => o.Tokens.ProviderMap["NewProvider2"] = new TokenProviderDescriptor(typeof(EmailTokenProvider<TUser>))));
@@ -1746,10 +1569,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangeEmailTokensFailsAfterEmailChanged()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("foouser");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1773,10 +1592,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangeEmailFailsWithWrongToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("foouser");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1800,10 +1615,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task ChangeEmailFailsWithEmail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser("foouser");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1826,12 +1637,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1766", FlakyOn.All)]
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             string factorId = "Email"; //default
             var user = CreateTestUser("foouser");
@@ -1862,10 +1670,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task EnableTwoFactorChangesSecurityStamp()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1883,10 +1687,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task GenerateTwoFactorWithUnknownFactorProviderWillThrow()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1912,10 +1712,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task GetValidTwoFactorTestEmptyWithNoProviders()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1931,10 +1727,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGetSetUpdateAndRemoveUserToken()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1959,10 +1751,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanRedeemRecoveryCodeOnlyOnce()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -1991,10 +1779,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task RecoveryCodesInvalidAfterReplace()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -2023,10 +1807,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGetValidTwoFactor()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -2067,10 +1847,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PhoneFactorFailsAfterSecurityStampChangeTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var factorId = "Phone"; // default
             var user = CreateTestUser(phoneNumber: "4251234567");
@@ -2091,10 +1867,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task VerifyTokenFromWrongTokenProviderFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "4251234567");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -2111,10 +1883,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task VerifyWithWrongSmsTokenFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser(phoneNumber: "4251234567");
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -2129,10 +1897,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task NullableDateTimeOperationTest()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var userMgr = CreateManager();
             var user = CreateTestUser(lockoutEnabled: true);
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
@@ -2155,10 +1919,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task CanGetUsersWithClaims()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
 
             for (int i = 0; i < 6; i++)

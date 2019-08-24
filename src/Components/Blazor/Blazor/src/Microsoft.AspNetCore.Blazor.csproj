@@ -1,14 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Build client-side single-page applications (SPAs) with Razor Components running under WebAssembly.</Description>
+    <Description>Build client-side single-page applications (SPAs) with Blazor running under WebAssembly.</Description>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Mono.WebAssembly.Interop" />
-    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\..\Shared\src\WebEventData.cs" />
   </ItemGroup>
 
 </Project>

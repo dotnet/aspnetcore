@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public static ToggleExecutionModeServerFixture<T> WithServerExecution<T>(this ToggleExecutionModeServerFixture<T> serverFixture)
         {
             serverFixture.UseAspNetHost(TestServer.Program.BuildWebHost);
+            serverFixture.ExecutionMode = ExecutionMode.Server;
             return serverFixture;
         }
     }

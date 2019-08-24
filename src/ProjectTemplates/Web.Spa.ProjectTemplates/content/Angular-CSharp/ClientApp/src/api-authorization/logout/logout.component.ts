@@ -53,9 +53,6 @@ export class LogoutComponent implements OnInit {
       const result = await this.authorizeService.signOut(state);
       switch (result.status) {
         case AuthenticationResultStatus.Redirect:
-          // We replace the location here so that in case the user hits the back
-          // arrow from within the IdP he doesn't get into an infinite redirect loop.
-          window.location.replace(result.redirectUrl);
           break;
         case AuthenticationResultStatus.Success:
           await this.navigateToReturnUrl(returnUrl);

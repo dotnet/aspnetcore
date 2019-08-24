@@ -56,8 +56,7 @@ public:
     ExecuteApplication();
 
     HRESULT
-    LoadManagedApplication();
-
+    LoadManagedApplication(ErrorContext& errorContext);
 
     void
     QueueStop();
@@ -114,7 +113,8 @@ public:
         IHttpApplication& pHttpApplication,
         APPLICATION_PARAMETER* pParameters,
         DWORD nParameters,
-        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application);
+        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+        ErrorContext& errorContext);
 
 private:
     struct ExecuteClrContext: std::enable_shared_from_this<ExecuteClrContext>

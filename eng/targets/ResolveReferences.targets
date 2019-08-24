@@ -19,6 +19,8 @@
 <Project>
 
   <PropertyGroup>
+    <EnableCustomReferenceResolution Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildFromSource)' != 'true' OR '$(ExcludeFromSourceBuild)' != 'true')">true</EnableCustomReferenceResolution>
+
     <ResolveReferencesDependsOn>
       ResolveCustomReferences;
       $(ResolveReferencesDependsOn);
@@ -60,7 +62,7 @@
     </Reference>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(EnableCustomReferenceResolution)' == 'true'">
     <Reference Update="@(Reference)">
       <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
     </Reference>
@@ -79,13 +81,11 @@
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
       Include="@(Reference)"
       Exclude="
-        Newtonsoft.Json;
         @(AspNetCoreAppReference);
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
         @(_CompilationOnlyReference);
         @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
-    <!-- TODO: remove Newtonsoft.Json from this list once https://github.com/aspnet/AspNetCore/issues/4260 is resolved -->
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
@@ -105,10 +105,6 @@
     </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
-
-    <!-- Use _ReferenceTemp to workaround issues in Visual Studio which causes a conflict between Reference, packages, and projects. -->
-    <_ReferenceTemp Include="@(Reference)" />
-    <Reference Remove="@(Reference)" />
   </ItemGroup>
 
   <!--
@@ -135,11 +131,8 @@
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
-      <Reference Include="@(_ReferenceTemp)" />
-      <_ReferenceTemp Remove="@(_ReferenceTemp)" />
-
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
@@ -148,6 +141,8 @@
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+      <!-- Only allow suppressing baseline changes in non-servicing builds. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
@@ -201,10 +196,15 @@
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
-             Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
+    <Warning Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
+             Code="BUILD001"
+             Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
 
-    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
+    <Error Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0"
+           Code="BUILD002"
+           Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
+
+    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
            Code="MSB3245"
            Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
   </Target>
@@ -227,7 +227,7 @@
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
     <PropertyGroup>
       <ReferenceAssemblyDirectory>$(MSBuildProjectDirectory)/../ref/</ReferenceAssemblyDirectory>
-      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
+      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
     </PropertyGroup>
 
     <Error Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true' AND Exists($(ReferenceAssemblyDirectory))" Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
@@ -237,7 +237,7 @@
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
         <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
-        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
         <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>

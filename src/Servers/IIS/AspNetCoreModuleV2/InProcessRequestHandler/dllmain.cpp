@@ -17,6 +17,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "StartupExceptionApplication.h"
+#include "file_utility.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -28,6 +29,7 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
+std::string         g_errorPageContent;
 HINSTANCE           g_hServerModule;
 
 HRESULT
@@ -119,7 +121,14 @@ CreateApplication(
         g_fInProcessApplicationCreated = true;
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
-        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
+
+        ErrorContext errorContext;
+        errorContext.statusCode = 500;
+        errorContext.subStatusCode = 30;
+        errorContext.generalErrorType = "ANCM In-Process Start Failure";
+        errorContext.errorReason = "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>";
+
+        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication, errorContext)))
         {
             *ppApplication = inProcessApplication.release();
         }
@@ -128,7 +137,24 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr);
+            auto content = !g_errorPageContent.empty() ?
+                g_errorPageContent :
+                FILE_UTILITY::GetHtml(g_hServerModule,
+                    IN_PROCESS_RH_STATIC_HTML,
+                    errorContext.statusCode,
+                    errorContext.subStatusCode,
+                    errorContext.generalErrorType,
+                    errorContext.errorReason,
+                    "");
+
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
+                *pHttpApplication,
+                options->QueryDisableStartUpErrorPage(),
+                hr,
+                content,
+                errorContext.statusCode,
+                errorContext.subStatusCode,
+                "Internal Server Error");
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();

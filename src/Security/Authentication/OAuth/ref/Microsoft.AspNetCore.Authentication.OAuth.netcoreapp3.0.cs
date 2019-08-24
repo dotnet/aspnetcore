@@ -28,6 +28,20 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public System.Collections.Generic.ICollection<string> Scope { get { throw null; } set { } }
         public virtual void SetScope(params string[] scopes) { }
     }
+    public partial class OAuthCodeExchangeContext
+    {
+        public OAuthCodeExchangeContext(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string code, string redirectUri) { }
+        public string Code { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public static partial class OAuthConstants
+    {
+        public static readonly string CodeChallengeKey;
+        public static readonly string CodeChallengeMethodKey;
+        public static readonly string CodeChallengeMethodS256;
+        public static readonly string CodeVerifierKey;
+    }
     public partial class OAuthCreatingTicketContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions>
     {
         public OAuthCreatingTicketContext(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions options, System.Net.Http.HttpClient backchannel, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens, System.Text.Json.JsonElement user) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions)) { }
@@ -64,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket> CreateTicketAsync(System.Security.Claims.ClaimsIdentity identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri) { throw null; }
+        protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse> ExchangeCodeAsync(Microsoft.AspNetCore.Authentication.OAuth.OAuthCodeExchangeContext context) { throw null; }
         protected virtual string FormatScope() { throw null; }
         protected virtual string FormatScope(System.Collections.Generic.IEnumerable<string> scopes) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -83,6 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public System.Collections.Generic.ICollection<string> Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string TokenEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool UsePkce { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string UserInformationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override void Validate() { }
     }

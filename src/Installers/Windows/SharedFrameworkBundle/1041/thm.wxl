@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">[BundleNameFull] のセットアップ</String>
+  <String Id="Title">[BundleNameShort]</String>
+  <String Id="SubTitle">[BundleNameSub]</String>
+  <String Id="InstallHeader">ようこそ</String>
+  <String Id="InstallMessage">セットアップによって、コンピューターに [WixBundleName] がインストールされます。[\[]インストール[\]]をクリックしてインストール ディレクトリを設定するオプションを表示するか、[\[]閉じる[\]] をクリックして終了します。</String>
+  <String Id="InstallVersion">バージョン [WixBundleVersion]</String>
+  <String Id="ConfirmCancelMessage">取り消しますか?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
+  <String Id="HelpHeader">セットアップのヘルプ</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - バンドルの完全なローカル コピーに対する
+  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への
+  作成を行います。既定の設定はインストールです。
+
+/passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも
+   表示しません。既定では UI とすべてのプロンプトが表示されます。
+
+/norestart   - 再起動を抑制します。既定では再起動前に確認メッセージが表示されます。
+/log log.txt - 特定のファイルに記録します。ログ ファイルは既定では %TEMP% に作成されます。</String>
+  <String Id="HelpCloseButton">閉じる(&amp;C)</String>
+  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;ライセンス条項&lt;/a&gt;。</String>
+  <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
+  <String Id="InstallOptionsButton">オプション(&amp;O)</String>
+  <String Id="InstallInstallButton">インストール(&amp;I)</String>
+  <String Id="InstallCloseButton">閉じる(&amp;C)</String>
+  <String Id="OptionsHeader">セットアップ オプション</String>
+  <String Id="OptionsLocationLabel">インストール場所:</String>
+  <String Id="OptionsBrowseButton">参照(&amp;B)</String>
+  <String Id="OptionsOkButton">OK(&amp;O)</String>
+  <String Id="OptionsCancelButton">キャンセル(&amp;C)</String>
+  <String Id="ProgressHeader">セットアップの進行状況</String>
+  <String Id="ProgressLabel">処理中:</String>
+  <String Id="OverallProgressPackageText">初期化しています...</String>
+  <String Id="ProgressCancelButton">キャンセル(&amp;C)</String>
+  <String Id="ModifyHeader">セットアップの変更</String>
+  <String Id="ModifyRepairButton">修復(&amp;R)</String>
+  <String Id="ModifyUninstallButton">アンインストール(&amp;U)</String>
+  <String Id="ModifyCloseButton">閉じる(&amp;C)</String>
+  <String Id="SuccessRepairHeader">修復が正常に完了しました</String>
+  <String Id="SuccessUninstallHeader">アンインストールが正常に完了しました</String>
+  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String> 
+  <String Id="SuccessHeader">セットアップ完了</String>	
+  <String Id="SuccessLaunchButton">起動(&amp;L)</String>
+  <String Id="SuccessRestartText">ソフトウェアを使用する前にコンピューターを再起動する必要があります。</String>
+  <String Id="SuccessRestartButton">再起動(&amp;R)</String>
+  <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
+  <String Id="FailureHeader">セットアップ失敗</String>
+  <String Id="FailureInstallHeader">セットアップに失敗しました</String>
+  <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
+  <String Id="FailureRepairHeader">修復に失敗しました</String> 
+  <String Id="FailureHyperlinkLogText">1 つまたは複数の問題により、セットアップが失敗しました。問題を解決してからセットアップを再試行してください。詳細については、&lt;a href="#"&gt;ログ ファイル&lt;/a&gt;を参照してください。</String>
+  <String Id="FailureRestartText">ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。</String>
+  <String Id="FailureRestartButton">再起動(&amp;R)</String>
+  <String Id="FailureCloseButton">閉じる(&amp;C)</String>
+  <String Id="FilesInUseHeader">ファイルが使用中</String>
+  <String Id="FilesInUseLabel">次のアプリケーションは、更新の必要があるファイルを使用しています:</String>
+  <String Id="FilesInUseCloseRadioButton">アプリケーションを閉じて再起動を試みる。(&amp;A)</String>
+  <String Id="FilesInUseDontCloseRadioButton">アプリケーションを終了させない (コンピューターの再起動が必要になります)(&amp;D)</String>
+  <String Id="FilesInUseOkButton">OK(&amp;O)</String>
+  <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
+
+  <String Id="Welcome">[WixBundle] のセットアップへようこそ。</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;ライセンス条項&lt;/a&gt;および&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;プライバシーに関する声明&lt;/a&gt;。</String>
+</WixLocalization>

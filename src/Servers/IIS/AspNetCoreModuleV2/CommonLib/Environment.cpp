@@ -45,6 +45,13 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
 
         throw std::system_error(GetLastError(), std::system_category(), "GetEnvironmentVariableW");
     }
+    else if (requestedSize == 1)
+    {
+        // String just contains a nullcharacter, return nothing
+        // GetEnvironmentVariableW has inconsistent behavior when returning size for an empty
+        // environment variable.
+        return std::nullopt;
+    }
 
     std::wstring expandedStr;
     do
@@ -53,6 +60,10 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
         requestedSize = GetEnvironmentVariableW(str.c_str(), expandedStr.data(), requestedSize);
         if (requestedSize == 0)
         {
+            if (GetLastError() == ERROR_ENVVAR_NOT_FOUND)
+            {
+                return std::nullopt;
+            }
             throw std::system_error(GetLastError(), std::system_category(), "ExpandEnvironmentStringsW");
         }
     } while (expandedStr.size() != requestedSize + 1);

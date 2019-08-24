@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 
@@ -160,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 if (!pathSegment.IsSimple)
                 {
-                    if (!MatchComplexSegment(pathSegment, requestSegment.ToString(), values))
+                    if (!MatchComplexSegment(pathSegment, requestSegment.AsSpan(), values))
                     {
                         return false;
                     }
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Routing
 
         internal static bool MatchComplexSegment(
             RoutePatternPathSegment routeSegment,
-            string requestSegment,
+            ReadOnlySpan<char> requestSegment,
             RouteValueDictionary values)
         {
             var indexOfLastSegment = routeSegment.Parts.Count - 1;
@@ -336,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private static bool MatchComplexSegmentCore(
             RoutePatternPathSegment routeSegment,
-            string requestSegment,
+            ReadOnlySpan<char> requestSegment,
             RouteValueDictionary values,
             int indexOfLastSegmentUsed)
         {
@@ -366,14 +365,14 @@ namespace Microsoft.AspNetCore.Routing
                     Debug.Assert(part.IsLiteral || part.IsSeparator);
                     lastLiteral = part;
 
-                    var startIndex = lastIndex - 1;
+                    var startIndex = lastIndex;
                     // If we have a pending parameter subsegment, we must leave at least one character for that
                     if (parameterNeedsValue != null)
                     {
                         startIndex--;
                     }
 
-                    if (startIndex < 0)
+                    if (startIndex == 0)
                     {
                         return false;
                     }
@@ -382,17 +381,15 @@ namespace Microsoft.AspNetCore.Routing
                     if (part.IsLiteral)
                     {
                         var literal = (RoutePatternLiteralPart)part;
-                        indexOfLiteral = requestSegment.LastIndexOf(
+                        indexOfLiteral = requestSegment.Slice(0, startIndex).LastIndexOf(
                         literal.Content,
-                        startIndex,
                         StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
                         var literal = (RoutePatternSeparatorPart)part;
-                        indexOfLiteral = requestSegment.LastIndexOf(
+                        indexOfLiteral = requestSegment.Slice(0, startIndex).LastIndexOf(
                         literal.Content,
-                        startIndex,
                         StringComparison.OrdinalIgnoreCase);
                     }
 
@@ -465,9 +462,9 @@ namespace Microsoft.AspNetCore.Routing
                         }
                     }
 
-                    var parameterValueString = requestSegment.Substring(parameterStartIndex, parameterTextLength);
+                    var parameterValueSpan = requestSegment.Slice(parameterStartIndex, parameterTextLength);
 
-                    if (string.IsNullOrEmpty(parameterValueString))
+                    if (parameterValueSpan.Length == 0)
                     {
                         // If we're here that means we have a segment that contains multiple sub-segments.
                         // For these segments all parameters must have non-empty values. If the parameter
@@ -478,7 +475,7 @@ namespace Microsoft.AspNetCore.Routing
                     else
                     {
                         // If there's a value in the segment for this parameter, use the subsegment value
-                        outValues.Add(parameterNeedsValue.Name, parameterValueString);
+                        outValues.Add(parameterNeedsValue.Name, new string(parameterValueSpan));
                     }
 
                     parameterNeedsValue = null;

@@ -2,9 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <EnableApiCheck>false</EnableApiCheck>
+    <Description>$(Description)
+
+To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.
+    </Description>
   </PropertyGroup>
 
   <Import Project="GenerateContent.targets" />
-  <Import Project="SetPackageProperties.targets" />
 </Project>

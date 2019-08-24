@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act
-            await policy.ApplyAsync(new DefaultHttpContext(), new EndpointSelectorContext(), candidateSet);
+            await policy.ApplyAsync(new DefaultHttpContext(), candidateSet);
 
             // Assert
             Assert.Same(compiled.Endpoint, candidateSet[0].Endpoint);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act
-            var applyTask = policy.ApplyAsync(new DefaultHttpContext(), new EndpointSelectorContext(), candidateSet);
+            var applyTask = policy.ApplyAsync(new DefaultHttpContext(), candidateSet);
             tcs.SetResult(0);
             await applyTask;
 

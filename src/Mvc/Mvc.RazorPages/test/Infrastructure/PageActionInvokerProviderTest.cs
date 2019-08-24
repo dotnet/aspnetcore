@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 modelBinderFactory,
                 tempDataFactory.Object,
                 Options.Create(mvcOptions),
-                Options.Create(new HtmlHelperOptions()),
+                Options.Create(new MvcViewOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance,

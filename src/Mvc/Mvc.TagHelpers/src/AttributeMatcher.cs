@@ -44,13 +44,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var foundResult = false;
-            result = default(TMode);
+            result = default;
 
             // Perf: Avoid allocating enumerator
-            for (var i = 0; i < modeInfos.Count; i++)
+            var modeInfosCount = modeInfos.Count;
+            var allAttributes = context.AllAttributes;
+            // Read interface .Count once rather than per iteration
+            var allAttributesCount = allAttributes.Count;
+            for (var i = 0; i < modeInfosCount; i++)
             {
                 var modeInfo = modeInfos[i];
-                if (!HasMissingAttributes(context, modeInfo.Attributes) &&
+                var requiredAttributes = modeInfo.Attributes;
+                // If there are fewer attributes present than required, one or more of them must be missing.
+                if (allAttributesCount >= requiredAttributes.Length && 
+                    !HasMissingAttributes(allAttributes, requiredAttributes) &&
                     compare(result, modeInfo.Mode) <= 0)
                 {
                     foundResult = true;
@@ -61,19 +68,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return foundResult;
         }
 
-        private static bool HasMissingAttributes(TagHelperContext context, string[] requiredAttributes)
+        private static bool HasMissingAttributes(ReadOnlyTagHelperAttributeList allAttributes, string[] requiredAttributes)
         {
-            if (context.AllAttributes.Count < requiredAttributes.Length)
-            {
-                // If there are fewer attributes present than required, one or more of them must be missing.
-                return true;
-            }
-
             // Check for all attribute values
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < requiredAttributes.Length; i++)
             {
-                if (!context.AllAttributes.TryGetAttribute(requiredAttributes[i], out var attribute))
+                if (!allAttributes.TryGetAttribute(requiredAttributes[i], out var attribute))
                 {
                     // Missing attribute.
                     return true;

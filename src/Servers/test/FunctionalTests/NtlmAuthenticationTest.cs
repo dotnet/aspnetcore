@@ -21,12 +21,14 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        // In theory it could work on these platforms but the client would need non-default credentials.
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task NtlmAuthentication(TestVariant variant)
         {
             var testName = $"NtlmAuthentication_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
@@ -65,7 +67,14 @@ namespace ServerComparison.FunctionalTests
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                        Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        if (variant.Server == ServerType.Kestrel)
+                        {
+                            Assert.DoesNotContain("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
+                        else
+                        {
+                            Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         logger.LogInformation("Testing /Forbidden");

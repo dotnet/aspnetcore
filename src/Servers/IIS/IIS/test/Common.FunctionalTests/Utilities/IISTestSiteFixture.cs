@@ -9,35 +9,8 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public class OutOfProcessTestSiteFixture : IISTestSiteFixture
-    {
-        public OutOfProcessTestSiteFixture() : base(Configure)
-        {
-        }
-
-        private static void Configure(IISDeploymentParameters deploymentParameters)
-        {
-            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
-            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-        }
-    }
-
-    public class OutOfProcessV1TestSiteFixture : IISTestSiteFixture
-    {
-        public OutOfProcessV1TestSiteFixture() : base(Configure)
-        {
-        }
-
-        private static void Configure(IISDeploymentParameters deploymentParameters)
-        {
-            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
-            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesName();
-            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-        }
-    }
-
     public class IISTestSiteFixture : IDisposable
     {
         private ApplicationDeployer _deployer;

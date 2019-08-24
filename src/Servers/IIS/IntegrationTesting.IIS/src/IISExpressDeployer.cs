@@ -94,10 +94,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 RunWebConfigActions(contentRoot);
 
-                var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
                 // Launch the host process.
-                var (actualUri, hostExitToken) = await StartIISExpressAsync(testUri, contentRoot);
+                var (actualUri, hostExitToken) = await StartIISExpressAsync(contentRoot);
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
@@ -152,27 +151,28 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return dllRoot;
         }
 
-        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(Uri uri, string contentRoot)
+        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(string contentRoot)
         {
             using (Logger.BeginScope("StartIISExpress"))
             {
-                var port = uri.Port;
-                if (port == 0)
-                {
-                    port = (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
-                }
-
-                Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
-                PrepareConfig(contentRoot, port);
-
-                var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
-                                string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
-                                string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
-
                 var iisExpressPath = GetIISExpressPath();
 
                 for (var attempt = 0; attempt < MaximumAttempts; attempt++)
                 {
+                    var uri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
+                    var port = uri.Port;
+                    if (port == 0)
+                    {
+                        port = (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
+                    }
+
+                    Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
+                    PrepareConfig(contentRoot, port);
+
+                    var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
+                                    string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
+                                    string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
+
                     Logger.LogInformation("Executing command : {iisExpress} {parameters}", iisExpressPath, parameters);
 
                     var startInfo = new ProcessStartInfo
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void PrepareConfig(string contentRoot, int port)
         {
-            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;;
+            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;
             // Config is required. If not present then fall back to one we carry with us.
             if (string.IsNullOrEmpty(serverConfig))
             {

@@ -35,15 +35,15 @@ namespace Microsoft.AspNetCore.StaticFiles
                 .Configure(app =>
                 {
                     var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.Map("/hello", context =>
+                        endpoints.Map("/hello", context =>
                         {
                             return context.Response.WriteAsync("Hello, world!");
                         });
 
-                        routes.MapFallbackToFile("default.html", new StaticFileOptions()
+                        endpoints.MapFallbackToFile("default.html", new StaticFileOptions()
                         {
                             FileProvider = new PhysicalFileProvider(Path.Combine(environment.WebRootPath, "SubFolder")),
                         });
@@ -83,14 +83,15 @@ namespace Microsoft.AspNetCore.StaticFiles
                 .UseWebRoot(AppContext.BaseDirectory)
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.Map("/hello", context =>
+                        endpoints.Map("/hello", context =>
                         {
                             return context.Response.WriteAsync("Hello, world!");
                         });
 
-                        routes.MapFallbackToFile("/prefix/{*path:nonfile}", "TestDocument.txt");
+                        endpoints.MapFallbackToFile("/prefix/{*path:nonfile}", "TestDocument.txt");
                     });
                 });
 

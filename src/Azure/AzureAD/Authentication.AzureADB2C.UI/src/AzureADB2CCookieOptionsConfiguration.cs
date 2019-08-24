@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
             options.LoginPath = $"/AzureADB2C/Account/SignIn/{azureADB2CScheme}";
             options.LogoutPath = $"/AzureADB2C/Account/SignOut/{azureADB2CScheme}";
             options.AccessDeniedPath = "/AzureADB2C/Account/AccessDenied";
+            options.Cookie.SameSite = SameSiteMode.None;
         }
 
         public void Configure(CookieAuthenticationOptions options)

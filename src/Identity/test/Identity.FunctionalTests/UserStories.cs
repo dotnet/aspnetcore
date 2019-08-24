@@ -27,6 +27,17 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await register.SubmitRegisterFormForValidUserAsync(userName, password);
         }
 
+        internal static async Task<RegisterConfirmation> RegisterNewUserAsyncWithConfirmation(HttpClient client, string userName = null, string password = null, bool hasRealEmailSender = false)
+        {
+            userName = userName ?? $"{Guid.NewGuid()}@example.com";
+            password = password ?? $"!Test.Password1$";
+
+            var index = await Index.CreateAsync(client);
+            var register = await index.ClickRegisterLinkAsync();
+
+            return await register.SubmitRegisterFormWithConfirmation(userName, password, hasRealEmailSender);
+        }
+
 
         internal static async Task<Index> LoginExistingUserAsync(HttpClient client, string userName, string password)
         {
@@ -69,6 +80,19 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await externalLogin.SendEmailAsync(email);
         }
 
+        internal static async Task<RegisterConfirmation> RegisterNewUserWithSocialLoginWithConfirmationAsync(HttpClient client, string userName, string email, bool hasRealEmailSender = false)
+        {
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailWithConfirmationAsync(email, hasRealEmailSender);
+        }
+
         internal static async Task<Index> RegisterNewUserWithSocialLoginAsyncViaRegisterPage(HttpClient client, string userName, string email)
         {
             var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
@@ -82,16 +106,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await externalLogin.SendEmailAsync(email);
         }
 
-        internal static async Task<Account.Manage.Index> SendEmailConfirmationLinkAsync(Index index)
+        internal static async Task<Email> SendEmailConfirmationLinkAsync(Index index)
         {
             var manage = await index.ClickManageLinkAsync();
-            return await manage.SendConfirmationEmailAsync();
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendConfirmationEmailAsync();
         }
 
-        internal static async Task<Account.Manage.Index> SendUpdateProfileAsync(Index index, string newEmail)
+        internal static async Task<Email> SendUpdateEmailAsync(Index index, string newEmail)
         {
             var manage = await index.ClickManageLinkAsync();
-            return await manage.SendUpdateProfileAsync(newEmail);
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendUpdateEmailAsync(newEmail);
         }
 
         internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)

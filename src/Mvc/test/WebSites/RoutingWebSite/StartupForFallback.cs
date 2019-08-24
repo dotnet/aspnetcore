@@ -25,15 +25,13 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                // Workaround for #8130
-                //
-                // You can't fallback to this unless it already has another route.
-                routes.MapAreaControllerRoute("admin", "Admin", "Admin/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapFallbackToAreaController("admin/{*path:nonfile}", "Index", "Fallback", "Admin");
+                endpoints.MapFallbackToPage("/FallbackPage");
 
-                routes.MapFallbackToAreaController("admin/{*path:nonfile}", "Index", "Fallback", "Admin");
-                routes.MapFallbackToPage("/FallbackPage");
+                endpoints.MapControllerRoute("admin", "link_generation/{area}/{controller}/{action}/{id?}");
             });
 
             app.Map("/afterrouting", b => b.Run(c =>

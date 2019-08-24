@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public enum HtmlAttributeValueStyle
     {
         DoubleQuotes = 0,
-        Minimized = 3,
-        NoQuotes = 2,
         SingleQuotes = 1,
+        NoQuotes = 2,
+        Minimized = 3,
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public sealed partial class HtmlTargetElementAttribute : System.Attribute
@@ -204,14 +204,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     }
     public enum TagMode
     {
-        SelfClosing = 1,
         StartTagAndEndTag = 0,
+        SelfClosing = 1,
         StartTagOnly = 2,
     }
     public enum TagStructure
     {
-        NormalOrSelfClosing = 1,
         Unspecified = 0,
+        NormalOrSelfClosing = 1,
         WithoutEndTag = 2,
     }
 }

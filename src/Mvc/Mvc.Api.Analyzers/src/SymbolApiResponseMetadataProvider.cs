@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return Array.Empty<DeclaredApiResponseMetadata>();
         }
 
-        private static IMethodSymbol GetMethodFromConventionMethodAttribute(in ApiControllerSymbolCache symbolCache, IMethodSymbol method)
+        private static IMethodSymbol? GetMethodFromConventionMethodAttribute(in ApiControllerSymbolCache symbolCache, IMethodSymbol method)
         {
             var attribute = method.GetAttributes(symbolCache.ApiConventionMethodAttribute, inherit: true)
                 .FirstOrDefault();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return (IMethodSymbol)conventionMethod;
         }
 
-        private static IMethodSymbol MatchConventionMethod(
+        private static IMethodSymbol? MatchConventionMethod(
             in ApiControllerSymbolCache symbolCache,
             IMethodSymbol method,
             IReadOnlyList<ITypeSymbol> conventionTypes)

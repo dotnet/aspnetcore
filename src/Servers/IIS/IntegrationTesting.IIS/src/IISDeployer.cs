@@ -153,7 +153,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             try
             {
-
                 // Handle cases where debug file is redirected by test
                 var debugLogLocations = new List<string>();
                 if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
@@ -193,8 +192,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         return;
                     }
                 }
-
-                throw new InvalidOperationException($"Unable to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
             }
             finally
             {
@@ -218,11 +215,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 AddTemporaryAppHostConfig(contentRoot, port);
 
-                WaitUntilSiteStarted();
+                WaitUntilSiteStarted(contentRoot);
             }
         }
 
-        private void WaitUntilSiteStarted()
+        private void WaitUntilSiteStarted(string contentRoot)
         {
             ServiceController serviceController = new ServiceController("w3svc");
             Logger.LogInformation("W3SVC status " + serviceController.Status);
@@ -240,6 +237,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 var site = serverManager.Sites.Single();
                 var appPool = serverManager.ApplicationPools.Single();
+
+                var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
+                if (actualPath != contentRoot)
+                {
+                    throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
+                }
 
                 if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
                 {

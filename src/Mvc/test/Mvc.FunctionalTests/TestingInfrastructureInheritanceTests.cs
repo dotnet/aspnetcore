@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public void TestingInfrastructure_WebHost_WithWebHostBuilderRespectsCustomizations()
         {
             // Act
-            var factory = new CustomizedFactory<BasicWebSite.StartupWithoutEndpointRouting>();
-            var customized = factory
+            using var factory = new CustomizedFactory<BasicWebSite.StartupWithoutEndpointRouting>();
+            using var customized = factory
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
             var client = customized.CreateClient();
@@ -37,8 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public void TestingInfrastructure_GenericHost_WithWithHostBuilderRespectsCustomizations()
         {
             // Act
-            var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
-            var customized = factory
+            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+            using var customized = factory
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));
             var client = customized.CreateClient();
@@ -50,6 +51,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(factory.CreateHostCalled);
             Assert.False(factory.CreateServerCalled);
             Assert.False(factory.CreateWebHostBuilderCalled);
+        }
+
+        [Fact]
+        public void TestingInfrastructure_GenericHost_WithWithHostBuilderHasServices()
+        {
+            // Act
+            using var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+
+            // Assert
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
         }
 
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class

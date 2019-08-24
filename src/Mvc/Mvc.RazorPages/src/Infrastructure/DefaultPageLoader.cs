@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             _viewCompilerProvider = viewCompilerProvider;
             _endpointFactory = endpointFactory;
-            _conventions = pageOptions.Value.Conventions;
+            _conventions = pageOptions.Value.Conventions ?? throw new ArgumentNullException(nameof(RazorPagesOptions.Conventions));
             _globalFilters = mvcOptions.Value.Filters;
         }
 
@@ -105,7 +105,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // compiling/loading the page. Then once we have a match we load the page and we can create an endpoint
             // with all of the information we get from the compiled action descriptor.
             var endpoints = new List<Endpoint>();
-            _endpointFactory.AddEndpoints(endpoints, compiled, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
+            _endpointFactory.AddEndpoints(
+                endpoints,
+                routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                action: compiled,
+                routes: Array.Empty<ConventionalRouteEntry>(),
+                conventions: Array.Empty<Action<EndpointBuilder>>(),
+                createInertEndpoints: false);
 
             // In some test scenarios there's no route so the endpoint isn't created. This is fine because
             // it won't happen for real.

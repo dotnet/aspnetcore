@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -53,14 +52,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         // For unit testing
         internal IEnumerable<string> GetReferencePaths()
         {
-            var referencesFromApplicationParts = _partManager
-                .ApplicationParts
-                .OfType<ICompilationReferencesProvider>()
-                .SelectMany(part => part.GetReferencePaths());
+            var referencePaths = new List<string>();
 
-            var referencePaths = referencesFromApplicationParts
-                .Concat(_options.AdditionalReferencePaths)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
+            foreach (var part in _partManager.ApplicationParts)
+            {
+                if (part is ICompilationReferencesProvider compilationReferenceProvider)
+                {
+                    referencePaths.AddRange(compilationReferenceProvider.GetReferencePaths());
+                }
+                else if (part is AssemblyPart assemblyPart)
+                {
+                    referencePaths.AddRange(assemblyPart.GetReferencePaths());
+                }
+            }
+
+            referencePaths.AddRange(_options.AdditionalReferencePaths);
 
             return referencePaths;
         }

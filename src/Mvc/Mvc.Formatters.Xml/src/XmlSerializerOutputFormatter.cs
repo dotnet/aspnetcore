@@ -9,8 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -22,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly ILogger _logger;
+        private MvcOptions _mvcOptions;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
@@ -230,24 +235,41 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var xmlSerializer = GetCachedSerializer(wrappingType);
 
-            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
-            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
-            if (syncIOFeature != null)
+            var httpContext = context.HttpContext;
+            var response = httpContext.Response;
+
+            _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
+
+            var responseStream = response.Body;
+            FileBufferingWriteStream fileBufferingWriteStream = null;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                syncIOFeature.AllowSynchronousIO = true;
+                fileBufferingWriteStream = new FileBufferingWriteStream();
+                responseStream = fileBufferingWriteStream;
             }
 
-            using (var textWriter = context.WriterFactory(context.HttpContext.Response.Body, writerSettings.Encoding))
+            try
             {
-                using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
+                await using (var textWriter = context.WriterFactory(responseStream, selectedEncoding))
                 {
-                    Serialize(xmlSerializer, xmlWriter, value);
+                    using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
+                    {
+                        Serialize(xmlSerializer, xmlWriter, value);
+                    }
                 }
 
-                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                // buffers. This is better than just letting dispose handle it (which would result in a synchronous 
-                // write).
-                await textWriter.FlushAsync();
+                if (fileBufferingWriteStream != null)
+                {
+                    response.ContentLength = fileBufferingWriteStream.Length;
+                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
+                }
+            }
+            finally
+            {
+                if (fileBufferingWriteStream != null)
+                {
+                    await fileBufferingWriteStream.DisposeAsync();
+                }
             }
         }
 

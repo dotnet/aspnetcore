@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Test
 {
     public class GenericContext<TItem> : ComponentBase
@@ -41,10 +40,10 @@ namespace Test
         }
 
         [Parameter]
-        List<TItem> Items { get; set; }
+        public List<TItem> Items { get; set; }
 
         [Parameter]
-        RenderFragment<Context> ChildContent { get; set; }
+        public RenderFragment<Context> ChildContent { get; set; }
 
         public class Context
         {
@@ -57,7 +56,7 @@ namespace Test
 
         private readonly CSharpSyntaxTree MultipleGenericParameterComponent = Parse(@"
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Test
 {
     public class MultipleGenericParameter<TItem1, TItem2, TItem3> : ComponentBase
@@ -70,13 +69,13 @@ namespace Test
         }
 
         [Parameter]
-        TItem1 Item1 { get; set; }
+        public TItem1 Item1 { get; set; }
 
         [Parameter]
-        TItem2 Item2 { get; set; }
+        public TItem2 Item2 { get; set; }
 
         [Parameter]
-        TItem3 Item3 { get; set; }
+        public TItem3 Item3 { get; set; }
     }
 }
 ");
@@ -95,7 +94,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" />");
 
             // Act
@@ -122,10 +120,9 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
+<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -155,7 +152,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"">
   <div>@(context.Item * context.Index)</div>
 </GenericContext>");
@@ -173,15 +169,15 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, genericComponentType.FullName, 3, 0),
                 frame => AssertFrame.Attribute(frame, "Items", typeof(List<int>), 1),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 2),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "0", 5),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 6),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "2", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]
@@ -191,10 +187,9 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<GenericContext Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
+<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -224,12 +219,11 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var assembly = CompileToAssembly("Test.cshtml", @"
-@addTagHelper *, TestAssembly
 @typeparam TItem
-<GenericContext Items=""@MyItems"" ref=""_my"" />
+<GenericContext Items=""@MyItems"" @ref=""_my"" @ref:suppressField />
 
-@functions {
-    [Parameter] List<TItem> MyItems { get; set; }
+@code {
+    [Parameter] public List<TItem> MyItems { get; set; }
     GenericContext<TItem> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -263,7 +257,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext Items=""@(new List<int>() { 1, 2, })"" />");
 
             // Act
@@ -290,7 +283,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(MultipleGenericParameterComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MultipleGenericParameter
   TItem1=""int""
   TItem2=""string""

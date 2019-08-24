@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Extensions
                 ["client_id"] = "SPA",
                 ["redirect_uri"] = "http://localhost/authentication/login-callback",
                 ["post_logout_redirect_uri"] = "http://localhost/authentication/logout-callback",
-                ["response_type"] = "id_token token",
+                ["response_type"] = "code",
                 ["scope"] = "a/b c/d"
             };
 

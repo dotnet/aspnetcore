@@ -1,0 +1,209 @@
+parameters:
+# Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+  cancelTimeoutInMinutes: ''
+
+  condition: ''
+
+  continueOnError: false
+
+  container: ''
+
+  dependsOn: ''
+
+  displayName: ''
+
+  steps: []
+
+  pool: ''
+
+  strategy: ''
+
+  timeoutInMinutes: ''
+
+  variables: []
+
+  workspace: ''
+
+# Job base template specific parameters
+  # Optional: Enable installing Microbuild plugin
+  #           if 'true', these "variables" must be specified in the variables object or as part of the queue matrix
+  #             _TeamName - the name of your team
+  #             _SignType - 'test' or 'real'
+  enableMicrobuild: false
+
+  # Optional: Include PublishBuildArtifacts task
+  enablePublishBuildArtifacts: false
+
+  # Optional: Enable publishing to the build asset registry
+  enablePublishBuildAssets: false
+
+  # Optional: Prevent gather/push manifest from executing when using publishing pipelines
+  enablePublishUsingPipelines: false
+
+  # Optional: Include PublishTestResults task
+  enablePublishTestResults: false
+
+  # Optional: enable sending telemetry
+  enableTelemetry: false
+
+  # Optional: define the helix repo for telemetry (example: 'dotnet/arcade')
+  helixRepo: ''
+
+  # Optional: define the helix type for telemetry (example: 'build/product/')
+  helixType: ''
+
+  # Required: name of the job
+  name: ''
+
+  # Optional: should run as a public build even in the internal project
+  #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
+  runAsPublic: false
+
+# Internal resources (telemetry, microbuild) can only be accessed from non-public projects,
+# and some (Microbuild) should only be applied to non-PR cases for internal builds.
+
+jobs:
+- job: ${{ parameters.name }}
+
+  ${{ if ne(parameters.cancelTimeoutInMinutes, '') }}:
+    cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
+
+  ${{ if ne(parameters.condition, '') }}:
+    condition: ${{ parameters.condition }}
+
+  ${{ if ne(parameters.container, '') }}:
+    container: ${{ parameters.container }}
+
+  ${{ if ne(parameters.continueOnError, '') }}:
+    continueOnError: ${{ parameters.continueOnError }}
+
+  ${{ if ne(parameters.dependsOn, '') }}:
+    dependsOn: ${{ parameters.dependsOn }}
+
+  ${{ if ne(parameters.displayName, '') }}:
+    displayName: ${{ parameters.displayName }}
+
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+
+  ${{ if ne(parameters.strategy, '') }}:
+    strategy: ${{ parameters.strategy }}
+
+  ${{ if ne(parameters.timeoutInMinutes, '') }}:
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+
+  variables:
+  - ${{ if eq(parameters.enableTelemetry, 'true') }}:
+    - name: DOTNET_CLI_TELEMETRY_PROFILE
+      value: '$(Build.Repository.Uri)'
+  - ${{ each variable in parameters.variables }}:
+    # handle name-value variable syntax
+    # example:
+    # - name: [key]
+    #   value: [value]
+    - ${{ if ne(variable.name, '') }}:
+      - name: ${{ variable.name }}
+        value: ${{ variable.value }}
+    
+    # handle variable groups
+    - ${{ if ne(variable.group, '') }}:
+      - group: ${{ variable.group }}
+
+    # handle key-value variable syntax.
+    # example:
+    # - [key]: [value]
+    - ${{ if and(eq(variable.name, ''), eq(variable.group, '')) }}:
+      - ${{ each pair in variable }}:
+        - name: ${{ pair.key }}
+          value: ${{ pair.value }}
+
+  # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds
+  - ${{ if and(eq(parameters.enableTelemetry, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: DotNet-HelixApi-Access
+
+  ${{ if ne(parameters.workspace, '') }}:
+    workspace: ${{ parameters.workspace }}
+
+  steps:
+  - ${{ if eq(parameters.enableTelemetry, 'true') }}:
+    # Telemetry tasks are built from https://github.com/dotnet/arcade-extensions
+    - task: sendStartTelemetry@0
+      displayName: 'Send Helix Start Telemetry'
+      inputs:
+        helixRepo: ${{ parameters.helixRepo }}
+        ${{ if ne(parameters.helixType, '') }}:
+          helixType: ${{ parameters.helixType }}
+        buildConfig: $(_BuildConfig)
+        runAsPublic: ${{ parameters.runAsPublic }}
+      continueOnError: ${{ parameters.continueOnError }}
+      condition: always()
+
+  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: MicroBuildSigningPlugin@2
+        displayName: Install MicroBuild plugin
+        inputs:
+          signType: $(_SignType)
+          zipSources: false
+          feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+        env:
+          TeamName: $(_TeamName)
+        continueOnError: ${{ parameters.continueOnError }}
+        condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+
+  - ${{ each step in parameters.steps }}:
+    - ${{ step }}
+
+  - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: MicroBuildCleanup@1
+        displayName: Execute Microbuild cleanup tasks  
+        condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+        continueOnError: ${{ parameters.continueOnError }}
+        env:
+          TeamName: $(_TeamName)
+
+  - ${{ if eq(parameters.enableTelemetry, 'true') }}:
+    # Telemetry tasks are built from https://github.com/dotnet/arcade-extensions
+    - task: sendEndTelemetry@0
+      displayName: 'Send Helix End Telemetry'
+      continueOnError: ${{ parameters.continueOnError }}
+      condition: always()
+
+  - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PublishLocation: Container
+        ArtifactName: $(Agent.Os)_$(Agent.JobName)
+      continueOnError: true
+      condition: always()
+
+  - ${{ if eq(parameters.enablePublishTestResults, 'true') }}:
+    - task: PublishTestResults@2
+      displayName: Publish Test Results
+      inputs:
+        testResultsFormat: 'xUnit'
+        testResultsFiles: '*.xml' 
+        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+      continueOnError: true
+      condition: always()
+    
+  - ${{ if and(eq(parameters.enablePublishBuildAssets, true), ne(parameters.enablePublishUsingPipelines, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: CopyFiles@2
+      displayName: Gather Asset Manifests
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/AssetManifest'
+        TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
+      continueOnError: ${{ parameters.continueOnError }}
+      condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+
+    - task: PublishBuildArtifacts@1
+      displayName: Push Asset Manifests
+      inputs:
+        PathtoPublish: '$(Build.StagingDirectory)/AssetManifests'
+        PublishLocation: Container
+        ArtifactName: AssetManifests
+      continueOnError: ${{ parameters.continueOnError }}
+      condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))

@@ -14,7 +14,8 @@ $srcDir = "`$(MSBuildThisFileDirectory)..";
 $projects = @(
      @{
         ProjectDirectory = "$srcDir\AspNetCoreModuleV2\AspNetCore";
-        ProjectName = "`AspNetCore.vcxproj";
+        ProjectName = "AspNetCore.vcxproj";
+        OutDirName = "AspNetCoreModuleShim";
         NativeAsset = "aspnetcorev2";
         BaseOutputPath = "AspNetCoreModuleV2"
         PropetyName = "AspNetCoreModuleV2Shim"
@@ -22,6 +23,7 @@ $projects = @(
      @{
         ProjectDirectory = "$srcDir\AspNetCoreModuleV2\InProcessRequestHandler";
         ProjectName = "InProcessRequestHandler.vcxproj";
+        OutDirName = "InProcessRequestHandler";
         NativeAsset = "aspnetcorev2_inprocess";
         BaseOutputPath = "AspNetCoreModuleV2";
         PropetyName = "AspNetCoreModuleV2InProcessHandler"
@@ -29,6 +31,7 @@ $projects = @(
      @{
         ProjectDirectory = "$srcDir\AspNetCoreModuleV2\OutOfProcessRequestHandler";
         ProjectName = "OutOfProcessRequestHandler.vcxproj";
+        OutDirName = "OutOfProcessRequestHandler";
         NativeAsset = "aspnetcorev2_outofprocess";
         BaseOutputPath = "AspNetCoreModuleV2";
         PackageSubPath = "`$(AspNetCoreModuleOutOfProcessVersion)\";
@@ -76,8 +79,8 @@ function New-Component($project, $platform)
     CopyProperties -from $project -to $component;
     CopyProperties -from @{
         Include = "$($project.ProjectDirectory)\$($project.ProjectName)";
-        DllLocation = "$($project.ProjectDirectory)\bin\`$(Configuration)\$($platform.VCPlatform)\$($project.NativeAsset).dll";
-        PdbLocation = "$($project.ProjectDirectory)\bin\`$(Configuration)\$($platform.VCPlatform)\$($project.NativeAsset).pdb";
+        DllLocation = "`$(ArtifactsBinDir)$($project.OutDirName)\$($platform.VCPlatform)\`$(Configuration)\$($project.NativeAsset).dll";
+        PdbLocation = "`$(ArtifactsBinDir)$($project.OutDirName)\$($platform.VCPlatform)\`$(Configuration)\$($project.NativeAsset).pdb";
     } -to $component;
 
     return $component;
@@ -102,7 +105,7 @@ foreach ($project in $projects)
 
     $properties += @{
         Name = "$($project.PropetyName)Dll";
-        Value = "$($project.ProjectDirectory)\bin\`$(Configuration)\`$(NativeVCPlatform)\$($project.NativeAsset).dll";
+        Value = "`$(ArtifactsBinDir)$($project.OutDirName)\`$(NativeVCPlatform)\`$(Configuration)\$($project.NativeAsset).dll";
     };
 
     $runComponent = New-Component $project $currentPlatform;

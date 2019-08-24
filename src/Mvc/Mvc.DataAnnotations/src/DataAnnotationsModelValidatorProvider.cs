@@ -59,9 +59,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     _stringLocalizerFactory);
             }
 
-            for (var i = 0; i < context.Results.Count; i++)
+            var results = context.Results;
+            // Read interface .Count once rather than per iteration
+            var resultsCount = results.Count;
+            for (var i = 0; i < resultsCount; i++)
             {
-                var validatorItem = context.Results[i];
+                var validatorItem = results[i];
                 if (validatorItem.Validator != null)
                 {
                     continue;
@@ -106,7 +109,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 return true;
             }
 
-            for (var i = 0; i < validatorMetadata.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var validatorMetadataCount = validatorMetadata.Count;
+            for (var i = 0; i < validatorMetadataCount; i++)
             {
                 if (validatorMetadata[i] is ValidationAttribute)
                 {

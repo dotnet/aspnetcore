@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,9 +25,8 @@ namespace MvcSandbox
             {
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
             services.AddMvc()
-                .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
         }
 
@@ -38,7 +36,8 @@ namespace MvcSandbox
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
-            app.UseRouting(builder =>
+            app.UseRouting();
+            app.UseEndpoints(builder =>
             {
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
@@ -70,11 +69,9 @@ namespace MvcSandbox
 
                 builder.MapControllers();
                 builder.MapRazorPages();
-                builder.MapComponentHub<MvcSandbox.Components.App>("app");
+                builder.MapBlazorHub<MvcSandbox.Components.App>("app");
                 builder.MapFallbackToPage("/Components");
             });
-
-            app.UseEndpoint();
         }
 
         private static Task WriteEndpoints(HttpContext httpContext)
@@ -110,7 +107,6 @@ namespace MvcSandbox
                     factory
                         .AddConsole()
                         .AddDebug();
-                    factory.SetMinimumLevel(LogLevel.Trace);
                 })
                 .UseIISIntegration()
                 .UseKestrel()

@@ -4,28 +4,50 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     /// <summary>
-    /// An <see cref="MatcherPolicy"/> that implements filtering and selection by
+    /// A <see cref="MatcherPolicy"/> that implements filtering and selection by
     /// the host header of a request.
     /// </summary>
-    public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
+    public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
+        private const string WildcardHost = "*";
+        private const string WildcardPrefix = "*.";
+
         // Run after HTTP methods, but before 'default'.
         public override int Order { get; } = -100;
 
         public IComparer<Endpoint> Comparer { get; } = new HostMetadataEndpointComparer();
 
-        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
+            return !ContainsDynamicEndpoints(endpoints) && AppliesToEndpointsCore(endpoints);
+        }
+
+        bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        {
+            // When the node contains dynamic endpoints we can't make any assumptions.
+            var applies = ContainsDynamicEndpoints(endpoints);
+            if (applies)
+            {
+                // Run for the side-effect of validating metadata.
+                AppliesToEndpointsCore(endpoints);
+            }
+
+            return applies;
+        }
+
+        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        {
             return endpoints.Any(e =>
             {
                 var hosts = e.Metadata.GetMetadata<IHostMetadata>()?.Hosts;
@@ -46,6 +68,92 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 return false;
             });
+        }
+
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (candidates == null)
+            {
+                throw new ArgumentNullException(nameof(candidates));
+            }
+
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                if (!candidates.IsValidCandidate(i))
+                {
+                    continue;
+                }
+
+                var hosts = candidates[i].Endpoint.Metadata.GetMetadata<IHostMetadata>()?.Hosts;
+                if (hosts == null || hosts.Count == 0)
+                {
+                    // Can match any host.
+                    continue;
+                }
+
+                var matched = false;
+                var (requestHost, requestPort) = GetHostAndPort(httpContext);
+                for (var j = 0; j < hosts.Count; j++)
+                {
+                    var host = hosts[j].AsSpan();
+                    var port = ReadOnlySpan<char>.Empty;
+
+                    // Split into host and port
+                    var pivot = host.IndexOf(':');
+                    if (pivot >= 0)
+                    {
+                        port = host.Slice(pivot + 1);
+                        host = host.Slice(0, pivot);
+                    }
+
+                    if (host == null || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Can match any host
+                    }
+                    else if (
+                        host.StartsWith(WildcardPrefix) &&
+
+                        // Note that we only slice of the `*`. We want to match the leading `.` also.
+                        MemoryExtensions.EndsWith(requestHost, host.Slice(WildcardHost.Length), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Matches a suffix wildcard.
+                    }
+                    else if (MemoryExtensions.Equals(requestHost, host, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Matches exactly
+                    }
+                    else
+                    {
+                        // If we get here then the host doesn't match.
+                        continue;
+                    }
+
+                    if (MemoryExtensions.Equals(port, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Port is a wildcard, we allow any port.
+                    }
+                    else if (port.Length > 0 && (!int.TryParse(port, out var parsed) || parsed != requestPort))
+                    {
+                        // If we get here then the port doesn't match.
+                        continue;
+                    }
+
+                    matched = true;
+                    break;
+                }
+
+                if (!matched)
+                {
+                    candidates.SetValidity(i, false);
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         private static EdgeKey CreateEdgeKey(string host)
@@ -71,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         return new EdgeKey(hostParts[0], port);
                     }
-                    else if (string.Equals(hostParts[1], "*", StringComparison.Ordinal))
+                    else if (string.Equals(hostParts[1], WildcardHost, StringComparison.Ordinal))
                     {
                         return new EdgeKey(hostParts[0], null);
                     }
@@ -211,6 +319,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        private static (string host, int? port) GetHostAndPort(HttpContext httpContext)
+        {
+            var hostString = httpContext.Request.Host;
+            if (hostString.Port != null)
+            {
+                return (hostString.Host, hostString.Port);
+            }
+            else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return (hostString.Host, 443);
+            }
+            else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return (hostString.Host, 80);
+            }
+            else
+            {
+                return (hostString.Host, null);
+            }
+        }
+
         private class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
         {
             protected override int CompareMetadata(IHostMetadata x, IHostMetadata y)
@@ -237,9 +366,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // HostString can allocate when accessing the host or port
                 // Store host and port locally and reuse
-                var requestHost = httpContext.Request.Host;
-                var host = requestHost.Host;
-                var port = ResolvePort(httpContext, requestHost);
+                var (host, port) = GetHostAndPort(httpContext);
 
                 var destinations = _destinations;
                 for (var i = 0; i < destinations.Length; i++)
@@ -255,31 +382,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 return _exitDestination;
             }
-
-            private static int? ResolvePort(HttpContext httpContext, HostString requestHost)
-            {
-                if (requestHost.Port != null)
-                {
-                    return requestHost.Port;
-                }
-                else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 443;
-                }
-                else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 80;
-                }
-                else
-                {
-                    return null;
-                }
-            }
         }
 
         private readonly struct EdgeKey : IEquatable<EdgeKey>, IComparable<EdgeKey>, IComparable
         {
-            private const string WildcardHost = "*";
             internal static readonly EdgeKey WildcardEdgeKey = new EdgeKey(null, null);
 
             public readonly int? Port;
@@ -292,7 +398,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Host = host ?? WildcardHost;
                 Port = port;
 
-                HasHostWildcard = Host.StartsWith("*.", StringComparison.Ordinal);
+                HasHostWildcard = Host.StartsWith(WildcardPrefix, StringComparison.Ordinal);
                 _wildcardEndsWith = HasHostWildcard ? Host.Substring(1) : null;
             }
 
@@ -342,6 +448,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return true;
             }
 
+
             public override int GetHashCode()
             {
                 return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);
@@ -359,7 +466,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public override string ToString()
             {
-                return $"{Host}:{Port?.ToString() ?? "*"}";
+                return $"{Host}:{Port?.ToString() ?? WildcardHost}";
             }
         }
     }

@@ -1,0 +1,5 @@
+@page "/PageAllowingAnonymous"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "NobodyIsInThisRole")]
+@attribute [AllowAnonymous]
+<div id="auth-success">Welcome to PageAllowingAnonymous!</div>

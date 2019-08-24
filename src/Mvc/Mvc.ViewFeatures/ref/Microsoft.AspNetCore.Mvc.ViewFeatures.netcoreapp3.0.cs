@@ -1,20 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Server
-{
-    public partial class ComponentPrerenderingContext
-    {
-        public ComponentPrerenderingContext() { }
-        public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Components.ParameterCollection Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public partial interface IComponentPrerenderer
-    {
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> PrerenderComponentAsync(Microsoft.AspNetCore.Components.Server.ComponentPrerenderingContext context);
-    }
-}
 namespace Microsoft.AspNetCore.Mvc
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
@@ -43,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PartialViewResult PartialView() { throw null; }
@@ -228,6 +213,92 @@ namespace Microsoft.AspNetCore.Mvc
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Mvc.Diagnostics
+{
+    public sealed partial class AfterViewComponentEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.AfterViewComponent";
+        public AfterViewComponentEventData(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext viewComponentContext, Microsoft.AspNetCore.Mvc.IViewComponentResult viewComponentResult, object viewComponent) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public object ViewComponent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext ViewComponentContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.IViewComponentResult ViewComponentResult { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class AfterViewEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.AfterView";
+        public AfterViewEventData(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewEngines.IView View { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class BeforeViewComponentEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeViewComponent";
+        public BeforeViewComponentEventData(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext viewComponentContext, object viewComponent) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public object ViewComponent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext ViewComponentContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class BeforeViewEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeView";
+        public BeforeViewEventData(Microsoft.AspNetCore.Mvc.ViewEngines.IView view, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewEngines.IView View { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class ViewComponentAfterViewExecuteEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute";
+        public ViewComponentAfterViewExecuteEventData(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext viewComponentContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewEngines.IView View { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext ViewComponentContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class ViewComponentBeforeViewExecuteEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute";
+        public ViewComponentBeforeViewExecuteEventData(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext viewComponentContext, Microsoft.AspNetCore.Mvc.ViewEngines.IView view) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewEngines.IView View { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext ViewComponentContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class ViewFoundEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.ViewFound";
+        public ViewFoundEventData(Microsoft.AspNetCore.Mvc.ActionContext actionContext, bool isMainPage, Microsoft.AspNetCore.Mvc.ActionResult result, string viewName, Microsoft.AspNetCore.Mvc.ViewEngines.IView view) { }
+        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        public bool IsMainPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewEngines.IView View { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ViewName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class ViewNotFoundEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.ViewNotFound";
+        public ViewNotFoundEventData(Microsoft.AspNetCore.Mvc.ActionContext actionContext, bool isMainPage, Microsoft.AspNetCore.Mvc.ActionResult result, string viewName, System.Collections.Generic.IEnumerable<string> searchedLocations) { }
+        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        public bool IsMainPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> SearchedLocations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ViewName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public static partial class ModelStateDictionaryExtensions
@@ -248,8 +319,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum Html5DateRenderingMode
     {
-        CurrentCulture = 1,
         Rfc3339 = 0,
+        CurrentCulture = 1,
+    }
+    public static partial class HtmlHelperComponentExtensions
+    {
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
     public static partial class HtmlHelperDisplayExtensions
     {
@@ -584,10 +661,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum TagRenderMode
     {
-        EndTag = 2,
         Normal = 0,
-        SelfClosing = 3,
         StartTag = 1,
+        EndTag = 2,
+        SelfClosing = 3,
     }
     public static partial class ViewComponentHelperExtensions
     {
@@ -991,12 +1068,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public string ValidationMessageElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ValidationSummaryMessageElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public static partial class HtmlHelperRazorComponentExtensions
-    {
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-    }
     public partial class HtmlHelper<TModel> : Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper, Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper, Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
     {
         public HtmlHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator htmlGenerator, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope bufferScope, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpressionProvider modelExpressionProvider) : base (default(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator), default(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine), default(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider), default(Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope), default(System.Text.Encodings.Web.HtmlEncoder), default(System.Text.Encodings.Web.UrlEncoder)) { }
@@ -1218,7 +1289,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     }
     public partial class ViewComponentResultExecutor : Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.ViewComponentResult>
     {
+        [System.ObsoleteAttribute("This constructor is obsolete and will be removed in a future version.")]
         public ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory) { }
+        public ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ViewComponentResult result) { throw null; }
     }
@@ -1299,7 +1372,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public static readonly string DefaultContentType;
         protected ViewExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, System.Diagnostics.DiagnosticListener diagnosticListener) { }
         public ViewExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataFactory, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) { }
-        protected System.Diagnostics.DiagnosticListener DiagnosticSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.Diagnostics.DiagnosticListener DiagnosticListener { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider ModelMetadataProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory TempDataFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine ViewEngine { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

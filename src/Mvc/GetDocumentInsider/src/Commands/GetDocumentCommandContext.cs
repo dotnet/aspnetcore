@@ -8,18 +8,14 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
     [Serializable]
     public class GetDocumentCommandContext
     {
-        public string AssemblyDirectory { get; set; }
-
         public string AssemblyName { get; set; }
 
         public string AssemblyPath { get; set; }
 
-        public string DocumentName { get; set; }
+        public string FileListPath { get; set; }
 
-        public string Method { get; set; }
+        public string OutputDirectory { get; set; }
 
-        public string OutputPath { get; set; }
-
-        public string Service { get; set; }
+        public string ProjectName { get; set; }
     }
 }

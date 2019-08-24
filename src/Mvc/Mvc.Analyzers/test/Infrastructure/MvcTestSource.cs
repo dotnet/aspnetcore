@@ -27,13 +27,16 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static string GetProjectDirectory()
         {
-            // On helix we use the published test files 
+            // On helix we use the published test files
             if (SkipOnHelixAttribute.OnHelix())
             {
                 return AppContext.BaseDirectory;
             }
 
+// https://github.com/aspnet/AspNetCore/issues/9431
+#pragma warning disable 0618
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
+#pragma warning restore 0618
             var projectDirectory = Path.Combine(solutionDirectory, "Mvc.Analyzers", "test");
             return projectDirectory;
         }

@@ -15,8 +15,7 @@ namespace RazorPagesWebSite
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => options.LoginPath = "/Login");
 
-            services.AddMvc()
-                .AddRazorPagesOptions(options =>
+            services.AddRazorPages(options =>
                 {
                     options.Conventions.AuthorizeFolder("/Admin");
                 })
@@ -25,13 +24,16 @@ namespace RazorPagesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
-            {
-                routes.MapControllers();
-                routes.MapRazorPages();
-            });
+            app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

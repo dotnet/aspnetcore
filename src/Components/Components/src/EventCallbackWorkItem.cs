@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Wraps a callback delegate associated with an event.
     /// </summary>
-    public struct EventCallbackWorkItem
+    public readonly struct EventCallbackWorkItem
     {
         /// <summary>
         /// An empty <see cref="EventCallbackWorkItem"/>.

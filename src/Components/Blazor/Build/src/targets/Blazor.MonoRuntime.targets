@@ -170,6 +170,8 @@
       </BlazorItemOutput>
     </ItemGroup>
 
+    <Error Condition="'@(BlazorJsFile->Count())' == '0'" Text="No JS files found in '$(BlazorJsPath)'" />
+
     <ItemGroup Label="Static content supplied by NuGet packages">
       <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
         <TargetOutputPath>$(TargetDir)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
@@ -434,9 +436,15 @@
 
     <!-- Clear the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
     <Delete Files="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+	
+	
+	<PropertyGroup>
+	  <_MonoLinkerDotNetPath>$(DOTNET_HOST_PATH)</_MonoLinkerDotNetPath>
+	  <_MonoLinkerDotNetPath Condition="'$(_MonoLinkerDotNetPath)' == ''">dotnet</_MonoLinkerDotNetPath>
+	</PropertyGroup>
 
     <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
-    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
+    <Exec Command="$(_MonoLinkerDotNetPath) &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
 
     <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
     <ItemGroup>

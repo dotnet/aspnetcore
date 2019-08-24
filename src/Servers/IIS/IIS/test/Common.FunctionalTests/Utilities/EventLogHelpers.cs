@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class EventLogHelpers
     {
@@ -79,8 +79,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return string.Join(",", entries.Select(e => e.Message));
         }
 
-
-
         private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
         {
             var eventLog = new EventLog("Application");
@@ -89,8 +87,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // Check results in reverse order.
             var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
 
-            // Event log messages round down to the nearest second, so subtract a second
-            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-1);
+            // Event log messages round down to the nearest second, so subtract 5 seconds to make sure we get event logs
+            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
             for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
             {
                 var eventLogEntry = eventLog.Entries[i];
@@ -194,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (DeployerSelector.HasNewHandler)
             {
-                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Last 30KB characters of captured stdout and stderr logs:\r\n{output}";
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
             }
             else
             {
@@ -219,13 +217,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult)
+        public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult, string output)
         {
             if (DeployerSelector.HasNewShim)
             {
                 return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                     $"commandline '(.*)' with multiple retries. " +
-                    $"Failed to bind to port '(.*)'. See previous warnings for details.";
+                    $"Failed to bind to port '(.*)'. First 30KB characters of captured stdout and stderr logs from multiple retries:\r\n{output}";
             }
             else
             {
@@ -261,7 +259,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
         {
-            return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application.";
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS or Microsoft.AspNetCore.App is referenced in your application.";
+
+            }
+            else
+            {
+                return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application.";
+            }
         }
 
         public static string CouldNotStartStdoutFileRedirection(string file, IISDeploymentResult deploymentResult)

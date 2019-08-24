@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,14 +16,12 @@ namespace GenericHostWebSite
             services.AddSingleton(new TestGenericService { Message = "true" });
 
             services
-                .AddMvc(options =>
+                .AddControllers(options =>
                 {
                     // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
                     options.EnableEndpointRouting = false;
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
-                .AddNewtonsoftJson()
-                .AddXmlDataContractSerializerFormatters();
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddLogging();
             services.AddHttpContextAccessor();
@@ -40,17 +35,18 @@ namespace GenericHostWebSite
 
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "areaRoute",
                     "{area:exists}/{controller}/{action}",
                     new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute("ActionAsMethod", "{controller}/{action}",
+                endpoints.MapControllerRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute("PageRoute", "{controller}/{action}/{page}");
+                endpoints.MapControllerRoute("PageRoute", "{controller}/{action}/{page}");
             });
         }
     }

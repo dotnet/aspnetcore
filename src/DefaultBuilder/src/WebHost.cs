@@ -7,7 +7,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -124,6 +126,8 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     adds the HostFiltering middleware,
+        ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
@@ -142,6 +146,8 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     adds the HostFiltering middleware,
+        ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.
         /// </remarks>
         /// <param name="args">The command line args.</param>
@@ -201,6 +207,13 @@ namespace Microsoft.AspNetCore
 
         internal static void ConfigureWebDefaults(IWebHostBuilder builder)
         {
+            builder.ConfigureAppConfiguration((ctx, cb) =>
+            {
+                if (ctx.HostingEnvironment.IsDevelopment())
+                {
+                    StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment, ctx.Configuration);
+                }
+            });
             builder.UseKestrel((builderContext, options) =>
             {
                 options.Configure(builderContext.Configuration.GetSection("Kestrel"));
@@ -223,6 +236,20 @@ namespace Microsoft.AspNetCore
                             new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
 
                 services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
+
+                if (string.Equals("true", hostingContext.Configuration["ForwardedHeaders_Enabled"], StringComparison.OrdinalIgnoreCase))
+                {
+                    services.Configure<ForwardedHeadersOptions>(options =>
+                    {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                        // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
+                        // being enabled by explicit configuration.
+                        options.KnownNetworks.Clear();
+                        options.KnownProxies.Clear();
+                    });
+
+                    services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
+                }
 
                 services.AddRouting();
             })

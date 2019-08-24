@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,9 +29,39 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void AssembliesAreReferenceAssemblies()
+        {
+            IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
+            Assert.NotEmpty(dlls);
+
+            // Workaround https://github.com/aspnet/AspNetCore/issues/11206
+            dlls = dlls.Where(d => !d.Contains("System.IO.Pipelines"));
+
+            Assert.All(dlls, path =>
+            {
+                var assemblyName = AssemblyName.GetAssemblyName(path);
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var assemblyDefinition = reader.GetAssemblyDefinition();
+                var hasRefAssemblyAttribute = assemblyDefinition.GetCustomAttributes().Any(attr =>
+                {
+                    var attribute = reader.GetCustomAttribute(attr);
+                    var attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
+                    return reader.StringComparer.Equals(attributeType.Namespace, typeof(ReferenceAssemblyAttribute).Namespace)
+                        && reader.StringComparer.Equals(attributeType.Name, nameof(ReferenceAssemblyAttribute));
+                });
+
+                Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
+                Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+            });
+        }
+
+        [Fact]
         public void PlatformManifestListsAllFiles()
         {
-            var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "Microsoft.AspNetCore.App.PlatformManifest.txt");
+            var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();
@@ -67,7 +101,7 @@ namespace Microsoft.AspNetCore
             {
                 var parts = line.Split('|');
                 Assert.Equal(4, parts.Length);
-                Assert.Equal("Microsoft.AspNetCore.App", parts[1]);
+                Assert.Equal("Microsoft.AspNetCore.App.Ref", parts[1]);
                 if (parts[2].Length > 0)
                 {
                     Assert.True(Version.TryParse(parts[2], out _), "Assembly version must be convertable to System.Version");

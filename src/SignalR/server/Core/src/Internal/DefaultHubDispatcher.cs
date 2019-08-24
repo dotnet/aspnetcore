@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -19,7 +20,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+    internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
     {
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private Task ProcessInvocationBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)
         {
-            Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
+            Log.InvalidHubParameters(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
 
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
-                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -242,7 +243,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
                     if (clientStreamLength != serverStreamLength)
                     {
-                        throw new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                        var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                        Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
+                        await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                            ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                        return;
                     }
 
                     InitializeHub(hub, connection);
@@ -260,7 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
                             if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
-                                hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType() == descriptor.OriginalParameterTypes[parameterPointer])
+                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType()))
                             {
                                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
@@ -277,7 +282,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 {
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.StreamingParameters[streamPointer];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+
                                     streamPointer++;
                                 }
                                 else
@@ -328,6 +335,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             }
                             catch (Exception ex)
                             {
+                                Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                                 return;
@@ -475,11 +483,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private void InitializeHub(THub hub, HubConnectionContext connection)
         {
             hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
-            hub.Context = new DefaultHubCallerContext(connection);
+            hub.Context = connection.HubCallerContext;
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments)
         {
             // If there are no policies we don't need to run auth
             if (!policies.Any())
@@ -487,10 +495,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, principal, policies);
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hubMethodName, hubMethodArguments));
         }
 
-        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
         {
             var authService = provider.GetRequiredService<IAuthorizationService>();
             var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
@@ -499,7 +507,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
             Debug.Assert(authorizePolicy != null);
 
-            var authorizationResult = await authService.AuthorizeAsync(principal, authorizePolicy);
+            var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
             // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
             return authorizationResult.Succeeded;
         }

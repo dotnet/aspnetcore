@@ -19,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
         private static readonly AvailableTransport _webSocketAvailableTransport =
             new AvailableTransport
@@ -61,11 +61,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(GetConnectionId(context));
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}
@@ -95,11 +90,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(connectionId: string.Empty);
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}/negotiate
@@ -143,7 +133,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
@@ -168,7 +158,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Allow the reads to be cancelled
                 connection.Cancellation = new CancellationTokenSource();
 
-                var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
+                var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, ws, context, connection);
             }
@@ -514,7 +504,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // We specifically clone the identity on first poll if it's a windows identity
                     // If we swapped the new User here we'd have to dispose the old identities which could race with the application
                     // trying to access the identity.
-                    if (context.User.Identity is WindowsIdentity)
+                    if (!(context.User.Identity is WindowsIdentity))
                     {
                         existing.User = context.User;
                     }
@@ -567,7 +557,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             requestFeature.PathBase = existingRequestFeature.PathBase;
             requestFeature.QueryString = existingRequestFeature.QueryString;
             requestFeature.RawTarget = existingRequestFeature.RawTarget;
-            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.Ordinal);
+            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var header in existingRequestFeature.Headers)
             {
                 requestHeaders[header.Key] = header.Value;
@@ -592,6 +582,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(requestFeature);
             features.Set<IHttpResponseFeature>(responseFeature);
+            features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
             features.Set<IHttpConnectionFeature>(connectionFeature);
 
             // REVIEW: We could strategically look at adding other features but it might be better
@@ -599,6 +590,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
+
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+            newHttpContext.SetEndpoint(endpointFeature?.Endpoint);
 
             CloneUser(newHttpContext, context);
 

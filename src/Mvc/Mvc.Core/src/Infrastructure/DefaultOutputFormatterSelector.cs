@@ -147,14 +147,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
             }
 
-            if (selectedFormatter == null)
+            if (selectedFormatter != null)
             {
-                // No formatter supports this.
-                _logger.NoFormatter(context);
-                return null;
+                _logger.FormatterSelected(selectedFormatter, context);
             }
 
-            _logger.FormatterSelected(selectedFormatter, context);
             return selectedFormatter;
         }
 

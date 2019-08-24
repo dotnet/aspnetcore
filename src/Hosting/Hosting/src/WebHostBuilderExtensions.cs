@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,12 +23,26 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
         {
+            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+        }
+
+        /// <summary>
+        /// Specify the startup method to be used to configure the web application.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="configureApp">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
+        {
+            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+        }
+
+        private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
+        {
             if (configureApp == null)
             {
                 throw new ArgumentNullException(nameof(configureApp));
             }
-
-            var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 
@@ -38,11 +52,11 @@ namespace Microsoft.AspNetCore.Hosting
                 return supportsStartup.Configure(configureApp);
             }
 
-            return hostBuilder.ConfigureServices(services =>
+            return hostBuilder.ConfigureServices((context, services) =>
             {
                 services.AddSingleton<IStartup>(sp =>
                 {
-                    return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
+                    return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), (app => configureApp(context, app)));
                 });
             });
         }
@@ -163,6 +177,22 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, ILoggingBuilder> configureLogging)
         {
             return hostBuilder.ConfigureServices((context, collection) => collection.AddLogging(builder => configureLogging(context, builder)));
+        }
+
+        /// <summary>
+        /// Configures the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to use static web assets
+        /// defined by referenced projects and packages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseStaticWebAssets(this IWebHostBuilder builder)
+        {
+            builder.ConfigureAppConfiguration((context, configBuilder) =>
+            {
+                StaticWebAssetsLoader.UseStaticWebAssets(context.HostingEnvironment, context.Configuration);
+            });
+
+            return builder;
         }
     }
 }

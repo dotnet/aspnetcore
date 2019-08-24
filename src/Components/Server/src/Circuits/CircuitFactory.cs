@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -10,7 +11,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public abstract CircuitHost CreateCircuitHost(
             HttpContext httpContext,
             CircuitClientProxy client,
-            string uriAbsolute,
-            string baseUriAbsolute);
+            string baseUri,
+            string uri,
+            ClaimsPrincipal user);
     }
 }

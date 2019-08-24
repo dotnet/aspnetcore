@@ -3,84 +3,25 @@
 
 using System;
 using System.Globalization;
+using static Microsoft.AspNetCore.Components.BindConverter;
 
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Contains extension methods for two-way binding using <see cref="EventCallback"/>. For internal use only.
     /// </summary>
+    //
+    // NOTE: for number parsing, the HTML5 spec dictates that <input type="number"> the DOM will represent
+    // number values as floating point numbers using `.` as the period separator. This is NOT culture senstive.
+    // Put another way, the user might see `,` as their decimal separator, but the value available in events
+    // to JS code is always simpilar to what .NET parses with InvariantCulture.
+    //
+    // See: https://www.w3.org/TR/html5/sec-forms.html#number-state-typenumber
+    // See: https://www.w3.org/TR/html5/infrastructure.html#valid-floating-point-number
+    //
+    // For now we're not necessarily handling this correctly since we parse the same way for number and text.
     public static class EventCallbackFactoryBinderExtensions
     {
-        // Perf: conversion delegates are written as static funcs so we can prevent
-        // allocations for these simple cases.
-        private static Func<object, string> ConvertToString = (obj) => (string)obj;
-
-        private static Func<object, bool> ConvertToBool = (obj) => (bool)obj;
-        private static Func<object, bool?> ConvertToNullableBool = (obj) => (bool?)obj;
-
-        private static Func<object, int> ConvertToInt = (obj) => int.Parse((string)obj);
-        private static Func<object, int?> ConvertToNullableInt = (obj) =>
-        {
-            if (int.TryParse((string)obj, out var value))
-            {
-                return value;
-            }
-
-            return null;
-        };
-
-        private static Func<object, long> ConvertToLong = (obj) => long.Parse((string)obj);
-        private static Func<object, long?> ConvertToNullableLong = (obj) =>
-        {
-            if (long.TryParse((string)obj, out var value))
-            {
-                return value;
-            }
-
-            return null;
-        };
-
-        private static Func<object, float> ConvertToFloat = (obj) => float.Parse((string)obj);
-        private static Func<object, float?> ConvertToNullableFloat = (obj) =>
-        {
-            if (float.TryParse((string)obj, out var value))
-            {
-                return value;
-            }
-
-            return null;
-        };
-
-        private static Func<object, double> ConvertToDouble = (obj) => double.Parse((string)obj);
-        private static Func<object, double?> ConvertToNullableDouble = (obj) =>
-        {
-            if (double.TryParse((string)obj, out var value))
-            {
-                return value;
-            }
-
-            return null;
-        };
-
-        private static Func<object, decimal> ConvertToDecimal = (obj) => decimal.Parse((string)obj);
-        private static Func<object, decimal?> ConvertToNullableDecimal = (obj) =>
-        {
-            if (decimal.TryParse((string)obj, out var value))
-            {
-                return value;
-            }
-
-            return null;
-        };
-
-        private static class EnumConverter<T> where T : Enum
-        {
-            public static Func<object, T> Convert = (obj) =>
-            {
-                return (T)Enum.Parse(typeof(T), (string)obj);
-            };
-        }
-
         /// <summary>
         /// For internal use only.
         /// </summary>
@@ -88,15 +29,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<string> setter,
-            string existingValue)
+            string existingValue,
+            CultureInfo culture = null)
         {
-            ;
-            return CreateBinderCore<string>(factory, receiver, setter, ConvertToString);
+            return CreateBinderCore<string>(factory, receiver, setter, culture, ConvertToString);
         }
 
         /// <summary>
@@ -106,14 +48,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool> setter,
-            bool existingValue)
+            bool existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<bool>(factory, receiver, setter, ConvertToBool);
+            return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
         }
 
         /// <summary>
@@ -123,14 +67,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool?> setter,
-            bool? existingValue)
+            bool? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<bool?>(factory, receiver, setter, ConvertToNullableBool);
+            return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
         }
 
         /// <summary>
@@ -140,14 +86,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int> setter,
-            int existingValue)
+            int existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<int>(factory, receiver, setter, ConvertToInt);
+            return CreateBinderCore<int>(factory, receiver, setter, culture, ConvertToInt);
         }
 
         /// <summary>
@@ -157,14 +105,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int?> setter,
-            int? existingValue)
+            int? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<int?>(factory, receiver, setter, ConvertToNullableInt);
+            return CreateBinderCore<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
         }
 
         /// <summary>
@@ -174,14 +124,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long> setter,
-            long existingValue)
+            long existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<long>(factory, receiver, setter, ConvertToLong);
+            return CreateBinderCore<long>(factory, receiver, setter, culture, ConvertToLong);
         }
 
         /// <summary>
@@ -191,14 +143,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long?> setter,
-            long? existingValue)
+            long? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<long?>(factory, receiver, setter, ConvertToNullableLong);
+            return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
         }
 
         /// <summary>
@@ -208,14 +162,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float> setter,
-            float existingValue)
+            float existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<float>(factory, receiver, setter, ConvertToFloat);
+            return CreateBinderCore<float>(factory, receiver, setter, culture, ConvertToFloat);
         }
 
         /// <summary>
@@ -225,14 +181,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float?> setter,
-            float? existingValue)
+            float? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<float?>(factory, receiver, setter, ConvertToNullableFloat);
+            return CreateBinderCore<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
         }
 
         /// <summary>
@@ -242,14 +200,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double> setter,
-            double existingValue)
+            double existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<double>(factory, receiver, setter, ConvertToDouble);
+            return CreateBinderCore<double>(factory, receiver, setter, culture, ConvertToDoubleDelegate);
         }
 
         /// <summary>
@@ -259,14 +219,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double?> setter,
-            double? existingValue)
+            double? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<double?>(factory, receiver, setter, ConvertToNullableDouble);
+            return CreateBinderCore<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
         }
 
         /// <summary>
@@ -276,14 +238,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal> setter,
-            decimal existingValue)
+            decimal existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<decimal>(factory, receiver, setter, ConvertToDecimal);
+            return CreateBinderCore<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
         }
 
         /// <summary>
@@ -293,23 +257,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal?> setter,
-            decimal? existingValue)
+            decimal? existingValue,
+            CultureInfo culture = null)
         {
-            Func<object, decimal?> converter = (obj) =>
-            {
-                if (decimal.TryParse((string)obj, out var value))
-                {
-                    return value;
-                }
-
-                return null;
-            };
-            return CreateBinderCore<decimal?>(factory, receiver, setter, ConvertToNullableDecimal);
+            return CreateBinderCore<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
         }
 
         /// <summary>
@@ -319,20 +276,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
-            DateTime existingValue)
+            DateTime existingValue,
+            CultureInfo culture = null)
         {
-            // Avoiding CreateBinderCore so we can avoid an extra allocating lambda
-            // when a format is used.
-            Action<UIChangeEventArgs> callback = (e) =>
-            {
-                setter(ConvertDateTime(e.Value, format: null));
-            };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
         }
 
         /// <summary>
@@ -343,21 +296,137 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
         /// <param name="format"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
             DateTime existingValue,
-            string format)
+            string format,
+            CultureInfo culture = null)
         {
-            // Avoiding CreateBinderCore so we can avoid an extra allocating lambda
-            // when a format is used.
-            Action<UIChangeEventArgs> callback = (e) =>
-            {
-                setter(ConvertDateTime(e.Value, format));
-            };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTime?> setter,
+            DateTime? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTime?> setter,
+            DateTime? existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset> setter,
+            DateTimeOffset existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset> setter,
+            DateTimeOffset existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset?> setter,
+            DateTimeOffset? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, ConvertToNullableDateTimeOffset);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<ChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset?> setter,
+            DateTimeOffset? existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
         }
 
         /// <summary>
@@ -368,44 +437,103 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder<T>(
+        public static EventCallback<ChangeEventArgs> CreateBinder<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            T existingValue) where T : Enum
+            T existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<T>(factory, receiver, setter, EnumConverter<T>.Convert);
+            return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
         }
 
-        private static DateTime ConvertDateTime(object obj, string format)
-        {
-            var text = (string)obj;
-            if (string.IsNullOrEmpty(text))
-            {
-                return default;
-            }
-            else if (format != null && DateTime.TryParseExact(text, format, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var value))
-            {
-                return value;
-            }
-            else
-            {
-                return DateTime.Parse(text);
-            }
-        }
-
-        private static EventCallback<UIChangeEventArgs> CreateBinderCore<T>(
+        private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            Func<object, T> converter)
+            CultureInfo culture,
+            BindConverter.BindParser<T> converter)
         {
-            Action<UIChangeEventArgs> callback = e =>
+            Action<ChangeEventArgs> callback = e =>
             {
-                setter(converter(e.Value));
+                T value = default;
+                var converted = false;
+                try
+                {
+                    converted = converter(e.Value, culture, out value);
+                }
+                catch
+                {
+                }
+
+                // We only invoke the setter if the conversion didn't throw, or if the newly-entered value is empty.
+                // If the user entered some non-empty value we couldn't parse, we leave the state of the .NET field
+                // unchanged, which for a two-way binding results in the UI reverting to its previous valid state
+                // because the diff will see the current .NET output no longer matches the render tree since we
+                // patched it to reflect the state of the UI.
+                //
+                // This reversion behavior is valuable because alternatives are problematic:
+                // - If we assigned default(T) on failure, the user would lose whatever data they were editing,
+                //   for example if they accidentally pressed an alphabetical key while editing a number with
+                //   @bind:event="oninput"
+                // - If the diff mechanism didn't revert to the previous good value, the user wouldn't necessarily
+                //   know that the data they are submitting is different from what they think they've typed
+                if (converted)
+                {
+                    setter(value);
+                }
+                else if (string.Empty.Equals(e.Value))
+                {
+                    setter(default);
+                }
             };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return factory.Create<ChangeEventArgs>(receiver, callback);
+        }
+
+        private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<T> setter,
+            CultureInfo culture,
+            string format,
+            BindConverter.BindParserWithFormat<T> converter)
+        {
+            Action<ChangeEventArgs> callback = e =>
+            {
+                T value = default;
+                var converted = false;
+                try
+                {
+                    converted = converter(e.Value, culture, format, out value);
+                }
+                catch
+                {
+                }
+
+                // We only invoke the setter if the conversion didn't throw, or if the newly-entered value is empty.
+                // If the user entered some non-empty value we couldn't parse, we leave the state of the .NET field
+                // unchanged, which for a two-way binding results in the UI reverting to its previous valid state
+                // because the diff will see the current .NET output no longer matches the render tree since we
+                // patched it to reflect the state of the UI.
+                //
+                // This reversion behavior is valuable because alternatives are problematic:
+                // - If we assigned default(T) on failure, the user would lose whatever data they were editing,
+                //   for example if they accidentally pressed an alphabetical key while editing a number with
+                //   @bind:event="oninput"
+                // - If the diff mechanism didn't revert to the previous good value, the user wouldn't necessarily
+                //   know that the data they are submitting is different from what they think they've typed
+                if (converted)
+                {
+                    setter(value);
+                }
+                else if (string.Empty.Equals(e.Value))
+                {
+                    setter(default);
+                }
+            };
+            return factory.Create<ChangeEventArgs>(receiver, callback);
         }
     }
 }

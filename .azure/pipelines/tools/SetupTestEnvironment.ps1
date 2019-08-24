@@ -5,7 +5,7 @@ param(
 
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\..\..\artifacts\logs\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\artifacts\log\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
@@ -77,13 +77,13 @@ function Setup-Dumps()
 
 function Shutdown-Dumps()
 {
-    Move-Item $env:windir\System32\_vsjitdebugger.exe $env:windir\System32\vsjitdebugger.exe;
+    Move-Item $env:windir\System32\_vsjitdebugger.exe $env:windir\System32\vsjitdebugger.exe -ErrorAction Ignore;
 
     Remove-Item $ldHive -Recurse -Force
 
     New-ItemProperty $werHive -Name "DontShowUI" -Value 0 -PropertyType "DWORD" -Force;
 
-    $cdb = "c:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe"
+    $cdb = "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64\cdb.exe"
     if (!(Test-Path $cdb))
     {
         $downloadedFile = [System.IO.Path]::GetTempFileName();

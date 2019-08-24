@@ -2,7 +2,7 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title> HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure </title>
+        <title> HTTP Error %d.%d - %s </title>
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
@@ -58,17 +58,13 @@
         </style>
     </head>
     <body>
-        <h1> HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure </h1>
+        <h1> HTTP Error %d.%d - %s </h1>
 
-        <h1> Common causes of this issue: </h1>
+        %s
 
-        <ul>
-            <li> The application process failed to start </li>
-            <li> The application process started but then stopped </li>
-            <li> The application process started but failed to listen on the configured port </li>
-        </ul>
+        %s
 
-        <h4> Troubleshooting steps: </h4>
+        <h2> Troubleshooting steps: </h2>
 
         <ul>
             <li> Check the system event log for error messages </li>

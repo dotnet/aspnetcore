@@ -53,5 +53,22 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 
             return new Index(Client, index, Context.WithAuthenticatedUser());
         }
+
+        public async Task<RegisterConfirmation> SubmitRegisterFormWithConfirmation(string userName, string password, bool hasRealEmail = false)
+        {
+            var registered = await Client.SendAsync(_registerForm, new Dictionary<string, string>()
+            {
+                ["Input_Email"] = userName,
+                ["Input_Password"] = password,
+                ["Input_ConfirmPassword"] = password
+            });
+
+            var registeredLocation = ResponseAssert.IsRedirect(registered);
+            Assert.Equal(RegisterConfirmation.Path + "?email="+userName, registeredLocation.ToString());
+            var registerResponse = await Client.GetAsync(registeredLocation);
+            var register = await ResponseAssert.IsHtmlDocumentAsync(registerResponse);
+
+            return new RegisterConfirmation(Client, register, hasRealEmail ? Context.WithRealEmailSender() : Context);
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -9,11 +9,10 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RepositoryRoot</_Parameter1>
-      <_Parameter2>$(RepositoryRoot)</_Parameter2>
-    </AssemblyAttribute>
+    <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpHeaders.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpProtocol.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelRoot)Core\src\Internal\Infrastructure\HttpUtilities.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
@@ -21,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>

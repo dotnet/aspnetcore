@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpRequestTests
     {
@@ -249,36 +249,6 @@ namespace Microsoft.AspNetCore.Http.Internal
             var context = new DefaultHttpContext();
             var bodyPipe = context.Request.BodyReader;
             Assert.NotNull(bodyPipe);
-        }
-
-        [Fact]
-        public void BodyReader_CanSet()
-        {
-            var pipeReader = new Pipe().Reader;
-            var context = new DefaultHttpContext();
-
-            context.Request.BodyReader = pipeReader;
-
-            Assert.Equal(pipeReader, context.Request.BodyReader);
-        }
-
-        [Fact]
-        public void BodyReader_WrapsStream()
-        {
-            var context = new DefaultHttpContext();
-            var expectedStream = new MemoryStream();
-            context.Request.Body = expectedStream;
-
-            var bodyPipe = context.Request.BodyReader as StreamPipeReader;
-
-            Assert.Equal(expectedStream, bodyPipe.InnerStream);
-        }
-
-        [Fact]
-        public void BodyReader_ThrowsWhenSettingNull()
-        {
-            var context = new DefaultHttpContext();
-            Assert.Throws<ArgumentNullException>(() => context.Request.BodyReader = null);
         }
 
         private class CustomRouteValuesFeature : IRouteValuesFeature

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors
 {
-    // Don't casually change the name of this. We reference the full type name in ActionConstraintCache.
     internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
     {
         private readonly string OriginHeader = "Origin";
@@ -40,7 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
-                for (var i = 0; i < methods.Count; i++)
+                // Read interface .Count once rather than per iteration
+                var methodsCount = methods.Count;
+                for (var i = 0; i < methodsCount; i++)
                 {
                     var supportedMethod = methods[i];
                     if (string.Equals(supportedMethod, accessControlRequestMethod, StringComparison.OrdinalIgnoreCase))

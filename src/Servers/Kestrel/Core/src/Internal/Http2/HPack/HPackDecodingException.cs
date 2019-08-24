@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    internal class HPackDecodingException : Exception
+    internal sealed class HPackDecodingException : Exception
     {
         public HPackDecodingException(string message)
             : base(message)

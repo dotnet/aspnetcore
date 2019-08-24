@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity.UI;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
@@ -37,16 +36,15 @@ namespace Company.WebApplication1
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
 
             services.AddDefaultIdentity<ApplicationUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
@@ -55,9 +53,10 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc()
-                .AddNewtonsoftJson();
-
+            services.AddControllersWithViews();
+#if (IndividualLocalAuth)
+            services.AddRazorPages();
+#endif
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -89,18 +88,28 @@ namespace Company.WebApplication1
 
 #endif
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
-#if (IndividualLocalAuth)
+            if (!env.IsDevelopment())
+            {
+                app.UseSpaStaticFiles();
+            }
 
+            app.UseRouting();
+
+#if (IndividualLocalAuth)
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
-
-            app.UseMvc(routes =>
+#if (!NoAuth)
+            app.UseAuthorization();
+#endif
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action=Index}/{id?}");
+#if (IndividualLocalAuth)
+                endpoints.MapRazorPages();
+#endif
             });
 
             app.UseSpa(spa =>

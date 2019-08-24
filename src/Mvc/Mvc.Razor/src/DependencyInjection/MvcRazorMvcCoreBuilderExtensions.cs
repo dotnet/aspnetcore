@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.AddViews();
-            AddRazorViewEngineFeatureProviders(builder);
+            AddRazorViewEngineFeatureProviders(builder.PartManager);
             AddRazorViewEngineServices(builder.Services);
             return builder;
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddViews();
 
-            AddRazorViewEngineFeatureProviders(builder);
+            AddRazorViewEngineFeatureProviders(builder.PartManager);
             AddRazorViewEngineServices(builder.Services);
 
             builder.Services.Configure(setupAction);
@@ -57,20 +57,20 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        private static void AddRazorViewEngineFeatureProviders(IMvcCoreBuilder builder)
+        internal static void AddRazorViewEngineFeatureProviders(ApplicationPartManager partManager)
         {
-            if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
+            if (!partManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
             {
-                builder.PartManager.FeatureProviders.Add(new TagHelperFeatureProvider());
+                partManager.FeatureProviders.Add(new TagHelperFeatureProvider());
             }
 
             // ViewFeature items have precedence semantics - when two views have the same path \ identifier,
             // the one that appears earlier in the list wins. Therefore the ordering of
             // RazorCompiledItemFeatureProvider and ViewsFeatureProvider is pertinent - any view compiled
             // using the Sdk will be preferred to views compiled using MvcPrecompilation.
-            if (!builder.PartManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
+            if (!partManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
             {
-                builder.PartManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
+                partManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
             }
         }
 

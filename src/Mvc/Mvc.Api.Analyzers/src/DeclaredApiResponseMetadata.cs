@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         private DeclaredApiResponseMetadata(
             int statusCode,
-            AttributeData attributeData,
-            IMethodSymbol attributeSource,
+            AttributeData? attributeData,
+            IMethodSymbol? attributeSource,
             bool @implicit,
             bool @default)
         {
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public int StatusCode { get; }
 
-        public AttributeData Attribute { get; }
+        public AttributeData? Attribute { get; }
 
-        public IMethodSymbol AttributeSource { get; }
+        public IMethodSymbol? AttributeSource { get; }
 
         /// <summary>
         /// <c>True</c> if this <see cref="DeclaredApiResponseMetadata" /> is the implicit 200 associated with an

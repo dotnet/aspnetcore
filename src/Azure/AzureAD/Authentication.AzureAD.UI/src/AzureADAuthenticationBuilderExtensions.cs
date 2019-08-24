@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>());
 
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AzureADOptions>, AzureADOptionsValidation>());
+
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JwtBearerOptions>, AzureADJwtBearerOptionsConfiguration>());
 
             builder.Services.Configure(scheme, configureOptions);
@@ -114,6 +116,8 @@ namespace Microsoft.AspNetCore.Authentication
             builder.Services.Configure(TryAddOpenIDCookieSchemeMappings(scheme, openIdConnectScheme, cookieScheme));
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>());
+
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AzureADOptions>, AzureADOptionsValidation>());
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenIdConnectOptions>, AzureADOpenIdConnectOptionsConfiguration>());
 

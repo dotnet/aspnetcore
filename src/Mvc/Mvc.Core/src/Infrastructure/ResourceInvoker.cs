@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+#nullable enable
     internal abstract class ResourceInvoker
     {
         protected readonly DiagnosticListener _diagnosticListener;
@@ -24,18 +25,18 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected readonly IFilterMetadata[] _filters;
         protected readonly IList<IValueProviderFactory> _valueProviderFactories;
 
-        private AuthorizationFilterContext _authorizationContext;
-        private ResourceExecutingContext _resourceExecutingContext;
-        private ResourceExecutedContext _resourceExecutedContext;
-        private ExceptionContext _exceptionContext;
-        private ResultExecutingContext _resultExecutingContext;
-        private ResultExecutedContext _resultExecutedContext;
+        private AuthorizationFilterContextSealed? _authorizationContext;
+        private ResourceExecutingContextSealed? _resourceExecutingContext;
+        private ResourceExecutedContextSealed? _resourceExecutedContext;
+        private ExceptionContextSealed? _exceptionContext;
+        private ResultExecutingContextSealed? _resultExecutingContext;
+        private ResultExecutedContextSealed? _resultExecutedContext;
 
         // Do not make this readonly, it's mutable. We don't want to make a copy.
         // https://blogs.msdn.microsoft.com/ericlippert/2008/05/14/mutating-readonly-structs/
         protected FilterCursor _cursor;
-        protected IActionResult _result;
-        protected object _instance;
+        protected IActionResult? _result;
+        protected object? _instance;
 
         public ResourceInvoker(
             DiagnosticListener diagnosticListener,
@@ -57,46 +58,132 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _cursor = new FilterCursor(filters);
         }
 
-        public virtual async Task InvokeAsync()
+        public virtual Task InvokeAsync()
         {
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Information))
+            {
+                return Logged(this);
+            }
+
+            _actionContextAccessor.ActionContext = _actionContext;
+            var scope = _logger.ActionScope(_actionContext.ActionDescriptor);
+
+            Task task;
             try
             {
-                _actionContextAccessor.ActionContext = _actionContext;
+                task = InvokeFilterPipelineAsync();
+            }
+            catch (Exception exception)
+            {
+                return Awaited(this, Task.FromException(exception), scope);
+            }
 
-                _diagnosticListener.BeforeAction(
-                    _actionContext.ActionDescriptor,
-                    _actionContext.HttpContext,
-                    _actionContext.RouteData);
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task, scope);
+            }
 
-                using (_logger.ActionScope(_actionContext.ActionDescriptor))
+            Exception? releaseException = null;
+            try
+            {
+                ReleaseResources();
+            }
+            catch (Exception exception)
+            {
+                releaseException = exception;
+            }
+
+            Exception? scopeException = null;
+            try
+            {
+                scope?.Dispose();
+            }
+            catch (Exception exception)
+            {
+                scopeException = exception;
+            }
+
+            if (releaseException == null && scopeException == null)
+            {
+                return Task.CompletedTask;
+            }
+            else if (releaseException != null && scopeException != null)
+            {
+                return Task.FromException(new AggregateException(releaseException, scopeException));
+            }
+            else if (releaseException != null)
+            {
+                return Task.FromException(releaseException);
+            }
+            else
+            {
+                return Task.FromException(scopeException!);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task task, IDisposable? scope)
+            {
+                try
                 {
-                    _logger.ExecutingAction(_actionContext.ActionDescriptor);
-
-                    _logger.AuthorizationFiltersExecutionPlan(_filters);
-                    _logger.ResourceFiltersExecutionPlan(_filters);
-                    _logger.ActionFiltersExecutionPlan(_filters);
-                    _logger.ExceptionFiltersExecutionPlan(_filters);
-                    _logger.ResultFiltersExecutionPlan(_filters);
-
-                    var stopwatch = ValueStopwatch.StartNew();
-
                     try
                     {
-                        await InvokeFilterPipelineAsync();
+                        await task;
                     }
                     finally
                     {
-                        ReleaseResources();
-                        _logger.ExecutedAction(_actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                        invoker.ReleaseResources();
                     }
                 }
+                finally
+                {
+                    scope?.Dispose();
+                }
             }
-            finally
+
+            static async Task Logged(ResourceInvoker invoker)
             {
-                _diagnosticListener.AfterAction(
-                    _actionContext.ActionDescriptor,
-                    _actionContext.HttpContext,
-                    _actionContext.RouteData);
+                var actionContext = invoker._actionContext;
+                invoker._actionContextAccessor.ActionContext = actionContext;
+
+                try
+                {
+                    var logger = invoker._logger;
+
+                    invoker._diagnosticListener.BeforeAction(
+                        actionContext.ActionDescriptor,
+                        actionContext.HttpContext,
+                        actionContext.RouteData);
+
+                    using (logger.ActionScope(actionContext.ActionDescriptor))
+                    {
+                        logger.ExecutingAction(actionContext.ActionDescriptor);
+
+                        var filters = invoker._filters;
+                        logger.AuthorizationFiltersExecutionPlan(filters);
+                        logger.ResourceFiltersExecutionPlan(filters);
+                        logger.ActionFiltersExecutionPlan(filters);
+                        logger.ExceptionFiltersExecutionPlan(filters);
+                        logger.ResultFiltersExecutionPlan(filters);
+
+                        var stopwatch = ValueStopwatch.StartNew();
+
+                        try
+                        {
+                            await invoker.InvokeFilterPipelineAsync();
+                        }
+                        finally
+                        {
+                            invoker.ReleaseResources();
+                            logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                        }
+                    }
+                }
+                finally
+                {
+                    invoker._diagnosticListener.AfterAction(
+                        actionContext.ActionDescriptor,
+                        actionContext.HttpContext,
+                        actionContext.RouteData);
+                }
             }
         }
 
@@ -106,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         protected abstract void ReleaseResources();
 
-        private async Task InvokeFilterPipelineAsync()
+        private Task InvokeFilterPipelineAsync()
         {
             var next = State.InvokeBegin;
 
@@ -117,38 +204,72 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // The `state` is used for internal state handling during transitions between states. In practice this
             // means storing a filter instance in `state` and then retrieving it in the next state.
-            var state = (object)null;
+            var state = (object?)null;
 
             // `isCompleted` will be set to true when we've reached a terminal state.
             var isCompleted = false;
-
-            while (!isCompleted)
+            try
             {
-                await Next(ref next, ref scope, ref state, ref isCompleted);
+                while (!isCompleted)
+                {
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task,
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
         protected abstract Task InvokeInnerFilterAsync();
 
-        protected virtual async Task InvokeResultAsync(IActionResult result)
+        protected virtual Task InvokeResultAsync(IActionResult result)
         {
-            var actionContext = _actionContext;
-
-            _diagnosticListener.BeforeActionResult(actionContext, result);
-            _logger.BeforeExecutingActionResult(result);
-
-            try
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Trace))
             {
-                await result.ExecuteResultAsync(actionContext);
+                return Logged(this, result);
             }
-            finally
+
+            return result.ExecuteResultAsync(_actionContext);
+
+            static async Task Logged(ResourceInvoker invoker, IActionResult result)
             {
-                _diagnosticListener.AfterActionResult(actionContext, result);
-                _logger.AfterExecutingActionResult(result);
+                var actionContext = invoker._actionContext;
+
+                invoker._diagnosticListener.BeforeActionResult(actionContext, result);
+                invoker._logger.BeforeExecutingActionResult(result);
+
+                try
+                {
+                    await result.ExecuteResultAsync(actionContext);
+                }
+                finally
+                {
+                    invoker._diagnosticListener.AfterActionResult(actionContext, result);
+                    invoker._logger.AfterExecutingActionResult(result);
+                }
             }
         }
 
-        private Task Next(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
+        private Task Next(ref State next, ref Scope scope, ref object? state, ref bool isCompleted)
         {
             switch (next)
             {
@@ -170,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_authorizationContext == null)
                             {
-                                _authorizationContext = new AuthorizationFilterContext(_actionContext, _filters);
+                                _authorizationContext = new AuthorizationFilterContextSealed(_actionContext, _filters);
                             }
 
                             state = current.FilterAsync;
@@ -180,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_authorizationContext == null)
                             {
-                                _authorizationContext = new AuthorizationFilterContext(_actionContext, _filters);
+                                _authorizationContext = new AuthorizationFilterContextSealed(_actionContext, _filters);
                             }
 
                             state = current.Filter;
@@ -207,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnAuthorizationAsync(authorizationContext);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.AuthorizationAsyncEnd;
                             return task;
@@ -300,7 +421,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resourceExecutingContext == null)
                             {
-                                _resourceExecutingContext = new ResourceExecutingContext(
+                                _resourceExecutingContext = new ResourceExecutingContextSealed(
                                     _actionContext,
                                     _filters,
                                     _valueProviderFactories);
@@ -313,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resourceExecutingContext == null)
                             {
-                                _resourceExecutingContext = new ResourceExecutingContext(
+                                _resourceExecutingContext = new ResourceExecutingContextSealed(
                                     _actionContext,
                                     _filters,
                                     _valueProviderFactories);
@@ -344,7 +465,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnResourceExecutionAsync(resourceExecutingContext, InvokeNextResourceFilterAwaitedAsync);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceAsyncEnd;
                             return task;
@@ -362,7 +483,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         if (_resourceExecutedContext == null)
                         {
                             // If we get here then the filter didn't call 'next' indicating a short circuit.
-                            _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
                             {
                                 Canceled = true,
                                 Result = _resourceExecutingContext.Result,
@@ -408,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         if (resourceExecutingContext.Result != null)
                         {
-                            _resourceExecutedContext = new ResourceExecutedContext(resourceExecutingContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(resourceExecutingContext, _filters)
                             {
                                 Canceled = true,
                                 Result = _resourceExecutingContext.Result,
@@ -418,7 +539,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeNextResourceFilter();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceSyncEnd;
                             return task;
@@ -463,7 +584,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         _result = _resourceExecutingContext.Result;
                         var task = InvokeAlwaysRunResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceEnd;
                             return task;
@@ -512,7 +633,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ExceptionAsyncBegin:
                     {
                         var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ExceptionAsyncResume;
                             return task;
@@ -539,7 +660,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                                 filter);
 
                             var task = filter.OnExceptionAsync(exceptionContext);
-                            if (task.Status != TaskStatus.RanToCompletion)
+                            if (!task.IsCompletedSuccessfully)
                             {
                                 next = State.ExceptionAsyncEnd;
                                 return task;
@@ -579,7 +700,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ExceptionSyncBegin:
                     {
                         var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ExceptionSyncEnd;
                             return task;
@@ -650,7 +771,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         _result = _exceptionContext.Result;
 
                         var task = InvokeAlwaysRunResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -683,7 +804,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -694,7 +815,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ActionBegin:
                     {
                         var task = InvokeInnerFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ActionEnd;
                             return task;
@@ -715,7 +836,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         Debug.Assert(scope == Scope.Invoker || scope == Scope.Resource);
                         var task = InvokeResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -727,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     {
                         if (scope == Scope.Resource)
                         {
-                            _resourceExecutedContext = new ResourceExecutedContext(_actionContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_actionContext, _filters)
                             {
                                 Result = _result,
                             };
@@ -747,7 +868,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         Debug.Assert(scope == Scope.Invoker);
-                        Rethrow(_resourceExecutedContext);
+                        Rethrow(_resourceExecutedContext!);
 
                         goto case State.InvokeEnd;
                     }
@@ -763,13 +884,35 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task<ResourceExecutedContext> InvokeNextResourceFilterAwaitedAsync()
+        private Task<ResourceExecutedContext> InvokeNextResourceFilterAwaitedAsync()
         {
             Debug.Assert(_resourceExecutingContext != null);
 
             if (_resourceExecutingContext.Result != null)
             {
                 // If we get here, it means that an async filter set a result AND called next(). This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextResourceFilter();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_resourceExecutedContext != null);
+            return Task.FromResult<ResourceExecutedContext>(_resourceExecutedContext);
+
+            static async Task<ResourceExecutedContext> Awaited(ResourceInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._resourceExecutedContext != null);
+                return invoker._resourceExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ResourceExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncResourceFilter_InvalidShortCircuit(
                     typeof(IAsyncResourceFilter).Name,
                     nameof(ResourceExecutingContext.Result),
@@ -777,86 +920,186 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     typeof(ResourceExecutionDelegate).Name);
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextResourceFilter();
-
-            Debug.Assert(_resourceExecutedContext != null);
-            return _resourceExecutedContext;
+#pragma warning restore CS1998
         }
 
-        private async Task InvokeNextResourceFilter()
+        private Task InvokeNextResourceFilter()
         {
             try
             {
                 var scope = Scope.Resource;
                 var next = State.ResourceNext;
-                var state = (object)null;
+                var state = (object?)null;
                 var isCompleted = false;
+
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
             {
-                _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
+                _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext!, _filters)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
             }
 
             Debug.Assert(_resourceExecutedContext != null);
+            return Task.CompletedTask;
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._resourceExecutedContext = new ResourceExecutedContextSealed(invoker._resourceExecutingContext!, invoker._filters)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._resourceExecutedContext != null);
+            }
         }
 
-        private async Task InvokeNextExceptionFilterAsync()
+        private Task InvokeNextExceptionFilterAsync()
         {
             try
             {
                 var next = State.ExceptionNext;
-                var state = (object)null;
+                var state = (object?)null;
                 var scope = Scope.Exception;
                 var isCompleted = false;
+
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task,
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._exceptionContext = new ExceptionContextSealed(invoker._actionContext, invoker._filters)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
                 }
             }
-            catch (Exception exception)
+        }
+
+        private Task InvokeAlwaysRunResultFilters()
+        {
+            try
             {
-                _exceptionContext = new ExceptionContext(_actionContext, _filters)
+                var next = State.ResultBegin;
+                var scope = Scope.Invoker;
+                var state = (object?)null;
+                var isCompleted = false;
+
+                while (!isCompleted)
                 {
-                    ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
-                };
+                    var lastTask = ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
             }
-        }
-
-        private async Task InvokeAlwaysRunResultFilters()
-        {
-            var next = State.ResultBegin;
-            var scope = Scope.Invoker;
-            var state = (object)null;
-            var isCompleted = false;
-
-            while (!isCompleted)
+            catch (Exception ex)
             {
-                await ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                // Wrap non task-wrapped exceptions in a Task,
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
             }
-        }
 
-        private async Task InvokeResultFilters()
-        {
-            var next = State.ResultBegin;
-            var scope = Scope.Invoker;
-            var state = (object)null;
-            var isCompleted = false;
-
-            while (!isCompleted)
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
             {
-                await ResultNext<IResultFilter, IAsyncResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
-        private Task ResultNext<TFilter, TFilterAsync>(ref State next, ref Scope scope, ref object state, ref bool isCompleted)
+        private Task InvokeResultFilters()
+        {
+            try
+            {
+                var next = State.ResultBegin;
+                var scope = Scope.Invoker;
+                var state = (object?)null;
+                var isCompleted = false;
+
+                while (!isCompleted)
+                {
+                    var lastTask = ResultNext<IResultFilter, IAsyncResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task,
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.ResultNext<IResultFilter, IAsyncResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                }
+            }
+        }
+
+        private Task ResultNext<TFilter, TFilterAsync>(ref State next, ref Scope scope, ref object? state, ref bool isCompleted)
             where TFilter : class, IResultFilter
             where TFilterAsync : class, IAsyncResultFilter
         {
@@ -879,7 +1122,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutingContext == null)
                             {
-                                _resultExecutingContext = new ResultExecutingContext(_actionContext, _filters, _result, _instance);
+                                _resultExecutingContext = new ResultExecutingContextSealed(_actionContext, _filters, _result!, _instance!);
                             }
 
                             state = current.FilterAsync;
@@ -889,7 +1132,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutingContext == null)
                             {
-                                _resultExecutingContext = new ResultExecutingContext(_actionContext, _filters, _result, _instance);
+                                _resultExecutingContext = new ResultExecutingContextSealed(_actionContext, _filters, _result!, _instance!);
                             }
 
                             state = current.Filter;
@@ -916,7 +1159,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnResultExecutionAsync(resultExecutingContext, InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultAsyncEnd;
                             return task;
@@ -939,11 +1182,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by not calling next || Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
 
-                            _resultExecutedContext = new ResultExecutedContext(
+                            _resultExecutedContext = new ResultExecutedContextSealed(
                                 _actionContext,
                                 _filters,
                                 resultExecutingContext.Result,
-                                _instance)
+                                _instance!)
                             {
                                 Canceled = true,
                             };
@@ -985,11 +1228,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
 
-                            _resultExecutedContext = new ResultExecutedContext(
+                            _resultExecutedContext = new ResultExecutedContextSealed(
                                 resultExecutingContext,
                                 _filters,
                                 resultExecutingContext.Result,
-                                _instance)
+                                _instance!)
                             {
                                 Canceled = true,
                             };
@@ -998,7 +1241,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultSyncEnd;
                             return task;
@@ -1048,7 +1291,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeResultAsync(_result);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultEnd;
                             return task;
@@ -1066,13 +1309,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutedContext == null)
                             {
-                                _resultExecutedContext = new ResultExecutedContext(_actionContext, _filters, result, _instance);
+                                _resultExecutedContext = new ResultExecutedContextSealed(_actionContext, _filters, result!, _instance!);
                             }
 
                             return Task.CompletedTask;
                         }
 
-                        Rethrow(_resultExecutedContext);
+                        Rethrow(_resultExecutedContext!);
                         return Task.CompletedTask;
                     }
 
@@ -1081,33 +1324,61 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeNextResultFilterAsync<TFilter, TFilterAsync>()
+        private Task InvokeNextResultFilterAsync<TFilter, TFilterAsync>()
             where TFilter : class, IResultFilter
             where TFilterAsync : class, IAsyncResultFilter
         {
             try
             {
                 var next = State.ResultNext;
-                var state = (object)null;
+                var state = (object?)null;
                 var scope = Scope.Result;
                 var isCompleted = false;
                 while (!isCompleted)
                 {
-                    await ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
             {
-                _resultExecutedContext = new ResultExecutedContext(_actionContext, _filters, _result, _instance)
+                _resultExecutedContext = new ResultExecutedContextSealed(_actionContext, _filters, _result!, _instance!)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
             }
 
             Debug.Assert(_resultExecutedContext != null);
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object? state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._resultExecutedContext = new ResultExecutedContextSealed(invoker._actionContext, invoker._filters, invoker._result!, invoker._instance!)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._resultExecutedContext != null);
+            }
         }
 
-        private async Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>()
+        private Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>()
             where TFilter : class, IResultFilter
             where TFilterAsync : class, IAsyncResultFilter
         {
@@ -1116,6 +1387,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 // If we get here, it means that an async filter set cancel == true AND called next().
                 // This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_resultExecutedContext != null);
+            return Task.FromResult<ResultExecutedContext>(_resultExecutedContext);
+
+            static async Task<ResultExecutedContext> Awaited(ResourceInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._resultExecutedContext != null);
+                return invoker._resultExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ResultExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncResultFilter_InvalidShortCircuit(
                     typeof(IAsyncResultFilter).Name,
                     nameof(ResultExecutingContext.Cancel),
@@ -1124,14 +1417,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
-
-            Debug.Assert(_resultExecutedContext != null);
-            return _resultExecutedContext;
+#pragma warning restore CS1998
         }
 
-        private static void Rethrow(ResourceExecutedContext context)
+
+        private static void Rethrow(ResourceExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -1154,7 +1444,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ExceptionContext context)
+        private static void Rethrow(ExceptionContextSealed context)
         {
             if (context == null)
             {
@@ -1177,7 +1467,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ResultExecutedContext context)
+        private static void Rethrow(ResultExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -1260,5 +1550,44 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             public const string ResultFilter = "Result Filter";
             public const string AlwaysRunResultFilter = "Always Run Result Filter";
         }
+
+        private sealed class ResultExecutedContextSealed : ResultExecutedContext
+        {
+            public ResultExecutedContextSealed(
+                ActionContext actionContext,
+                IList<IFilterMetadata> filters,
+                IActionResult result,
+                object controller)
+            : base(actionContext, filters, result, controller) { }
+        }
+
+        private sealed class ResultExecutingContextSealed : ResultExecutingContext
+        {
+            public ResultExecutingContextSealed(
+                ActionContext actionContext,
+                IList<IFilterMetadata> filters,
+                IActionResult result,
+                object controller)
+                : base(actionContext, filters, result, controller)
+            { }
+        }
+
+        private sealed class ExceptionContextSealed : ExceptionContext
+        {
+            public ExceptionContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
+        }
+        private sealed class ResourceExecutedContextSealed : ResourceExecutedContext
+        {
+            public ResourceExecutedContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
+        }
+        private sealed class ResourceExecutingContextSealed : ResourceExecutingContext
+        {
+            public ResourceExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IList<IValueProviderFactory> valueProviderFactories) : base(actionContext, filters, valueProviderFactories) { }
+        }
+        private sealed class AuthorizationFilterContextSealed : AuthorizationFilterContext
+        {
+            public AuthorizationFilterContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
+        }
     }
+#nullable restore
 }

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
     }
     public enum HttpOnlyPolicy
     {
-        Always = 1,
         None = 0,
+        Always = 1,
     }
 }

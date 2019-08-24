@@ -1,16 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <!-- Reference targets and props from Components.Build package -->
-  <Import Project="..\..\..\Build\src\ReferenceFromSource.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.AspNetCore.Components" />
+    <ProjectReference Include="..\..\..\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="..\..\..\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
   </ItemGroup>
 
 </Project>
-

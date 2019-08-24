@@ -209,16 +209,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
 
-            if (!string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
+            if (string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
             {
-                if (LanguageVersionFacts.TryParse(dependencyContextOptions.LanguageVersion, out var languageVersion))
-                {
-                    parseOptions = parseOptions.WithLanguageVersion(languageVersion);
-                }
-                else
-                {
-                    Debug.Fail($"LanguageVersion {languageVersion} specified in the deps file could not be parsed.");
-                }
+                // If the user does not specify a LanguageVersion, assume CSharp 8.0. This matches the language version Razor 3.0 targets by default.
+                parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.CSharp8);
+            }
+            else if (LanguageVersionFacts.TryParse(dependencyContextOptions.LanguageVersion, out var languageVersion))
+            {
+                parseOptions = parseOptions.WithLanguageVersion(languageVersion);
+            }
+            else
+            {
+                Debug.Fail($"LanguageVersion {languageVersion} specified in the deps file could not be parsed.");
             }
 
             return parseOptions;

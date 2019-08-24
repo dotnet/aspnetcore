@@ -47,5 +47,32 @@ namespace Microsoft.AspNetCore.Blazor.Server
             EnableAutoRebuilding = configLines.Contains("autorebuild:true", StringComparer.Ordinal);
             EnableDebugging = configLines.Contains("debug:true", StringComparer.Ordinal);
         }
+
+        public string FindIndexHtmlFile()
+        {
+            // Before publishing, the client project may have a wwwroot directory.
+            // If so, and if it contains index.html, use that.
+            if (!string.IsNullOrEmpty(WebRootPath))
+            {
+                var wwwrootIndexHtmlPath = Path.Combine(WebRootPath, "index.html");
+                if (File.Exists(wwwrootIndexHtmlPath))
+                {
+                    return wwwrootIndexHtmlPath;
+                }
+            }
+
+            // After publishing, the client project won't have a wwwroot directory.
+            // The contents from that dir will have been copied to "dist" during publish.
+            // So if "dist/index.html" now exists, use that.
+            var distIndexHtmlPath = Path.Combine(DistPath, "index.html");
+            if (File.Exists(distIndexHtmlPath))
+            {
+                return distIndexHtmlPath;
+            }
+
+            // Since there's no index.html, we'll use the default DefaultPageStaticFileOptions,
+            // hence we'll look for index.html in the host server app's wwwroot.
+            return null;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <summary>
         /// Gets the IDs of the event handlers that were disposed.
         /// </summary>
-        public ArrayRange<int> DisposedEventHandlerIDs { get; }
+        public ArrayRange<ulong> DisposedEventHandlerIDs { get; }
 
         internal RenderBatch(
             ArrayRange<RenderTreeDiff> updatedComponents,
             ArrayRange<RenderTreeFrame> referenceFrames,
             ArrayRange<int> disposedComponentIDs,
-            ArrayRange<int> disposedEventHandlerIDs)
+            ArrayRange<ulong> disposedEventHandlerIDs)
         {
             UpdatedComponents = updatedComponents;
             ReferenceFrames = referenceFrames;

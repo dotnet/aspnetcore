@@ -16,10 +16,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true'">
-    <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
-    <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)InProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
+    <None Include="$(ArtifactsBinDir)AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,13 +28,7 @@
     <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\..\test\testassets\OutOfProcessWebSite\OutOfProcessWebSite.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\..\test\testassets\StressTestWebSite\StressTestWebSite.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

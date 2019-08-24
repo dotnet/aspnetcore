@@ -1,9 +1,0 @@
-{
-  "runtimeOptions": {
-    "tfm": "netcoreapp3.0",
-    "framework": {
-      "name": "Microsoft.AspNetCore.App",
-      "version": "${sharedfxversion}"
-    }
-  }
-}

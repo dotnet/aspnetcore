@@ -17,11 +17,51 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class AuthorizationApplicationModelProviderTest
     {
+        private readonly IOptions<MvcOptions> OptionsWithoutEndpointRouting = Options.Create(new MvcOptions { EnableEndpointRouting = false });
+
+        [Fact]
+        public void OnProvidersExecuting_AuthorizeAttribute_DoesNothing_WhenEnableRoutingIsEnabled()
+        {
+            // Arrange
+            var provider = new AuthorizationApplicationModelProvider(
+                new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())),
+                Options.Create(new MvcOptions()));
+            var controllerType = typeof(AccountController);
+            var context = CreateProviderContext(controllerType);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.Empty(controller.Filters);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AllowAnonymousAttribute_DoesNothing_WhenEnableRoutingIsEnabled()
+        {
+            // Arrange
+            var provider = new AuthorizationApplicationModelProvider(
+                new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())),
+                Options.Create(new MvcOptions()));
+            var controllerType = typeof(AnonymousController);
+            var context = CreateProviderContext(controllerType);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.Empty(controller.Filters);
+        }
+
         [Fact]
         public void CreateControllerModel_AuthorizeAttributeAddsAuthorizeFilter()
         {
             // Arrange
-            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())));
+            var provider = new AuthorizationApplicationModelProvider(
+                new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())),
+                OptionsWithoutEndpointRouting);
             var controllerType = typeof(AccountController);
             var context = CreateProviderContext(controllerType);
 
@@ -41,7 +81,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             options.Value.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
-            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(options));
+            var provider = new AuthorizationApplicationModelProvider(
+                new DefaultAuthorizationPolicyProvider(options),
+                OptionsWithoutEndpointRouting);
             var context = CreateProviderContext(typeof(DerivedController));
 
             // Act
@@ -65,7 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void CreateControllerModelAndActionModel_AllowAnonymousAttributeAddsAllowAnonymousFilter()
         {
             // Arrange
-            var provider = new AuthorizationApplicationModelProvider(new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())));
+            var provider = new AuthorizationApplicationModelProvider(
+                new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())),
+                OptionsWithoutEndpointRouting);
             var context = CreateProviderContext(typeof(AnonymousController));
 
             // Act
@@ -91,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             authOptions.Value.AddPolicy("Base", authorizationPolicy);
             var policyProvider = new DefaultAuthorizationPolicyProvider(authOptions);
 
-            var provider = new AuthorizationApplicationModelProvider(policyProvider);
+            var provider = new AuthorizationApplicationModelProvider(policyProvider, OptionsWithoutEndpointRouting);
             var context = CreateProviderContext(typeof(BaseController));
 
             // Act
@@ -119,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 .Returns(Task.FromResult(authorizationPolicy))
                 .Verifiable();
 
-            var provider = new AuthorizationApplicationModelProvider(authorizationPolicyProviderMock.Object);
+            var provider = new AuthorizationApplicationModelProvider(authorizationPolicyProviderMock.Object, OptionsWithoutEndpointRouting);
 
             // Act
             var action = GetBaseControllerActionModel(provider);
@@ -136,9 +180,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var provider = new AuthorizationApplicationModelProvider(
-                new DefaultAuthorizationPolicyProvider(
-                    Options.Create(new AuthorizationOptions())
-                ));
+                new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions())),
+                OptionsWithoutEndpointRouting);
             var context = CreateProviderContext(typeof(NoAuthController));
 
             // Act

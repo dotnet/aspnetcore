@@ -2,20 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.E2ETesting
 {
-    public class BrowserFixture : IDisposable
+    public class BrowserFixture : IAsyncLifetime
     {
-        private RemoteWebDriver _browser;
-        private RemoteLogs _logs;
+        private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -25,6 +28,14 @@ namespace Microsoft.AspNetCore.E2ETesting
         public ILogs Logs { get; private set; }
 
         public IMessageSink DiagnosticsMessageSink { get; }
+
+        public static void EnforceSupportedConfigurations()
+        {
+            // Do not change the current platform support without explicit approval.
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64,
+                "Selenium tests should be running in this platform.");
+        }
 
         public static bool IsHostAutomationSupported()
         {
@@ -50,28 +61,37 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
-            _browser?.Dispose();
+            var browsers = await Task.WhenAll(_browsers.Values);
+            foreach (var (browser, log) in browsers)
+            {
+                browser.Dispose();
+            }
         }
 
-        public async Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output)
+        public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
         {
             if (!IsHostAutomationSupported())
             {
                 output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return default;
+                return Task.FromResult<(IWebDriver, ILogs)>(default);
             }
 
-            if ((_browser, _logs) != (null, null))
-            {
-                return (_browser, _logs);
-            }
+            return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
+        }
 
+        public Task InitializeAsync() => Task.CompletedTask;
+
+        private async Task<(IWebDriver browser, ILogs log)> CreateBrowserAsync(string context, ITestOutputHelper output)
+        {
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            opts.AddArgument("--headless");
+            if (!Debugger.IsAttached)
+            {
+                opts.AddArgument("--headless");
+            }
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
@@ -110,10 +130,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                     var logs = new RemoteLogs(driver);
 
-                    _browser = driver;
-                    _logs = logs;
-
-                    return (_browser, _logs);
+                    return (driver, logs);
                 }
                 catch
                 {

@@ -7,25 +7,44 @@ namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal class ProjectOptions
     {
-        public CommandOption Configuration { get; private set; }
+        public CommandOption AssemblyPath { get; private set; }
 
-        public CommandOption Project { get; private set; }
+        public CommandOption AssetsFile { get; private set; }
 
-        public CommandOption ProjectExtensionsPath { get; private set; }
+        public CommandOption Platform { get; private set; }
 
-        public CommandOption Runtime { get; private set; }
+        public CommandOption ProjectName { get; private set; }
+
+        public CommandOption RuntimeFrameworkVersion { get; private set; }
 
         public CommandOption TargetFramework { get; private set; }
 
         public void Configure(CommandLineApplication command)
         {
-            Configuration = command.Option("--configuration <CONFIGURATION>", Resources.ConfigurationDescription);
-            Project = command.Option("-p|--project <PROJECT>", Resources.ProjectDescription);
-            ProjectExtensionsPath = command.Option(
-                "--projectExtensionsPath <PATH>",
-                Resources.ProjectExtensionsPathDescription);
-            Runtime = command.Option("--runtime <RUNTIME_IDENTIFIER>", Resources.RuntimeDescription);
+            AssemblyPath = command.Option("--assembly <Path>", Resources.AssemblyDescription);
+            AssetsFile = command.Option("--assets-file <Path>", Resources.AssetsFileDescription);
             TargetFramework = command.Option("--framework <FRAMEWORK>", Resources.TargetFrameworkDescription);
+            Platform = command.Option("--platform <Target>", Resources.PlatformDescription);
+            ProjectName = command.Option("--project <Name>", Resources.ProjectDescription);
+            RuntimeFrameworkVersion = command.Option("--runtime <RUNTIME_IDENTIFIER>", Resources.RuntimeDescription);
+        }
+
+        public void Validate()
+        {
+            if (!AssemblyPath.HasValue())
+            {
+                throw new CommandException(Resources.FormatMissingOption(AssemblyPath.LongName));
+            }
+
+            if (!ProjectName.HasValue())
+            {
+                throw new CommandException(Resources.FormatMissingOption(ProjectName.LongName));
+            }
+
+            if (!TargetFramework.HasValue())
+            {
+                throw new CommandException(Resources.FormatMissingOption(TargetFramework.LongName));
+            }
         }
     }
 }

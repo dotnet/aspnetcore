@@ -15,19 +15,9 @@ namespace Microsoft.Extensions.Internal
         public PropertyActivator(
             PropertyInfo propertyInfo,
             Func<TContext, object> valueAccessor)
-        {
-            if (propertyInfo == null)
-            {
-                throw new ArgumentNullException(nameof(propertyInfo));
-            }
-
-            if (valueAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(valueAccessor));
-            }
-
-            PropertyInfo = propertyInfo;
-            _valueAccessor = valueAccessor;
+        {          
+            PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo)); 
+            _valueAccessor = valueAccessor ?? throw new ArgumentNullException(nameof(valueAccessor)); 
             _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
         }
 

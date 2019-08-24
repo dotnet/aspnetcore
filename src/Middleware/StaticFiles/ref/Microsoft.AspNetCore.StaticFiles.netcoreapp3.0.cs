@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class StaticFilesEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.StaticFiles
@@ -103,7 +103,6 @@ namespace Microsoft.AspNetCore.StaticFiles
     public partial class StaticFileMiddleware
     {
         public StaticFileMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.StaticFileOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class StaticFileResponseContext
@@ -121,12 +120,14 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
     {
         public SharedOptions() { }
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RedirectToAppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
     }
     public abstract partial class SharedOptionsBase
     {
         protected SharedOptionsBase(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) { }
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { get { throw null; } set { } }
+        public bool RedirectToAppendTrailingSlash { get { throw null; } set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
         protected Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions SharedOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }

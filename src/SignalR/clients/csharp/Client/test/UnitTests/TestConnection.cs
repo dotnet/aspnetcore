@@ -52,17 +52,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Application = pair.Application;
             Transport = pair.Transport;
-
-            Application.Input.OnWriterCompleted((ex, _) =>
-            {
-                Application.Output.Complete();
-            },
-            null);
         }
 
-        public Task DisposeAsync() => DisposeCoreAsync();
+        public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
-        public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
+        public async ValueTask<ConnectionContext> StartAsync()
         {
             _started.TrySetResult(null);
 
@@ -87,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var output = MemoryBufferWriter.Get();
             try
             {
-                HandshakeProtocol.WriteResponseMessage(new HandshakeResponseMessage(minorVersion), output);
+                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
                 response = output.ToArray();
             }
             finally
@@ -153,6 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     else if (result.IsCompleted)
                     {
+                        await Application.Output.CompleteAsync();
                         return null;
                     }
                 }
@@ -195,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application.Output.Complete(ex);
         }
 
-        private async Task DisposeCoreAsync(Exception ex = null)
+        private async ValueTask DisposeCoreAsync(Exception ex = null)
         {
             Interlocked.Increment(ref _disposeCount);
             _disposed.TrySetResult(null);

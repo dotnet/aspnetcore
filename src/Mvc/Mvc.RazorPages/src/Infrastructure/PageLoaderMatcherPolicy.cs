@@ -33,12 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            if (!ContainsDynamicEndpoints(endpoints))
-            {
-                // Pages are always dynamic endpoints.
-                return false;
-            }
-            
+            // We don't mark Pages as dynamic endpoints because that causes all matcher policies
+            // to run in *slow mode*. Instead we produce the same metadata for things that would affect matcher
+            // policies on both endpoints (uncompiled and compiled).
+            //
+            // This means that something like putting [Consumes] on a page wouldn't work. We've never said that it would.
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var page = endpoints[i].Metadata.GetMetadata<PageActionDescriptor>();
@@ -52,16 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return false;
         }
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
             }
 
             if (candidates == null)

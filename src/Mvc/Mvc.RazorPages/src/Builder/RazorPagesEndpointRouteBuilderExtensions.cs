@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,18 +20,18 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds endpoints for Razor Pages to the <see cref="IEndpointRouteBuilder"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
-        public static IEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder routes)
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <returns>An <see cref="PageActionEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
+        public static PageActionEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
-            return GetOrCreateDataSource(routes);
+            return GetOrCreateDataSource(endpoints).DefaultBuilder;
         }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="page">The page name.</param>
         /// <remarks>
         /// <para>
@@ -54,14 +55,14 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToPage(IEndpointRouteBuilder, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToPage(this IEndpointRouteBuilder routes, string page)
+        public static IEndpointConventionBuilder MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (page == null)
@@ -71,18 +72,20 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            // we don't expect the delegate to run.
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -90,7 +93,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="page">The action name.</param>
         /// <remarks>
@@ -109,18 +112,18 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToPage(IEndpointRouteBuilder, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
-        /// <paramref name="pattern"/> will be available. 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
+        /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToPage(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToPage(
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string page)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -135,18 +138,20 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            // we don't expect the delegate to run.
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -154,7 +159,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="page">The action name.</param>
         /// <param name="area">The area name.</param>
         /// <remarks>
@@ -171,17 +176,17 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToAreaPage(IEndpointRouteBuilder, string, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaPage(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToAreaPage(
+            this IEndpointRouteBuilder endpoints,
             string page,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (page == null)
@@ -191,18 +196,20 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            // we don't expect the delegate to run.
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             });
+            return builder;
         }
 
         /// <summary>
@@ -210,7 +217,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="page">The action name.</param>
         /// <param name="area">The area name.</param>
@@ -230,19 +237,19 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToAreaPage(IEndpointRouteBuilder, string, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
         /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaPage(
-            this IEndpointRouteBuilder routes,
+        public static IEndpointConventionBuilder MapFallbackToAreaPage(
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string page,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -257,18 +264,67 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            // we don't expect the delegate to run.
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             });
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a page using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a page using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            EnsureRazorPagesServices(endpoints);
+
+            // Called for side-effect to make sure that the data source is registered.
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+
+            endpoints.Map(
+                pattern, 
+                context =>
+                {
+                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                })
+                .Add(b =>
+                {
+                    b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(typeof(TTransformer)));
+                });
         }
 
         private static DynamicPageMetadata CreateDynamicPageMetadata(string page, string area)
@@ -280,25 +336,25 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static void EnsureRazorPagesServices(IEndpointRouteBuilder routes)
+        private static void EnsureRazorPagesServices(IEndpointRouteBuilder endpoints)
         {
-            var marker = routes.ServiceProvider.GetService<PageActionEndpointDataSource>();
+            var marker = endpoints.ServiceProvider.GetService<PageActionEndpointDataSource>();
             if (marker == null)
             {
                 throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
                     nameof(IServiceCollection),
-                    "AddMvc",
+                    "AddRazorPages",
                     "ConfigureServices(...)"));
             }
         }
 
-        private static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder routes)
+        private static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
         {
-            var dataSource = routes.DataSources.OfType<PageActionEndpointDataSource>().FirstOrDefault();
+            var dataSource = endpoints.DataSources.OfType<PageActionEndpointDataSource>().FirstOrDefault();
             if (dataSource == null)
             {
-                dataSource = routes.ServiceProvider.GetRequiredService<PageActionEndpointDataSource>();
-                routes.DataSources.Add(dataSource);
+                dataSource = endpoints.ServiceProvider.GetRequiredService<PageActionEndpointDataSource>();
+                endpoints.DataSources.Add(dataSource);
             }
 
             return dataSource;

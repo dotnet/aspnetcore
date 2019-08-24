@@ -2,66 +2,46 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
-#pragma warning disable PUB0001 // Pubternal type in public API
-    public sealed class SocketTransportFactory : ITransportFactory
-#pragma warning restore PUB0001 // Pubternal type in public API
+    public sealed class SocketTransportFactory : IConnectionListenerFactory
     {
         private readonly SocketTransportOptions _options;
-        private readonly IHostApplicationLifetime _appLifetime;
         private readonly SocketsTrace _trace;
 
         public SocketTransportFactory(
             IOptions<SocketTransportOptions> options,
-            IHostApplicationLifetime applicationLifetime,
             ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            if (applicationLifetime == null)
-            {
-                throw new ArgumentNullException(nameof(applicationLifetime));
-            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _options = options.Value;
-            _appLifetime = applicationLifetime;
-            var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
         }
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
-#pragma warning restore PUB0001 // Pubternal type in public API
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-            if (endPointInformation == null)
-            {
-                throw new ArgumentNullException(nameof(endPointInformation));
-            }
-
-            if (endPointInformation.Type != ListenType.IPEndPoint)
-            {
-                throw new ArgumentException(SocketsStrings.OnlyIPEndPointsSupported, nameof(endPointInformation));
-            }
-
-            if (dispatcher == null)
-            {
-                throw new ArgumentNullException(nameof(dispatcher));
-            }
-
-            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace, _options.MemoryPoolFactory());
+            var transport = new SocketConnectionListener(endpoint, _options, _trace);
+            transport.Bind();
+            return new ValueTask<IConnectionListener>(transport);
         }
     }
 }

@@ -53,6 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(
+                options,
                 _dataAnnotationLocalizationOptions,
                 _stringLocalizerFactory));
 

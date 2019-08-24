@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
@@ -25,11 +24,8 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
-    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
     <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>

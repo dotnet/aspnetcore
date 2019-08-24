@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class ZeroContentLengthMessageBody : MessageBody
+    internal sealed class ZeroContentLengthMessageBody : MessageBody
     {
         public ZeroContentLengthMessageBody(bool keepAlive)
-            : base(null, null)
+            : base(null)
         {
             RequestKeepAlive = keepAlive;
         }
 
         public override bool IsEmpty => true;
 
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true));
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default) => new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true));
 
         public override Task ConsumeAsync() => Task.CompletedTask;
 
@@ -33,8 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             result = new ReadResult(default, isCanceled: false, isCompleted: true);
             return true;
         }
-
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state) { }
 
         public override void Complete(Exception ex) { }
 

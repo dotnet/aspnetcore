@@ -11,9 +11,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.gson.stream.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.stream.JsonReader;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -28,7 +29,7 @@ public class HubConnection {
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private final String baseUrl;
+    private String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
@@ -40,7 +41,8 @@ public class HubConnection {
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private Single<String> redirectAccessTokenProvider;
-    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers;
+    private final Map<String, String> localHeaders = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
@@ -54,6 +56,7 @@ public class HubConnection {
     private long handshakeResponseTimeout = 15*1000;
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
+    private String connectionId;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -92,9 +95,23 @@ public class HubConnection {
         return this.keepAliveInterval;
     }
 
+    /**
+     *  Gets the connections connectionId. This value will be cleared when the connection is stopped and
+     *  will have a new value every time the connection is successfully started.
+     * @return A string representing the the client's connectionId.
+     */
+    public String getConnectionId() {
+        return this.connectionId;
+    }
+
     // For testing purposes
     void setTickRate(long tickRateInMilliseconds) {
         this.tickRate = tickRateInMilliseconds;
+    }
+
+    // For testing purposes
+    Map<String,Observable> getStreamMap() {
+        return this.streamMap;
     }
 
     TransportEnum getTransportEnum() {
@@ -136,10 +153,7 @@ public class HubConnection {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
         }
 
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
-
+        this.headers = headers;
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
@@ -244,7 +258,7 @@ public class HubConnection {
 
     private Single<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
-        request.addHeaders(this.headers);
+        request.addHeaders(this.localHeaders);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
             if (response.getStatusCode() != 200) {
@@ -263,7 +277,7 @@ public class HubConnection {
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
                 String token = this.redirectAccessTokenProvider.blockingGet();
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
 
             return negotiateResponse;
@@ -279,6 +293,27 @@ public class HubConnection {
         return hubConnectionState;
     }
 
+    // For testing only
+    String getBaseUrl() {
+        return this.baseUrl;
+    }
+
+    /**
+     * Sets a new url for the HubConnection.
+     * @param url The url to connect to.
+     */
+    public void setBaseUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            throw new IllegalArgumentException("The HubConnection url must be a valid url.");
+        }
+
+        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+            throw new IllegalStateException("The HubConnection must be in the disconnected state to change the url.");
+        }
+
+        this.baseUrl = url;
+    }
+
     /**
      * Starts a connection to the server.
      *
@@ -292,9 +327,14 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
+        localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
+        if (headers != null) {
+            this.localHeaders.putAll(headers);
+        }
+
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
             tokenCompletable.onComplete();
         });
@@ -315,10 +355,10 @@ public class HubConnection {
                 Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient, tokenProvider);
+                        transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                         break;
                     default:
-                        transport = new WebSocketTransport(headers, httpClient);
+                        transport = new WebSocketTransport(localHeaders, httpClient);
                 }
             }
 
@@ -337,6 +377,7 @@ public class HubConnection {
                         hubConnectionStateLock.lock();
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
+                            this.connectionId = negotiateResponse.getConnectionId();
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
@@ -479,8 +520,10 @@ public class HubConnection {
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
             redirectAccessTokenProvider = null;
+            connectionId = null;
             transportEnum = TransportEnum.ALL;
-            this.headers.remove("Authorization");
+            this.localHeaders.clear();
+            this.streamMap.clear();
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -501,11 +544,15 @@ public class HubConnection {
      * @param args   The arguments to be passed to the method.
      */
     public void send(String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
+            }
+            sendInvocationMessage(method, args);
+        } finally {
+            hubConnectionStateLock.unlock();
         }
-
-        sendInvocationMessage(method, args);
     }
 
     private void sendInvocationMessage(String method, Object[] args) {
@@ -535,15 +582,25 @@ public class HubConnection {
             Observable observable = this.streamMap.get(streamId);
             observable.subscribe(
                 (item) -> sendHubMessage(new StreamItem(streamId, item)),
-                (error) -> sendHubMessage(new CompletionMessage(streamId, null, error.toString())),
-                () -> sendHubMessage(new CompletionMessage(streamId, null, null)));
+                (error) -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, error.toString()));
+                    this.streamMap.remove(streamId);
+                },
+                () -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, null));
+                    this.streamMap.remove(streamId);
+                });
         }
     }
 
     Object[] checkUploadStream(Object[] args, List<String> streamIds) {
+        if (args == null) {
+            return new Object[] { null };
+        }
+
         List<Object> params = new ArrayList<>(Arrays.asList(args));
         for (Object arg: args) {
-            if(arg instanceof Observable) {
+            if (arg instanceof Observable) {
                 params.remove(arg);
                 Observable stream = (Observable)arg;
                 String streamId = connectionState.getNextInvocationId();
@@ -558,6 +615,42 @@ public class HubConnection {
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
      *
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @return A Completable that indicates when the invocation has completed.
+     */
+    @SuppressWarnings("unchecked")
+    public Completable invoke(String method, Object... args) {
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+            }
+
+            String id = connectionState.getNextInvocationId();
+
+            CompletableSubject subject = CompletableSubject.create();
+            InvocationRequest irq = new InvocationRequest(null, id);
+            connectionState.addInvocation(irq);
+
+            Subject<Object> pendingCall = irq.getPendingCall();
+
+            pendingCall.subscribe(result -> subject.onComplete(),
+                    error -> subject.onError(error),
+                    () -> subject.onComplete());
+
+            // Make sure the actual send is after setting up the callbacks otherwise there is a race
+            // where the map doesn't have the callbacks yet when the response is returned
+            sendInvocationMessage(method, args, id, false);
+            return subject;
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
+    }
+
+    /**
+     * Invokes a hub method on the server using the specified method name and arguments.
+     *
      * @param returnType The expected return type.
      * @param method The name of the server method to invoke.
      * @param args The arguments used to invoke the server method.
@@ -566,32 +659,37 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
-        }
-
-        String id = connectionState.getNextInvocationId();
-
-        SingleSubject<T> subject = SingleSubject.create();
-        InvocationRequest irq = new InvocationRequest(returnType, id);
-        connectionState.addInvocation(irq);
-
-        // forward the invocation result or error to the user
-        // run continuations on a separate thread
-        Subject<Object> pendingCall = irq.getPendingCall();
-        pendingCall.subscribe(result -> {
-            // Primitive types can't be cast with the Class cast function
-            if (returnType.isPrimitive()) {
-                subject.onSuccess((T)result);
-            } else {
-                subject.onSuccess(returnType.cast(result));
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
-        }, error -> subject.onError(error));
 
-        // Make sure the actual send is after setting up the callbacks otherwise there is a race
-        // where the map doesn't have the callbacks yet when the response is returned
-        sendInvocationMessage(method, args, id, false);
-        return subject;
+            String id = connectionState.getNextInvocationId();
+            InvocationRequest irq = new InvocationRequest(returnType, id);
+            connectionState.addInvocation(irq);
+
+            SingleSubject<T> subject = SingleSubject.create();
+
+            // forward the invocation result or error to the user
+            // run continuations on a separate thread
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                // Primitive types can't be cast with the Class cast function
+                if (returnType.isPrimitive()) {
+                    subject.onSuccess((T)result);
+                } else {
+                    subject.onSuccess(returnType.cast(result));
+                }
+            }, error -> subject.onError(error));
+
+            // Make sure the actual send is after setting up the callbacks otherwise there is a race
+            // where the map doesn't have the callbacks yet when the response is returned
+            sendInvocationMessage(method, args, id, false);
+            return subject;
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
     }
 
     /**
@@ -605,33 +703,46 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
-        String invocationId = connectionState.getNextInvocationId();
-        AtomicInteger subscriptionCount = new AtomicInteger();
-        InvocationRequest irq = new InvocationRequest(returnType, invocationId);
-        connectionState.addInvocation(irq);
-        ReplaySubject<T> subject = ReplaySubject.create();
-
-        Subject<Object> pendingCall = irq.getPendingCall();
-        pendingCall.subscribe(result -> {
-            // Primitive types can't be cast with the Class cast function
-            if (returnType.isPrimitive()) {
-                subject.onNext((T)result);
-            } else {
-                subject.onNext(returnType.cast(result));
+        String invocationId;
+        InvocationRequest irq;
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
-        }, error -> subject.onError(error),
-                () -> subject.onComplete());
 
-        Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
-        sendInvocationMessage(method, args, invocationId, true);
-        return observable.doOnDispose(() -> {
-            if (subscriptionCount.decrementAndGet() == 0) {
-                CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
-                sendHubMessage(cancelInvocationMessage);
-                connectionState.tryRemoveInvocation(invocationId);
-                subject.onComplete();
-            }
-        });
+            invocationId = connectionState.getNextInvocationId();
+            irq = new InvocationRequest(returnType, invocationId);
+            connectionState.addInvocation(irq);
+
+            AtomicInteger subscriptionCount = new AtomicInteger();
+            ReplaySubject<T> subject = ReplaySubject.create();
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                        // Primitive types can't be cast with the Class cast function
+                        if (returnType.isPrimitive()) {
+                            subject.onNext((T)result);
+                        } else {
+                            subject.onNext(returnType.cast(result));
+                        }
+                    }, error -> subject.onError(error),
+                    () -> subject.onComplete());
+
+            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+            sendInvocationMessage(method, args, invocationId, true);
+            return observable.doOnDispose(() -> {
+                if (subscriptionCount.decrementAndGet() == 0) {
+                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
+                    sendHubMessage(cancelInvocationMessage);
+                    if (connectionState != null) {
+                        connectionState.tryRemoveInvocation(invocationId);
+                    }
+                    subject.onComplete();
+                }
+            });
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
     }
 
     private void sendHubMessage(HubMessage message) {

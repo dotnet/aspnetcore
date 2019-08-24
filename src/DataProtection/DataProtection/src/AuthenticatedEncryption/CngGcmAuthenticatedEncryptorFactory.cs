@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 
             BCryptAlgorithmHandle algorithmHandle = null;
 
-            _logger?.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
+            _logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(configuration.EncryptionAlgorithm, configuration.EncryptionAlgorithmProvider);
             // Special-case cached providers
             if (configuration.EncryptionAlgorithmProvider == null)
             {

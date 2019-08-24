@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -365,7 +366,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientDisposalAbortsRequest()
         {
             // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             RequestDelegate appDelegate = async ctx =>
             {
                 // Write Headers
@@ -398,31 +399,80 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task ClientCancellationAbortsRequest()
         {
-            // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            RequestDelegate appDelegate = async ctx =>
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
             {
-                var sem = new SemaphoreSlim(0);
                 try
                 {
-                    await sem.WaitAsync(ctx.RequestAborted);
+                    await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
+                    tcs.SetResult(0);
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
+                    return;
                 }
-            };
+                throw new InvalidOperationException("The request was not aborted");
+            }));
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
 
-            // Act
-            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsNotPreserved()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
             var server = new TestServer(builder);
             var client = server.CreateClient();
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(500);
-            var response = await client.GetAsync("http://localhost:12345", cts.Token);
 
-            // Assert
-            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+            var resp = await client.GetAsync("/");
+
+            Assert.NotSame(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsPreservedIfPreserveExecutionContextIsTrue()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder)
+            {
+                PreserveExecutionContext = true
+            };
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.Same(value, capturedValue);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
         public readonly string ElementName;
         [System.Runtime.InteropServices.FieldOffsetAttribute(24)]
-        public readonly System.Action<Microsoft.AspNetCore.Components.ElementRef> ElementReferenceCaptureAction;
+        public readonly System.Action<Microsoft.AspNetCore.Components.ElementReference> ElementReferenceCaptureAction;
         [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
         public readonly string ElementReferenceCaptureId;
         [System.Runtime.InteropServices.FieldOffsetAttribute(8)]

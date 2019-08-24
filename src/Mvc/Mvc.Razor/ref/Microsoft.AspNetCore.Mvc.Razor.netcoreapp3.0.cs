@@ -21,6 +21,31 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem> CompiledItems { get; }
     }
 }
+namespace Microsoft.AspNetCore.Mvc.Diagnostics
+{
+    public sealed partial class AfterViewPageEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.AfterViewPage";
+        public AfterViewPageEventData(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class BeforeViewPageEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage";
+        public BeforeViewPageEventData(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override int Count { get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public partial class HelperResult : Microsoft.AspNetCore.Html.IHtmlContent
@@ -356,7 +381,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("track", Attributes="[src^='~/']", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("video", Attributes="[poster^='~/']")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("video", Attributes="[src^='~/']")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
     public partial class UrlResolutionTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public UrlResolutionTagHelper(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder) { }

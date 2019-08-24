@@ -5,10 +5,11 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.gson.stream.JsonReader;
+import java.io.StringReader;
+
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import com.google.gson.stream.JsonReader;
 
 
 class NegotiateResponseTest {

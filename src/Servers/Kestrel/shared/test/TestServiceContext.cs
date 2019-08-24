@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
@@ -75,9 +74,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public MockSystemClock MockSystemClock { get; set; }
 
-        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = KestrelMemoryPool.Create;
-
-        public int ExpectedConnectionMiddlewareCount { get; set; }
+        public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }

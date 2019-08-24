@@ -6,13 +6,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Reflection;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
@@ -29,6 +32,8 @@ namespace FunctionalTests
         private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
         private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
+        private int _numRedirects;
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddConnections();
@@ -36,13 +41,15 @@ namespace FunctionalTests
             {
                 options.EnableDetailedErrors = true;
             })
-            .AddNewtonsoftJsonProtocol(options =>
+            .AddJsonProtocol(options =>
             {
                 // we are running the same tests with JSON and MsgPack protocols and having
                 // consistent casing makes it cleaner to verify results
-                options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
             })
             .AddMessagePackProtocol();
+
+            services.AddCors();
 
             services.AddAuthorization(options =>
             {
@@ -70,13 +77,27 @@ namespace FunctionalTests
                     {
                         OnMessageReceived = context =>
                         {
-                            var signalRTokenHeader = context.Request.Query["access_token"];
-
-                            if (!string.IsNullOrEmpty(signalRTokenHeader) &&
-                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            var endpoint = context.HttpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+                            if (endpoint != null && endpoint.Metadata.GetMetadata<HubMetadata>() != null)
                             {
-                                context.Token = context.Request.Query["access_token"];
+                                var request = context.HttpContext.Request;
+                                string token = request.Headers["Authorization"];
+
+                                if (!string.IsNullOrEmpty(token))
+                            {
+                                    if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        token = token.Substring("Bearer ".Length).Trim();
                             }
+                                }
+                                else
+                                {
+                                    token = context.Request.Query["access_token"];
+                                }
+
+                                context.Token = token;
+                            }
+
                             return Task.CompletedTask;
                         }
                     };
@@ -124,21 +145,58 @@ namespace FunctionalTests
                 return next.Invoke();
             });
 
-            app.UseRouting(routes =>
+            app.Use((context, next) =>
             {
-                routes.MapHub<TestHub>("/testhub");
-                routes.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
-                routes.MapHub<UncreatableHub>("/uncreatable");
-                routes.MapHub<HubWithAuthorization>("/authorizedhub");
+                if (context.Request.Path.StartsWithSegments("/redirect"))
+                {
+                    var newUrl = context.Request.Query["baseUrl"] + "/testHub?numRedirects=" + Interlocked.Increment(ref _numRedirects);
+                    return context.Response.WriteAsync($"{{ \"url\": \"{newUrl}\" }}");
+                }
 
-                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
+                return next();
+            });
 
-                routes.MapGet("/generateJwtToken", context =>
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Value.Contains("/negotiate"))
+                {
+                    context.Response.Cookies.Append("testCookie", "testValue");
+                    context.Response.Cookies.Append("testCookie2", "testValue2");
+                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
+                }
+
+                await next.Invoke();
+            });
+
+            app.UseRouting();
+
+            // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)
+            // This is for testing purposes only (karma hosts the client on its own server), never do this in production
+            app.UseCors(policy =>
+            {
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<TestHub>("/testhub");
+                endpoints.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
+                endpoints.MapHub<UncreatableHub>("/uncreatable");
+                endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
+
+                endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
+
+                endpoints.MapGet("/generateJwtToken", context =>
                 {
                     return context.Response.WriteAsync(GenerateJwtToken());
                 });
 
-                routes.MapGet("/deployment", context =>
+                endpoints.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -169,17 +227,6 @@ namespace FunctionalTests
 
                     return Task.CompletedTask;
                 });
-            });
-
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.Value.Contains("/negotiate"))
-                {
-                    context.Response.Cookies.Append("testCookie", "testValue");
-                    context.Response.Cookies.Append("testCookie2", "testValue2");
-                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
-                }
-                await next.Invoke();
             });
         }
 

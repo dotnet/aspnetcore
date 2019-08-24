@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -141,11 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext();
             var modelState = testContext.ModelState;
             var model = new ModelLevelErrorTest();
-            var controller = CreateController(testContext, testContext.MetadataProvider);
-            controller.ObjectValidator = new CustomObjectValidator(testContext.MetadataProvider, TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders)
-            {
-                ValidateComplexTypesIfChildValidationFails = true
-            };
+            var controller = CreateController(testContext, testContext.MetadataProvider, o => o.ValidateComplexTypesIfChildValidationFails = true);
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -166,11 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var testContext = ModelBindingTestHelper.GetTestContext();
             var modelState = testContext.ModelState;
             var model = new ModelLevelErrorTest();
-            var controller = CreateController(testContext, testContext.MetadataProvider);
-            controller.ObjectValidator = new CustomObjectValidator(testContext.MetadataProvider, TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders)
-            {
-                ValidateComplexTypesIfChildValidationFails= false
-            };
+            var controller = CreateController(testContext, testContext.MetadataProvider, o => o.ValidateComplexTypesIfChildValidationFails = false);
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -214,7 +205,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             ActionContext actionContext,
             IModelMetadataProvider metadataProvider)
         {
+            return CreateController(actionContext, metadataProvider, _ => { });
+        }
+
+        private TestController CreateController(
+            ActionContext actionContext,
+            IModelMetadataProvider metadataProvider,
+            Action<MvcOptions> optionsConfigurator
+        )
+        {
             var options = actionContext.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>();
+            optionsConfigurator.Invoke(options.Value);
 
             var controller = new TestController();
             controller.ControllerContext = new ControllerContext(actionContext);
@@ -248,38 +249,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class TestController : Controller
         {
-        }
-
-        private class CustomObjectValidator : IObjectModelValidator
-        {
-            private readonly IModelMetadataProvider _modelMetadataProvider;
-            private readonly IList<IModelValidatorProvider> _validatorProviders;
-            private ValidatorCache _validatorCache;
-            private CompositeModelValidatorProvider _validatorProvider;
-
-            public CustomObjectValidator(IModelMetadataProvider modelMetadataProvider, IList<IModelValidatorProvider> validatorProviders)
-            {
-                _modelMetadataProvider = modelMetadataProvider;
-                _validatorProviders = validatorProviders;
-                _validatorCache = new ValidatorCache();
-                _validatorProvider = new CompositeModelValidatorProvider(validatorProviders);
-            }
-
-            public void Validate(ActionContext actionContext, ValidationStateDictionary validationState, string prefix, object model)
-            {
-                var visitor = new ValidationVisitor(
-                    actionContext,
-                    _validatorProvider,
-                    _validatorCache,
-                    _modelMetadataProvider,
-                    validationState);
-
-                var metadata = model == null ? null : _modelMetadataProvider.GetMetadataForType(model.GetType());
-                visitor.ValidateComplexTypesIfChildValidationFails = ValidateComplexTypesIfChildValidationFails;
-                visitor.Validate(metadata, prefix, model);
-            }
-
-            public bool ValidateComplexTypesIfChildValidationFails { get; set; }
         }
     }
 }

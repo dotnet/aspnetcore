@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// has been established.
     /// </item>
     /// <item>
-    /// <see cref="OnConnectionUpAsync(Circuit, CancellationToken)(Circuit, CancellationToken)"/> is invoked immediately after the completion of
+    /// <see cref="OnConnectionUpAsync(Circuit, CancellationToken)"/> is invoked immediately after the completion of
     /// <see cref="OnCircuitOpenedAsync(Circuit, CancellationToken)"/>. In addition, the method is invoked each time a connection is re-established
     /// with a client after it's been dropped. <see cref="OnConnectionDownAsync(Circuit, CancellationToken)"/> is invoked each time a connection
     /// is dropped.
@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// Application users may use this event to save state for a client that can be later rehydrated.
     /// </item>
     /// </list>
-    /// <ol>
     /// </summary>
     public abstract class CircuitHandler
     {

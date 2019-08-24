@@ -116,17 +116,18 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override void Close()
         {
-            _inner.Close();
+            // Don't dispose the inner stream, we don't want to impact the client stream
         }
 
         protected override void Dispose(bool disposing)
         {
-            _inner.Dispose();
+            // Don't dispose the inner stream, we don't want to impact the client stream
         }
 
         public override ValueTask DisposeAsync()
         {
-            return _inner.DisposeAsync();
+            // Don't dispose the inner stream, we don't want to impact the client stream
+            return default;
         }
     }
 }

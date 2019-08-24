@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Localization;
@@ -23,11 +27,20 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         IDisplayMetadataProvider,
         IValidationMetadataProvider
     {
+        // The [Nullable] attribute is synthesized by the compiler. It's best to just compare the type name.
+        private const string NullableAttributeFullTypeName = "System.Runtime.CompilerServices.NullableAttribute";
+        private const string NullableFlagsFieldName = "NullableFlags";
+
+        private const string NullableContextAttributeFullName = "System.Runtime.CompilerServices.NullableContextAttribute";
+        private const string NullableContextFlagsFieldName = "Flag";
+
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly MvcOptions _options;
         private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
 
         public DataAnnotationsMetadataProvider(
-            IOptions<MvcDataAnnotationsLocalizationOptions> options,
+            MvcOptions options,
+            IOptions<MvcDataAnnotationsLocalizationOptions> localizationOptions,
             IStringLocalizerFactory stringLocalizerFactory)
         {
             if (options == null)
@@ -35,7 +48,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _localizationOptions = options.Value;
+            if (localizationOptions == null)
+            {
+                throw new ArgumentNullException(nameof(localizationOptions));
+            }
+
+            _options = options;
+            _localizationOptions = localizationOptions.Value;
             _stringLocalizerFactory = stringLocalizerFactory;
         }
 
@@ -97,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
             else if (displayFormatAttribute != null && !displayFormatAttribute.HtmlEncode)
             {
-                displayMetadata.DataTypeName = DataType.Html.ToString();
+                displayMetadata.DataTypeName = nameof(DataType.Html);
             }
 
             var containerType = context.Key.ContainerType ?? context.Key.ModelType;
@@ -310,11 +329,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var attributes = new List<object>(context.Attributes.Count);
-
-            for (var i = 0; i < context.Attributes.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var contextAttributes = context.Attributes;
+            var contextAttributesCount = contextAttributes.Count;
+            var attributes = new List<object>(contextAttributesCount);
+            
+            for (var i = 0; i < contextAttributesCount; i++)
             {
-                var attribute = context.Attributes[i];
+                var attribute = contextAttributes[i];
                 if (attribute is ValidationProviderAttribute validationProviderAttribute)
                 {
                     attributes.AddRange(validationProviderAttribute.GetValidationAttributes());
@@ -328,6 +350,53 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // RequiredAttribute marks a property as required by validation - this means that it
             // must have a non-null value on the model during validation.
             var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
+
+            // For non-nullable reference types, treat them as-if they had an implicit [Required].
+            // This allows the developer to specify [Required] to customize the error message, so
+            // if they already have [Required] then there's no need for us to do this check.
+            if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
+                requiredAttribute == null &&
+                !context.Key.ModelType.IsValueType &&
+                context.Key.MetadataKind != ModelMetadataKind.Type)
+            {
+                var addInferredRequiredAttribute = false;
+                if (context.Key.MetadataKind == ModelMetadataKind.Type)
+                {
+                    // Do nothing.
+                }
+                else if (context.Key.MetadataKind == ModelMetadataKind.Property)
+                {
+                    addInferredRequiredAttribute = IsNullableReferenceType(
+                        context.Key.ContainerType, 
+                        member: null, 
+                        context.PropertyAttributes);
+                }
+                else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
+                {
+                    addInferredRequiredAttribute = IsNullableReferenceType(
+                        context.Key.ParameterInfo?.Member.ReflectedType, 
+                        context.Key.ParameterInfo.Member, 
+                        context.ParameterAttributes);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unsupported ModelMetadataKind: " + context.Key.MetadataKind);
+                }
+
+                if (addInferredRequiredAttribute)
+                {
+                    // Since this behavior specifically relates to non-null-ness, we will use the non-default
+                    // option to tolerate empty/whitespace strings. empty/whitespace INPUT will still result in
+                    // a validation error by default because we convert empty/whitespace strings to null
+                    // unless you say otherwise.
+                    requiredAttribute = new RequiredAttribute()
+                    {
+                        AllowEmptyStrings = true,
+                    };
+                    attributes.Add(requiredAttribute);
+                }
+            }
+
             if (requiredAttribute != null)
             {
                 context.ValidationMetadata.IsRequired = true;
@@ -379,6 +448,97 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             return string.Empty;
+        }
+
+        internal static bool IsNullableReferenceType(Type containingType, MemberInfo member, IEnumerable<object> attributes)
+        {
+            if (HasNullableAttribute(attributes, out var result))
+            {
+                return result;
+            }
+
+            return IsNullableBasedOnContext(containingType, member);
+        }
+
+        // Internal for testing
+        internal static bool HasNullableAttribute(IEnumerable<object> attributes, out bool isNullable)
+        {
+            // [Nullable] is compiler synthesized, comparing by name.
+            var nullableAttribute = attributes
+                .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal));
+            if (nullableAttribute == null)
+            {
+                isNullable = false;
+                return false; // [Nullable] not found
+            }
+
+            // We don't handle cases where generics and NNRT are used. This runs into a
+            // fundamental limitation of ModelMetadata - we use a single Type and Property/Parameter
+            // to look up the metadata. However when generics are involved and NNRT is in use
+            // the distance between the [Nullable] and member we're looking at is potentially
+            // unbounded.
+            //
+            // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
+            if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
+                field.GetValue(nullableAttribute) is byte[] flags &&
+                flags.Length >= 0 &&
+                flags[0] == 1) // First element is the property/parameter type.
+            {
+                isNullable = true;
+                return true; // [Nullable] found and type is an NNRT
+            }
+
+            isNullable = false;
+            return true; // [Nullable] found but type is not an NNRT
+        }
+
+        internal static bool IsNullableBasedOnContext(Type containingType, MemberInfo member)
+        {
+            // The [Nullable] and [NullableContext] attributes are not inherited.
+            //
+            // The [NullableContext] attribute can appear on a method or on the module.
+            var attributes = member?.GetCustomAttributes(inherit: false) ?? Array.Empty<object>();
+            var isNullable = AttributesHasNullableContext(attributes);
+            if (isNullable != null)
+            {
+                return isNullable.Value;
+            }
+
+            // Check on the containing type
+            var type = containingType;
+            do
+            {
+                attributes = type.GetCustomAttributes(inherit: false);
+                isNullable = AttributesHasNullableContext(attributes);
+                if (isNullable != null)
+                {
+                    return isNullable.Value;
+                }
+
+                type = type.DeclaringType;
+            } 
+            while (type != null);
+
+            // If we don't find the attribute on the declaring type then repeat at the module level
+            attributes = containingType.Module.GetCustomAttributes(inherit: false);
+            isNullable = AttributesHasNullableContext(attributes);
+            return isNullable ?? false;
+
+            bool? AttributesHasNullableContext(object[] attributes)
+            {
+                var nullableContextAttribute = attributes
+                    .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableContextAttributeFullName, StringComparison.Ordinal));
+                if (nullableContextAttribute != null)
+                {
+                    if (nullableContextAttribute.GetType().GetField(NullableContextFlagsFieldName) is FieldInfo field &&
+                        field.GetValue(nullableContextAttribute) is byte @byte)
+                    {
+                        return @byte == 1; // [NullableContext] found
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }

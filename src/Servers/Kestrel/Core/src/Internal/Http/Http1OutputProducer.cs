@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // "0\r\n\r\n"
         private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
-        private const int BeginChunkLengthMax = 5;
+        private const int MaxBeginChunkLength = 10;
         private const int EndChunkLength = 2;
 
         private readonly string _connectionId;
@@ -41,11 +42,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _contextLock = new object();
 
         private bool _pipeWriterCompleted;
-        private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
+        private int _currentMemoryPrefixBytes;
 
-        private readonly PipeWriter _pipeWriter;
+        private readonly ConcurrentPipeWriter _pipeWriter;
         private IMemoryOwner<byte> _fakeMemoryOwner;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
@@ -55,6 +56,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // and append the end terminator.
 
         private bool _autoChunk;
+
+        // We rely on the TimingPipeFlusher to give us ValueTasks that can be safely awaited multiple times.
+        private bool _writeStreamSuffixCalled;
+        private ValueTask<FlushResult> _writeStreamSuffixValueTask;
+
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
@@ -76,12 +82,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             IHttpMinResponseDataRateFeature minResponseDataRateFeature,
             MemoryPool<byte> memoryPool)
         {
-            _pipeWriter = pipeWriter;
+            // Allow appending more data to the PipeWriter when a flush is pending.
+            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
             _log = log;
             _minResponseDataRateFeature = minResponseDataRateFeature;
-            _flusher = new TimingPipeFlusher(pipeWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
             _memoryPool = memoryPool;
         }
 
@@ -107,7 +114,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
-            return WriteAsync(EndChunkedResponseBytes);
+            lock (_contextLock)
+            {
+                if (_writeStreamSuffixCalled)
+                {
+                    // If WriteStreamSuffixAsync has already been called, no-op and return the previously returned ValueTask.
+                    return _writeStreamSuffixValueTask;
+                }
+
+                if (_autoChunk)
+                {
+                    var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                    _writeStreamSuffixValueTask = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                }
+                else if (_unflushedBytes > 0)
+                {
+                    _writeStreamSuffixValueTask = FlushAsync();
+                }
+                else
+                {
+                    _writeStreamSuffixValueTask = default;
+                }
+
+                _writeStreamSuffixCalled = true;
+                return _writeStreamSuffixValueTask;
+            }
         }
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -140,15 +171,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return _flusher.FlushAsync(_minResponseDataRateFeature.MinDataRate, bytesWritten, this, cancellationToken);
             }
 
-            ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
+            static ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
             {
-                // Local function so in the common-path the stack space for BufferWriter isn't reservered and cleared when it isn't used.
+                // Local function so in the common-path the stack space for BufferWriter isn't reserved and cleared when it isn't used.
 
                 Debug.Assert(!producer._pipeWriterCompleted);
                 Debug.Assert(producer._autoChunk && producer._advancedBytesForChunk > 0);
 
                 var writer = new BufferWriter<PipeWriter>(producer._pipeWriter);
-                producer.WriteCurrentMemoryToPipeWriter(ref writer);
+                producer.WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
 
                 var bytesWritten = producer._unflushedBytes + writer.BytesCommitted;
@@ -165,7 +196,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return GetFakeMemory(sizeHint);
                 }
@@ -188,7 +221,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return GetFakeMemory(sizeHint).Span;
                 }
@@ -211,7 +246,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return;
                 }
@@ -230,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else if (_autoChunk)
                 {
-                    if (_advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength - bytes)
+                    if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - bytes)
                     {
                         throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
                     }
@@ -253,6 +290,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -275,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_advancedBytesForChunk > 0)
             {
-                WriteCurrentMemoryToPipeWriter(ref writer);
+                WriteCurrentChunkMemoryToPipeWriter(ref writer);
             }
 
             if (buffer.Length > 0)
@@ -289,10 +328,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return;
@@ -366,6 +407,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                _pipeWriter.Abort();
+
                 if (_fakeMemoryOwner != null)
                 {
                     _fakeMemoryOwner.Dispose();
@@ -400,8 +443,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _log.ConnectionDisconnect(_connectionId);
                 _pipeWriterCompleted = true;
-                _completed = true;
-                _pipeWriter.Complete();
             }
         }
 
@@ -423,11 +464,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Complete()
+        public void Stop()
         {
             lock (_contextLock)
             {
-                _completed = true;
+                CompletePipe();
             }
         }
 
@@ -440,6 +481,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -458,6 +501,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -480,9 +525,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(_currentSegmentOwner == null);
             Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
+            // Cleared in sequential address ascending order 
+            _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
-            _startCalled = false;
+            _writeStreamSuffixCalled = false;
+            _writeStreamSuffixValueTask = default;
             _currentChunkMemoryUpdated = false;
+            _startCalled = false;
         }
 
         private ValueTask<FlushResult> WriteAsync(
@@ -491,6 +540,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -512,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
                     // make sure to write whatever was advanced first
-                    WriteCurrentMemoryToPipeWriter(ref writer);
+                    WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 }
                 else
                 {
@@ -538,57 +589,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 cancellationToken);
         }
 
-        // These methods are for chunked http responses that use GetMemory/Advance
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
-            // The max size of a chunk will be the size of memory returned from the PipeWriter (today 4096)
-            // minus 5 for the max chunked prefix size and minus 2 for the chunked ending, leaving a total of
-            // 4089.
-
             if (!_currentChunkMemoryUpdated)
             {
-                // First time calling GetMemory
-                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-                _currentChunkMemoryUpdated = true;
+                // Calculating ChunkWriter.GetBeginChunkByteCount isn't free, so instead, we can add
+                // the max length for the prefix and suffix and add it to the sizeHint.
+                // This still guarantees that the memory passed in will be larger than the sizeHint.
+                sizeHint += MaxBeginChunkLength + EndChunkLength; 
+                UpdateCurrentChunkMemory(sizeHint);
             }
-
-            var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
-            if (_advancedBytesForChunk >= memoryMaxLength - sizeHint && _advancedBytesForChunk > 0)
+            // Check if we need to allocate a new memory.
+            else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
-                // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
+                sizeHint += MaxBeginChunkLength + EndChunkLength; 
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                WriteCurrentMemoryToPipeWriter(ref writer);
+                WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
-
                 _unflushedBytes += writer.BytesCommitted;
-                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-                _currentChunkMemoryUpdated = true;
+
+                UpdateCurrentChunkMemory(sizeHint);
             }
 
             var actualMemory = _currentChunkMemory.Slice(
-                BeginChunkLengthMax + _advancedBytesForChunk,
-                memoryMaxLength - _advancedBytesForChunk);
-
-            Debug.Assert(actualMemory.Length <= 4089);
+                _currentMemoryPrefixBytes + _advancedBytesForChunk,
+                _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
 
             return actualMemory;
         }
 
-        private void WriteCurrentMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
+        private void UpdateCurrentChunkMemory(int sizeHint)
+        {
+            _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+            _currentMemoryPrefixBytes = ChunkWriter.GetPrefixBytesForChunk(_currentChunkMemory.Length, out var sliceOne);
+            if (sliceOne)
+            {
+                _currentChunkMemory = _currentChunkMemory.Slice(0, _currentChunkMemory.Length - 1);
+            }
+            _currentChunkMemoryUpdated = true;
+        }
+       
+        private void WriteCurrentChunkMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
             Debug.Assert(_advancedBytesForChunk > 0);
 
             var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
 
-            Debug.Assert(bytesWritten <= BeginChunkLengthMax);
+            Debug.Assert(bytesWritten <= _currentMemoryPrefixBytes);
 
-            if (bytesWritten < BeginChunkLengthMax)
+            if (bytesWritten < _currentMemoryPrefixBytes)
             {
                 // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
                 // This occurs if someone uses less than 255 bytes of the current Memory segment.
                 // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
-                _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
+                _currentChunkMemory.Slice(_currentMemoryPrefixBytes, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
             }
 
             writer.Advance(_advancedBytesForChunk);
@@ -662,6 +717,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _position = 0;
         }
 
+        [StackTraceHidden]
+        private void ThrowIfSuffixSent()
+        {
+            if (_writeStreamSuffixCalled)
+            {
+                ThrowSuffixSent();
+            }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowSuffixSent()
+        {
+            throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+        }
 
         /// <summary>
         /// Holds a byte[] from the pool and a size value. Basically a Memory but guaranteed to be backed by an ArrayPool byte[], so that we know we can return it.

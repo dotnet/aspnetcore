@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 ServerOptions = { AddServerHeader = true }
             };
 
-            using (var server = new TestServer(ctx => Task.CompletedTask, testContext))
+            await using (var server = new TestServer(ctx => Task.CompletedTask, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
     }

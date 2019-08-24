@@ -9,8 +9,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
   </ItemGroup>
 
 </Project>

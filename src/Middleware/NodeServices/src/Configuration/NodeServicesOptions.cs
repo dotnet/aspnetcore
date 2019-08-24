@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +17,7 @@ namespace Microsoft.AspNetCore.NodeServices
     /// <summary>
     /// Describes options used to configure an <see cref="INodeServices"/> instance.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class NodeServicesOptions
     {
         internal const string TimeoutConfigPropertyName = nameof(InvocationTimeoutMilliseconds);

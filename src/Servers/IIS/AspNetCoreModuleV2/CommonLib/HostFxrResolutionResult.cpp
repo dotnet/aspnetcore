@@ -23,6 +23,7 @@ HRESULT HostFxrResolutionResult::Create(
         _In_ const std::wstring& pcwzProcessPath,
         _In_ const std::wstring& pcwzApplicationPhysicalPath,
         _In_ const std::wstring& pcwzArguments,
+        _In_ ErrorContext& errorContext,
         _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper)
 {
     std::filesystem::path knownDotnetLocation;
@@ -42,7 +43,8 @@ HRESULT HostFxrResolutionResult::Create(
                 pcwzArguments,
                 hostFxrDllPath,
                 knownDotnetLocation,
-                arguments);
+                arguments,
+                errorContext);
 
         LOG_INFOF(L"Parsed hostfxr options: dotnet location: '%ls' hostfxr path: '%ls' arguments:", knownDotnetLocation.c_str(), hostFxrDllPath.c_str());
         for (size_t i = 0; i < arguments.size(); i++)

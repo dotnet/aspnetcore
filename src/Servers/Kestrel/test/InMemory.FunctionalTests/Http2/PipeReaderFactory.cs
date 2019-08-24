@@ -6,7 +6,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
             {
                 try
                 {
-                    await stream.CopyToAsync(new RawStream(null, pipe.Writer), bufferSize: 4096, cancellationToken);
+                    await stream.CopyToAsync(new DuplexPipeStream(null, pipe.Writer), bufferSize: 4096, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {

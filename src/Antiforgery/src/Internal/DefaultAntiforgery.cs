@@ -263,12 +263,12 @@ namespace Microsoft.AspNetCore.Antiforgery
                 _tokenStore.SaveCookieToken(httpContext, cookieToken);
             }
 
-            if (!_options.SuppressXFrameOptionsHeader && !httpContext.Response.Headers.ContainsKey("X-Frame-Options"))
+            if (!_options.SuppressXFrameOptionsHeader && !httpContext.Response.Headers.ContainsKey(HeaderNames.XFrameOptions))
             {
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
                 // for more information.
-                httpContext.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                httpContext.Response.Headers[HeaderNames.XFrameOptions] = "SAMEORIGIN";
             }
         }
 
