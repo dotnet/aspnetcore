@@ -149,7 +149,9 @@ and are generated based on the last package release.
   </ItemGroup>
 
   <ItemGroup Label="MSBuild">
+    <LatestPackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </ItemGroup>
 
@@ -172,6 +174,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
+    <LatestPackageReference Include="NSwag.ApiDescription.Client" Version="$(NSwagApiDescriptionClientPackageVersion)" />
     <LatestPackageReference Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
     <LatestPackageReference Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" Version="$(SeleniumWebDriverChromeDriverPackageVersion)" />

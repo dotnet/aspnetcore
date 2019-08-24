@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.DotNet.Watcher.Tools.Tests
+namespace Microsoft.Extensions.Tools.Internal
 {
     public class TemporaryCSharpProject
     {
         private const string Template =
- @"<Project Sdk=""Microsoft.NET.Sdk"">
+ @"<Project Sdk=""{2}"">
   <PropertyGroup>
     {0}
     <OutputType>Exe</OutputType>
@@ -23,18 +23,21 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         private readonly string _filename;
         private readonly TemporaryDirectory _directory;
-        private List<string> _items = new List<string>();
-        private List<string> _properties = new List<string>();
+        private readonly List<string> _items = new List<string>();
+        private readonly List<string> _properties = new List<string>();
 
-        public TemporaryCSharpProject(string name, TemporaryDirectory directory)
+        public TemporaryCSharpProject(string name, TemporaryDirectory directory, string sdk)
         {
             Name = name;
             _filename = name + ".csproj";
             _directory = directory;
+            Sdk = sdk;
         }
 
         public string Name { get; }
         public string Path => System.IO.Path.Combine(_directory.Root, _filename);
+
+        public string Sdk { get; }
 
         public TemporaryCSharpProject WithTargetFrameworks(params string[] tfms)
         {
@@ -95,7 +98,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         public void Create()
         {
-            _directory.CreateFile(_filename, string.Format(Template, string.Join("\r\n", _properties), string.Join("\r\n", _items)));
+            _directory.CreateFile(_filename, string.Format(Template, string.Join("\r\n", _properties), string.Join("\r\n", _items), Sdk));
         }
 
         public class ItemSpec

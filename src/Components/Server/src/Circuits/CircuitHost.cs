@@ -649,12 +649,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 _intializationStarted = LoggerMessage.Define(
                     LogLevel.Debug,
-                    EventIds.InitializationFailed,
+                    EventIds.InitializationStarted,
                     "Circuit initialization started.");
 
                 _intializationSucceded = LoggerMessage.Define(
                     LogLevel.Debug,
-                    EventIds.InitializationFailed,
+                    EventIds.InitializationSucceeded,
                     "Circuit initialization succeeded.");
 
                 _intializationFailed = LoggerMessage.Define(
