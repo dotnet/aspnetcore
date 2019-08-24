@@ -65,7 +65,7 @@
   <!-- Unless this is an inner build or default timing is disabled, tie document retrieval into the build. -->
 
   <Target Name="_GenerateOpenApiDocuments"
-      AfterTargets="Build"
+      BeforeTargets="Build"
       Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
       DependsOnTargets="GenerateOpenApiDocuments" />
 </Project>

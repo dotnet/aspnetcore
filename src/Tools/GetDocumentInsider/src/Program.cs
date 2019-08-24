@@ -1,47 +1,24 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Text;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.Extensions.ApiDescription.Tool.Commands;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool
 {
-    internal static class Program
+    internal class Program : ProgramBase
     {
+        public Program(IConsole console) : base(console)
+        {
+        }
+
         private static int Main(string[] args)
         {
-            if (Console.IsOutputRedirected)
-            {
-                Console.OutputEncoding = Encoding.UTF8;
-            }
+            DebugHelper.HandleDebugSwitch(ref args);
 
-            var app = new CommandLineApplication()
-            {
-                FullName = Resources.CommandFullName,
-                Name = Resources.CommandFullName,
-            };
+            var console = GetConsole();
 
-            new GetDocumentCommand().Configure(app);
-
-            try
-            {
-                return app.Execute(args);
-            }
-            catch (Exception ex)
-            {
-                if (ex is CommandException || ex is CommandParsingException)
-                {
-                    Reporter.WriteError(ex.Message);
-                }
-                else
-                {
-                    Reporter.WriteError(ex.ToString());
-                }
-
-                return 1;
-            }
+            return new Program(console).Run(args, new GetDocumentCommand(console), throwOnUnexpectedArg: true);
         }
     }
 }

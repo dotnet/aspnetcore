@@ -1,12 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal abstract class ProjectCommandBase : HelpCommandBase
     {
+        public ProjectCommandBase(IConsole console) : base(console)
+        {
+        }
+
         public CommandOption AssemblyPath { get; private set; }
 
         public CommandOption ProjectName { get; private set; }

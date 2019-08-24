@@ -123,9 +123,6 @@
   <data name="MissingOption" xml:space="preserve">
     <value>Missing required option '--{0}'.</value>
   </data>
-  <data name="NoColorDescription" xml:space="preserve">
-    <value>Do not colorize console output.</value>
-  </data>
   <data name="OutputDescription" xml:space="preserve">
     <value>The directory where the document files should be written. Required.</value>
   </data>
@@ -190,5 +187,11 @@
   <data name="DocumentsNotFound" xml:space="preserve">
     <value>Unable to find any registered documents. Update the 'Startup' class to register a document.</value>
     <comment>Do not translate 'Startup'</comment>
+  </data>
+  <data name="QuietAndVerboseSpecified" xml:space="preserve">
+    <value>Cannot specify both '--quiet' and '--verbose' options.</value>
+  </data>
+  <data name="QuietDescription" xml:space="preserve">
+    <value>Suppresses all output except warnings and errors.</value>
   </data>
 </root>

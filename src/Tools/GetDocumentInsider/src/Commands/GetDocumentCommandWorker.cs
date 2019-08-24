@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
@@ -32,14 +33,23 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
         private static readonly Type[] GenerateMethodParameterTypes = new[] { typeof(string), typeof(TextWriter) };
         private static readonly Type GenerateMethodReturnType = typeof(Task);
 
-        public static int Process(GetDocumentCommandContext context)
+        private readonly GetDocumentCommandContext _context;
+        private readonly IReporter _reporter;
+
+        public GetDocumentCommandWorker(GetDocumentCommandContext context)
         {
-            var assemblyName = new AssemblyName(context.AssemblyName);
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _reporter = context.Reporter;
+        }
+
+        public int Process()
+        {
+            var assemblyName = new AssemblyName(_context.AssemblyName);
             var assembly = Assembly.Load(assemblyName);
             var entryPointType = assembly.EntryPoint?.DeclaringType;
             if (entryPointType == null)
             {
-                Reporter.WriteError(Resources.FormatMissingEntryPoint(context.AssemblyPath));
+                _reporter.WriteError(Resources.FormatMissingEntryPoint(_context.AssemblyPath));
                 return 3;
             }
 
@@ -48,7 +58,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 var serviceFactory = HostFactoryResolver.ResolveServiceProviderFactory(assembly);
                 if (serviceFactory == null)
                 {
-                    Reporter.WriteError(Resources.FormatMethodsNotFound(
+                    _reporter.WriteError(Resources.FormatMethodsNotFound(
                         HostFactoryResolver.BuildWebHost,
                         HostFactoryResolver.CreateHostBuilder,
                         HostFactoryResolver.CreateWebHostBuilder,
@@ -60,7 +70,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 var services = serviceFactory(Array.Empty<string>());
                 if (services == null)
                 {
-                    Reporter.WriteError(Resources.FormatServiceProviderNotFound(
+                    _reporter.WriteError(Resources.FormatServiceProviderNotFound(
                         typeof(IServiceProvider),
                         HostFactoryResolver.BuildWebHost,
                         HostFactoryResolver.CreateHostBuilder,
@@ -70,7 +80,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                     return 5;
                 }
 
-                var success = GetDocuments(context, services);
+                var success = GetDocuments(services);
                 if (!success)
                 {
                     return 6;
@@ -78,14 +88,14 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             }
             catch (Exception ex)
             {
-                Reporter.WriteError(ex.ToString());
+                _reporter.WriteError(ex.ToString());
                 return 7;
             }
 
             return 0;
         }
 
-        private static bool GetDocuments(GetDocumentCommandContext context, IServiceProvider services)
+        private bool GetDocuments(IServiceProvider services)
         {
             Type serviceType = null;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -99,7 +109,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
             if (serviceType == null)
             {
-                Reporter.WriteError(Resources.FormatServiceTypeNotFound(DocumentService));
+                _reporter.WriteError(Resources.FormatServiceTypeNotFound(DocumentService));
                 return false;
             }
 
@@ -126,7 +136,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             var service = services.GetService(serviceType);
             if (service == null)
             {
-                Reporter.WriteError(Resources.FormatServiceNotFound(DocumentService));
+                _reporter.WriteError(Resources.FormatServiceNotFound(DocumentService));
                 return false;
             }
 
@@ -138,14 +148,14 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
             // Write out the documents.
             var found = false;
-            Directory.CreateDirectory(context.OutputDirectory);
+            Directory.CreateDirectory(_context.OutputDirectory);
             var filePathList = new List<string>();
             foreach (var documentName in documentNames)
             {
                 var filePath = GetDocument(
                     documentName,
-                    context.ProjectName,
-                    context.OutputDirectory,
+                    _context.ProjectName,
+                    _context.OutputDirectory,
                     generateMethod,
                     service);
                 if (filePath == null)
@@ -158,26 +168,26 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             }
 
             // Write out the cache file.
-            var stream = File.Create(context.FileListPath);
+            var stream = File.Create(_context.FileListPath);
             using var writer = new StreamWriter(stream);
             writer.WriteLine(string.Join(Environment.NewLine, filePathList));
 
             if (!found)
             {
-                Reporter.WriteError(Resources.DocumentsNotFound);
+                _reporter.WriteError(Resources.DocumentsNotFound);
             }
 
             return found;
         }
 
-        private static string GetDocument(
+        private string GetDocument(
             string documentName,
             string projectName,
             string outputDirectory,
             MethodInfo generateMethod,
             object service)
         {
-            Reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
+            _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
             using var stream = new MemoryStream();
             using (var writer = new StreamWriter(stream, UTF8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
@@ -192,21 +202,21 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 var finished = resultTask.Wait(TimeSpan.FromMinutes(1));
                 if (!finished)
                 {
-                    Reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
+                    _reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
                     return null;
                 }
             }
 
             if (stream.Length == 0L)
             {
-                Reporter.WriteError(
+                _reporter.WriteError(
                     Resources.FormatMethodWroteNoContent(GenerateMethodName, DocumentService, documentName));
 
                 return null;
             }
 
             var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
-            Reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
+            _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
             try
             {
                 stream.Position = 0L;
@@ -256,24 +266,24 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             return path;
         }
 
-        private static MethodInfo GetMethod(string methodName, Type type, Type[] parameterTypes, Type returnType)
+        private MethodInfo GetMethod(string methodName, Type type, Type[] parameterTypes, Type returnType)
         {
             var method = type.GetMethod(methodName, parameterTypes);
             if (method == null)
             {
-                Reporter.WriteError(Resources.FormatMethodNotFound(methodName, type));
+                _reporter.WriteError(Resources.FormatMethodNotFound(methodName, type));
                 return null;
             }
 
             if (method.IsStatic)
             {
-                Reporter.WriteError(Resources.FormatMethodIsStatic(methodName, type));
+                _reporter.WriteError(Resources.FormatMethodIsStatic(methodName, type));
                 return null;
             }
 
             if (!returnType.IsAssignableFrom(method.ReturnType))
             {
-                Reporter.WriteError(
+                _reporter.WriteError(
                     Resources.FormatMethodReturnTypeUnsupported(methodName, type, method.ReturnType, returnType));
 
                 return null;
@@ -282,12 +292,12 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             return method;
         }
 
-        private static object InvokeMethod(MethodInfo method, object instance, object[] arguments)
+        private object InvokeMethod(MethodInfo method, object instance, object[] arguments)
         {
             var result = method.Invoke(instance, arguments);
             if (result == null)
             {
-                Reporter.WriteError(
+                _reporter.WriteError(
                     Resources.FormatMethodReturnedNull(method.Name, method.DeclaringType, method.ReturnType));
             }
 

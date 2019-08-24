@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,8 @@ using System.Reflection;
 #if NETCOREAPP2_1
 using System.Runtime.Loader;
 #endif
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
@@ -16,6 +17,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
     {
         private CommandOption _fileListPath;
         private CommandOption _output;
+
+        public GetDocumentCommand(IConsole console) : base(console)
+        {
+        }
 
         public override void Configure(CommandLineApplication command)
         {
@@ -124,13 +129,14 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                     FileListPath = _fileListPath.Value(),
                     OutputDirectory = _output.Value(),
                     ProjectName = ProjectName.Value(),
+                    Reporter = Reporter,
                 };
 
-                return GetDocumentCommandWorker.Process(context);
+                return new GetDocumentCommandWorker(context).Process();
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.ToString());
+                Reporter.WriteError(ex.ToString());
                 return 2;
             }
         }

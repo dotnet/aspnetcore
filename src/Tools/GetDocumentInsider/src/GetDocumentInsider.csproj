@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>GetDocument.Insider</AssemblyName>
     <Description>GetDocument Command-line Tool inside man</Description>
@@ -15,10 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
+
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
-  <Target Name="BuildX86" AfterTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">
+  <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
   </Target>
 </Project>

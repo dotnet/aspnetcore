@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,6 +19,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
         private readonly ProjectOptions _projectOptions = new ProjectOptions();
         private IList<string> _args;
+
+        public InvokeCommand(IConsole console) : base(console)
+        {
+        }
 
         public override void Configure(CommandLineApplication command)
         {
@@ -75,7 +80,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                                 targetFramework.Version));
                         }
 
-                        executable = "dotnet";
+                        executable = DotNetMuxer.MuxerPathOrDefault();
                         toolsDirectory = Path.Combine(thisPath, "netcoreapp2.1");
 
                         args.Add("exec");
@@ -133,22 +138,22 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 args.Add("--tools-directory");
                 args.Add(toolsDirectory);
 
-                if (Reporter.IsVerbose)
-                {
-                    args.Add("--verbose");
-                }
-
-                if (Reporter.NoColor)
-                {
-                    args.Add("--no-color");
-                }
-
-                if (Reporter.PrefixOutput)
+                if (ReporterExtensions.PrefixOutput)
                 {
                     args.Add("--prefix-output");
                 }
 
-                return Exe.Run(executable, args);
+                if (IsQuiet)
+                {
+                    args.Add("--quiet");
+                }
+
+                if (IsVerbose)
+                {
+                    args.Add("--verbose");
+                }
+
+                return Exe.Run(executable, args, Reporter);
             }
             finally
             {
