@@ -213,6 +213,102 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> UpdateAsync(TUser user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
+{
+    public partial class RoleClaimConfiguration<TKey> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.RoleClaimConfiguration<Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>, TKey> where TKey : System.IEquatable<TKey>
+    {
+        public RoleClaimConfiguration() { }
+    }
+    public partial class RoleClaimConfiguration<TRoleClaim, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TRoleClaim> where TRoleClaim : Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public RoleClaimConfiguration() { }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TRoleClaim> builder) { }
+    }
+    public partial class RoleConfiguration<TRole, TKey> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.RoleConfiguration<TRole, Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>, Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>, TKey> where TRole : Microsoft.AspNetCore.Identity.IdentityRole<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public RoleConfiguration() { }
+    }
+    public partial class RoleConfiguration<TRole, TUserRole, TRoleClaim, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TRole> where TRole : Microsoft.AspNetCore.Identity.IdentityRole<TKey> where TUserRole : Microsoft.AspNetCore.Identity.IdentityUserRole<TKey> where TRoleClaim : Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public RoleConfiguration() { }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TRole> builder) { }
+    }
+    public partial class UserClaimConfiguration : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserClaimConfiguration<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>
+    {
+        public UserClaimConfiguration() { }
+    }
+    public partial class UserClaimConfiguration<TUserClaim> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserClaimConfiguration<TUserClaim, string> where TUserClaim : Microsoft.AspNetCore.Identity.IdentityUserClaim<string>
+    {
+        public UserClaimConfiguration() { }
+    }
+    public partial class UserClaimConfiguration<TUserClaim, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUserClaim> where TUserClaim : Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserClaimConfiguration() { }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUserClaim> builder) { }
+    }
+    public partial class UserConfiguration : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserConfiguration<Microsoft.AspNetCore.Identity.IdentityUser, Microsoft.AspNetCore.Identity.IdentityUserClaim<string>, Microsoft.AspNetCore.Identity.IdentityUserLogin<string>, Microsoft.AspNetCore.Identity.IdentityUserToken<string>, string>
+    {
+        public UserConfiguration() { }
+    }
+    public partial class UserConfiguration<TUser> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserConfiguration<TUser, Microsoft.AspNetCore.Identity.IdentityUserClaim<string>, Microsoft.AspNetCore.Identity.IdentityUserLogin<string>, Microsoft.AspNetCore.Identity.IdentityUserToken<string>, string> where TUser : Microsoft.AspNetCore.Identity.IdentityUser<string>
+    {
+        public UserConfiguration() { }
+    }
+    public partial class UserConfiguration<TUser, TUserClaim, TUserLogin, TUserToken, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUser> where TUser : Microsoft.AspNetCore.Identity.IdentityUser<TKey> where TUserClaim : Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey> where TUserLogin : Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey> where TUserToken : Microsoft.AspNetCore.Identity.IdentityUserToken<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserConfiguration() { }
+        public int MaxKeyLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<string, string> PersonalDataConverter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUser> builder) { }
+    }
+    public partial class UserHasRolesConfiguration<TUser, TKey> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserHasRolesConfiguration<TUser, Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>, TKey> where TUser : Microsoft.AspNetCore.Identity.IdentityUser<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserHasRolesConfiguration() { }
+    }
+    public partial class UserHasRolesConfiguration<TUser, TUserRole, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUser> where TUser : Microsoft.AspNetCore.Identity.IdentityUser<TKey> where TUserRole : Microsoft.AspNetCore.Identity.IdentityUserRole<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserHasRolesConfiguration() { }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUser> builder) { }
+    }
+    public partial class UserLoginConfiguration : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserLoginConfiguration<Microsoft.AspNetCore.Identity.IdentityUserLogin<string>, string>
+    {
+        public UserLoginConfiguration() { }
+    }
+    public partial class UserLoginConfiguration<TUserLogin> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserLoginConfiguration<TUserLogin, string> where TUserLogin : Microsoft.AspNetCore.Identity.IdentityUserLogin<string>
+    {
+        public UserLoginConfiguration() { }
+    }
+    public partial class UserLoginConfiguration<TUserLogin, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUserLogin> where TUserLogin : Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserLoginConfiguration() { }
+        public int MaxKeyLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUserLogin> builder) { }
+    }
+    public partial class UserRoleConfiguration<TKey> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserRoleConfiguration<Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>, TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserRoleConfiguration() { }
+    }
+    public partial class UserRoleConfiguration<TUserRole, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUserRole> where TUserRole : Microsoft.AspNetCore.Identity.IdentityUserRole<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserRoleConfiguration() { }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUserRole> builder) { }
+    }
+    public partial class UserTokenConfiguration : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserTokenConfiguration<Microsoft.AspNetCore.Identity.IdentityUserToken<string>, string>
+    {
+        public UserTokenConfiguration() { }
+    }
+    public partial class UserTokenConfiguration<TUserToken> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration.UserTokenConfiguration<TUserToken, string> where TUserToken : Microsoft.AspNetCore.Identity.IdentityUserToken<string>
+    {
+        public UserTokenConfiguration() { }
+    }
+    public partial class UserTokenConfiguration<TUserToken, TKey> : Microsoft.EntityFrameworkCore.IEntityTypeConfiguration<TUserToken> where TUserToken : Microsoft.AspNetCore.Identity.IdentityUserToken<TKey> where TKey : System.IEquatable<TKey>
+    {
+        public UserTokenConfiguration() { }
+        public int MaxKeyLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<string, string> PersonalDataConverter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<TUserToken> builder) { }
+    }
+}
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class IdentityEntityFrameworkBuilderExtensions
