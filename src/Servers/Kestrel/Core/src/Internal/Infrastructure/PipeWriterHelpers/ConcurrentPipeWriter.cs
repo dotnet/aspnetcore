@@ -118,7 +118,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 if (_currentFlushTcs != null)
                 {
-                    CompleteFlushUnsynchronized(flushTask.GetAwaiter().GetResult(), null);
+                    var flushResult = flushTask.GetAwaiter().GetResult();
+                    CompleteFlushUnsynchronized(flushResult, null);
+
+                    // Create a new ValueTask from the result rather than passing out the original
+                    // as the act of reading the result above can reset the ValueTask if its backed by an IValueTaskSource
+                    return new ValueTask<FlushResult>(flushResult);
                 }
 
                 return flushTask;
