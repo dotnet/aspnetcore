@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.SpaServices
         public Microsoft.AspNetCore.Http.PathString DefaultPage { get { throw null; } set { } }
         public Microsoft.AspNetCore.Builder.StaticFileOptions DefaultPageStaticFileOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string PackageManagerCommand { get { throw null; } set { } }
+        public int PortNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string SourcePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan StartupTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
