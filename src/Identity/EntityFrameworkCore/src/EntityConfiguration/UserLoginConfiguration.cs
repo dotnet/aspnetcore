@@ -7,9 +7,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class UserLoginConfiguration : UserLoginConfiguration<IdentityUserLogin<string>, string>
+    {
+    }
+
+    public class UserLoginConfiguration<TUserLogin> : UserLoginConfiguration<TUserLogin, string>
+        where TUserLogin : IdentityUserLogin<string>
+    {
+    }
+
     public class UserLoginConfiguration<TUserLogin, TKey> : IEntityTypeConfiguration<TUserLogin>
-        where TUserLogin : IdentityUserLogin<TKey>
-        where TKey : IEquatable<TKey>
+    where TUserLogin : IdentityUserLogin<TKey>
+    where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// Specifies the maximum key length.

@@ -9,6 +9,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class UserConfiguration : UserConfiguration<IdentityUser, IdentityUserClaim<string>, IdentityUserLogin<string>, IdentityUserToken<string>, string>
+    {
+    }
+
+    public class UserConfiguration<TUser> : UserConfiguration<TUser, IdentityUserClaim<string>, IdentityUserLogin<string>, IdentityUserToken<string>, string>
+        where TUser : IdentityUser<string>
+    {
+    }
+
     public class UserConfiguration<TUser, TUserClaim, TUserLogin, TUserToken, TKey> : IEntityTypeConfiguration<TUser>
          where TUser : IdentityUser<TKey>
          where TUserClaim : IdentityUserClaim<TKey>

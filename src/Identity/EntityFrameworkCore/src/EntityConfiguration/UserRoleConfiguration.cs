@@ -7,6 +7,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class UserRoleConfiguration<TKey> : UserRoleConfiguration<IdentityUserRole<TKey>, TKey>
+        where TKey : IEquatable<TKey>
+    {      
+    }
+
     public class UserRoleConfiguration<TUserRole, TKey> : IEntityTypeConfiguration<TUserRole>      
          where TUserRole : IdentityUserRole<TKey>
          where TKey : IEquatable<TKey>

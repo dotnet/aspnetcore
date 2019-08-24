@@ -10,6 +10,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class UserClaimConfiguration : UserClaimConfiguration<IdentityUserClaim<string>>
+    {
+    }
+
+    public class UserClaimConfiguration<TUserClaim> : UserClaimConfiguration<TUserClaim, string>
+       where TUserClaim : IdentityUserClaim<string>
+    {
+    }
+
     public class UserClaimConfiguration<TUserClaim, TKey> : IEntityTypeConfiguration<TUserClaim>
          where TUserClaim : IdentityUserClaim<TKey>
          where TKey : IEquatable<TKey>

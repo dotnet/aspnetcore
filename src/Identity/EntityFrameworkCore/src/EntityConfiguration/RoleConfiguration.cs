@@ -7,11 +7,17 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class RoleConfiguration<TRole, TKey> : RoleConfiguration<TRole, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>, TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+    {
+    }
+
     public class RoleConfiguration<TRole, TUserRole, TRoleClaim, TKey> : IEntityTypeConfiguration<TRole>
-         where TRole : IdentityRole<TKey>
-         where TUserRole : IdentityUserRole<TKey>
-         where TRoleClaim : IdentityRoleClaim<TKey>
-         where TKey : IEquatable<TKey>
+        where TRole : IdentityRole<TKey>
+        where TUserRole : IdentityUserRole<TKey>
+        where TRoleClaim : IdentityRoleClaim<TKey>
+        where TKey : IEquatable<TKey>
     {
         public virtual void Configure(EntityTypeBuilder<TRole> builder)
         {

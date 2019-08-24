@@ -1,4 +1,4 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
 {
+    public class UserTokenConfiguration : UserTokenConfiguration<IdentityUserToken<string>, string>
+    {
+    }
+
+    public class UserTokenConfiguration<TUserToken> : UserTokenConfiguration<TUserToken, string>
+       where TUserToken : IdentityUserToken<string>
+    {
+    }
+
     public class UserTokenConfiguration<TUserToken, TKey> : IEntityTypeConfiguration<TUserToken>
        where TUserToken : IdentityUserToken<TKey>
        where TKey : IEquatable<TKey>
@@ -48,7 +57,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.EntityConfiguration
                 }
             }
 
-            builder.ToTable("AspNetUserTokens");          
+            builder.ToTable("AspNetUserTokens");
         }
     }
 }
