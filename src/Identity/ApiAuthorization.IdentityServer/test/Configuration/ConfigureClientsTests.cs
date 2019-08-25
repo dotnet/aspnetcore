@@ -92,6 +92,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.Equal("MyClient", client.ClientId);
             Assert.Equal("MyClient", client.ClientName);
             Assert.False(client.AllowAccessTokensViaBrowser);
+            Assert.True(client.AllowOfflineAccess);
             Assert.Equal(new[] { "urn:ietf:wg:oauth:2.0:oob" }, client.RedirectUris.ToArray());
             Assert.Equal(new[] { "urn:ietf:wg:oauth:2.0:oob" }, client.PostLogoutRedirectUris.ToArray());
             Assert.Empty(client.AllowedCorsOrigins);

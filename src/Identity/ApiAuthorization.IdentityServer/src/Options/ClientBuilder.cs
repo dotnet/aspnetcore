@@ -66,7 +66,14 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 .WithLogoutRedirectUri(NativeAppClientRedirectUri)
                 .WithPkce()
                 .WithoutClientSecrets()
-                .WithScopes(IdentityServerConstants.StandardScopes.OfflineAccess);
+                .WithOfflineAccess();
+        }
+
+        public ClientBuilder WithOfflineAccess()
+        {
+            WithScopes(IdentityServerConstants.StandardScopes.OfflineAccess);
+            _client.AllowOfflineAccess = true;
+            return this;
         }
 
         /// <summary>
