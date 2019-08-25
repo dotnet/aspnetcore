@@ -19,6 +19,8 @@
     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <Reference Include="Microsoft.Build.Locator" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Win32.Registry"  />
+    <Reference Include="System.Security.Principal.Windows"  />
   </ItemGroup>
 
   <ItemGroup>
