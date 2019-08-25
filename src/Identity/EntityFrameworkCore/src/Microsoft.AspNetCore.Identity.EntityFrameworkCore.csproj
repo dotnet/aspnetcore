@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity provider that uses Entity Framework Core.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;netcoreapp3.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;entityframeworkcore;identity;membership</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>

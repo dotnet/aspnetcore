@@ -77,11 +77,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'block';
     this.reloadParagraph.style.display = 'none';
     this.message.innerHTML = 'Reconnection failed. Try <a href>reloading</a> the page if you\'re unable to reconnect.';
+    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
   }
 
   rejected(): void {
     this.button.style.display = 'none';
     this.reloadParagraph.style.display = 'none';
     this.message.innerHTML = 'Could not reconnect to the server. <a href>Reload</a> the page to restore functionality.';
+    this.message.querySelector('a')!.addEventListener('click', () => location.reload());
   }
 }
