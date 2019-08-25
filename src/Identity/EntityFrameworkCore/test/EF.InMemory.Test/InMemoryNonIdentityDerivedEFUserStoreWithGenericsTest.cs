@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
             var services = new ServiceCollection();
             services.AddHttpContextAccessor();
-            services.AddDbContext<InMemoryContextWithGenerics>(
+            services.AddDbContext<InMemoryNonIdentityDerivedContextWithGenerics>(
                 options => options
                     .UseSqlite(_fixture.Connection)
                     .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)));
