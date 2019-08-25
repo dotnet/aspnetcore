@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            if (!_currentFlush.IsCompleted)
+            if (!_currentFlush.IsCompletedSuccessfully)
             {
                 return new ValueTask<FlushResult>(_currentFlush);
             }
@@ -118,14 +118,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             if (flushTask.IsCompletedSuccessfully)
             {
-                if (!_currentFlush.IsCompletedSuccessfully)
+                if (_currentFlush.IsCompletedSuccessfully)
                 {
-                    var flushResult = flushTask.GetAwaiter().GetResult();
+                    // If the new Flush has completed, the previous flush is likely to have completed,
+                    // if so we can complete the current Flush and return its result.
                     CompleteFlushUnsynchronized();
-
-                    // Create a new ValueTask from the result rather than passing out the original
-                    // as the act of reading the result above can reset the ValueTask if its backed by an IValueTaskSource
-                    return new ValueTask<FlushResult>(flushResult);
                 }
 
                 return flushTask;
