@@ -10,23 +10,22 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-
-    public class InMemoryEFOnlyUsersTest
-        : UserManagerSpecificationTestBase<IdentityUser, string>,
-            IClassFixture<InMemoryDatabaseFixture>
+    public class InMemoryNonIdentityDerivedEFOnlyUsersTest
+    : UserManagerSpecificationTestBase<IdentityUser, string>,
+        IClassFixture<InMemoryDatabaseFixture>
     {
         private readonly InMemoryDatabaseFixture _fixture;
 
-        public InMemoryEFOnlyUsersTest(InMemoryDatabaseFixture fixture)
+        public InMemoryNonIdentityDerivedEFOnlyUsersTest(InMemoryDatabaseFixture fixture)
         {
             _fixture = fixture;
         }
 
         protected override object CreateTestContext()
-            => InMemoryContext<IdentityUser>.Create(_fixture.Connection);
+            => InMemoryNonIdentityDerivedContext<IdentityUser>.Create(_fixture.Connection);
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
-            => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContext<IdentityUser>)context, new IdentityErrorDescriber()));
+            => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryNonIdentityDerivedContext<IdentityUser>)context, new IdentityErrorDescriber()));
 
         protected override IdentityUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
             bool lockoutEnabled = false, DateTimeOffset? lockoutEnd = default(DateTimeOffset?), bool useNamePrefixAsUserName = false)

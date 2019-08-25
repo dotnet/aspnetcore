@@ -4,29 +4,33 @@
 using System;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-
-    public class InMemoryEFOnlyUsersTest
-        : UserManagerSpecificationTestBase<IdentityUser, string>,
-            IClassFixture<InMemoryDatabaseFixture>
+    public class InMemoryNonIdentityDerivedEFUserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole, string>, IClassFixture<InMemoryDatabaseFixture>
     {
         private readonly InMemoryDatabaseFixture _fixture;
 
-        public InMemoryEFOnlyUsersTest(InMemoryDatabaseFixture fixture)
+        public InMemoryNonIdentityDerivedEFUserStoreTest(InMemoryDatabaseFixture fixture)
         {
             _fixture = fixture;
         }
 
         protected override object CreateTestContext()
-            => InMemoryContext<IdentityUser>.Create(_fixture.Connection);
+            => InMemoryNonIdentityDerivedContext.Create(_fixture.Connection);
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
-            => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContext<IdentityUser>)context, new IdentityErrorDescriber()));
+        {
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryNonIdentityDerivedContext)context));
+        }
+
+        protected override void AddRoleStore(IServiceCollection services, object context = null)
+        {
+            var store = new RoleStore<IdentityRole, InMemoryNonIdentityDerivedContext>((InMemoryNonIdentityDerivedContext)context);
+            services.AddSingleton<IRoleStore<IdentityRole>>(store);
+        }
 
         protected override IdentityUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
             bool lockoutEnabled = false, DateTimeOffset? lockoutEnd = default(DateTimeOffset?), bool useNamePrefixAsUserName = false)
@@ -41,6 +45,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
             };
         }
 
+        protected override IdentityRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
+        {
+            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
+            return new IdentityRole(roleName);
+        }
+
         protected override void SetUserPasswordHash(IdentityUser user, string hashedPassword)
         {
             user.PasswordHash = hashedPassword;
@@ -48,6 +58,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
         protected override Expression<Func<IdentityUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
 
+        protected override Expression<Func<IdentityRole, bool>> RoleNameEqualsPredicate(string roleName) => r => r.Name == roleName;
+
         protected override Expression<Func<IdentityUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
+
+        protected override Expression<Func<IdentityRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
     }
 }

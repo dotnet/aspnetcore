@@ -8,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryCustomContext :
-        InMemoryCustomContext<IdentityUser, IdentityRole, string>
+    public class InMemoryNonIdentityDerivedContext :
+        InMemoryNonIdentityDerivedContext<IdentityUser, IdentityRole, string>
     {
-        private InMemoryCustomContext(DbConnection connection) : base(connection)
+        private InMemoryNonIdentityDerivedContext(DbConnection connection) : base(connection)
         { }
 
-        public new static InMemoryCustomContext Create(DbConnection connection)
-            => Initialize(new InMemoryCustomContext(connection));
+        public new static InMemoryNonIdentityDerivedContext Create(DbConnection connection)
+            => Initialize(new InMemoryNonIdentityDerivedContext(connection));
 
         public static TContext Initialize<TContext>(TContext context) where TContext : DbContext
         {
@@ -25,18 +25,18 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         }
     }
 
-    public class InMemoryCustomContext<TUser> :
+    public class InMemoryNonIdentityDerivedContext<TUser> :
         DbContext
         where TUser : IdentityUser
     {
         private readonly DbConnection _connection;
-        private InMemoryCustomContext(DbConnection connection)
+        private InMemoryNonIdentityDerivedContext(DbConnection connection)
         {
             _connection = connection;
         }
 
-        public static InMemoryCustomContext<TUser> Create(DbConnection connection)
-            => InMemoryCustomContext.Initialize(new InMemoryCustomContext<TUser>(connection));
+        public static InMemoryNonIdentityDerivedContext<TUser> Create(DbConnection connection)
+            => InMemoryNonIdentityDerivedContext.Initialize(new InMemoryNonIdentityDerivedContext<TUser>(connection));
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,20 +54,20 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
             => optionsBuilder.UseSqlite(_connection);
     }
 
-    public class InMemoryCustomContext<TUser, TRole, TKey> : InMemoryCustomContext<TUser, TRole, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityRoleClaim<TKey>, IdentityUserToken<TKey>>
+    public class InMemoryNonIdentityDerivedContext<TUser, TRole, TKey> : InMemoryNonIdentityDerivedContext<TUser, TRole, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityRoleClaim<TKey>, IdentityUserToken<TKey>>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
         private readonly DbConnection _connection;
 
-        protected InMemoryCustomContext(DbConnection connection)
+        protected InMemoryNonIdentityDerivedContext(DbConnection connection)
         {
             _connection = connection;
         }
 
-        public static InMemoryCustomContext<TUser, TRole, TKey> Create(DbConnection connection)
-            => InMemoryCustomContext.Initialize(new InMemoryCustomContext<TUser, TRole, TKey>(connection));
+        public static InMemoryNonIdentityDerivedContext<TUser, TRole, TKey> Create(DbConnection connection)
+            => InMemoryNonIdentityDerivedContext.Initialize(new InMemoryNonIdentityDerivedContext<TUser, TRole, TKey>(connection));
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             => optionsBuilder.UseSqlite(_connection);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         }
     }
 
-    public abstract class InMemoryCustomContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> :
+    public abstract class InMemoryNonIdentityDerivedContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> :
             DbContext
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
@@ -95,9 +95,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         where TRoleClaim : IdentityRoleClaim<TKey>
         where TUserToken : IdentityUserToken<TKey>
     {
-        protected InMemoryCustomContext() { }
+        protected InMemoryNonIdentityDerivedContext() { }
 
-        protected InMemoryCustomContext(DbContextOptions options)
+        protected InMemoryNonIdentityDerivedContext(DbContextOptions options)
             : base(options)
         {
         }
