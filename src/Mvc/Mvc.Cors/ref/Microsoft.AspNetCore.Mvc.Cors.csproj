@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Mvc.Cors.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.Cors.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core"  />
     <Reference Include="Microsoft.AspNetCore.Cors"  />
   </ItemGroup>

@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.SignalR.Core.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.SignalR.Core.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy"  />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json"  />

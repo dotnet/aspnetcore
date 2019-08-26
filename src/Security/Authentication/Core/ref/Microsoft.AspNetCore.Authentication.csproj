@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Authentication.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Authentication.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core"  />
     <Reference Include="Microsoft.AspNetCore.DataProtection"  />
     <Reference Include="Microsoft.AspNetCore.Http"  />

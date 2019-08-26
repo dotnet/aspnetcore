@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.Net.Http.Headers.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.Net.Http.Headers.netcoreapp.cs" />
     <Reference Include="Microsoft.Extensions.Primitives"  />
   </ItemGroup>
 </Project>

@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures"  />
     <Reference Include="Microsoft.AspNetCore.JsonPatch"  />
     <Reference Include="Newtonsoft.Json"  />

@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.HostFiltering.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.HostFiltering.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Http"  />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
     <Reference Include="Microsoft.Extensions.Options"  />

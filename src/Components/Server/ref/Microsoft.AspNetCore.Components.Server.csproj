@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.Server.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Components.Server.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Components.Web"  />
     <Reference Include="Microsoft.AspNetCore.DataProtection"  />

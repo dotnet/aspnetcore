@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Identity.UI.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Identity.UI.netcoreapp.cs" />
     <Reference Include="Newtonsoft.Json"  />
     <Reference Include="Microsoft.AspNetCore.Identity"  />
     <Reference Include="Microsoft.AspNetCore.Mvc"  />

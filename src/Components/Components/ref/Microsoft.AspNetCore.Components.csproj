@@ -10,7 +10,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Components.netcoreapp.cs" />
     <Reference Include="Microsoft.JSInterop"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />

@@ -10,7 +10,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.Web.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Components.Web.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Components"  />
     <Reference Include="Microsoft.AspNetCore.Components.Forms"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />

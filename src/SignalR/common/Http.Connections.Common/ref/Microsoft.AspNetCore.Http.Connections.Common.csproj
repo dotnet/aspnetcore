@@ -9,7 +9,7 @@
     <Reference Include="System.Text.Json"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
   </ItemGroup>
 </Project>

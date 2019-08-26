@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Mvc.Abstractions.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.Abstractions.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions"  />
     <Reference Include="Microsoft.Net.Http.Headers"  />
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources"  />

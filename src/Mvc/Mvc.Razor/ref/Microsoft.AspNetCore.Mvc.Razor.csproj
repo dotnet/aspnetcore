@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
-    <Compile Include="Microsoft.AspNetCore.Mvc.Razor.netcoreapp5.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.Razor.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures"  />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime"  />
     <Reference Include="Microsoft.Extensions.Caching.Memory"  />
