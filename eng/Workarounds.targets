@@ -38,8 +38,7 @@
   </ItemGroup>
 
   <!-- Source Build still uses a 3.0 SDK, which we need to retarget to 5.0 until the first 5.0 SDK is publicly released -->
-  <!-- Razor projects already use a 5.0 SDK, so we shouldn't retarget those -->
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true' and '$(RazorLangVersion)' == ''">
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
     <KnownFrameworkReference
       Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
       TargetFramework="netcoreapp5.0"
