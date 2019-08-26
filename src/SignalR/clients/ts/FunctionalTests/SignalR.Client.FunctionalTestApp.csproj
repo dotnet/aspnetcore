@@ -37,11 +37,6 @@
     <Reference Include="System.Reactive.Linq" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildNodeJS)' == 'true'">
-    <ProjectReference Include="..\signalr\signalr.npmproj" />
-    <ProjectReference Include="..\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
-  </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
@@ -58,25 +53,5 @@
     <TypeScriptCompile Include="ts\WebSocketTests.ts" />
     <TypeScriptCompile Include="ts\WebWorkerTests.ts" />
   </ItemGroup>
-
-  <Target Name="ClientBuild" BeforeTargets="AfterBuild">
-      <ItemGroup>
-        <MsgPack5Files Include="$(MSBuildThisFileDirectory)../signalr-protocol-msgpack/node_modules/msgpack5/dist/*.js" />
-      </ItemGroup>
-      <Copy SourceFiles="@(MsgPack5Files)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/msgpack5" />
-      <ItemGroup>
-        <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.js" />
-        <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.css" />
-      </ItemGroup>
-      <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
-
-      <ItemGroup>
-        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/browser/*" />
-        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/*" />
-        <SignalRJSWebWorkerClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/webworker/*" />
-      </ItemGroup>
-      <Copy SourceFiles="@(SignalRJSBrowserClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
-      <Copy SourceFiles="@(SignalRJSWebWorkerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr-webworker" />
- </Target>
 
 </Project>
