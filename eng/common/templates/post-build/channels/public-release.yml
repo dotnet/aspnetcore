@@ -90,6 +90,7 @@ stages:
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
             /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
             /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
