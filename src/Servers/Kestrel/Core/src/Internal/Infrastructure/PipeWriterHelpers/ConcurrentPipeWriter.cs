@@ -106,7 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             if (!_currentFlush.IsCompletedSuccessfully)
             {
-                return new ValueTask<FlushResult>(_currentFlush);
+                // If we aren't completed return a ValueTask of the latest _currentFlush value
+                return new ValueTask<FlushResult>(Volatile.Read(ref _currentFlush));
             }
 
             if (_bytesBuffered > 0)
@@ -118,7 +119,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             if (flushTask.IsCompletedSuccessfully)
             {
-                if (_currentFlush.IsCompletedSuccessfully)
+                // Check if the current outstanding _currentFlush has completed
+                if (Volatile.Read(ref _currentFlush).IsCompletedSuccessfully)
                 {
                     // If the new Flush has completed, the previous flush is likely to have completed,
                     // if so we can complete the current Flush and return its result.
@@ -128,14 +130,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 return flushTask;
             }
 
-            var lastFlush = _currentFlush;
+            // Re-read the Flush prior to calling FlushAsyncAwaited which may reassign it;
+            // so we can detect if that happens.
+            var lastFlush = Volatile.Read(ref _currentFlush);
             var currentFlush = FlushAsyncAwaited(flushTask, cancellationToken);
 
+            // Updating _currentFlush needs to be done in a lock as FlushAsyncAwaited may still be running and
+            // that also can replace _currentFlush
             lock (_sync)
             {
                 if (ReferenceEquals(_currentFlush, lastFlush))
                 {
-                    // Update _currentFlush if it is the same as lastFlush i.e. if FlushAsyncAwaited hasn't already replaced it
+                    // Update _currentFlush if it is the same as lastFlush i.e. if FlushAsyncAwaited hasn't replaced it
                     _currentFlush = currentFlush;
                 }
                 else if (ReferenceEquals(_currentFlush, _completedFlushWithPreviousError))
@@ -146,6 +152,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 }
             }
 
+            // Return the Task from the return of FlushAsyncAwaited as that may become cancelled, then trigger another call of FlushAsyncAwaited;
+            // however we want to observe the cancel, so we return that Task rather than _currentFlush which may have changed.
             return new ValueTask<FlushResult>(currentFlush);
         }
 
@@ -174,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                         if (flushResult.IsCanceled)
                         {
                             // Reset _currentFlush, so we don't enter passthrough mode while we're still flushing.
-                            _currentFlush = FlushAsyncAwaited(flushTask, cancellationToken);
+                            Volatile.Write(ref _currentFlush, FlushAsyncAwaited(flushTask, cancellationToken));
 
                             // Complete anyone currently awaiting a flush with the canceled FlushResult since CancelPendingFlush() was called.
                             return flushResult;
