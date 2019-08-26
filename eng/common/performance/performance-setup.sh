@@ -2,6 +2,7 @@
 
 source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
+baseline_core_root_directory=
 architecture=x64
 framework=netcoreapp5.0
 compilation_mode=tiered
@@ -10,12 +11,14 @@ branch=$BUILD_SOURCEBRANCH
 commit_sha=$BUILD_SOURCEVERSION
 build_number=$BUILD_BUILDNUMBER
 internal=false
+compare=false
 kind="micro"
 run_categories="coreclr corefx"
 csproj="src\benchmarks\micro\MicroBenchmarks.csproj"
 configurations=
 run_from_perf_repo=false
 use_core_run=true
+use_baseline_core_run=true
 
 while (($# > 0)); do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
@@ -26,6 +29,10 @@ while (($# > 0)); do
       ;;
     --corerootdirectory)
       core_root_directory=$2
+      shift 2
+      ;;
+    --baselinecorerootdirectory)
+      baseline_core_root_directory=$2
       shift 2
       ;;
     --architecture)
@@ -72,6 +79,10 @@ while (($# > 0)); do
       internal=true
       shift 1
       ;;
+    --compare)
+      compare=true
+      shift 1
+      ;;
     --configurations)
       configurations=$2
       shift 2
@@ -114,6 +125,10 @@ if [ -z "$core_root_directory" ]; then
     use_core_run=false
 fi
 
+if [ -z "$baseline_core_root_directory" ]; then
+    use_baseline_core_run=false
+fi
+
 payload_directory=$source_directory/Payload
 performance_directory=$payload_directory/performance
 workitem_directory=$source_directory/workitem
@@ -122,6 +137,19 @@ perflab_arguments=
 queue=Ubuntu.1804.Amd64.Open
 creator=$BUILD_DEFINITIONNAME
 helix_source_prefix="pr"
+
+if [[ "$compare" == true ]]; then
+  extra_benchmark_dotnet_arguments=
+  perflab_arguments=
+
+  # No open queues for arm64
+  if [[ "$architecture" = "arm64" ]]; then
+    echo "Compare not available for arm64"
+    exit 1
+  fi
+
+  queue=Ubuntu.1804.Amd64.Tiger.Perf.Open
+fi
 
 if [[ "$internal" == true ]]; then
     perflab_arguments="--upload-to-perflab-container"
@@ -156,6 +184,11 @@ if [[ "$use_core_run" = true ]]; then
     mv $core_root_directory $new_core_root
 fi
 
+if [[ "$use_baseline_core_run" = true ]]; then
+  new_baseline_core_root=$payload_directory/Baseline_Core_Root
+  mv $baseline_core_root_directory $new_baseline_core_root
+fi
+
 ci=true
 
 _script_dir=$(pwd)/eng/common
@@ -163,6 +196,7 @@ _script_dir=$(pwd)/eng/common
 
 # Make sure all of our variables are available for future steps
 Write-PipelineSetVariable -name "UseCoreRun" -value "$use_core_run" -is_multi_job_variable false
+Write-PipelineSetVariable -name "UseBaselineCoreRun" -value "$use_baseline_core_run" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Architecture" -value "$architecture" -is_multi_job_variable false
 Write-PipelineSetVariable -name "PayloadDirectory" -value "$payload_directory" -is_multi_job_variable false
 Write-PipelineSetVariable -name "PerformanceDirectory" -value "$performance_directory" -is_multi_job_variable false
@@ -179,3 +213,4 @@ Write-PipelineSetVariable -name "Creator" -value "$creator" -is_multi_job_variab
 Write-PipelineSetVariable -name "HelixSourcePrefix" -value "$helix_source_prefix" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable false
 Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Compare" -value "$compare" -is_multi_job_variable false

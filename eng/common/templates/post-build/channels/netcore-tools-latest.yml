@@ -2,6 +2,7 @@ parameters:
   enableSymbolValidation: true
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  publishInstallersAndChecksums: false
 
 stages:
 - stage: NetCore_Tools_Latest_Publish
@@ -101,7 +102,12 @@ stages:
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
-            /p:Configuration=Release 
+            /p:Configuration=Release
+            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
+            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
+            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
+            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
         
       - task: NuGetCommand@2

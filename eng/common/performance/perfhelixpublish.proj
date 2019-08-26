@@ -5,8 +5,14 @@
     <CliArguments>--dotnet-versions %DOTNET_VERSION% --cli-source-info args --cli-branch %PERFLAB_BRANCH% --cli-commit-sha %PERFLAB_HASH% --cli-repository https://github.com/%PERFLAB_REPO% --cli-source-timestamp %PERFLAB_BUILDTIMESTAMP%</CliArguments>
     <Python>py -3</Python>
     <CoreRun>%HELIX_CORRELATION_PAYLOAD%\Core_Root\CoreRun.exe</CoreRun>
+    <BaselineCoreRun>%HELIX_CORRELATION_PAYLOAD%\Baseline_Core_Root\CoreRun.exe</BaselineCoreRun>
     <HelixPreCommands>$(HelixPreCommands);call %HELIX_CORRELATION_PAYLOAD%\performance\tools\machine-setup.cmd</HelixPreCommands>
     <ArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts</ArtifactsDirectory>
+    <BaselineArtifactsDirectory>%HELIX_CORRELATION_PAYLOAD%\artifacts\BenchmarkDotNet.Artifacts_Baseline</BaselineArtifactsDirectory>
+    <ResultsComparer>%HELIX_CORRELATION_PAYLOAD%\performance\src\tools\ResultsComparer\ResultsComparer.csproj</ResultsComparer>
+    <DotnetExe>%HELIX_CORRELATION_PAYLOAD%\performance\tools\dotnet\$(Architecture)\dotnet.exe</DotnetExe>
+    <Percent>%25%25</Percent>
+    <XMLResults>%HELIX_WORKITEM_ROOT%\testResults.xml</XMLResults>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(AGENT_OS)' != 'Windows_NT' and '$(RunFromPerfRepo)' == 'false'">
@@ -24,12 +30,22 @@
     <CliArguments>--dotnet-versions $DOTNET_VERSION --cli-source-info args --cli-branch $PERFLAB_BRANCH --cli-commit-sha $PERFLAB_HASH --cli-repository https://github.com/$PERFLAB_REPO --cli-source-timestamp $PERFLAB_BUILDTIMESTAMP</CliArguments>
     <Python>python3</Python>
     <CoreRun>$(BaseDirectory)/Core_Root/corerun</CoreRun>
+    <BaselineCoreRun>$(BaseDirectory)/Baseline_Core_Root/corerun</BaselineCoreRun>
     <HelixPreCommands>$(HelixPreCommands);chmod +x $(PerformanceDirectory)/tools/machine-setup.sh;. $(PerformanceDirectory)/tools/machine-setup.sh</HelixPreCommands>
     <ArtifactsDirectory>$(BaseDirectory)/artifacts/BenchmarkDotNet.Artifacts</ArtifactsDirectory>
+    <BaselineArtifactsDirectory>$(BaseDirectory)/artifacts/BenchmarkDotNet.Artifacts_Baseline</BaselineArtifactsDirectory>
+    <ResultsComparer>$(PerformanceDirectory)/src/tools/ResultsComparer/ResultsComparer.csproj</ResultsComparer>
+    <DotnetExe>$(PerformanceDirectory)/tools/dotnet/$(Architecture)/dotnet</DotnetExe>
+    <Percent>%25</Percent>
+    <XMLResults>$HELIX_WORKITEM_ROOT/testResults.xml</XMLResults>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseCoreRun)' == 'true'">
     <CoreRunArgument>--corerun $(CoreRun)</CoreRunArgument>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseBaselineCoreRun)' == 'true'">
+    <BaselineCoreRunArgument>--corerun $(BaselineCoreRun)</BaselineCoreRunArgument>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(WorkItemCommand)' != ''">
@@ -57,20 +73,29 @@
     <Partition Include="$(BuildConfig).Partition4" Index="4" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(Compare)' == 'true'">
+    <FailOnTestFailure>false</FailOnTestFailure>
+  </PropertyGroup>
+
   <!-- 
     Partition the Microbenchmarks project, but nothing else
   -->
   <ItemGroup Condition="$(TargetCsproj.Contains('MicroBenchmarks.csproj'))">
     <HelixWorkItem Include="@(Partition)">
       <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <PreCommands Condition="'$(Compare)' == 'true'">$(WorkItemCommand) --bdn-arguments="--anyCategories $(BDNCategories) $(ExtraBenchmarkDotNetArguments) $(BaselineCoreRunArgument) --artifacts $(BaselineArtifactsDirectory) --partition-count $(PartitionCount) --partition-index %(HelixWorkItem.Index)"</PreCommands>
       <Command>$(WorkItemCommand) --bdn-arguments="--anyCategories $(BDNCategories) $(ExtraBenchmarkDotNetArguments) $(CoreRunArgument) --artifacts $(ArtifactsDirectory) --partition-count $(PartitionCount) --partition-index %(HelixWorkItem.Index)"</Command>
+      <PostCommands Condition="'$(Compare)' == 'true'">$(DotnetExe) run -f $(_Framework) -p $(ResultsComparer) --base $(BaselineArtifactsDirectory) --diff $(ArtifactsDirectory) --threshold 2$(Percent) --xml $(XMLResults);$(FinalCommand)</PostCommands>
       <Timeout>4:00</Timeout>
     </HelixWorkItem>
   </ItemGroup>
+
   <ItemGroup Condition="!$(TargetCsproj.Contains('MicroBenchmarks.csproj'))">
     <HelixWorkItem Include="$(BuildConfig).WorkItem">
       <PayloadDirectory>$(WorkItemDirectory)</PayloadDirectory>
+      <PreCommands Condition="'$(Compare)' == 'true'">$(WorkItemCommand) --bdn-arguments="--anyCategories $(BDNCategories) $(ExtraBenchmarkDotNetArguments) $(BaselineCoreRunArgument) --artifacts $(ArtifactsDirectory)"</PreCommands>
       <Command>$(WorkItemCommand) --bdn-arguments="--anyCategories $(BDNCategories) $(ExtraBenchmarkDotNetArguments) $(CoreRunArgument) --artifacts $(ArtifactsDirectory)"</Command>
+      <PostCommands Condition="'$(Compare)' == 'true'">$(DotnetExe) run -f $(_Framework) -p $(ResultsComparer) --base $(BaselineArtifactsDirectory) --diff $(ArtifactsDirectory) --threshold 2$(Percent) --xml $(XMLResults)</PostCommands>
       <Timeout>4:00</Timeout>
     </HelixWorkItem>
   </ItemGroup>
