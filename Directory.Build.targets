@@ -123,7 +123,7 @@
     <!-- Workaround while there is no publicly released 5.0 SDK available for source build (except for Razor projects, which use a 5.0 SDK already) -->
     <FrameworkReference 
       Update="Microsoft.NETCore.App"
-      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(DotNetBuildFromSource)' == 'true' and '$(RazorLangVersion)' != ''"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(DotNetBuildFromSource)' == 'true' and '$(RazorLangVersion)' == ''"
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
       TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       />
