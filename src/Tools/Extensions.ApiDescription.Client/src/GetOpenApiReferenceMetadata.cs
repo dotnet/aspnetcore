@@ -63,8 +63,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                         "OpenApiReference" :
                         "OpenApiProjectReference";
 
-                    Log.LogError(
-                        Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", "OpenApiReference", item.ItemSpec));
+                    Log.LogError(Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", type, item.ItemSpec));
                     continue;
                 }
 

@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
             };
 
             string expectedIdentity = "../files/azureMonitor.json";
-            IDictionary<string, string> expectedMetadata = new Dictionary<string, string>
+            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", "azureMonitorClient" },
                 { "CodeGenerator", "NSwagCSharp" },
