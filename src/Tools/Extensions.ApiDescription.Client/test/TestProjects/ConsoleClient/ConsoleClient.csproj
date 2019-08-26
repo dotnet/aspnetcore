@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.props" />
+  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.props"
+      Condition="Exists('../../build/Microsoft.Extensions.ApiDescription.Client.props')" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -31,6 +32,7 @@
         UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)" />
   </Target>
 
-  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.targets" />
-  <Import Project="../build/Fakes.targets" />
+  <Import Project="../../build/Microsoft.Extensions.ApiDescription.Client.targets"
+      Condition="Exists('../../build/Microsoft.Extensions.ApiDescription.Client.targets')" />
+  <Import Project="../build/Fakes.targets" Condition="EXISTS('../build/Fakes.targets')" />
 </Project>
