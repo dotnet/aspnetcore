@@ -179,5 +179,72 @@ namespace Microsoft.AspNetCore.Rewrite
             options.Rules.Add(new RedirectToWwwRule(statusCode, domains));
             return options;
         }
+
+        /// <summary>
+        /// Permanently redirects the request to the domain if the request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomainPermanent(this RewriteOptions options)
+        {
+            return AddRedirectToDomain(options, statusCode: StatusCodes.Status308PermanentRedirect);
+        }
+
+        /// <summary>
+        /// Permanently redirects the request to the domain if the request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomainPermanent(this RewriteOptions options, params string[] domains)
+        {
+            return AddRedirectToDomain(options, statusCode: StatusCodes.Status308PermanentRedirect, domains);
+        }
+
+        /// <summary>
+        /// Redirect the request to the domain if the incoming request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomain(this RewriteOptions options)
+        {
+            return AddRedirectToDomain(options, StatusCodes.Status307TemporaryRedirect);
+        }
+
+        /// <summary>
+        /// Redirect the request to the domain if the incoming request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="statusCode">The status code to add the response.</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomain(this RewriteOptions options, int statusCode)
+        {
+            options.Rules.Add(new RedirectToDomainRule(statusCode));
+            return options;
+        }
+
+        /// <summary>
+        /// Redirect the request to the domain if the incoming request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomain(this RewriteOptions options, params string[] domains)
+        {
+            return AddRedirectToDomain(options, StatusCodes.Status307TemporaryRedirect, domains);
+        }
+
+        /// <summary>
+        /// Redirect the request to the domain if the incoming request is www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="statusCode">The status code to add the response.</param>
+        /// <param name="domains">Limit the rule to apply only on the specified domain(s).</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToDomain(this RewriteOptions options, int statusCode, params string[] domains)
+        {
+            options.Rules.Add(new RedirectToDomainRule(statusCode, domains));
+            return options;
+        }
     }
 }

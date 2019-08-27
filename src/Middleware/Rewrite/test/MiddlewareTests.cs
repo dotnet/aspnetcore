@@ -232,6 +232,32 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Null(response.Headers.Location);
         }
 
+        [Theory]
+        [InlineData("http://example.com")]
+        [InlineData("https://example.com")]
+        [InlineData("http://example.com:8081")]
+        [InlineData("https://example.com:8081")]
+        [InlineData("https://example.com:8081/example?q=1")]
+        [InlineData("http://localhost")]
+        [InlineData("https://localhost")]
+        [InlineData("http://localhost:8081")]
+        [InlineData("https://localhost:8081")]
+        [InlineData("https://localhost:8081/example?q=1")]
+        public async Task CheckNoRedirectToDomain(string requestUri)
+        {
+            var options = new RewriteOptions().AddRedirectToDomain();
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri(requestUri));
+
+            Assert.Null(response.Headers.Location);
+        }
+
         [Fact]
         public async Task CheckIfEmptyStringRedirectCorrectly()
         {
@@ -365,5 +391,84 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal(statusCode, (int)response.StatusCode);
         }
 
+        [Theory]
+        [InlineData("http://www.example.com")]
+        [InlineData("https://www.example.com")]
+        [InlineData("http://www.example.com:8081")]
+        [InlineData("https://www.example.com:8081")]
+        [InlineData("https://www.example.com:8081/example?q=1")]
+        public async Task CheckNoRedirectToDomainInNonWhitelistedWwwSubdomain(string requestUri)
+        {
+            var options = new RewriteOptions().AddRedirectToDomain("www.example2.com");
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri(requestUri));
+
+            Assert.Null(response.Headers.Location);
+        }
+
+        [Theory]
+        [InlineData("http://www.example.com/", "http://example.com/")]
+        [InlineData("https://www.example.com/", "https://example.com/")]
+        [InlineData("http://www.example.com:8081", "http://example.com:8081/")]
+        [InlineData("http://www.example.com:8081/example?q=1", "http://example.com:8081/example?q=1")]
+        public async Task CheckRedirectToDomainInWhitelistedWwwSubdomain(string requestUri, string redirectUri)
+        {
+            var options = new RewriteOptions().AddRedirectToDomain("www.example.com");
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri(requestUri));
+
+            Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CheckPermanentRedirectToDomainInWhitelistedWwwSubDomains()
+        {
+            var options = new RewriteOptions().AddRedirectToDomainPermanent("www.example.com");
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
+
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData(StatusCodes.Status301MovedPermanently)]
+        [InlineData(StatusCodes.Status302Found)]
+        [InlineData(StatusCodes.Status307TemporaryRedirect)]
+        [InlineData(StatusCodes.Status308PermanentRedirect)]
+        public async Task CheckRedirectToDomainWithStatusCodeInWhitelistedWwwSubDomain(int statusCode)
+        {
+            var options = new RewriteOptions().AddRedirectToDomain(statusCode: statusCode, "www.example.com");
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
+
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(statusCode, (int)response.StatusCode);
+        }
     }
 }
