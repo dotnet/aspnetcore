@@ -48,7 +48,9 @@
     </MSBuild>
 
     <ItemGroup>
-      <OpenApiReference Include="@(_Temporary)" Exclude="@(OpenApiReference)" RemoveMetadata="FullConfiguration" />
+      <OpenApiReference Include="@(_Temporary)" Exclude="@(OpenApiReference)" RemoveMetadata="FullConfiguration">
+        <SourceProject>%(_Temporary.OriginalItemSpec)</SourceProject>
+      </OpenApiReference>
       <_Temporary Remove="@(_Temporary)" />
     </ItemGroup>
   </Target>
