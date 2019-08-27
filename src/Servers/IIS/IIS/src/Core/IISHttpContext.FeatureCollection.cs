@@ -313,6 +313,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             _wasUpgraded = true;
+            //MaxRequestBodySize = null;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
