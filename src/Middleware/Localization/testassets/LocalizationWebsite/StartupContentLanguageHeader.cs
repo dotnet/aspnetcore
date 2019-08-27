@@ -32,7 +32,7 @@ namespace LocalizationWebsite
                 {
                     new CultureInfo("ar-YE")
                 },
-                SetContentLanguageHeader = true
+                SetContentLanguageResponseHeader = true
             });
 
             app.Run(async (context) =>

@@ -85,10 +85,9 @@ namespace Microsoft.AspNetCore.Builder
         public bool FallBackToParentUICultures { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the value of the reponse Content-Language header to a <see cref="CultureInfo.CurrentUICulture"/>.
-        /// Defaults to <c>false</c>
+        /// Gets or sets a value that determines if <see cref="CultureInfo.CurrentUICulture" /> is applied to the response <c>Content-Language</c> header.
         /// </summary>
-        public bool SetContentLanguageHeader { get; set; } = false;
+        public bool SetContentLanguageResponseHeader { get; set; }
 
         /// <summary>
         /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set

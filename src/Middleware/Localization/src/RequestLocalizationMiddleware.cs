@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Localization
 
             SetCurrentThreadCulture(requestCulture);
 
-            if (_options.SetContentLanguageHeader)
+            if (_options.SetContentLanguageResponseHeader)
             {
                 context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
             }

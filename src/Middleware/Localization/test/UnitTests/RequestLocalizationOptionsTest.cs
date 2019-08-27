@@ -59,16 +59,6 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         [Fact]
-        public void ContentHeader_DefaultsToFalse()
-        {
-            // Arrange/Act
-            var options = new RequestLocalizationOptions();
-
-            // Assert
-            Assert.False(options.SetContentLanguageHeader);
-        }
-
-        [Fact]
         public void SupportedCultures_DefaultsToCurrentCulture()
         {
             // Arrange/Act
