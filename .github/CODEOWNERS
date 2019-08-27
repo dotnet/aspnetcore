@@ -20,3 +20,37 @@
 /src/Middleware/Rewrite         @jkotalik @anurse
 /src/Middleware/HttpsPolicy     @jkotalik @anurse
 /src/SignalR/                   @mikaelm12 @BrennanConroy @halter73 @anurse
+{
+  repository(owner: "octocat", name: "Hello-World") {
+    pullRequest(number: 1) {
+      commits(first: 10) {
+        edges {
+          node {
+            commit {
+              oid
+              message
+            }
+          }
+        }
+      }
+      comments(first: 10) {
+        edges {
+          node {
+            body
+            author {
+              login
+            }
+          }
+        }
+      }
+      reviews(first: 10) {
+        edges {
+          node {
+            state
+          }
+        }
+      }
+    }
+  }
+}
+You
