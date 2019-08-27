@@ -312,8 +312,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
+            MaxRequestBodySize = null;
             _wasUpgraded = true;
-            //MaxRequestBodySize = null;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
