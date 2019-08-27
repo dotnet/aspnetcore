@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         public void Configure(string name, CookieAuthenticationOptions options)
         {
             var AzureADScheme = GetAzureADScheme(name);
+            if (AzureADScheme is null)
+            {
+                return;
+            }
+            
             var AzureADOptions = _AzureADOptions.Get(AzureADScheme);
             if (name != AzureADOptions.CookieSchemeName)
             {
