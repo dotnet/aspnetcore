@@ -54,6 +54,7 @@
     <FileSignInfo Include="dotnet-sql-cache.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="dotnet-user-secrets.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="dotnet-watch.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="Microsoft.dotnet-openapi.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="sni.dll" CertificateName="Microsoft400" />
 
