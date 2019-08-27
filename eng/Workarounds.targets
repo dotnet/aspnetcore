@@ -10,11 +10,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
-  <!-- Workaround while there is no publicly released 5.0 SDK available for source build, suppress unsupported version error -->
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
-  </PropertyGroup>
-
   <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so do not apply this worksaround. -->
   <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
@@ -35,14 +30,6 @@
     <KnownFrameworkReference Update="NETStandard.Library">
       <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
     </KnownFrameworkReference>
-  </ItemGroup>
-
-  <!-- Source Build still uses a 3.0 SDK, which we need to retarget to 5.0 until the first 5.0 SDK is publicly released -->
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
-      TargetFramework="netcoreapp5.0"
-      />
   </ItemGroup>
 
   <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
