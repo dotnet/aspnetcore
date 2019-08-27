@@ -69,11 +69,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool TryRead(out ReadResult readResult)
         {
-            var result = _context.RequestBodyPipe.Reader.TryRead(out readResult);
-            _readResult = readResult;
-            CountBytesRead(readResult.Buffer.Length);
+            TryStart();
 
-            return result;
+            var hasResult = _context.RequestBodyPipe.Reader.TryRead(out readResult);
+
+            if (hasResult)
+            {
+                _readResult = readResult;
+
+                CountBytesRead(readResult.Buffer.Length);
+
+                if (readResult.IsCompleted)
+                {
+                    TryStop();
+                }
+            }
+
+            return hasResult;
         }
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
