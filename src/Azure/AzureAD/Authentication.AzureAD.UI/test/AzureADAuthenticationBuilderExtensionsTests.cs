@@ -269,6 +269,22 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureAD_SkipsOptionsValidationForNonAzureCookies()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureAD(o => { })
+                .AddCookie("other");
+
+            var provider = services.BuildServiceProvider();
+            var cookieAuthOptions = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+
+            Assert.NotNull(cookieAuthOptions.Get("other"));
+        }
+
+        [Fact]
         public void AddAzureADBearer_AddsAllAuthenticationHandlers()
         {
             // Arrange
@@ -452,6 +468,22 @@ namespace Microsoft.AspNetCore.Authentication
                 () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
 
             Assert.Contains(expectedMessage, exception.Failures);
+        }
+
+        [Fact]
+        public void AddAzureADBearer_SkipsOptionsValidationForNonAzureCookies()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureADBearer(o => { })
+                .AddJwtBearer("other", o => { });
+
+            var provider = services.BuildServiceProvider();
+            var jwtOptions = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+
+            Assert.NotNull(jwtOptions.Get("other"));
         }
     }
 }
