@@ -30,5 +30,9 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// Specifies that the long polling transport is used.
         /// </summary>
         LongPolling = 4,
+        /// <summary>
+        /// Specifies that the HTTP streaming is used.
+        /// </summary>
+        HttpStreaming = 8
     }
 }

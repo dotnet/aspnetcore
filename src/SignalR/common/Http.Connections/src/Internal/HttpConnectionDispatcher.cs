@@ -35,6 +35,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 TransferFormats = new List<string> { nameof(TransferFormat.Text) }
             };
 
+        private static readonly AvailableTransport _httpStreamingAvailableTransport =
+            new AvailableTransport
+            {
+                Transport = nameof(HttpTransportType.HttpStreaming),
+                TransferFormats = new List<string> { nameof(TransferFormat.Text), nameof(TransferFormat.Binary) }
+            };
+
         private static readonly AvailableTransport _longPollingAvailableTransport =
             new AvailableTransport
             {
@@ -107,11 +114,35 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             var supportedTransports = options.Transports;
 
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                // Connection can be established lazily
+                var connection = await GetOrCreateConnectionAsync(context, options);
+                if (connection == null)
+                {
+                    // No such connection, GetOrCreateConnection already set the response status code
+                    return;
+                }
+
+                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope, options))
+                {
+                    // Bad connection state. It's already set the response status code.
+                    return;
+                }
+
+                Log.EstablishedConnection(_logger);
+
+                // Allow the reads to be cancelled
+                connection.Cancellation = new CancellationTokenSource();
+
+                var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
+
+                await DoPersistentConnection(connectionDelegate, ws, context, connection);
+            }
             // Server sent events transport
             // GET /{path}
             // Accept: text/event-stream
-            var headers = context.Request.GetTypedHeaders();
-            if (headers.Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
+            else if (context.Request.GetTypedHeaders().Accept?.Contains(new Net.Http.Headers.MediaTypeHeaderValue("text/event-stream")) == true)
             {
                 // Connection must already exist
                 var connection = await GetConnectionAsync(context);
@@ -137,17 +168,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
-            else if (context.WebSockets.IsWebSocketRequest)
+            else if (context.Request.Protocol == "HTTP/2")
             {
-                // Connection can be established lazily
-                var connection = await GetOrCreateConnectionAsync(context, options);
+                // Support HTTP/2 Streaming
+
+                var connection = await GetConnectionAsync(context);
                 if (connection == null)
                 {
-                    // No such connection, GetOrCreateConnection already set the response status code
+                    // No such connection, GetConnection already set the response status code
                     return;
                 }
 
-                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.WebSockets, supportedTransports, logScope, options))
+                if (!await EnsureConnectionStateAsync(connection, context, HttpTransportType.HttpStreaming, supportedTransports, logScope, options))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
@@ -155,12 +187,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 Log.EstablishedConnection(_logger);
 
-                // Allow the reads to be cancelled
-                connection.Cancellation = new CancellationTokenSource();
+                // We only need to provide the Input channel since writing to the application is handled through /send.
+                var streaming = new HttpStreamingTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
-                var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
-
-                await DoPersistentConnection(connectionDelegate, ws, context, connection);
+                await DoPersistentConnection(connectionDelegate, streaming, context, connection);
             }
             else
             {
@@ -315,6 +345,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
             {
                 response.AvailableTransports.Add(_webSocketAvailableTransport);
+            }
+
+            // REVIEW: Hard code to HTTP/2 support on the server side?
+            if ((options.Transports & HttpTransportType.HttpStreaming) != 0)
+            {
+                response.AvailableTransports.Add(_httpStreamingAvailableTransport);
             }
 
             if ((options.Transports & HttpTransportType.ServerSentEvents) != 0)

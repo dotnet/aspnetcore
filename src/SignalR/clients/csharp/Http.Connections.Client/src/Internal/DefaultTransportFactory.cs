@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
             }
 
+            if ((availableServerTransports & HttpTransportType.HttpStreaming & _requestedTransportType) == HttpTransportType.HttpStreaming)
+            {
+                return new HttpStreamingTransport(_httpClient, _loggerFactory);
+            }
+
             if ((availableServerTransports & HttpTransportType.ServerSentEvents & _requestedTransportType) == HttpTransportType.ServerSentEvents)
             {
                 // We don't need to give the transport the accessTokenProvider because the HttpClient has a message handler that does the work for us.
