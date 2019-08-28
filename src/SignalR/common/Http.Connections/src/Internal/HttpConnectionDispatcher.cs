@@ -318,20 +318,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             if (context.Request.Query.TryGetValue("version", out var queryStringVersion))
             {
                 // Set the negotiate response to the protocol we use.
-                var clientProtocolVersion = int.Parse(queryStringVersion.ToString());
-                if (clientProtocolVersion < options.MinimumProtocolVersion)
+                var quertStringVersionValue = queryStringVersion.ToString();
+                if (int.TryParse(quertStringVersionValue, out var clientProtocolVersion))
                 {
-                    response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
-                    NegotiateProtocol.WriteResponse(response, writer);
-                    return;
-                }
-                else if (clientProtocolVersion > _protocolVersion)
-                {
-                    response.Version = _protocolVersion;
+                    if (clientProtocolVersion < options.MinimumProtocolVersion)
+                    {
+                        response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
+                        NegotiateProtocol.WriteResponse(response, writer);
+                        return;
+                    }
+                    else if (clientProtocolVersion > _protocolVersion)
+                    {
+                        response.Version = _protocolVersion;
+                    }
+                    else
+                    {
+                        response.Version = clientProtocolVersion;
+                    }
                 }
                 else
                 {
-                    response.Version = clientProtocolVersion;
+                    response.Error = $"The client requested an invalid protocol version '{quertStringVersionValue}'";
+                    NegotiateProtocol.WriteResponse(response, writer);
+                    return;
                 }
             }
             else if (options.MinimumProtocolVersion > 0)
