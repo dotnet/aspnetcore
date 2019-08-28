@@ -429,7 +429,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     urlBuilder.Path += "/";
                 }
                 urlBuilder.Path += "negotiate";
-                //urlBuilder.Query = $"version={_protocolVersionNumber}";
                 var uri = Utils.AppendQueryString(urlBuilder.Uri, $"version={_protocolVersionNumber}");
 
                 using (var request = new HttpRequestMessage(HttpMethod.Post, uri))

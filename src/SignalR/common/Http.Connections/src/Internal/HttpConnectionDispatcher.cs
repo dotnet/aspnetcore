@@ -333,7 +333,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     response.Version = clientProtocolVersion;
                 }
-            } else if (options.MinimumProtocolVersion > 0)
+            }
+            else if (options.MinimumProtocolVersion > 0)
             {
                 response.Error = $"The client requested version '0', but the server does not support this version.";
                 NegotiateProtocol.WriteResponse(response, writer);
