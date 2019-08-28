@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
             }
 
-            internal static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
+            public static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
             {
                 if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
                 {
@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
             }
 
-            internal static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, UIEventArgs eventArgs)
+            public static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs eventArgs)
             {
-                _handlingEvent(logger, eventHandlerId, eventArgs?.Type ?? "null", null);
+                _handlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null", null);
             }
         }
     }

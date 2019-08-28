@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
@@ -127,7 +128,7 @@ namespace BlazorServerWeb_CSharp
             services.AddRazorPages();
             services.AddServerSideBlazor();
 #if (IndividualLocalAuth)
-            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 #endif
             services.AddSingleton<WeatherForecastService>();
         }

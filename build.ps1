@@ -183,12 +183,31 @@ elseif ($Projects) {
 }
 # When adding new sub-group build flags, add them to this check.
 elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
-    Write-Warning "No default group of projects was specified, so building the 'managed' subsets of projects. Run ``build.cmd -help`` for more details."
+    Write-Warning "No default group of projects was specified, so building the 'managed' and its dependent subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
     # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
 
     $BuildManaged = $true
+}
+
+if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
+    if ((-not $BuildNodeJS) -and (-not $NoBuildNodeJS)) {
+        $node = Get-Command node -ErrorAction Ignore -CommandType Application
+
+        if ($node) {
+            $nodeHome = Split-Path -Parent (Split-Path -Parent $node.Path)
+            Write-Host -f Magenta "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected in $nodeHome."
+        }
+        else {
+            Write-Host -f Magenta "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
+            $NoBuildNodeJS = $true
+        }
+    }
+
+    if ($NoBuildNodeJS){
+        Write-Warning "Some managed projects depend on NodeJS projects. Building NodeJS is disabled so the managed projects will fallback to using the output from previous builds. The output may not be correct or up to date."
+    }
 }
 
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }

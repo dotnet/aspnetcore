@@ -264,6 +264,7 @@ namespace Microsoft.AspNetCore.Hosting
                     .InformationalVersion;
                 model.ClrVersion = clrVersion;
                 model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+                model.ShowRuntimeDetails = showDetailedErrors;
 
                 if (showDetailedErrors)
                 {

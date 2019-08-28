@@ -9,6 +9,13 @@
   <ItemGroup>
     <Reference Include="Mono.WebAssembly.Interop" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\..\Shared\src\WebEventData.cs" />
   </ItemGroup>
 
 </Project>

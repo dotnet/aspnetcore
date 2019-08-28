@@ -28,6 +28,7 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
+        [Flaky("https://github.com/aspnet/aspnetcore-internal/issues/2865", FlakyOn.All)]
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
         [InlineData("Startup")]
@@ -85,7 +86,7 @@ namespace FunctionalTests
 
             var originParameters = new DeploymentParameters
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestOrigin"),
@@ -103,7 +104,7 @@ namespace FunctionalTests
             var port = originDeployment.HttpClient.BaseAddress.Port;
             var destinationParameters = new DeploymentParameters
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestDestination"),

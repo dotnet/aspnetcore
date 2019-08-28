@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
@@ -9,8 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,6 +43,9 @@
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(InProcessComponents)" />
+  </ItemGroup>
 
   <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>

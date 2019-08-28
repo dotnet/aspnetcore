@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(TargetRuntimeIdentifier)" />
+    <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(OriginalPackageVersion)" />
 
     <ProjectReference Include="..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">

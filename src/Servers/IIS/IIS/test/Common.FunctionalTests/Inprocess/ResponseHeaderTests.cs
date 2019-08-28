@@ -23,6 +23,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        public async Task AddEmptyHeaderSkipped()
+        {
+            var response = await _fixture.Client.GetAsync("ResponseEmptyHeaders");
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.False(response.Headers.TryGetValues("EmptyHeader", out var headerValues));
+        }
+
+        [ConditionalFact]
         public async Task AddResponseHeaders_HeaderValuesAreSetCorrectly()
         {
             var response = await _fixture.Client.GetAsync("ResponseHeaders");

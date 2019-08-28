@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Develo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests", "FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj", "{1EC6FA27-40A5-433F-8CA1-636E7ED8863E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sql-cache", "dotnet-sql-cache\src\dotnet-sql-cache.csproj", "{15FB0E39-1A28-4325-AD3C-76352516C80D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1EC6FA27-40A5-433F-8CA1-636E7ED8863E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EC6FA27-40A5-433F-8CA1-636E7ED8863E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EC6FA27-40A5-433F-8CA1-636E7ED8863E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

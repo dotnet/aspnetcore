@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var feature = new HttpBufferingFeature();
-                context.Features.Set<IHttpBufferingFeature>(feature);
+                var feature = new HttpBufferingFeature(new MemoryStream());
+                context.Features.Set<IHttpResponseBodyFeature>(feature);
                 var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
 
                 connection.Transport.Output.Complete();
@@ -129,18 +129,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private class HttpBufferingFeature : IHttpBufferingFeature
+        private class HttpBufferingFeature : StreamResponseBodyFeature
         {
-            public bool RequestBufferingDisabled { get; set; }
-
             public bool ResponseBufferingDisabled { get; set; }
 
-            public void DisableRequestBuffering()
-            {
-                RequestBufferingDisabled = true;
-            }
+            public HttpBufferingFeature(Stream stream) : base(stream) { }
 
-            public void DisableResponseBuffering()
+            public override void DisableBuffering()
             {
                 ResponseBufferingDisabled = true;
             }

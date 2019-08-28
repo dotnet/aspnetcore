@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We want to validate runtime parser \ compilation exceptions -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <IsTestAssetProject>true</IsTestAssetProject>

@@ -64,8 +64,31 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.IsType<InvalidOperationException>(captured);
             Assert.Equal(
                 "The HeaderPropagationValues.Headers property has not been initialized. Register the header propagation middleware " +
-                "by adding 'app.UseHeaderPropagation() in the 'Configure(...)' method.",
+                "by adding 'app.UseHeaderPropagation()' in the 'Configure(...)' method. Header propagation can only be used within " +
+                "the context of an HTTP request.",
                 captured.Message);
+        }
+
+        [Fact]
+        public async Task HeaderPropagation_OutsideOfIncomingRequest_Throws()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddHttpClient("test").AddHeaderPropagation();
+            services.AddHeaderPropagation(options =>
+            {
+                options.Headers.Add("X-TraceId");
+            });
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Act & Assert
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync("http://localhost/"));
+            Assert.Equal(
+                "The HeaderPropagationValues.Headers property has not been initialized. Register the header propagation middleware " +
+                "by adding 'app.UseHeaderPropagation()' in the 'Configure(...)' method. Header propagation can only be used within " +
+                "the context of an HTTP request.",
+                exception.Message);
         }
 
         [Fact]

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         /// When it returns 'true' the request procedes to the server.
         /// When it returns 'false' the request is rejected immediately.
         /// </summary>
-        Task<bool> TryEnterAsync();
+        ValueTask<bool> TryEnterAsync();
 
         /// <summary>
         /// Called after successful requests have been returned from the server.

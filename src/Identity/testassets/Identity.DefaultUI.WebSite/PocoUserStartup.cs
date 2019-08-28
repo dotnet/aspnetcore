@@ -27,7 +27,6 @@ namespace Identity.DefaultUI.WebSite
             });
 
             services.AddDefaultIdentity<Microsoft.AspNetCore.Identity.Test.PocoUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddUserManager<UserManager<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
             services.AddSingleton<IUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>, InMemoryUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
 

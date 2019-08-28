@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
                 new Dictionary<string, string>
                 {
-                    {"EventCounterIntervalSec", "1" }
+                    {"EventCounterIntervalSec", ".1" }
                 });
 
             // Act
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
                 new Dictionary<string, string>
                 {
-                    {"EventCounterIntervalSec", "1" }
+                    {"EventCounterIntervalSec", ".1" }
                 });
 
             // Act

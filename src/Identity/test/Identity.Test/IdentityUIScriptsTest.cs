@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
@@ -83,11 +84,11 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.AzP.macOS)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var wwwrootDir = Path.Combine(AppContext.BaseDirectory, "UI", "src", "wwwroot", scriptTag.Version);
+            var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
-                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.TrimStart('~').TrimStart('/')));
+                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.Replace("Identity", "").TrimStart('~').TrimStart('/')));
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
         }
@@ -108,8 +109,8 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV3 = Path.Combine(AppContext.BaseDirectory, "UI", "src", "Areas", "Identity", "Pages", "V3");
-            var uiDirV4 = Path.Combine(AppContext.BaseDirectory, "UI", "src", "Areas", "Identity", "Pages", "V4");
+            var uiDirV3 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V3");
+            var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
             var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
 
             var scriptTags = new List<ScriptTag>();
@@ -161,6 +162,32 @@ namespace Microsoft.AspNetCore.Identity.Test
         public void Dispose()
         {
             _httpClient.Dispose();
+        }
+
+        private static string GetProjectBasePath()
+        {
+            var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
+            return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
+        }
+
+        private static string FindHelixSlnFileDirectory()
+        {
+            var applicationPath = Path.GetDirectoryName(typeof(IdentityUIScriptsTest).Assembly.Location);
+            var directoryInfo = new DirectoryInfo(applicationPath);
+            do
+            {
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.sln").FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    return directoryInfo.FullName;
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
         }
 
         class RetryHandler : DelegatingHandler

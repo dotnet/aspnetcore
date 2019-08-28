@@ -82,7 +82,8 @@ namespace Microsoft.AspNetCore.Mvc
                 provider => Assert.IsType<FormValueProviderFactory>(provider),
                 provider => Assert.IsType<RouteValueProviderFactory>(provider),
                 provider => Assert.IsType<QueryStringValueProviderFactory>(provider),
-                provider => Assert.IsType<JQueryFormValueProviderFactory>(provider));
+                provider => Assert.IsType<JQueryFormValueProviderFactory>(provider),
+                provider => Assert.IsType<FormFileValueProviderFactory>(provider));
         }
 
         [Fact]
@@ -109,6 +110,17 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Collection(
                 options.InputFormatters,
                 formatter => Assert.IsType<SystemTextJsonInputFormatter>(formatter));
+        }
+
+        [Fact]
+        public void Setup_SetsUpFormatterMapping()
+        {
+            // Arrange & Act
+            var options = GetOptions<MvcOptions>();
+
+            // Assert
+            var mapping = options.FormatterMappings.GetMediaTypeMappingForFormat("json");
+            Assert.Equal("application/json", mapping);
         }
 
         [Fact]

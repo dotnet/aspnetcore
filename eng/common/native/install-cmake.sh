@@ -69,7 +69,7 @@ tool_name_moniker="$tool_name-$version-$tool_os-$tool_arch"
 tool_install_directory="$install_path/$tool_name/$version"
 tool_file_path="$tool_install_directory/$tool_name_moniker/bin/$tool_name"
 shim_path="$install_path/$tool_name.sh"
-uri="${base_uri}/$tool_folder/cmake/$tool_name_moniker.tar.gz"
+uri="${base_uri}/$tool_folder/$tool_name/$tool_name_moniker.tar.gz"
 
 # Clean up tool and installers
 if [[ $clean = true ]]; then

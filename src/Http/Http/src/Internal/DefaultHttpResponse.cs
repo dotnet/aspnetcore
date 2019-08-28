@@ -15,9 +15,8 @@ namespace Microsoft.AspNetCore.Http
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpResponseStartFeature> _nullResponseStartFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature> _nullResponseBodyFeature = f => null;
         private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
-        private readonly static Func<HttpContext, IResponseBodyPipeFeature> _newResponseBodyPipeFeature = context => new ResponseBodyPipeFeature(context);
 
         private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -46,14 +45,11 @@ namespace Microsoft.AspNetCore.Http
         private IHttpResponseFeature HttpResponseFeature =>
             _features.Fetch(ref _features.Cache.Response, _nullResponseFeature);
 
-        private IHttpResponseStartFeature HttpResponseStartFeature =>
-            _features.Fetch(ref _features.Cache.ResponseStart, _nullResponseStartFeature);
+        private IHttpResponseBodyFeature HttpResponseBodyFeature =>
+            _features.Fetch(ref _features.Cache.ResponseBody, _nullResponseBodyFeature);
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
-
-        private IResponseBodyPipeFeature ResponseBodyPipeFeature =>
-            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newResponseBodyPipeFeature);
 
         public override HttpContext HttpContext { get { return _context; } }
 
@@ -70,8 +66,26 @@ namespace Microsoft.AspNetCore.Http
 
         public override Stream Body
         {
-            get { return HttpResponseFeature.Body; }
-            set { HttpResponseFeature.Body = value; }
+            get { return HttpResponseBodyFeature.Stream; }
+            set
+            {
+                var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>();
+                if (otherFeature is StreamResponseBodyFeature streamFeature
+                    && streamFeature.PriorFeature != null
+                    && object.ReferenceEquals(value, streamFeature.PriorFeature.Stream))
+                {
+                    // They're reverting the stream back to the prior one. Revert the whole feature.
+                    _features.Collection.Set(streamFeature.PriorFeature);
+                    // CompleteAsync is registered with HttpResponse.OnCompleted and there's no way to unregister it.
+                    // Prevent it from running by marking as disposed.
+                    streamFeature.Dispose();
+                    return;
+                }
+
+                var feature = new StreamResponseBodyFeature(value, otherFeature);
+                OnCompleted(feature.CompleteAsync);
+                _features.Collection.Set<IHttpResponseBodyFeature>(feature);
+            }
         }
 
         public override long? ContentLength
@@ -111,7 +125,7 @@ namespace Microsoft.AspNetCore.Http
 
         public override PipeWriter BodyWriter
         {
-            get { return ResponseBodyPipeFeature.Writer; }
+            get { return HttpResponseBodyFeature.Writer; }
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)
@@ -155,20 +169,16 @@ namespace Microsoft.AspNetCore.Http
                 return Task.CompletedTask;
             }
 
-            if (HttpResponseStartFeature == null)
-            {
-                return HttpResponseFeature.Body.FlushAsync(cancellationToken);
-            }
-
-            return HttpResponseStartFeature.StartAsync(cancellationToken);
+            return HttpResponseBodyFeature.StartAsync(cancellationToken);
         }
+
+        public override Task CompleteAsync() => HttpResponseBodyFeature.CompleteAsync();
 
         struct FeatureInterfaces
         {
             public IHttpResponseFeature Response;
+            public IHttpResponseBodyFeature ResponseBody;
             public IResponseCookiesFeature Cookies;
-            public IResponseBodyPipeFeature BodyPipe;
-            public IHttpResponseStartFeature ResponseStart;
         }
     }
 }

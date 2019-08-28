@@ -209,12 +209,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
         }
       ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
+      "replaces": "netcoreapp5.0",
+      "defaultValue": "netcoreapp5.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -236,7 +236,7 @@
       "path": "Company.WebApplication1.csproj"
     }
   ],
-  "defaultName": "WebApplication1",
+  "defaultName": "WebApplication",
   "postActions": [
     {
       "condition": "(!skipRestore)",

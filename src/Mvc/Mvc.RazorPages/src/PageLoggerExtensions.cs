@@ -150,7 +150,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var handlerName = handler.MethodInfo.DeclaringType.FullName + "." + handler.MethodInfo.Name;
+                var declaringTypeName = TypeNameHelper.GetTypeDisplayName(handler.MethodInfo.DeclaringType);
+                var handlerName = declaringTypeName + "." + handler.MethodInfo.Name;
 
                 var validationState = context.ModelState.ValidationState;
                 _handlerMethodExecuting(logger, handlerName, validationState, null);

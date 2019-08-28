@@ -96,6 +96,15 @@ The cause of this problem is that the solution you are using does not include th
    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
    ```
 
+### Common error: Unable to locate the .NET Core SDK
+
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
+
+> error : Unable to locate the .NET Core SDK. Check that it is installed and that the version specified in global.json (if any) matches the installed version.
+> error MSB4236: The SDK 'Microsoft.NET.Sdk' specified could not be found.
+
+In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
+
 ## Building with Visual Studio Code
 
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
@@ -128,6 +137,8 @@ On macOS/Linux:
 ```
 ./build.sh
 ```
+
+By default, all of the C# projects are built. Some C# projects requires NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify /p:BuildNodeJs=false on the command line.
 
 ### Using `dotnet` on command line in this repo
 

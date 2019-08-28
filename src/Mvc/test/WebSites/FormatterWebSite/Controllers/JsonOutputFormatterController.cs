@@ -21,6 +21,9 @@ namespace FormatterWebSite.Controllers
         public ActionResult<string> StringWithUnicodeResult() => "Hello Mr. 🦊";
 
         [HttpGet]
+        public ActionResult<string> StringWithNonAsciiContent() => "Une bête de cirque";
+
+        [HttpGet]
         public ActionResult<SimpleModel> SimpleModelResult() =>
             new SimpleModel { Id = 10, Name = "Test", StreetName = "Some street" };
 

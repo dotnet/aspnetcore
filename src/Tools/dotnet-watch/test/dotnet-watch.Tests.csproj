@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!-- This needs to be hard-coded, since these test projects choose not to import Directory.Build.Props from the root of the repo -->
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
@@ -15,13 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-watch.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>TestSettings:RestoreSources</_Parameter1>
-      <_Parameter2>$(RestoreSources)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -10,13 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal class ApiBehaviorOptionsSetup :
-        IConfigureOptions<ApiBehaviorOptions>,
-        IPostConfigureOptions<ApiBehaviorOptions>
+    internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
-        internal static readonly Func<ActionContext, IActionResult> DefaultFactory = DefaultInvalidModelStateResponse;
-        internal static readonly Func<ActionContext, IActionResult> ProblemDetailsFactory =
-            ProblemDetailsInvalidModelStateResponse;
+        private ProblemDetailsFactory _problemDetailsFactory;
 
         public void Configure(ApiBehaviorOptions options)
         {
@@ -25,20 +20,34 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.InvalidModelStateResponseFactory = DefaultFactory;
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                // ProblemDetailsFactory depends on the ApiBehaviorOptions instance. We intentionally avoid constructor injecting
+                // it in this options setup to to avoid a DI cycle.
+                _problemDetailsFactory ??= context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                return ProblemDetailsInvalidModelStateResponse(_problemDetailsFactory, context);
+            };
+
             ConfigureClientErrorMapping(options);
         }
 
-        public void PostConfigure(string name, ApiBehaviorOptions options)
+        internal static IActionResult ProblemDetailsInvalidModelStateResponse(ProblemDetailsFactory problemDetailsFactory, ActionContext context)
         {
-            // We want to use problem details factory only if
-            // (a) it has not been opted out of (SuppressMapClientErrors = true)
-            // (b) a different factory was configured
-            if (!options.SuppressMapClientErrors &&
-                object.ReferenceEquals(options.InvalidModelStateResponseFactory, DefaultFactory))
+            var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(context.HttpContext, context.ModelState);
+            ObjectResult result;
+            if (problemDetails.Status == 400)
             {
-                options.InvalidModelStateResponseFactory = ProblemDetailsFactory;
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                result = new BadRequestObjectResult(problemDetails);
             }
+            else
+            {
+                result = new ObjectResult(problemDetails);
+            }
+            result.ContentTypes.Add("application/problem+json");
+            result.ContentTypes.Add("application/problem+xml");
+
+            return result;
         }
 
         // Internal for unit testing
@@ -91,33 +100,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 Link = "https://tools.ietf.org/html/rfc4918#section-11.2",
                 Title = Resources.ApiConventions_Title_422,
             };
-        }
 
-        private static IActionResult DefaultInvalidModelStateResponse(ActionContext context)
-        {
-            var result = new BadRequestObjectResult(context.ModelState);
-
-            result.ContentTypes.Add("application/json");
-            result.ContentTypes.Add("application/xml");
-
-            return result;
-        }
-
-        internal static IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
-        {
-            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            options.ClientErrorMapping[500] = new ClientErrorData
             {
-                Status = StatusCodes.Status400BadRequest,
+                Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                Title = Resources.ApiConventions_Title_500,
             };
-
-            ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
-
-            var result = new BadRequestObjectResult(problemDetails);
-
-            result.ContentTypes.Add("application/problem+json");
-            result.ContentTypes.Add("application/problem+xml");
-
-            return result;
         }
     }
 }

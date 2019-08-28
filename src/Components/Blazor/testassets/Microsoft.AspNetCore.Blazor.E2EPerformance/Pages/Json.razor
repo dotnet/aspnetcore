@@ -37,7 +37,7 @@
         largeOrgChartJson = JsonSerializer.Serialize(largeOrgChart);
     }
 
-    protected override void OnAfterRender()
+    protected override void OnAfterRender(bool firstRender)
     {
         BenchmarkEvent.Send(JSRuntime, "Finished JSON processing");
     }

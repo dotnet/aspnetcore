@@ -65,15 +65,15 @@ describe('DefaultReconnectionHandler', () => {
     window.console.error = jest.fn();
 
     handler.onConnectionDown({
-      maxRetries: 3,
-      retryIntervalMilliseconds: 20,
+      maxRetries: 2,
+      retryIntervalMilliseconds: 5,
       dialogId: 'ignored'
     });
 
-    await delay(100);
+    await delay(500);
     expect(testDisplay.show).toHaveBeenCalled();
     expect(testDisplay.failed).toHaveBeenCalled();
-    expect(reconnect).toHaveBeenCalledTimes(3);
+    expect(reconnect).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -93,6 +93,7 @@ function createTestDisplay(): ReconnectDisplay {
   return {
     show: jest.fn(),
     hide: jest.fn(),
-    failed: jest.fn()
+    failed: jest.fn(),
+    rejected: jest.fn()
   };
 }

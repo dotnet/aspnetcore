@@ -21,7 +21,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
           ? new UserSpecifiedDisplay(modal)
-          : new DefaultReconnectDisplay(options.dialogId, document);
+          : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -67,7 +67,8 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // If the server responded and refused to reconnect, stop auto-retrying.
-          break;
+          this.reconnectDisplay.rejected();
+          return;
         }
         return;
       } catch (err) {

@@ -8,7 +8,7 @@
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <Compile Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.netcoreapp2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal"  />
   </ItemGroup>
 </Project>

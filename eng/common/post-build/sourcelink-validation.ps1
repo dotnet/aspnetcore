@@ -6,10 +6,7 @@ param(
   [Parameter(Mandatory=$true)][string] $SourcelinkCliVersion    # Version of SourceLink CLI to use
 )
 
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
-
-. $PSScriptRoot\..\tools.ps1
+. $PSScriptRoot\post-build-utils.ps1
 
 # Cache/HashMap (File -> Exist flag) used to consult whether a file exist 
 # in the repository at a specific commit point. This is populated by inserting
@@ -200,21 +197,27 @@ function ValidateSourceLinkLinks {
   }
 }
 
-function CheckExitCode ([string]$stage) {
-  $exitCode = $LASTEXITCODE
-  if ($exitCode -ne 0) {
-    Write-PipelineTaskError "Something failed while '$stage'. Check for errors above. Exiting now..."
-    ExitWithExitCode $exitCode
+function InstallSourcelinkCli {
+  $sourcelinkCliPackageName = "sourcelink"
+
+  $dotnetRoot = InitializeDotNetCli -install:$true
+  $dotnet = "$dotnetRoot\dotnet.exe"
+  $toolList = & "$dotnet" tool list --global
+
+  if (($toolList -like "*$sourcelinkCliPackageName*") -and ($toolList -like "*$sourcelinkCliVersion*")) {
+    Write-Host "SourceLink CLI version $sourcelinkCliVersion is already installed."
+  }
+  else {
+    Write-Host "Installing SourceLink CLI version $sourcelinkCliVersion..."
+    Write-Host "You may need to restart your command window if this is the first dotnet tool you have installed."
+    & "$dotnet" tool install $sourcelinkCliPackageName --version $sourcelinkCliVersion --verbosity "minimal" --global 
   }
 }
 
 try {
-  Write-Host "Installing SourceLink CLI..."
-  Get-Location
-  . $PSScriptRoot\sourcelink-cli-init.ps1 -sourcelinkCliVersion $SourcelinkCliVersion
-  CheckExitCode "Running sourcelink-cli-init"
+  InstallSourcelinkCli
 
-  Measure-Command { ValidateSourceLinkLinks }
+  ValidateSourceLinkLinks 
 }
 catch {
   Write-Host $_

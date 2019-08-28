@@ -1,0 +1,3 @@
+<StaticWebAssets Version="1.0">
+  <ContentRoot BasePath="/Identity" Path="{TEST_PLACEHOLDER}/V4" />
+</StaticWebAssets>
