@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnet-Identity.ExternalClaims-E95BE154-CB1B-4633-A2E0-B2DF12FE8BD3</UserSecretsId>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>

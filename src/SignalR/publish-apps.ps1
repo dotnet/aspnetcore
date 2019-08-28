@@ -1,4 +1,4 @@
-param($RootDirectory = (Get-Location), $Framework = "netcoreapp3.0", $Runtime = "win-x64", $CommitHash, $BranchName, $BuildNumber)
+param($RootDirectory = (Get-Location), $Framework = "netcoreapp5.0", $Runtime = "win-x64", $CommitHash, $BranchName, $BuildNumber)
 
 # De-Powershell the path
 $RootDirectory = (Convert-Path $RootDirectory)
