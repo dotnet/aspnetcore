@@ -7,8 +7,7 @@
     <AssemblyName>dotnet-openapi</AssemblyName>
     <PackageId>Microsoft.dotnet-openapi</PackageId>
     <PackAsTool>true</PackAsTool>
-    <!-- This package is for internal use only. It contains a CLI tool. -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
