@@ -7,7 +7,7 @@ You can watch an introductory presentation here - [ASP.NET Core SignalR: Build 2
 
 ## Documentation
 
-Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.1) section of the ASP.NET Core Documentation site.
+Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/aspnet/core/signalr/introduction) section of the ASP.NET Core Documentation site.
 
 ## TypeScript Version
 

@@ -6,7 +6,7 @@ import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
-import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
+import { startCircuit } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { resolveOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
@@ -27,32 +27,18 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
-  // Initialize statefully prerendered circuits and their components
-  // Note: This will all be removed soon
   const initialConnection = await initializeConnection(options, logger);
-  const circuits = discoverPrerenderedCircuits(document);
-  for (let i = 0; i < circuits.length; i++) {
-    const circuit = circuits[i];
-    for (let j = 0; j < circuit.components.length; j++) {
-      const component = circuit.components[j];
-      component.initialize();
-    }
-  }
-
   const circuit = await startCircuit(initialConnection);
-  if (!circuit) {
-    logger.log(LogLevel.Information, 'No preregistered components to render.');
-  }
 
   const reconnect = async (existingConnection?: signalR.HubConnection): Promise<boolean> => {
     if (renderingFailed) {
       // We can't reconnect after a failure, so exit early.
       return false;
     }
-    const reconnection = existingConnection || await initializeConnection(options, logger);
-    const results = await Promise.all(circuits.map(circuit => circuit.reconnect(reconnection)));
 
-    if (reconnectionFailed(results)) {
+    const reconnection = existingConnection || await initializeConnection(options, logger);
+    if (!(await circuit.reconnect(reconnection))) {
+      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
     }
 
@@ -61,21 +47,19 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     return true;
   };
 
+  window.addEventListener(
+    'unload',
+    () => {
+      const data = new FormData();
+      data.set('circuitId', circuit.circuitId);
+      navigator.sendBeacon('_blazor/disconnect', data);
+    },
+    false
+  );
+
   window['Blazor'].reconnect = reconnect;
 
-  const reconnectTask = reconnect(initialConnection);
-
-  if (circuit) {
-    circuits.push(circuit);
-  }
-
-  await reconnectTask;
-
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
-
-  function reconnectionFailed(results: boolean[]): boolean {
-    return !results.reduce((current, next) => current && next, true);
-  }
 }
 
 async function initializeConnection(options: BlazorOptions, logger: Logger): Promise<signalR.HubConnection> {
@@ -94,14 +78,18 @@ async function initializeConnection(options: BlazorOptions, logger: Logger): Pro
     return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
 
+  // Configure navigation via SignalR
+  window['Blazor']._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
+    return connection.send('OnLocationChanged', uri, intercepted);
+  });
+
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
-  connection.on('JS.RenderBatch', (browserRendererId: number, batchId: number, batchData: Uint8Array) => {
-    logger.log(LogLevel.Debug, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
 
-    const queue = RenderQueue.getOrCreateQueue(browserRendererId, logger);
-
-    queue.processBatch(batchId, batchData, connection);
+  const renderQueue = new RenderQueue(/* renderer ID unused with remote renderer */ 0, logger);
+  connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
+    logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
+    renderQueue.processBatch(batchId, batchData, connection);
   });
 
   connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));

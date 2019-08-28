@@ -15,15 +15,16 @@
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
       <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
       <_RsRestoreSources>
-        $(RestoreSources);
+        $(RestoreAdditionalProjectSources);
         $(ArtifactsShippingPackagesDir);
         $(ArtifactsNonShippingPackagesDir)
       </_RsRestoreSources>
+
       <ManifestFileContents>
       <![CDATA[
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -35,8 +36,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'@(HostingStartupRuntimeStoreTargets->Count())' == '0'">
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x64" />
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x86" />
+      <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="win-x64" />
+      <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="win-x86" />
     </ItemGroup>
 
     <ItemGroup>
@@ -66,7 +67,7 @@
               ComposeDir=$(_RuntimeStoreOutput)\%(HostingStartupRuntimeStoreTargets.Runtime);
               SkipOptimization=true;
               DisablePackageReferenceRestrictions=true;
-              RestoreSources=$(_RsRestoreSources)" />
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
     <!-- Generate deps -->
     <RemoveDir Directories="%(_HostingStartupPackageReference.WorkingDirectory)" />
 
@@ -82,7 +83,7 @@
               MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
               UseAppHost=false;
               NoBuild=false;
-              RestoreSources=$(_RsRestoreSources)" />
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
 
     <MSBuild Projects="%(_HostingStartupPackageReference.Project)"
              Targets="Publish"

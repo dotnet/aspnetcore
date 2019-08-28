@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _maxStreamsPerConnection = 100;
         private int _headerTableSize = (int)Http2PeerSettings.DefaultHeaderTableSize;
         private int _maxFrameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
-        private int _maxRequestHeaderFieldSize = 8192;
+        private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
         private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
         private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
         /// <para>
-        /// Value must be greater than 0, defaults to 8192
+        /// Value must be greater than 0, defaults to 2^14 (16,384)
         /// </para>
         /// </summary>
         public int MaxRequestHeaderFieldSize

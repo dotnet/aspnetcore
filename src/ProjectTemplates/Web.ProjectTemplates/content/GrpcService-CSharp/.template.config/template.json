@@ -41,11 +41,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
         }
       ],
-      "defaultValue": "netcoreapp3.0"
+      "defaultValue": "netcoreapp5.0"
     },
     "ExcludeLaunchSettings": {
       "type": "parameter",
@@ -65,7 +65,7 @@
       "path": "GrpcService-CSharp.csproj"
     }
   ],
-  "defaultName": "GrpcService-CSharp1",
+  "defaultName": "GrpcService",
   "postActions": [
     {
       "condition": "(!skipRestore)",

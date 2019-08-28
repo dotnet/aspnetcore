@@ -62,6 +62,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
+            // Check if EndPoint is a FileHandleEndpoint before attempting to access EndPoint.AddressFamily
+            // since that will throw an NotImplementedException.
+            if (EndPoint is FileHandleEndPoint)
+            {
+                throw new NotSupportedException(SocketsStrings.FileHandleEndPointNotSupported);
+            }
+
             Socket listenSocket;
 
             // Unix domain sockets are unspecified

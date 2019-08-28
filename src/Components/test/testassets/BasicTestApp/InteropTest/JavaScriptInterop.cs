@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace BasicTestApp.InteropTest
 {
     public class JavaScriptInterop
     {
-        public static IDictionary<string, object[]> Invocations = new Dictionary<string, object[]>();
+        public static ConcurrentDictionary<string, object[]> Invocations = new ConcurrentDictionary<string, object[]>();
 
         [JSInvokable]
         public static void ThrowException() => throw new InvalidOperationException("Threw an exception!");

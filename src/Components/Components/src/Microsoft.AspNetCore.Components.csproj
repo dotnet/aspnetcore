@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <Description>Components feature for ASP.NET Core.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.ComponentModel.Annotations" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">
@@ -34,15 +34,17 @@
 
   <!-- Pack settings -->
   <PropertyGroup>
-    <NuspecFile>Microsoft.AspNetCore.Components.nuspec</NuspecFile>
+    <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.$(DefaultNetCoreTargetFramework).nuspec</NuspecFile>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
-    <NuspecProperty Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
-    <NuspecProperty Include="outputPath=$(OutputPath)" />
-    <NuspecProperty Include="assemblyName=$(AssemblyName)" />
+    <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
+    <NuspecProperty Include="OutputBinary=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).pdb" />
+    <NuspecProperty Include="OutputDocumentation=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).xml" />
   </ItemGroup>
 
 </Project>

@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
+        private bool _disposed;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The id for the component.</param>
         /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
-        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrrentRenderTree.GetFrames();
+        protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
 
         /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </remarks>
         protected Task RenderRootComponentAsync(int componentId)
         {
-            return RenderRootComponentAsync(componentId, ParameterCollection.Empty);
+            return RenderRootComponentAsync(componentId, ParameterView.Empty);
         }
 
         /// <summary>
@@ -120,12 +121,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// this more than once.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        /// <param name="initialParameters">The <see cref="ParameterView"/>with the initial parameters to use for rendering.</param>
         /// <remarks>
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
             {
@@ -206,13 +207,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, UIEventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
         {
-            EnsureSynchronizationContext();
+            Dispatcher.AssertAccess();
 
             if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
             {
-                throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
+                throw new ArgumentException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", nameof(eventHandlerId));
             }
 
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
@@ -243,7 +244,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 // Since the task has yielded - process any queued rendering work before we return control
                 // to the caller.
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
 
             // Task completed synchronously or is still running. We already processed all of the rendering
@@ -334,9 +335,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID of the component to render.</param>
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
-        protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
+        internal void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
-            EnsureSynchronizationContext();
+            Dispatcher.AssertAccess();
 
             var componentState = GetOptionalComponentState(componentId);
             if (componentState == null)
@@ -351,7 +352,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             if (!_isBatchInProgress)
             {
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
         }
 
@@ -373,21 +374,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return eventHandlerId;
         }
 
-        private void EnsureSynchronizationContext()
-        {
-            // Render operations are not thread-safe, so they need to be serialized by the dispatcher.
-            // Plus, any other logic that mutates state accessed during rendering also
-            // needs not to run concurrently with rendering so should be dispatched to
-            // the renderer's sync context.
-            if (!Dispatcher.CheckAccess())
-            {
-                throw new InvalidOperationException(
-                    "The current thread is not associated with the Dispatcher. " +
-                    "Use Invoke() or InvokeAsync() to switch execution to the Dispatcher when " +
-                    "triggering rendering or modifying any state accessed during rendering.");
-            }
-        }
-
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
@@ -398,13 +384,38 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? componentState
                 : null;
 
+        /// <summary>
+        /// Processses pending renders requests from components if there are any.
+        /// </summary>
+        protected virtual void ProcessPendingRender()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
+            }
+
+            ProcessRenderQueue();
+        }
+
         private void ProcessRenderQueue()
         {
+            Dispatcher.AssertAccess();
+
+            if (_isBatchInProgress)
+            {
+                throw new InvalidOperationException("Cannot start a batch when one is already in progress.");
+            }
+
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
             try
             {
+                if (_batchBuilder.ComponentRenderQueue.Count == 0)
+                {
+                    return;
+                }
+
                 // Process render queue until empty
                 while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
@@ -423,6 +434,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // Ensure we catch errors while running the render functions of the components.
                 HandleException(e);
+                return;
             }
             finally
             {
@@ -445,8 +457,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             if (updateDisplayTask.IsCanceled)
             {
-                // The display update was cancelled (maybe due to a timeout on the components server-side case or due
-                // to the renderer being disposed)
+                // The display update was canceled.
+                // This can be due to a timeout on the components server-side case, or the renderer being disposed.
+
+                // The latter case is normal during prerendering, as the render never fully completes (the display never
+                // gets updated, no references get populated and JavaScript interop is not available) and we simply discard
+                // the renderer after producing the prerendered content.
                 return Task.CompletedTask;
             }
             if (updateDisplayTask.IsFaulted)
@@ -562,15 +578,30 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Log.RenderingComponent(_logger, componentState);
             componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
+            List<Exception> exceptions = null;
+
             // Process disposal queue now in case it causes further component renders to be enqueued
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                disposeComponentState.DisposeInBatch(_batchBuilder);
+                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                {
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(exception);
+                }
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
+            }
+
+            if (exceptions?.Count > 1)
+            {
+                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+            }
+            else if (exceptions?.Count == 1)
+            {
+                HandleException(exceptions[0]);
             }
         }
 
@@ -644,7 +675,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             if (componentState != null)
             {
                 RenderTreeUpdater.UpdateToMatchClientState(
-                    componentState.CurrrentRenderTree,
+                    componentState.CurrentRenderTree,
                     eventHandlerId,
                     fieldInfo.FieldValue);
             }
@@ -656,6 +687,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
+            _disposed = true;
+
+            // It's important that we handle all exceptions here before reporting any of them.
+            // This way we can dispose all components before an error handler kicks in.
+            List<Exception> exceptions = null;
             foreach (var componentState in _componentStateById.Values)
             {
                 Log.DisposingComponent(_logger, componentState);
@@ -668,11 +704,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     }
                     catch (Exception exception)
                     {
-                        HandleException(exception);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
                     }
                 }
+            }
 
-                _batchBuilder.Dispose();
+            _componentStateById.Clear(); // So we know they were all disposed
+            _batchBuilder.Dispose();
+
+            if (exceptions?.Count > 1)
+            {
+                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+            }
+            else if (exceptions?.Count == 1)
+            {
+                HandleException(exceptions[0]);
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging.Testing;
@@ -24,9 +25,17 @@ namespace Microsoft.AspNetCore.Mvc
                 new KeyValuePair<string, string>("other", "value") },
         };
 
+        public static object[][] PageRouteValuesTestData { get; } = new object[][]
+        {
+            new object[]{ "{page = \"bar\"}", new KeyValuePair<string, string>("page", "bar") },
+            new object[]{ "{page = \"bar\", other = \"value\"}",
+                new KeyValuePair<string, string>("page", "bar"),
+                new KeyValuePair<string, string>("other", "value") },
+        };
+
         [Theory]
         [MemberData(nameof(RouteValuesTestData))]
-        public void ExecutingAction_WithGivenRouteValues_LogsActionAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        public void ExecutingAction_ForControllerAction_WithGivenRouteValues_LogsActionAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
         {
             // Arrange
             var testSink = new TestSink();
@@ -53,6 +62,64 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(
                 $"Route matched with {expectedRouteValuesLogMessage}. " +
                 "Executing controller action with signature System.String ToString() on controller System.ValueTuple<int, string> (System.Private.CoreLib).",
+                write.State.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(RouteValuesTestData))]
+        public void ExecutingAction_ForAction_WithGivenRouteValues_LogsActionAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var action = new ActionDescriptor
+            {
+                DisplayName = "foobar",
+            };
+
+            foreach (var routeValue in routeValues)
+            {
+                action.RouteValues.Add(routeValue);
+            }
+
+            // Act
+            logger.ExecutingAction(action);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                $"Route matched with {expectedRouteValuesLogMessage}. Executing action {action.DisplayName}",
+                write.State.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(PageRouteValuesTestData))]
+        public void ExecutingAction_ForPage_WithGivenRouteValues_LogsPageAndRouteData(string expectedRouteValuesLogMessage, params KeyValuePair<string, string>[] routeValues)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var action = new ActionDescriptor
+            {
+                DisplayName = "/Pages/Foo",
+            };
+
+            foreach (var routeValue in routeValues)
+            {
+                action.RouteValues.Add(routeValue);
+            }
+
+            // Act
+            logger.ExecutingAction(action);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                $"Route matched with {expectedRouteValuesLogMessage}. Executing page {action.DisplayName}",
                 write.State.ToString());
         }
 

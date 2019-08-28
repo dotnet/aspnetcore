@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 return Task.CompletedTask;
             }

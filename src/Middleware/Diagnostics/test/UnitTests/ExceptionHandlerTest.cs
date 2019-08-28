@@ -116,8 +116,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                     // add response buffering
                     app.Use(async (httpContext, next) =>
                     {
-                        httpContext.Features.Set<IHttpResponseStartFeature>(null);
-
                         var response = httpContext.Response;
                         var originalResponseBody = response.Body;
                         var bufferingStream = new MemoryStream();

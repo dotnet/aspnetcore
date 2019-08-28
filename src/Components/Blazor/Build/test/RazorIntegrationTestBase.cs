@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         protected private RenderTreeFrame[] GetRenderTree(TestRenderer renderer, IComponent component)
         {
             renderer.AttachComponent(component);
-            var task = renderer.Dispatcher.InvokeAsync(() => component.SetParametersAsync(ParameterCollection.Empty));
+            var task = renderer.Dispatcher.InvokeAsync(() => component.SetParametersAsync(ParameterView.Empty));
             // we will have to change this method if we add a test that does actual async work.
             Assert.True(task.Status.HasFlag(TaskStatus.RanToCompletion) || task.Status.HasFlag(TaskStatus.Faulted));
             if (task.IsFaulted)
@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected ArrayRange<RenderTreeFrame> GetFrames(RenderFragment fragment)
         {
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             fragment(builder);
             return builder.GetFrames();
         }

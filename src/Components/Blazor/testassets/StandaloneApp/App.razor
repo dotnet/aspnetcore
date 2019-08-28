@@ -1,5 +1,11 @@
-﻿<!--
-    Configuring this stuff here is temporary. Later we'll move the app config
-    into Program.cs, and it won't be necessary to specify AppAssembly.
--->
-<Router AppAssembly=typeof(StandaloneApp.Program).Assembly />
+<Router AppAssembly=typeof(StandaloneApp.Program).Assembly>
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <h2>Not found</h2>
+            Sorry, there's nothing at this address.
+        </LayoutView>
+    </NotFound>
+</Router>

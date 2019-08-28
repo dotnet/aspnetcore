@@ -582,6 +582,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(requestFeature);
             features.Set<IHttpResponseFeature>(responseFeature);
+            features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
             features.Set<IHttpConnectionFeature>(connectionFeature);
 
             // REVIEW: We could strategically look at adding other features but it might be better

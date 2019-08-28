@@ -83,7 +83,10 @@ internal class StartupHook
                 new PhysicalFileProvider(contentRoot),
                 sourceCodeLineCount: 6);
 
+            // The startup hook is only present when detailed errors are allowed, so
+            // we can turn on all the details.
             model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
+            model.ShowRuntimeDetails = true;
 
             var errorPage = new ErrorPage(model);
 

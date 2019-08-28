@@ -369,9 +369,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void UsingUriHelperWithoutRouterWorks()
+        public void UsingNavigationManagerWithoutRouterWorks()
         {
-            var app = MountTestComponent<UriHelperComponent>();
+            var app = MountTestComponent<NavigationManagerComponent>();
             var initialUrl = Browser.Url;
 
             Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void UriHelperCanReadAbsoluteUriIncludingHash()
         {
-            var app = MountTestComponent<UriHelperComponent>();
+            var app = MountTestComponent<NavigationManagerComponent>();
             Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
 
             var uri = "/mytestpath?my=query&another#some/hash?tokens";
@@ -416,6 +416,40 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = MountTestComponent<TestRouter>();
             Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void ResetsScrollPositionWhenPerformingInternalNavigation_LinkClick()
+        {
+            SetUrlViaPushState("/LongPage1");
+            var app = MountTestComponent<TestRouter>();
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            BrowserScrollY = 500;
+            Browser.True(() => BrowserScrollY > 300); // Exact position doesn't matter
+
+            app.FindElement(By.LinkText("Long page 2")).Click();
+            Browser.Equal("This is another long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            Browser.Equal(0, () => BrowserScrollY);
+        }
+
+        [Fact]
+        public void ResetsScrollPositionWhenPerformingInternalNavigation_ProgrammaticNavigation()
+        {
+            SetUrlViaPushState("/LongPage1");
+            var app = MountTestComponent<TestRouter>();
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            BrowserScrollY = 500;
+            Browser.True(() => BrowserScrollY > 300); // Exact position doesn't matter
+
+            app.FindElement(By.Id("go-to-longpage2")).Click();
+            Browser.Equal("This is another long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            Browser.Equal(0, () => BrowserScrollY);
+        }
+
+        private long BrowserScrollY
+        {
+            get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
+            set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
         }
 
         private string SetUrlViaPushState(string relativeUri)

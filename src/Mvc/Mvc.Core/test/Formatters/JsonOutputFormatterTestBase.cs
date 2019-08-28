@@ -76,6 +76,71 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
+        [Theory]
+        [MemberData(nameof(WriteCorrectCharacterEncoding))]
+        public async Task WriteToStreamAsync_UsesCorrectCharacterEncoding(
+           string content,
+           string encodingAsString,
+           bool isDefaultEncoding)
+        {
+            // Arrange
+            var formatter = GetOutputFormatter();
+            var expectedContent = "\"" + content + "\"";
+            var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
+            var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
+
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                content)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding(encodingAsString));
+
+            // Assert
+            var actualContent = encoding.GetString(body.ToArray());
+            Assert.Equal(expectedContent, actualContent, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task WriteResponseBodyAsync_Encodes()
+        {
+            // Arrange
+            var formatter = GetOutputFormatter();
+            var expectedContent = "{\"key\":\"Hello \\n <b>Wörld</b>\"}";
+            var content = new { key = "Hello \n <b>Wörld</b>" };
+
+            var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+            var body = new MemoryStream();
+            var actionContext = GetActionContext(mediaType, body);
+
+            var outputFormatterContext = new OutputFormatterWriteContext(
+                actionContext.HttpContext,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                content)
+            {
+                ContentType = new StringSegment(mediaType.ToString()),
+            };
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+            // Assert
+            var actualContent = encoding.GetString(body.ToArray());
+            Assert.Equal(expectedContent, actualContent);
+        }
+
         [Fact]
         public async Task ErrorDuringSerialization_DoesNotCloseTheBrackets()
         {

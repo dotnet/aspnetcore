@@ -265,13 +265,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(IPostConfigureOptions<ApiBehaviorOptions>),
-                        new Type[]
-                        {
-                            typeof(ApiBehaviorOptionsSetup),
-                        }
-                    },
-                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {

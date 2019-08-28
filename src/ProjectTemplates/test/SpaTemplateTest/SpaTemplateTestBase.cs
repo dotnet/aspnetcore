@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace Templates.Test.SpaTemplateTest
         {
             Project = await ProjectFactory.GetOrCreateProject(key, Output);
 
-            var createResult = await Project.RunDotNetNewAsync(template, auth: usesAuth ? "Individual" : null, language: null, useLocalDb);
+            using var createResult = await Project.RunDotNetNewAsync(template, auth: usesAuth ? "Individual" : null, language: null, useLocalDb);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             // We shouldn't have to do the NPM restore in tests because it should happen
@@ -60,40 +61,40 @@ namespace Templates.Test.SpaTemplateTest
                 Assert.Contains(".db", projectFileContents);
             }
 
-            var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
+            using var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
             Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
 
-            var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
+            using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
             if (template == "react" || template == "reactredux")
             {
-                var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
+                using var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
                 Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
             }
 
-            var publishResult = await Project.RunDotNetPublishAsync();
+            using var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreapp5.0/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync();
+            using var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
             // localdb is not installed on the CI machines, so skip it.
-            var shouldVisitFetchData = !useLocalDb;
+            var shouldVisitFetchData = !(useLocalDb && Project.IsCIEnvironment);
 
             if (usesAuth)
             {
-                var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
+                using var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
                 Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
                 Project.AssertEmptyMigration(template);
 
                 if (shouldVisitFetchData)
                 {
-                    var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
+                    using var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
                     Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", Project, dbUpdateResult));
                 }
             }
@@ -175,6 +176,9 @@ namespace Templates.Test.SpaTemplateTest
                 catch (OperationCanceledException)
                 {
                 }
+                catch (HttpRequestException ex) when (ex.Message.StartsWith("The SSL connection could not be established"))
+                {
+                }
                 await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
             } while (attempt < maxAttempts);
         }
@@ -243,7 +247,7 @@ namespace Templates.Test.SpaTemplateTest
                 browser.Equal("Weather forecast", () => browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                browser.Exists(By.CssSelector("table>tbody>tr"));
+                browser.Exists(By.CssSelector("table>tbody>tr"), TimeSpan.FromSeconds(10));
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
 

@@ -10,33 +10,19 @@ jest.mock('../src/Rendering/Renderer', () => ({
 
 describe('RenderQueue', () => {
 
-  it('getOrCreateRenderQueue returns a new queue if one does not exist for a renderer', () => {
-    const queue = RenderQueue.getOrCreateQueue(1, NullLogger.instance);
-
-    expect(queue).toBeDefined();
-
-  });
-
-  it('getOrCreateRenderQueue returns an existing queue if one exists for a renderer', () => {
-    const queue = RenderQueue.getOrCreateQueue(2, NullLogger.instance);
-    const secondQueue = RenderQueue.getOrCreateQueue(2, NullLogger.instance);
-
-    expect(secondQueue).toBe(queue);
-
-  });
-
-  it('processBatch does not render previous batches', () => {
-    const queue = RenderQueue.getOrCreateQueue(3, NullLogger.instance);
+  it('processBatch acknowledges previously rendered batches', () => {
+    const queue = new RenderQueue(0, NullLogger.instance);
 
     const sendMock = jest.fn();
     const connection = { send: sendMock } as any as signalR.HubConnection;
-    queue.processBatch(1, new Uint8Array(0), connection);
+    queue.processBatch(2, new Uint8Array(0), connection);
 
-    expect(sendMock.mock.calls.length).toEqual(0);
+    expect(sendMock.mock.calls.length).toEqual(1);
+    expect(queue.getLastBatchid()).toEqual(2);
   });
 
   it('processBatch does not render out of order batches', () => {
-    const queue = RenderQueue.getOrCreateQueue(4, NullLogger.instance);
+    const queue = new RenderQueue(0, NullLogger.instance);
 
     const sendMock = jest.fn();
     const connection = { send: sendMock } as any as signalR.HubConnection;
@@ -46,7 +32,7 @@ describe('RenderQueue', () => {
   });
 
   it('processBatch renders pending batches', () => {
-    const queue = RenderQueue.getOrCreateQueue(5, NullLogger.instance);
+    const queue = new RenderQueue(0, NullLogger.instance);
 
     const sendMock = jest.fn();
     const connection = { send: sendMock } as any as signalR.HubConnection;

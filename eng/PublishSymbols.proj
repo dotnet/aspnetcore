@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk" DefaultTargets="RunPublishSymbols">
   <PropertyGroup>
     <!-- TFM doesn't matter. These settings are required to make NuGet happy so we can restore required MSBuild packages. -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <ManifestsPath>artifacts\manifests\</ManifestsPath>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>

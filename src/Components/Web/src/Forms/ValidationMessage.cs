@@ -4,34 +4,34 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// Displays a list of validation messages for a specified field within a cascaded <see cref="EditContext"/>.
     /// </summary>
-    public class ValidationMessage<T> : ComponentBase, IDisposable
+    public class ValidationMessage<TValue> : ComponentBase, IDisposable
     {
         private EditContext _previousEditContext;
-        private Expression<Func<T>> _previousFieldAccessor;
+        private Expression<Func<TValue>> _previousFieldAccessor;
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private FieldIdentifier _fieldIdentifier;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created <c>div</c> element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
 
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 
         /// <summary>
         /// Specifies the field for which validation messages should be displayed.
         /// </summary>
-        [Parameter] public Expression<Func<T>> For { get; private set; }
+        [Parameter] public Expression<Func<TValue>> For { get; set; }
 
         /// <summary>`
-        /// Constructs an instance of <see cref="ValidationMessage{T}"/>.
+        /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
         /// </summary>
         public ValidationMessage()
         {
@@ -85,9 +85,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             StateHasChanged();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         void IDisposable.Dispose()
         {
             DetachValidationStateChangedListener();
+            Dispose(disposing: true);
         }
 
         private void DetachValidationStateChangedListener()

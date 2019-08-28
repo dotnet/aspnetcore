@@ -13,7 +13,7 @@ stages:
   - job:
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
@@ -41,13 +41,12 @@ stages:
     dependsOn: setupMaestroVars
     variables:
       - group: DotNet-Blob-Feed
-      - group: Publish-Build-Assets
       - group: AzureDevOps-Artifact-Feeds-Pats
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -77,7 +76,7 @@ stages:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
             /p:ChannelId=$(PublicDevRelease_30_Channel_Id)
-            /p:ArtifactsCategory=.NetCore
+            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -87,8 +86,8 @@ stages:
             /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
             /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='https://maestro-prod.westus2.cloudapp.azure.com'
-            /p:BuildAssetRegistryToken='$(MaestroAccessToken)' 
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
@@ -124,7 +123,7 @@ stages:
     - job:
       displayName: Symbol Availability
       dependsOn: setupMaestroVars
-      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
       pool:
         vmImage: 'windows-2019'
       steps:
@@ -140,27 +139,9 @@ stages:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/symbols-validation.ps1
             arguments: -InputPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ -ExtractPath $(Agent.BuildDirectory)/Temp/ -DotnetSymbolVersion $(SymbolToolVersion)
 
-  - job:
-    displayName: Gather Drop
-    dependsOn: setupMaestroVars
-    variables:
-      BARBuildId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - task: PowerShell@2
-        displayName: Setup Darc CLI
-        inputs:
-          targetType: filePath
-          filePath: '$(Build.SourcesDirectory)/eng/common/darc-init.ps1'
-
-      - task: PowerShell@2
-        displayName: Run Darc gather-drop
-        inputs:
-          targetType: inline
-          script: |
-            darc gather-drop --non-shipping --continue-on-error --id $(BARBuildId) --output-dir $(Agent.BuildDirectory)/Temp/Drop/ --bar-uri https://maestro-prod.westus2.cloudapp.azure.com/ --password $(MaestroAccessToken) --latest-location
+  - template: ../darc-gather-drop.yml
+    parameters:
+      ChannelId: ${{ variables.PublicDevRelease_30_Channel_Id }}
 
   - template: ../promote-build.yml	
     parameters:	
