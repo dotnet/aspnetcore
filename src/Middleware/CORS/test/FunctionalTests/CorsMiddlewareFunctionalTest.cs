@@ -85,7 +85,7 @@ namespace FunctionalTests
 
             var originParameters = new DeploymentParameters
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestOrigin"),
@@ -103,7 +103,7 @@ namespace FunctionalTests
             var port = originDeployment.HttpClient.BaseAddress.Port;
             var destinationParameters = new DeploymentParameters
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestDestination"),

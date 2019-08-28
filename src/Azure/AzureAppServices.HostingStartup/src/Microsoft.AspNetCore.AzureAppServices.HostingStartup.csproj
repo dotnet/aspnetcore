@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core lightup integration with Azure AppServices.</Description>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;azure;appservices</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>

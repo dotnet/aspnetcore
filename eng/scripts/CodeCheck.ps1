@@ -177,7 +177,6 @@ try {
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
             if ($file -eq $changedFilesExclusion) {continue}
-
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
             & git --no-pager diff --ignore-space-at-eol $filePath

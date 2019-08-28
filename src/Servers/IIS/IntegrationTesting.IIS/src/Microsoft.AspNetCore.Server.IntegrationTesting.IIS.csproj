@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
     <Description>Provides support for integration testing using IIS based servers.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
