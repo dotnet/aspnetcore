@@ -313,14 +313,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>a6c1d1ac235aba5bf17dd06228a62509192cda6a</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-rc1.19420.10" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>d341fd37dcb2c22e382adccdc06770cf8f160577</Sha>
-    </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="5.0.0-alpha1.19381.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>a6c1d1ac235aba5bf17dd06228a62509192cda6a</Sha>
-    </Dependency>
     <Dependency Name="System.Drawing.Common" Version="5.0.0-alpha1.19381.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>a6c1d1ac235aba5bf17dd06228a62509192cda6a</Sha>
