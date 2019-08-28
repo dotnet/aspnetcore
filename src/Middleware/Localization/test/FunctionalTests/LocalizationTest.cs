@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net;
@@ -14,6 +14,15 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class LocalizationTest
     {
+        [Fact]
+        public Task Localization_ContentLanguageHeader()
+        {
+            return RunTest(
+                typeof(StartupContentLanguageHeader),
+                "ar-YE",
+                "True ar-YE");
+        }
+
         [Fact]
         public Task Localization_CustomCulture()
         {

@@ -617,4 +617,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2TellClientToCalmDown" xml:space="preserve">
     <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
+  <data name="HttpParserTlsOverHttpError" xml:space="preserve">
+    <value>Detected a TLS handshake to an endpoint that does not have TLS enabled.</value>
+  </data>
 </root>
