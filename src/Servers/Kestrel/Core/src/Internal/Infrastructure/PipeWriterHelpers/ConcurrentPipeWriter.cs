@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             else
             {
-                // We can't use the recommened pool so use the ArrayPool
+                // We can't use the recommended pool so use the ArrayPool
                 newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
             }
 
