@@ -1962,21 +1962,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public void HttpForbidden_SetsStatusCodeAndResponseContent()
-        {
-            // Arrange
-            var controller = new TestableController();
-
-            // Act
-            var result = controller.Forbidden("Test Content");
-
-            // Assert
-            Assert.IsType<ForbiddenObjectResult>(result);
-            Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
-            Assert.Equal("Test Content", result.Value);
-        }
-
-        [Fact]
         public void Ok_SetsStatusCode()
         {
             // Arrange
