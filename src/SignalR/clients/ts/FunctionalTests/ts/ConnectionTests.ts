@@ -45,7 +45,7 @@ describe("connection", () => {
 
     eachTransport((transportType) => {
         eachHttpClient((httpClient) => {
-            describe(`over ${HttpTransportType[transportType]}`, () => {
+            describe(`over ${HttpTransportType[transportType]} with ${(httpClient.constructor as any).name}`, () => {
                 it("can send and receive messages", (done) => {
                     const message = "Hello World!";
                     // the url should be resolved relative to the document.location.host

@@ -14,113 +14,104 @@ export class FetchHttpClient extends HttpClient {
     }
 
     /** @inheritDoc */
-    public send(request: HttpRequest): Promise<HttpResponse> {
+    public async send(request: HttpRequest): Promise<HttpResponse> {
         // Check that abort was not signaled before calling send
         if (request.abortSignal && request.abortSignal.aborted) {
-            return Promise.reject(new AbortError());
+            throw new AbortError();
         }
 
         if (!request.method) {
-            return Promise.reject(new Error("No method defined."));
+            throw new Error("No method defined.");
         }
         if (!request.url) {
-            return Promise.reject(new Error("No url defined."));
+            throw new Error("No url defined.");
         }
 
-        return new Promise<HttpResponse>((resolve, reject) => {
-            const abortController = new AbortController();
+        const abortController = new AbortController();
 
-            const fetchRequest = new Request(request.url!, {
+        let error: any;
+        // Hook our abortSignal into the abort controller
+        if (request.abortSignal) {
+            request.abortSignal.onabort = () => {
+                abortController.abort();
+                error = new AbortError();
+            };
+        }
+
+        // If a timeout has been passed in, setup a timeout to call abort
+        // Type needs to be any to fit window.setTimeout and NodeJS.setTimeout
+        let timeoutId: any = null;
+        if (request.timeout) {
+            const msTimeout = request.timeout!;
+            timeoutId = setTimeout(() => {
+                abortController.abort();
+                this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
+                error = new TimeoutError();
+            }, msTimeout);
+        }
+
+        let response: Response;
+        try {
+            response = await fetch(request.url!, {
                 body: request.content!,
                 cache: "no-cache",
                 credentials: "include",
                 headers: {
                     "Content-Type": "text/plain;charset=UTF-8",
-                    "X-Requested-With": "Fetch",
+                    "X-Requested-With": "XMLHttpRequest",
                     ...request.headers,
                 },
                 method: request.method!,
                 mode: "cors",
+                redirect: "manual",
                 signal: abortController.signal,
             });
-
-            // Hook our abourtSignal into the abort controller
+        } catch (e) {
+            if (error) {
+                throw error;
+            }
+            this.logger.log(
+                LogLevel.Warning,
+                `Error from HTTP request. ${e}.`,
+            );
+            throw e;
+        } finally {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
             if (request.abortSignal) {
-                request.abortSignal.onabort = () => {
-                    abortController.abort();
-                    reject(new AbortError());
-                };
+                request.abortSignal.onabort = null;
             }
+        }
 
-            // If a timeout has been passed in setup a timeout to call abort
-            // Type needs to be any to fit window.setTimeout and NodeJS.setTimeout
-            let timeoutId: any = null;
-            if (request.timeout) {
-                const msTimeout = request.timeout!;
-                timeoutId = setTimeout(() => {
-                    abortController.abort();
-                    reject(new TimeoutError());
-                }, msTimeout);
-            }
+        if (!response.ok) {
+            throw new HttpError(response.statusText, response.status);
+        }
 
-            fetch(fetchRequest)
-                .then((response: Response) => {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId);
-                    }
-                    if (!response.ok) {
-                        throw new Error(`${response.status}: ${response.statusText}.`);
-                    } else {
-                        return response;
-                    }
-                })
-                .then((response: Response) => {
-                    if (request.abortSignal) {
-                        request.abortSignal.onabort = null;
-                    }
+        const content = deserializeContent(response, request.responseType);
+        const payload = await content;
 
-                    const content = deserializeContent(response, request.responseType);
-
-                    content.then((payload) => {
-                        resolve(new HttpResponse(
-                            response.status,
-                            response.statusText,
-                            payload,
-                        ));
-                    }).catch(() => {
-                        reject(new HttpError(response.statusText, response.status));
-                    });
-                })
-                .catch((error) => {
-                    this.logger.log(
-                        LogLevel.Warning,
-                        `Error from HTTP request. ${error.message}.`,
-                    );
-                    const [statusText, status] = error.message.split(":");
-                    reject(new HttpError(statusText, status));
-                });
-        });
+        return new HttpResponse(
+            response.status,
+            response.statusText,
+            payload,
+        );
     }
 }
 
-function deserializeContent(response: Response, responseType?: XMLHttpRequestResponseType): Promise<any> {
+function deserializeContent(response: Response, responseType?: XMLHttpRequestResponseType): Promise<string | ArrayBuffer> {
     let content;
     switch (responseType) {
         case "arraybuffer":
             content = response.arrayBuffer();
             break;
-        case "blob":
-            content = response.blob();
-            break;
-        case "document":
-            content = response.json();
-            break;
-        case "json":
-            content = response.json();
-            break;
         case "text":
             content = response.text();
             break;
+        case "blob":
+        case "document":
+        case "json":
+            throw new Error(`${responseType} is not supported.`);
         default:
             content = response.text();
             break;
