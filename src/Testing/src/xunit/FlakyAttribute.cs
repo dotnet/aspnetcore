@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
     /// to <c>xunit.console.exe</c>. Similarly, it can run only flaky tests using <c>-trait "Flaky:AzP:OS:all=true" -trait "Flaky:AzP:OS:Darwin=true"</c>
     /// </para>
     /// </example>
-    [TraitDiscoverer("Microsoft.AspNetCore.Testing.xunit.FlakyTestDiscoverer", "Microsoft.AspNetCore.Testing")]
+    [TraitDiscoverer("Microsoft.AspNetCore.Testing." + nameof(FlakyTestDiscoverer), "Microsoft.AspNetCore.Testing")]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
     public sealed class FlakyAttribute : Attribute, ITraitAttribute
     {
@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="additionalFilters">A list of additional filters that define where this test is flaky. Use values in <see cref="FlakyOn"/>.</param>
         public FlakyAttribute(string gitHubIssueUrl, string firstFilter, params string[] additionalFilters)
         {
-            if(string.IsNullOrEmpty(gitHubIssueUrl))
+            if (string.IsNullOrEmpty(gitHubIssueUrl))
             {
                 throw new ArgumentNullException(nameof(gitHubIssueUrl));
             }
 
-            if(string.IsNullOrEmpty(firstFilter))
+            if (string.IsNullOrEmpty(firstFilter))
             {
                 throw new ArgumentNullException(nameof(firstFilter));
             }

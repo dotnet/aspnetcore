@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
+// Do not change this namespace without changing the usage in FlakyAttribute
 namespace Microsoft.AspNetCore.Testing
 {
     public class FlakyTestDiscoverer : ITraitDiscoverer
