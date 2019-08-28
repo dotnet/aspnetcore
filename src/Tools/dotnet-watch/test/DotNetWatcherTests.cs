@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Testing;

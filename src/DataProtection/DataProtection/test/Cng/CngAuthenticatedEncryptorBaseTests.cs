@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
