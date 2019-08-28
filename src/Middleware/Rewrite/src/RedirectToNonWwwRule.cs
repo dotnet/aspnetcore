@@ -9,17 +9,17 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
-    internal class RedirectToDomainRule : IRule
+    internal class RedirectToNonWwwRule : IRule
     {
         public readonly int _statusCode;
         public readonly string[] _domains;
 
-        public RedirectToDomainRule(int statusCode)
+        public RedirectToNonWwwRule(int statusCode)
         {
             _statusCode = statusCode;
         }
 
-        public RedirectToDomainRule(int statusCode, params string[] domains)
+        public RedirectToNonWwwRule(int statusCode, params string[] domains)
         {
             if (domains == null)
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             if (domains.Length < 1)
             {
-                throw new ArgumentException(nameof(domains));
+                throw new ArgumentException("Atleast provide one value.", nameof(domains));
             }
 
             foreach(var domain in domains)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Rewrite
             response.StatusCode = _statusCode;
             response.Headers[HeaderNames.Location] = newUrl;
             context.Result = RuleResult.EndResponse;
-            context.Logger.RedirectedToWww();
+            context.Logger.RedirectedToNonWww();
         }
     }
 }

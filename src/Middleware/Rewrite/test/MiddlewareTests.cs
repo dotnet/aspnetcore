@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData("https://localhost:8081/example?q=1")]
         public async Task CheckNoRedirectToDomain(string requestUri)
         {
-            var options = new RewriteOptions().AddRedirectToDomain();
+            var options = new RewriteOptions().AddRedirectToNonWww();
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -397,9 +397,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData("http://www.example.com:8081")]
         [InlineData("https://www.example.com:8081")]
         [InlineData("https://www.example.com:8081/example?q=1")]
-        public async Task CheckNoRedirectToDomainInNonWhitelistedWwwSubdomain(string requestUri)
+        public async Task CheckNoRedirectToNonWwwInNonWhitelistedWwwSubdomain(string requestUri)
         {
-            var options = new RewriteOptions().AddRedirectToDomain("www.example2.com");
+            var options = new RewriteOptions().AddRedirectToNonWww("www.example2.com");
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -417,9 +417,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData("https://www.example.com/", "https://example.com/")]
         [InlineData("http://www.example.com:8081", "http://example.com:8081/")]
         [InlineData("http://www.example.com:8081/example?q=1", "http://example.com:8081/example?q=1")]
-        public async Task CheckRedirectToDomainInWhitelistedWwwSubdomain(string requestUri, string redirectUri)
+        public async Task CheckRedirectToNonWwwInWhitelistedWwwSubdomain(string requestUri, string redirectUri)
         {
-            var options = new RewriteOptions().AddRedirectToDomain("www.example.com");
+            var options = new RewriteOptions().AddRedirectToNonWww("www.example.com");
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -434,9 +434,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         }
 
         [Fact]
-        public async Task CheckPermanentRedirectToDomainInWhitelistedWwwSubDomains()
+        public async Task CheckPermanentRedirectToNonWwwInWhitelistedWwwSubDomains()
         {
-            var options = new RewriteOptions().AddRedirectToDomainPermanent("www.example.com");
+            var options = new RewriteOptions().AddRedirectToNonWwwPermanent("www.example.com");
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -455,9 +455,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [InlineData(StatusCodes.Status302Found)]
         [InlineData(StatusCodes.Status307TemporaryRedirect)]
         [InlineData(StatusCodes.Status308PermanentRedirect)]
-        public async Task CheckRedirectToDomainWithStatusCodeInWhitelistedWwwSubDomain(int statusCode)
+        public async Task CheckRedirectToNonWwwWithStatusCodeInWhitelistedWwwSubDomain(int statusCode)
         {
-            var options = new RewriteOptions().AddRedirectToDomain(statusCode: statusCode, "www.example.com");
+            var options = new RewriteOptions().AddRedirectToNonWww(statusCode: statusCode, "www.example.com");
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
