@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
+    [TestCaseOrderer("Microsoft.AspNetCore.Testing.AlphabeticalOrderer", "Microsoft.AspNetCore.Testing.Tests")]
     public class ConditionalFactTest : IClassFixture<ConditionalFactTest.ConditionalFactAsserter>
     {
         public ConditionalFactTest(ConditionalFactAsserter collector)
@@ -47,13 +47,19 @@ namespace Microsoft.AspNetCore.Testing
 #error Target frameworks need to be updated.
 #endif
 
+        // Test is named this way to be the lowest test in the alphabet, it relies on test ordering
+        [Fact]
+        public void ZzzzzzzEnsureThisIsTheLastTest()
+        {
+            Assert.True(Asserter.TestRan);
+        }
+
         public class ConditionalFactAsserter : IDisposable
         {
             public bool TestRan { get; set; }
 
             public void Dispose()
             {
-                Assert.True(TestRan, "If this assertion fails, a conditional fact wasn't discovered.");
             }
         }
     }

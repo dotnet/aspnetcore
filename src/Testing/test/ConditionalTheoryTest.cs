@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
+    [TestCaseOrderer("Microsoft.AspNetCore.Testing.AlphabeticalOrderer", "Microsoft.AspNetCore.Testing.Tests")]
     public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.ConditionalTheoryAsserter>
     {
         public ConditionalTheoryTest(ConditionalTheoryAsserter asserter)
@@ -101,6 +101,13 @@ namespace Microsoft.AspNetCore.Testing
 #error Target frameworks need to be updated.
 #endif
 
+        // Test is named this way to be the lowest test in the alphabet, it relies on test ordering
+        [Fact]
+        public void ZzzzzzzEnsureThisIsTheLastTest()
+        {
+            Assert.True(Asserter.TestRan);
+        }
+
         public static TheoryData<Func<int, int>> GetActionTestData
             => new TheoryData<Func<int, int>>
             {
@@ -113,7 +120,6 @@ namespace Microsoft.AspNetCore.Testing
 
             public void Dispose()
             {
-                Assert.True(TestRan, "If this assertion fails, a conditional theory wasn't discovered.");
             }
         }
 
