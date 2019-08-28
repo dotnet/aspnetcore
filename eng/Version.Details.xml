@@ -13,21 +13,21 @@
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>7eeab316fa122b69a9bd777c93dcc78bc6a68905</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-alpha1.19426.2">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-alpha1.19428.3">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e60ad5d5d050ab5ee87f4cf1fb9ae440db87777d</Sha>
+      <Sha>64d85fe81e8f5ea374e7783318bd094604fa7ae9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-alpha1.19426.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-alpha1.19428.3">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e60ad5d5d050ab5ee87f4cf1fb9ae440db87777d</Sha>
+      <Sha>64d85fe81e8f5ea374e7783318bd094604fa7ae9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-alpha1.19426.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-alpha1.19428.3">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e60ad5d5d050ab5ee87f4cf1fb9ae440db87777d</Sha>
+      <Sha>64d85fe81e8f5ea374e7783318bd094604fa7ae9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-alpha1.19426.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-alpha1.19428.3">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e60ad5d5d050ab5ee87f4cf1fb9ae440db87777d</Sha>
+      <Sha>64d85fe81e8f5ea374e7783318bd094604fa7ae9</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="5.0.0-alpha1.19407.3">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
@@ -292,7 +292,7 @@
     <Dependency Name="Mono.WebAssembly.Interop" Version="5.0.0-alpha1.19406.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>dbe3543601c1ab290fde1ae30ea8dd978d33d4d3</Sha>
->>>>>>> origin/master
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/master
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0-alpha1.19381.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
