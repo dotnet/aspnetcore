@@ -7,11 +7,11 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
+    <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
-    <PreReleaseVersionLabel>rc$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>Release Candidate $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
+    <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
+    <PreReleaseVersionLabel>alpha$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel>Alpha $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <!-- Blazor Client packages will not RTM with 3.0 -->
     <BlazorClientPreReleasePreviewNumber>9</BlazorClientPreReleasePreviewNumber>
     <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
