@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             var nswagJsonFile = "openapi.json";
             var project = _tempDir
                 .WithCSharpProject("testproj", sdk: "Microsoft.NET.Sdk.Web")
-                .WithTargetFrameworks("netcoreapp3.0");
+                .WithTargetFrameworks("netcoreapp5.0");
             var tmp = project.Dir();
 
             if (withOpenApi)
