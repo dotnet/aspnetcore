@@ -12,21 +12,17 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ComponentHubReliabilityTest : IgnitorTest<AspNetSiteServerFixture>
+    public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
-        public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+        public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
-        }
-
-        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
-        {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
         [Fact]

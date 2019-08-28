@@ -1,19 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class EventBubblingTest : BasicTestAppTestBase
+    public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         // Note that currently we only support custom events if they have bubble:true.
         // That's because the event delegator doesn't know which custom events bubble and which don't,
@@ -32,8 +31,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-            MountTestComponent<EventBubblingComponent>();
-            WaitUntilExists(By.Id("event-bubbling"));
+            Browser.MountTestComponent<EventBubblingComponent>();
+            Browser.Exists(By.Id("event-bubbling"));
         }
 
         [Fact]
