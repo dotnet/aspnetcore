@@ -74,7 +74,7 @@ namespace FunctionalTests
         {
             // https://github.com/aspnet/AspNetCore/issues/7990
 #pragma warning disable 0618
-            var testPath = SkipOnHelixAttribute.OnHelix() ? AppContext.BaseDirectory : Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Middleware"), "test", "testassets")
+            var testPath = SkipOnHelixAttribute.OnHelix() ? AppContext.BaseDirectory : Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Middleware"), "test", "testassets");
 #pragma warning restore 0618
 
             var configuration =
