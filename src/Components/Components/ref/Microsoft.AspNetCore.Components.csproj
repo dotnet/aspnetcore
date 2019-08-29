@@ -10,7 +10,7 @@
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources"  />
     <Reference Include="System.Buffers"  />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
+<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
     <Compile Include="Microsoft.AspNetCore.Components.netcoreapp.cs" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />

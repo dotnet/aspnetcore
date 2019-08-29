@@ -64,7 +64,6 @@
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19425.4</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-alpha1.19425.4</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19425.4</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19264.9</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha1.19425.4</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-alpha1.19425.4</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.0-alpha1.19425.4</SystemIOPipelinesPackageVersion>
