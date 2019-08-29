@@ -74,7 +74,7 @@ namespace FunctionalTests
         {
             // https://github.com/aspnet/AspNetCore/issues/7990
 #pragma warning disable 0618
-            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
+            var testPath = SkipOnHelixAttribute.OnHelix() ? AppContext.BaseDirectory : Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Middleware"), "test", "testassets")
 #pragma warning restore 0618
 
             var configuration =
@@ -89,7 +89,7 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestOrigin"),
+                ApplicationPath = Path.Combine(testPath, "TestOrigin"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
@@ -107,7 +107,7 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp5.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestDestination"),
+                ApplicationPath = Path.Combine(testPath, "TestDestination"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
