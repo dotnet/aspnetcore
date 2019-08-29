@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
-        public async Task CheckAsync_CustomTest_Degraded()
+        public async Task CheckAsync_CustomTestWithDegradedFailureStatusSpecified_Degraded()
         {
             // Arrange
             var services = CreateServices(async (c, ct) =>
@@ -78,12 +78,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
 
                 // Assert
-                Assert.Equal(HealthStatus.Unhealthy, result.Status);
+                Assert.Equal(HealthStatus.Degraded, result.Status);
             }
         }
 
         [Fact]
-        public async Task CheckAsync_CustomTest_Unhealthy()
+        public async Task CheckAsync_CustomTestWithUnhealthyFailureStatusSpecified_Unhealthy()
         {
             // Arrange
             var services = CreateServices(async (c, ct) =>
@@ -104,12 +104,34 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
         }
 
+        [Fact]
+        public async Task CheckAsync_CustomTestWithNoFailureStatusSpecified_Unhealthy()
+        {
+            // Arrange
+            var services = CreateServices(async (c, ct) =>
+            {
+                return 0 < await c.Blogs.CountAsync();
+            }, failureStatus: null);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+                var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+
+                // Act
+                var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+
+                // Assert
+                Assert.Equal(HealthStatus.Unhealthy, result.Status);
+            }
+        }
+
         // used to ensure each test uses a unique in-memory database
         private static int _testDbCounter;
 
         private static IServiceProvider CreateServices(
             Func<TestDbContext, CancellationToken, Task<bool>> testQuery = null,
-            HealthStatus failureStatus = HealthStatus.Unhealthy)
+            HealthStatus? failureStatus = HealthStatus.Unhealthy)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddDbContext<TestDbContext>(o => o.UseInMemoryDatabase("Test" + Interlocked.Increment(ref _testDbCounter)));
