@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class RedirectResult : ActionResult, IKeepTempDataResult
     {
         private string _url;
+        private int? _statusCode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
@@ -68,6 +69,34 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
+        /// provided.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <param name="statusCode">Status code. Only supports redirect status code.</param>
+        public RedirectResult(string url, int statusCode)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
+            }
+
+            //Check status code should be with-in redirection status code.
+            if(301 > statusCode || statusCode > 308)
+            {
+                throw new ArgumentOutOfRangeException("Status code is not suiteable for Redirection. Provide 3xx redirection code", nameof(statusCode));
+            }
+
+            this.Url = url;
+            this._statusCode = statusCode;
+        }
+
+        /// <summary>
         /// Gets or sets the value that specifies that the redirect should be permanent if true or temporary if false.
         /// </summary>
         public bool Permanent { get; set; }
@@ -92,6 +121,14 @@ namespace Microsoft.AspNetCore.Mvc
 
                 _url = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the status code to redirect with.
+        /// </summary>
+        public int? statusCode
+        {
+            get => _statusCode;
         }
 
         /// <summary>
