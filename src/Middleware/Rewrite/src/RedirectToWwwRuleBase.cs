@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             if (domains.Length < 1)
             {
-                throw new ArgumentException(nameof(domains));
+                throw new ArgumentException($"One or more {nameof(domains)} must be provided.");
             }
 
             _domains = domains;
