@@ -27,5 +27,58 @@ namespace System.Security.Claims
             return claim != null ? claim.Value : null;
         }
 
+        /// <summary>
+        /// Returns the value of logged in user's UserId.
+        /// </summary>
+        /// <typeparam name="T">Type of the Identity Store primary key.</typeparam>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
+        /// <returns>Returns the value of the logged in user's UserId.</returns>
+        public static T GetLoggedInUserId<T>(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+
+            var loggedInUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (typeof(T) == typeof(string))
+            {
+                return (T)Convert.ChangeType(loggedInUserId, typeof(T));
+            }
+            else if (typeof(T) == typeof(int) || typeof(T) == typeof(long))
+            {
+                return loggedInUserId != null ? (T)Convert.ChangeType(loggedInUserId, typeof(T)) : (T)Convert.ChangeType(0, typeof(T));
+            }
+            else
+            {
+                throw new Exception("Invalid type provided.");
+            }
+        }
+
+        /// <summary>
+        /// Returns the value of logged in user's UserName.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
+        /// <returns>Returns the value of logged in user's UserName.</returns>
+        public static string GetLoggedInUserName(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+
+            return principal.FindFirstValue(ClaimTypes.Name);
+        }
+
+        /// <summary>
+        /// Returns the value of logged in user's Email.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
+        /// <returns>Returns the value of logged in user's Email.</returns>
+        public static string GetLoggedInUserEmail(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+
+            return principal.FindFirstValue(ClaimTypes.Email);
+        }
+
     }
 }
