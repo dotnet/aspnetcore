@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -84,6 +85,35 @@ namespace Microsoft.AspNetCore.Mvc
             // Verifying if Redirect was called with the specific Url and parameter flag.
             Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
             Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("", "/Home/About", "/Home/About", 301)]
+        [InlineData("", "/Home/About", "/Home/About", 302)]
+        [InlineData("", "/Home/About", "/Home/About", 303)]
+        [InlineData("", "/Home/About", "/Home/About", 304)]
+        [InlineData("", "/Home/About", "/Home/About", 305)]
+        [InlineData("", "/Home/About", "/Home/About", 306)]
+        [InlineData("", "/Home/About", "/Home/About", 307)]
+        [InlineData("", "/Home/About", "/Home/About", 308)]
+        public async Task Execute_ReturnsContentPathWithStatusCode_WhenItDoesNotStartWithTilde(
+            string appRoot,
+            string contentPath,
+            string expectedPath,
+            int statusCode)
+        {
+            // Arrange
+            var httpContext = GetHttpContext(appRoot);
+            var actionContext = GetActionContext(httpContext);
+            var result = new RedirectResult(contentPath, statusCode);
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            // Verifying if Redirect was called with the specific Url and parameter flag.
+            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(statusCode, httpContext.Response.StatusCode);
         }
 
         [Theory]

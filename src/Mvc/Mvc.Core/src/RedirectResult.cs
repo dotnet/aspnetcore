@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private string _url;
 
+        private int? _statusCode;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
         /// provided.
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
         /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-        /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
+         /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
         public RedirectResult(string url, bool permanent, bool preserveMethod)
         {
             if (url == null)
@@ -65,6 +67,35 @@ namespace Microsoft.AspNetCore.Mvc
             Permanent = permanent;
             PreserveMethod = preserveMethod;
             Url = url;
+            this._statusCode = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectResult"/> class with the values
+        /// provided.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <param name="statusCode">Status code</param>
+        public RedirectResult(string url, int statusCode)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
+            }
+
+            //Check status code should be with-in redirection status code.
+            if(301 > statusCode || statusCode > 308)
+            {
+                throw new ArgumentOutOfRangeException("Status code is not suiteable for Redirection. Provide 3xx redirection code", nameof(statusCode));
+            }
+
+            this.Url = url;
+            this._statusCode = statusCode;
         }
 
         /// <summary>
@@ -92,6 +123,14 @@ namespace Microsoft.AspNetCore.Mvc
 
                 _url = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the status code to redirect with.
+        /// </summary>
+        public int? statusCode
+        {
+            get => _statusCode;
         }
 
         /// <summary>
