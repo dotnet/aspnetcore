@@ -315,11 +315,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 AvailableTransports = new List<AvailableTransport>(),
             };
 
-            if (context.Request.Query.TryGetValue("version", out var queryStringVersion))
+            if (context.Request.Query.TryGetValue("NegotiateVersion", out var queryStringVersion))
             {
                 // Set the negotiate response to the protocol we use.
-                var quertStringVersionValue = queryStringVersion.ToString();
-                if (int.TryParse(quertStringVersionValue, out var clientProtocolVersion))
+                var queryStringVersionValue = queryStringVersion.ToString();
+                if (int.TryParse(queryStringVersionValue, out var clientProtocolVersion))
                 {
                     if (clientProtocolVersion < options.MinimumProtocolVersion)
                     {
@@ -338,13 +338,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
                 else
                 {
-                    response.Error = $"The client requested an invalid protocol version '{quertStringVersionValue}'";
+                    response.Error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
                     NegotiateProtocol.WriteResponse(response, writer);
                     return;
                 }
             }
             else if (options.MinimumProtocolVersion > 0)
             {
+                // NegotiateVersion wasn't parsed meaning the client requests version 0.
                 response.Error = $"The client requested version '0', but the server does not support this version.";
                 NegotiateProtocol.WriteResponse(response, writer);
                 return;

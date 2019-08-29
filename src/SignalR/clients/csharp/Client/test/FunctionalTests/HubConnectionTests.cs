@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                 try
                 {
-                    var ex = await Assert.ThrowsAnyAsync<Exception>(() => connection.StartAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(() => connection.StartAsync()).OrTimeout();
                     Assert.Equal("The client requested version '1', but the server does not support this version.", ex.Message);
                 }
                 catch (Exception ex)
