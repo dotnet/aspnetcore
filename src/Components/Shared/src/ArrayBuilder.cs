@@ -160,6 +160,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private void GrowBuffer(int desiredCapacity)
         {
+            // When we dispose, we set the count back to zero and return the array.
+            //
+            // If someone tries to do something that would require non-zero storage then
+            // this is a use-after-free. Throwing here is an easy way to prevent that without
+            // introducing overhead to every method.
+            if (_disposed)
+            {
+                ThrowObjectDisposedException();
+            }
+
             var newCapacity = Math.Max(desiredCapacity, _minCapacity);
             Debug.Assert(newCapacity > _items.Length);
 
@@ -188,12 +198,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 _disposed = true;
                 ReturnBuffer();
+                _items = Empty;
+                _itemsInUse = 0;
             }
         }
 
         private static void ThrowIndexOutOfBoundsException()
         {
             throw new ArgumentOutOfRangeException("index");
+        }
+
+        private static void ThrowObjectDisposedException()
+        {
+            throw new ObjectDisposedException(objectName: null);
         }
     }
 }

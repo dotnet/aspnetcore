@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
@@ -51,8 +51,6 @@ namespace Microsoft.AspNetCore.Routing
             if (endpoint != null)
             {
                 Log.MatchSkipped(_logger, endpoint);
-
-                // Someone else set the endpoint, we'll let them handle the clearing of the endpoint.
                 return _next(httpContext);
             }
 
@@ -88,7 +86,8 @@ namespace Microsoft.AspNetCore.Routing
 
         }
 
-        private async Task SetRoutingAndContinue(HttpContext httpContext)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task SetRoutingAndContinue(HttpContext httpContext)
         {
             // If there was no mutation of the endpoint then log failure
             var endpoint = httpContext.GetEndpoint();
@@ -108,18 +107,7 @@ namespace Microsoft.AspNetCore.Routing
                 Log.MatchSuccess(_logger, endpoint);
             }
 
-            try
-            {
-                await _next(httpContext);
-            }
-            finally
-            {
-                // This allows a second call in a single request (such as from the ErrorHandlerMiddleware) to perform routing again.
-                httpContext.SetEndpoint(endpoint: null);
-
-                var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-                routeValuesFeature?.RouteValues?.Clear();
-            }
+            return _next(httpContext);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things

@@ -38,7 +38,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
     const reconnection = existingConnection || await initializeConnection(options, logger);
     if (!(await circuit.reconnect(reconnection))) {
-      logger.log(LogLevel.Information, 'Reconnection attempt failed.');
+      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
     }
 
@@ -46,6 +46,16 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
     return true;
   };
+
+  window.addEventListener(
+    'unload',
+    () => {
+      const data = new FormData();
+      data.set('circuitId', circuit.circuitId);
+      navigator.sendBeacon('_blazor/disconnect', data);
+    },
+    false
+  );
 
   window['Blazor'].reconnect = reconnect;
 
@@ -75,12 +85,11 @@ async function initializeConnection(options: BlazorOptions, logger: Logger): Pro
 
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
-  connection.on('JS.RenderBatch', (browserRendererId: number, batchId: number, batchData: Uint8Array) => {
-    logger.log(LogLevel.Debug, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
 
-    const queue = RenderQueue.getOrCreateQueue(browserRendererId, logger);
-
-    queue.processBatch(batchId, batchData, connection);
+  const renderQueue = new RenderQueue(/* renderer ID unused with remote renderer */ 0, logger);
+  connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
+    logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
+    renderQueue.processBatch(batchId, batchData, connection);
   });
 
   connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));

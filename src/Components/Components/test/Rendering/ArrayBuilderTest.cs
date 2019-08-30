@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Linq;
 using Xunit;
@@ -261,6 +262,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Assert.Single(ArrayPool.ReturnedBuffers);
             var returnedBuffer = Assert.Single(ArrayPool.ReturnedBuffers);
             Assert.Same(buffer, returnedBuffer);
+            Assert.NotSame(builder.Buffer, buffer); // Prevents use after free
         }
 
         [Fact]
@@ -279,6 +281,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Assert.Single(ArrayPool.ReturnedBuffers);
             var returnedBuffer = Assert.Single(ArrayPool.ReturnedBuffers);
             Assert.Same(buffer, returnedBuffer);
+        }
+
+        [Fact]
+        public void Dispose_ThrowsOnReuse()
+        {
+            // Arrange
+            var builder = CreateArrayBuilder();
+            builder.Append(1);
+            var buffer = builder.Buffer;
+
+            builder.Dispose();
+            Assert.Single(ArrayPool.ReturnedBuffers);
+
+            // Act & Assert
+            Assert.Throws<ObjectDisposedException>(() => builder.Append(1));
         }
 
         [Fact]

@@ -5,13 +5,12 @@ jobs:
 - job:
   displayName: Promote Build
   dependsOn: setupMaestroVars
-  condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], ${{ parameters.ChannelId }})
+  condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.ChannelId }}))
   variables:
     - name: BARBuildId
       value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
     - name: ChannelId
       value: ${{ parameters.ChannelId }}
-    - group: Publish-Build-Assets
   pool:
     vmImage: 'windows-2019'
   steps:
@@ -21,4 +20,6 @@ jobs:
         filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
         arguments: -BuildId $(BARBuildId) 
           -ChannelId $(ChannelId) 
-          -BarToken $(MaestroAccessToken)
+          -MaestroApiAccessToken $(MaestroApiAccessToken)
+          -MaestroApiEndPoint $(MaestroApiEndPoint)
+          -MaestroApiVersion $(MaestroApiVersion)

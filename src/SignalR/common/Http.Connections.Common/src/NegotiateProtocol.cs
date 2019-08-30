@@ -222,13 +222,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var memberName = reader.ValueSpan;
-
-                        if (memberName.SequenceEqual(TransportPropertyNameBytes.EncodedUtf8Bytes))
+                        if (reader.ValueTextEquals(TransportPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             availableTransport.Transport = reader.ReadAsString(TransportPropertyName);
                         }
-                        else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes.EncodedUtf8Bytes))
+                        else if (reader.ValueTextEquals(TransferFormatsPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             reader.CheckRead();
                             reader.EnsureArrayStart();

@@ -5,9 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -96,23 +95,58 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void IncomingParameterMatchesNoDeclaredParameter_Throws()
+        public void IncomingCascadingValueMatchesCascadingParameter_SetsValue()
         {
             // Arrange
-            var target = new HasPropertyWithoutParameterAttribute();
-            var parameters = new ParameterViewBuilder
-            {
-                { "AnyOtherKey", 123 },
-            }.Build();
+            var builder = new ParameterViewBuilder();
+            builder.Add(nameof(HasCascadingParameter.Cascading), "hi", cascading: true);
+            var parameters = builder.Build();
+
+            var target = new HasCascadingParameter();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(
-                () => parameters.SetParameterProperties(target));
+            parameters.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal("hi", target.Cascading);
+        }
+
+        [Fact]
+        public void NoIncomingCascadingValueMatchesDeclaredCascadingParameter_LeavesValueUnchanged()
+        {
+            // Arrange
+            var builder = new ParameterViewBuilder();
+            var parameters = builder.Build();
+
+            var target = new HasCascadingParameter()
+            {
+                Cascading = "bye",
+            };
+
+            // Act
+            parameters.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal("bye", target.Cascading);
+        }
+
+        [Fact]
+        public void IncomingCascadingValueMatchesNoDeclaredParameter_Throws()
+        {
+            // Arrange
+            var builder = new ParameterViewBuilder();
+            builder.Add("SomethingElse", "hi", cascading: true);
+            var parameters = builder.Build();
+
+            var target = new HasCascadingParameter();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
-                $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' does not have a property " +
-                $"matching the name 'AnyOtherKey'.",
+                $"Object of type '{typeof(HasCascadingParameter).FullName}' does not have a property " +
+                $"matching the name 'SomethingElse'.",
                 ex.Message);
         }
 
@@ -135,6 +169,45 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(
                 $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
                 $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void IncomingNonCascadingValueMatchesCascadingParameter_Throws()
+        {
+            // Arrange
+            var target = new HasCascadingParameter();
+            var parameters = new ParameterViewBuilder
+            {
+                { nameof(HasCascadingParameter.Cascading), 123 },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"Object of type '{typeof(HasCascadingParameter).FullName}' has a property matching the name '{nameof(HasCascadingParameter.Cascading)}', " +
+                $"but it does not have [{nameof(ParameterAttribute)}] applied.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void IncomingCascadingValueMatchesNonCascadingParameter_Throws()
+        {
+            // Arrange
+            var target = new HasInstanceProperties();
+            var builder = new ParameterViewBuilder();
+            builder.Add(nameof(HasInstanceProperties.IntProp), 16, cascading: true);
+            var parameters = builder.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasInstanceProperties.IntProp)}' on component type '{typeof(HasInstanceProperties).FullName}' " +
+                $"cannot be set using a cascading value.",
                 ex.Message);
         }
 
@@ -275,6 +348,51 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void IncomingNonCascadingValueMatchesCascadingParameter_WithCaptureUnmatchedValues_DoesNotThrow()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesPropertyAndCascadingParameter()
+            {
+                Cascading = "bye",
+            };
+            var parameters = new ParameterViewBuilder
+            {
+                { nameof(HasCaptureUnmatchedValuesPropertyAndCascadingParameter.Cascading), "hi" },
+            }.Build();
+
+            // Act
+            parameters.SetParameterProperties(target);
+
+            Assert.Collection(
+                target.CaptureUnmatchedValues,
+                kvp =>
+                {
+                    Assert.Equal(nameof(HasCaptureUnmatchedValuesPropertyAndCascadingParameter.Cascading), kvp.Key);
+                    Assert.Equal("hi", kvp.Value);
+                });
+            Assert.Equal("bye", target.Cascading);
+        }
+
+        [Fact]
+        public void IncomingCascadingValueMatchesNonCascadingParameter_WithCaptureUnmatchedValues_Throws()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesProperty();
+            var builder = new ParameterViewBuilder();
+            builder.Add(nameof(HasInstanceProperties.IntProp), 16, cascading: true);
+            var parameters = builder.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasCaptureUnmatchedValuesProperty.IntProp)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' " +
+                $"cannot be set using a cascading value.",
+                ex.Message);
+        }
+
+        [Fact]
         public void IncomingParameterValueMismatchesDeclaredParameterType_Throws()
         {
             // Arrange
@@ -396,6 +514,11 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
+        class HasCascadingParameter
+        {
+            [CascadingParameter] public string Cascading { get; set; }
+        }
+
         class HasPropertyWithoutParameterAttribute
         {
             internal int IntProp { get; set; }
@@ -435,6 +558,12 @@ namespace Microsoft.AspNetCore.Components
             [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
         }
 
+        class HasCaptureUnmatchedValuesPropertyAndCascadingParameter
+        {
+            [CascadingParameter] public string Cascading { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
+        }
+
         class HasDupliateCaptureUnmatchedValuesProperty
         {
             [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
@@ -448,11 +577,11 @@ namespace Microsoft.AspNetCore.Components
 
         class ParameterViewBuilder : IEnumerable
         {
-            private readonly List<(string Name, object Value)> _keyValuePairs
-                = new List<(string, object)>();
+            private readonly List<(string Name, object Value, bool Cascading)> _keyValuePairs
+                = new List<(string, object, bool)>();
 
-            public void Add(string name, object value)
-                => _keyValuePairs.Add((name, value));
+            public void Add(string name, object value, bool cascading = false)
+                => _keyValuePairs.Add((name, value, cascading));
 
             public IEnumerator GetEnumerator()
                 => throw new NotImplementedException();
@@ -460,13 +589,56 @@ namespace Microsoft.AspNetCore.Components
             public ParameterView Build()
             {
                 var builder = new RenderTreeBuilder();
+
                 builder.OpenComponent<FakeComponent>(0);
                 foreach (var kvp in _keyValuePairs)
                 {
-                    builder.AddAttribute(1, kvp.Name, kvp.Value);
+                    if (!kvp.Cascading)
+                    {
+                        builder.AddAttribute(1, kvp.Name, kvp.Value);
+                    }
                 }
                 builder.CloseComponent();
-                return new ParameterView(builder.GetFrames().Array, ownerIndex: 0);
+
+                var view = new ParameterView(builder.GetFrames().Array, ownerIndex: 0);
+
+                var cascadingParameters = new List<CascadingParameterState>();
+                foreach (var kvp in _keyValuePairs)
+                {
+                    if (kvp.Cascading)
+                    {
+                        cascadingParameters.Add(new CascadingParameterState(kvp.Name, new TestCascadingValueProvider(kvp.Value)));
+                    }
+                }
+
+                return view.WithCascadingParameters(cascadingParameters);
+            }
+        }
+
+        private class TestCascadingValueProvider : ICascadingValueComponent
+        {
+            public TestCascadingValueProvider(object value)
+            {
+                CurrentValue = value;
+            }
+
+            public object CurrentValue { get; }
+
+            public bool CurrentValueIsFixed => throw new NotImplementedException();
+
+            public bool CanSupplyValue(Type valueType, string valueName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Subscribe(ComponentState subscriber)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Unsubscribe(ComponentState subscriber)
+            {
+                throw new NotImplementedException();
             }
         }
     }

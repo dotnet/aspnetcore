@@ -814,6 +814,57 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task HubMethodCanReturnValueFromValueTask()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var result = (await client.InvokeAsync(nameof(MethodHub.ValueTaskValueMethod)).OrTimeout()).Result;
+
+                    // json serializer makes this a long
+                    Assert.Equal(43L, result);
+
+                    // kill the connection
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HubMethodCanReturnValueTask()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var result = (await client.InvokeAsync(nameof(MethodHub.ValueTaskMethod)).OrTimeout()).Result;
+
+                    Assert.Null(result);
+
+                    // kill the connection
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
         [Theory]
         [MemberData(nameof(HubTypes))]
         public async Task HubMethodsAreCaseInsensitive(Type hubType)
@@ -3622,6 +3673,66 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await connectionHandlerTask.OrTimeout();
                 }
+            }
+        }
+
+        [Fact]
+        public async Task ClientsCallerPropertyCanBeUsedOutsideOfHub()
+        {
+            CallerService callerService = new CallerService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(callerService);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<CallerServiceHub>>();
+
+            using (StartVerifiableLog())
+            {
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Wait for a connection, or for the endpoint to fail.
+                    await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                    await callerService.Caller.SendAsync("Echo", "message").OrTimeout();
+
+                    var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
+
+                    Assert.Equal("Echo", message.Target);
+                    Assert.Equal("message", message.Arguments[0]);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionCloseCleansUploadStreams()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (StartVerifiableLog())
+            {
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.UploadDoesWorkOnComplete), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
+
+                await client.SendHubMessageAsync(new StreamItemMessage("id", "hello")).OrTimeout();
+
+                await client.DisposeAsync().OrTimeout();
+
+                await connectionHandlerTask.OrTimeout();
+
+                // This task completes if the upload stream is completed, via closing the connection
+                var task = (Task<int>)client.Connection.Items[nameof(MethodHub.UploadDoesWorkOnComplete)];
+
+                var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => task).OrTimeout();
+                Assert.Equal("The underlying connection was closed.", exception.Message);
             }
         }
 

@@ -56,6 +56,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     {
                         Converters = { new ValidationProblemDetailsConverter() }
                     });
+
+                Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+                Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+
                 Assert.Collection(
                     problemDetails.Errors.OrderBy(kvp => kvp.Key),
                     kvp =>

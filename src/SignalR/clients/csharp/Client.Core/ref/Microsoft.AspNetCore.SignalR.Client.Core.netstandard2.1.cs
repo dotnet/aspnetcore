@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
-    public partial class HubConnection
+    public partial class HubConnection : System.IAsyncDisposable
     {
         public static readonly System.TimeSpan DefaultHandshakeTimeout;
         public static readonly System.TimeSpan DefaultKeepAliveInterval;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public event System.Func<string, System.Threading.Tasks.Task> Reconnected { add { } remove { } }
         public event System.Func<System.Exception, System.Threading.Tasks.Task> Reconnecting { add { } remove { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task DisposeAsync() { throw null; }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<object> InvokeCoreAsync(string methodName, System.Type returnType, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.IDisposable On(string methodName, System.Type[] parameterTypes, System.Func<object[], object, System.Threading.Tasks.Task> handler, object state) { throw null; }

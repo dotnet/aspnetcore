@@ -271,6 +271,39 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.False(result.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
         }
 
+        [Fact]
+        public async Task CredentialError_401()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate CredentialError");
+            Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
+            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+        }
+
+        [Fact]
+        public async Task ClientError_400()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            var result = await SendAsync(server, "/404", testConnection, "Negotiate ClientError");
+            Assert.Equal(StatusCodes.Status400BadRequest, result.Response.StatusCode);
+            Assert.DoesNotContain(HeaderNames.WWWAuthenticate, result.Response.Headers);
+        }
+
+        [Fact]
+        public async Task OtherError_Throws()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => SendAsync(server, "/404", testConnection, "Negotiate OtherError"));
+            Assert.Equal("A test other error occured", ex.Message);
+        }
+
         // Single Stage
         private static async Task KerberosAuth(TestServer server, TestConnection testConnection)
         {
@@ -474,7 +507,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return new GenericIdentity("name", _protocol);
             }
 
-            public string GetOutgoingBlob(string incomingBlob)
+            public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)
             {
                 if (IsDisposed)
                 {
@@ -484,6 +517,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     throw new InvalidOperationException("Authentication is already complete.");
                 }
+
+                errorType = BlobErrorType.None;
+                ex = null;
+
                 switch (incomingBlob)
                 {
                     case "ClientNtlmBlob1":
@@ -513,8 +550,22 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         Assert.Equal("Kerberos", _protocol);
                         IsCompleted = true;
                         return "ServerKerberosBlob2";
+                    case "CredentialError":
+                        errorType = BlobErrorType.CredentialError;
+                        ex = new Exception("A test credential error occured");
+                        return null;
+                    case "ClientError":
+                        errorType = BlobErrorType.ClientError;
+                        ex = new Exception("A test client error occured");
+                        return null;
+                    case "OtherError":
+                        errorType = BlobErrorType.Other;
+                        ex = new Exception("A test other error occured");
+                        return null;
                     default:
-                        throw new InvalidOperationException(incomingBlob);
+                        errorType = BlobErrorType.Other;
+                        ex = new InvalidOperationException(incomingBlob);
+                        return null;
                 }
             }
         }

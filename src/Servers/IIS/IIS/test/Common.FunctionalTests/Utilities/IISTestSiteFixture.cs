@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 RuntimeArchitecture = RuntimeArchitecture.x64,
                 RuntimeFlavor =  RuntimeFlavor.CoreClr,
-                TargetFramework = Tfm.NetCoreApp30,
+                TargetFramework = Tfm.NetCoreApp50,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
                 ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),

@@ -10,6 +10,8 @@ jobs:
   displayName: Run SDL tool
   variables:
     - group: DotNet-VSTS-Bot
+  pool:
+    name: Hosted VS2017
   steps:
   - checkout: self
     clean: true
@@ -46,7 +48,7 @@ jobs:
       continueOnError: ${{ parameters.continueOnError }}
   - ${{ if eq(parameters.overrideParameters, '') }}:
     - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
-        -GuardianPackageName Microsoft.Guardian.Cli.0.6.0
+        -GuardianPackageName Microsoft.Guardian.Cli.0.7.1
         -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
         -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
         ${{ parameters.additionalParameters }}

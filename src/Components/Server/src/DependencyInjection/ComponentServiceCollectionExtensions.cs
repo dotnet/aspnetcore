@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -69,7 +70,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<NavigationManager, RemoteNavigationManager>();
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
             services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
-            services.AddScoped<IComponentContext, RemoteComponentContext>();
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());

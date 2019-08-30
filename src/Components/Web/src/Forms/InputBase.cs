@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// integrates with an <see cref="Forms.EditContext"/>, which must be supplied
     /// as a cascading parameter.
     /// </summary>
-    public abstract class InputBase<T> : ComponentBase
+    public abstract class InputBase<TValue> : ComponentBase
     {
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore _parsingValidationMessages;
@@ -32,20 +32,20 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <example>
         /// @bind-Value="model.PropertyName"
         /// </example>
-        [Parameter] public T Value { get; set; }
+        [Parameter] public TValue Value { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
         /// </summary>
-        [Parameter] public EventCallback<T> ValueChanged { get; set; }
+        [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
 
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
         /// </summary>
-        [Parameter] public Expression<Func<T>> ValueExpression { get; set; }
+        [Parameter] public Expression<Func<TValue>> ValueExpression { get; set; }
 
         /// <summary>
-        /// Gets the associated <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.
+        /// Gets the associated <see cref="Forms.EditContext"/>.
         /// </summary>
         protected EditContext EditContext { get; set; }
 
@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the current value of the input.
         /// </summary>
-        protected T CurrentValue
+        protected TValue CurrentValue
         {
             get => Value;
             set
             {
-                var hasChanged = !EqualityComparer<T>.Default.Equals(value, Value);
+                var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
                 if (hasChanged)
                 {
                     Value = value;
@@ -126,18 +126,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected virtual string FormatValueAsString(T value)
+        protected virtual string FormatValueAsString(TValue value)
             => value?.ToString();
 
         /// <summary>
-        /// Parses a string to create an instance of <typeparamref name="T"/>. Derived classes can override this to change how
+        /// Parses a string to create an instance of <typeparamref name="TValue"/>. Derived classes can override this to change how
         /// <see cref="CurrentValueAsString"/> interprets incoming values.
         /// </summary>
         /// <param name="value">The string value to be parsed.</param>
-        /// <param name="result">An instance of <typeparamref name="T"/>.</param>
+        /// <param name="result">An instance of <typeparamref name="TValue"/>.</param>
         /// <param name="validationErrorMessage">If the value could not be parsed, provides a validation error message.</param>
         /// <returns>True if the value could be parsed; otherwise false.</returns>
-        protected abstract bool TryParseValueFromString(string value, out T result, out string validationErrorMessage);
+        protected abstract bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage);
 
         /// <summary>
         /// Gets a string that indicates the status of the field being edited. This will include
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 EditContext = CascadedEditContext;
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(T));
+                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
             }
             else if (CascadedEditContext != EditContext)
             {

@@ -3,7 +3,7 @@
 source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 architecture=x64
-framework=netcoreapp3.0
+framework=netcoreapp5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH

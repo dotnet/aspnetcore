@@ -26,11 +26,11 @@ namespace Ignitor
             {
                 TaskCompletionSource.TrySetCanceled();
             });
-
-            ImplicitWait = DefaultLatencyTimeout != null;
         }
 
         public TimeSpan? DefaultLatencyTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+
+        public Func<string, Exception> FormatError { get; set; }
 
         private CancellationTokenSource CancellationTokenSource { get; }
 
@@ -42,15 +42,19 @@ namespace Ignitor
 
         private CancellableOperation NextErrorReceived { get; set; }
 
+        private CancellableOperation NextDisconnect { get; set; }
+
         private CancellableOperation NextJSInteropReceived { get; set; }
 
         private CancellableOperation NextDotNetInteropCompletionReceived { get; set; }
+
+        public ILoggerProvider LoggerProvider { get; set; }
 
         public bool ConfirmRenderBatch { get; set; } = true;
 
         public event Action<int, string, string> JSInterop;
 
-        public event Action<int, int, byte[]> RenderBatchReceived;
+        public event Action<int, byte[]> RenderBatchReceived;
 
         public event Action<string> DotNetInteropCompletion;
 
@@ -60,7 +64,7 @@ namespace Ignitor
 
         public ElementHive Hive { get; set; } = new ElementHive();
 
-        public bool ImplicitWait { get; set; }
+        public bool ImplicitWait => DefaultLatencyTimeout != null;
 
         public HubConnection HubConnection { get; set; }
 
@@ -112,24 +116,42 @@ namespace Ignitor
             return NextErrorReceived.Completion.Task;
         }
 
-        public async Task ClickAsync(string elementId)
+        public Task PrepareForNextDisconnect(TimeSpan? timeout)
         {
-            if (!Hive.TryFindElementById(elementId, out var elementNode))
+            if (NextDisconnect?.Completion != null)
             {
-                throw new InvalidOperationException($"Could not find element with id {elementId}.");
+                throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            await ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            NextDisconnect = new CancellableOperation(timeout);
+
+            return NextDisconnect.Completion.Task;
         }
 
-        public async Task SelectAsync(string elementId, string value)
+        public Task ClickAsync(string elementId, bool expectRenderBatch = true)
+        {
+            if (!Hive.TryFindElementById(elementId, out var elementNode))
+            {
+                throw new InvalidOperationException($"Could not find element with id {elementId}.");
+            }
+            if (expectRenderBatch)
+            {
+                return ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            }
+            else
+            {
+                return elementNode.ClickAsync(HubConnection);
+            }
+        }
+
+        public Task SelectAsync(string elementId, string value)
         {
             if (!Hive.TryFindElementById(elementId, out var elementNode))
             {
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
 
-            await ExpectRenderBatch(() => elementNode.SelectAsync(HubConnection, value));
+            return ExpectRenderBatch(() => elementNode.SelectAsync(HubConnection, value));
         }
 
         public async Task ExpectRenderBatch(Func<Task> action, TimeSpan? timeout = null)
@@ -156,6 +178,22 @@ namespace Ignitor
         public async Task ExpectCircuitError(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForCircuitError(timeout);
+            await action();
+            await task;
+        }
+
+        public async Task ExpectCircuitErrorAndDisconnect(Func<Task> action, TimeSpan? timeout = null)
+        {
+            // NOTE: timeout is used for each operation individually.
+            await ExpectDisconnect(async () =>
+            {
+                await ExpectCircuitError(action, timeout);
+            }, timeout);
+        }
+
+        public async Task ExpectDisconnect(Func<Task> action, TimeSpan? timeout = null)
+        {
+            var task = WaitForDisconnect(timeout);
             await action();
             await task;
         }
@@ -214,19 +252,39 @@ namespace Ignitor
             }
         }
 
+        private async Task WaitForDisconnect(TimeSpan? timeout = null)
+        {
+            if (ImplicitWait)
+            {
+                if (DefaultLatencyTimeout == null && timeout == null)
+                {
+                    throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
+                }
+            }
+
+            await PrepareForNextDisconnect(timeout ?? DefaultLatencyTimeout);
+        }
+
         public async Task<bool> ConnectAsync(Uri uri, bool prerendered, bool connectAutomatically = true)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
             builder.WithUrl(GetHubUrl(uri));
-            builder.ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Trace));
+            builder.ConfigureLogging(l =>
+            {
+                l.SetMinimumLevel(LogLevel.Trace);
+                if (LoggerProvider != null)
+                {
+                    l.AddProvider(LoggerProvider);
+                }
+            });
 
             HubConnection = builder.Build();
             await HubConnection.StartAsync(CancellationToken);
 
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
-            HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+            HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
@@ -254,71 +312,54 @@ namespace Ignitor
 
         private void OnEndInvokeDotNet(string completion)
         {
-            try
-            {
-                DotNetInteropCompletion?.Invoke(completion);
+            DotNetInteropCompletion?.Invoke(completion);
 
-                NextDotNetInteropCompletionReceived?.Completion?.TrySetResult(null);
-            }
-            catch (Exception e)
-            {
-                NextDotNetInteropCompletionReceived?.Completion?.TrySetException(e);
-            }
+            NextDotNetInteropCompletionReceived?.Completion?.TrySetResult(null);
         }
 
         private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
         {
-            try
-            {
-                JSInterop?.Invoke(asyncHandle, identifier, argsJson);
+            JSInterop?.Invoke(asyncHandle, identifier, argsJson);
 
-                NextJSInteropReceived?.Completion?.TrySetResult(null);
-            }
-            catch (Exception e)
-            {
-                NextJSInteropReceived?.Completion?.TrySetException(e);
-            }
+            NextJSInteropReceived?.Completion?.TrySetResult(null);
         }
 
-        private void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+        private void OnRenderBatch(int batchId, byte[] batchData)
         {
-            try
+            RenderBatchReceived?.Invoke(batchId, batchData);
+
+            var batch = RenderBatchReader.Read(batchData);
+
+            Hive.Update(batch);
+
+            if (ConfirmRenderBatch)
             {
-                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
-
-                var batch = RenderBatchReader.Read(batchData);
-
-                Hive.Update(batch);
-
-                if (ConfirmRenderBatch)
-                {
-                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
-                }
-
-                NextBatchReceived?.Completion?.TrySetResult(null);
+                _ = ConfirmBatch(batchId);
             }
-            catch (Exception e)
-            {
-                NextBatchReceived?.Completion?.TrySetResult(e);
-            }
+
+            NextBatchReceived?.Completion?.TrySetResult(null);
+        }
+
+        public Task ConfirmBatch(int batchId, string error = null)
+        {
+            return HubConnection.InvokeAsync("OnRenderCompleted", batchId, error);
         }
 
         private void OnError(string error)
         {
-            try
-            {
-                OnCircuitError?.Invoke(error);
+            OnCircuitError?.Invoke(error);
 
-                NextErrorReceived?.Completion?.TrySetResult(null);
-            }
-            catch (Exception e)
-            {
-                NextErrorReceived?.Completion?.TrySetResult(e);
-            }
+            var exception = FormatError?.Invoke(error) ?? new Exception(error);
+            NextBatchReceived?.Completion?.TrySetException(exception);
+            NextDotNetInteropCompletionReceived?.Completion.TrySetException(exception);
+            NextJSInteropReceived?.Completion.TrySetException(exception);
+            NextErrorReceived?.Completion?.TrySetResult(null);
         }
 
         private Task OnClosedAsync(Exception ex)
         {
+            NextDisconnect?.Completion?.TrySetResult(null);
+
             if (ex == null)
             {
                 TaskCompletionSource.TrySetResult(null);

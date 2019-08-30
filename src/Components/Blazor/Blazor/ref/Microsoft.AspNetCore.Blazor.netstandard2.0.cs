@@ -65,16 +65,10 @@ namespace Microsoft.AspNetCore.Blazor.Http
 }
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
-    public partial class WebAssemblyRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
+    public static partial class WebAssemblyEventDispatcher
     {
-        public WebAssemblyRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
-        public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
-        public System.Threading.Tasks.Task AddComponentAsync(System.Type componentType, string domElementSelector) { throw null; }
-        public System.Threading.Tasks.Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        public override System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo eventFieldInfo, System.EventArgs eventArgs) { throw null; }
-        protected override void Dispose(bool disposing) { }
-        protected override void HandleException(System.Exception exception) { }
-        protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch batch) { throw null; }
+        [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
+        public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.Web.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder

@@ -7,9 +7,12 @@ parameters:
     enable: false
     params: ''
 
+  # Which stages should finish execution before post-build stages start
+  dependsOn: [build]
+
 stages:
 - stage: validate
-  dependsOn: build
+  dependsOn: ${{ parameters.dependsOn }}
   displayName: Validate
   jobs:
   - ${{ if eq(parameters.enableNugetValidation, 'true') }}:
@@ -49,6 +52,7 @@ stages:
             filePath: eng\common\sdk-task.ps1
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+              /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
               /p:Configuration=Release
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
@@ -80,7 +84,15 @@ stages:
       parameters:
         additionalParameters: ${{ parameters.SDLValidationParameters.params }}
 
+- template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
+  parameters:
+    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+
 - template: \eng\common\templates\post-build\channels\public-dev-release.yml
+  parameters:
+    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+
+- template: \eng\common\templates\post-build\channels\netcore-tools-latest.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
 

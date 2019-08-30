@@ -4,18 +4,19 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative>true</BuildNative>
-    <BuildManaged>true</BuildManaged>
-    <BuildNodeJS>true</BuildNodeJS>
-    <BuildJava>true</BuildJava>
+    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
+    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
+    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
+    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
+    <!-- Explicitly excluded projects -->
+    <ProjectToExclude Include="$(ProjectToExclude)" />
 
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj;
                       $(RepoRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
                       $(RepoRoot)src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj;
                       "
@@ -31,6 +32,7 @@
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
@@ -43,7 +45,6 @@
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
-
   </ItemGroup>
 
   <Choose>
@@ -102,6 +103,7 @@
         <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
+                          $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
