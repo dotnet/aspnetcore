@@ -31,6 +31,7 @@
         {
           "condition": "(SupportPagesAndViews)",
           "exclude": [
+            "_Imports.razor",
             "Component1.razor",
             "ExampleJsInterop.cs",
             "wwwroot/**"

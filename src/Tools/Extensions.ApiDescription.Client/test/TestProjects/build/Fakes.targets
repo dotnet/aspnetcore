@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!-- NSwag's OpenApiReference support for C# (default target). -->
+
+  <Target Name="GenerateNSwagCSharp">
+    <PropertyGroup>
+      <_Metadata>'%(CurrentOpenApiReference.FullPath)'</_Metadata>
+      <_Metadata>$(_Metadata) Class: '%(CurrentOpenApiReference.Namespace).%(CurrentOpenApiReference.ClassName)'</_Metadata>
+      <_Metadata>$(_Metadata) FirstForGenerator: '%(CurrentOpenApiReference.FirstForGenerator)'</_Metadata>
+      <_Metadata>$(_Metadata) Options: '%(CurrentOpenApiReference.Options)'</_Metadata>
+      <_Metadata>$(_Metadata) OutputPath: '%(CurrentOpenApiReference.OutputPath)'</_Metadata>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="GenerateNSwagCSharp $(_Metadata)" />
+  </Target>
+
+  <!-- NSwag's OpenApiReference support for TypeScript. -->
+
+  <Target Name="GenerateNSwagTypeScript">
+    <PropertyGroup>
+      <_Metadata>'%(FullPath)' Class: '%(Namespace).%(ClassName)'</_Metadata>
+      <_Metadata>$(_Metadata) FirstForGenerator: '%(FirstForGenerator)' Options: '%(Options)'</_Metadata>
+      <_Metadata>$(_Metadata) OutputPath: '%(OutputPath)'</_Metadata>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="GenerateNSwagTypeScript $(_Metadata)" />
+  </Target>
+
+  <!-- Custom OpenApiReference support for C#. -->
+
+  <Target Name="GenerateCustomCSharp">
+    <PropertyGroup>
+      <_Metadata>'%(FullPath)' Class: '%(Namespace).%(ClassName)'</_Metadata>
+      <_Metadata>$(_Metadata) FirstForGenerator: '%(FirstForGenerator)' Options: '%(Options)'</_Metadata>
+      <_Metadata>$(_Metadata) OutputPath: '%(OutputPath)'</_Metadata>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="GenerateCustomCSharp $(_Metadata)" />
+  </Target>
+</Project>

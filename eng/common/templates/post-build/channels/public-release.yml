@@ -1,5 +1,7 @@
 parameters:
   enableSymbolValidation: true
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
 
 stages:
 - stage: PubRel_Publish
@@ -20,10 +22,16 @@ stages:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Artifacts
+        displayName: Download Blob Artifacts
         inputs:
-          downloadType: specific files
-          matchingPattern: "*Artifacts*"
+          artifactName: 'BlobArtifacts'
+        continueOnError: true
+
+      - task: DownloadBuildArtifacts@0
+        displayName: Download PDB Artifacts
+        inputs:
+          artifactName: 'PDBArtifacts'
+        continueOnError: true
 
       - task: PowerShell@2
         displayName: Publish
@@ -34,7 +42,9 @@ stages:
             /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
+            ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job: publish_assets
     displayName: Publish Assets
@@ -80,6 +90,7 @@ stages:
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
             /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
             /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
@@ -92,6 +103,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
             /p:Configuration=Release 
+            ${{ parameters.artifactsPublishingAdditionalParameters }}
         
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed

@@ -1,6 +1,8 @@
-@inject NavigationManager NavigationManager
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components.Routing
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 <button @onclick="Navigate">Navigate</button>
@@ -29,7 +31,6 @@
 
     async Task Navigate()
     {
-        await JSRuntime.InvokeAsync<object>("navigationManagerNavigate");
+        await JSRuntime.InvokeVoidAsync("navigationManagerNavigate");
     }
 }
-

@@ -15,7 +15,7 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>@(await Html.RenderComponentAsync<MvcSandbox.Components.App>())</app>
+    <app>@(await Html.RenderComponentAsync<MvcSandbox.Components.App>(RenderMode.Static))</app>
 
     <script src="_framework/components.server.js"></script>
 </body>

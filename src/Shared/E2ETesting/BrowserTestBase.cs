@@ -59,6 +59,13 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public virtual async Task InitializeAsync(string isolationContext)
         {
+            await InitializeBrowser(isolationContext);
+
+            InitializeAsyncCore();
+        }
+
+        protected async Task InitializeBrowser(string isolationContext)
+        {
             await _semaphore.WaitAsync(TimeSpan.FromMinutes(30));
             _semaphoreHeld = true;
 
@@ -67,8 +74,6 @@ namespace Microsoft.AspNetCore.E2ETesting
             _logs.Value = logs;
 
             Browser = browser;
-
-            InitializeAsyncCore();
         }
 
         protected virtual void InitializeAsyncCore()

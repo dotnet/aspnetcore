@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteJSRuntime : JSRuntimeBase
+    internal class RemoteJSRuntime : JSRuntime
     {
         private readonly CircuitOptions _options;
         private readonly ILogger<RemoteJSRuntime> _logger;
@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)
@@ -29,28 +30,34 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
         }
 
-        protected override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
+        protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
-            if (!success)
+            if (!invocationResult.Success)
             {
-                var actualException = resultOrError is Exception ex ? ex : resultOrError is ExceptionDispatchInfo edi ? edi.SourceException : resultOrError;
-                Log.InvokeDotNetMethodException(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId, actualException as Exception);
+                Log.InvokeDotNetMethodException(_logger, invocationInfo, invocationResult.Exception);
+                string errorMessage;
+
                 if (_options.DetailedErrors)
                 {
-                    EndInvokeDotNetCore(callId, success, actualException.ToString());
+                    errorMessage = invocationResult.Exception.ToString();
                 }
                 else
                 {
-                    var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
-                        $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
+                    errorMessage = $"There was an exception invoking '{invocationInfo.MethodIdentifier}'";
+                    if (invocationInfo.AssemblyName != null)
+                    {
+                        errorMessage += $" on assembly '{invocationInfo.AssemblyName}'";
+                    }
 
-                    EndInvokeDotNetCore(callId, success, message);
+                    errorMessage += $". For more details turn on detailed exceptions in '{nameof(CircuitOptions)}.{nameof(CircuitOptions.DetailedErrors)}'";
                 }
+
+                EndInvokeDotNetCore(invocationInfo.CallId, success: false, errorMessage);
             }
             else
             {
-                Log.InvokeDotNetMethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                EndInvokeDotNetCore(callId, success, resultOrError);
+                Log.InvokeDotNetMethodSuccess(_logger, invocationInfo);
+                EndInvokeDotNetCore(invocationInfo.CallId, success: true, invocationResult.Result);
             }
         }
 
@@ -58,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             _clientProxy.SendAsync(
                 "JS.EndInvokeDotNet",
-                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptionsProvider.Options));
+                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
@@ -112,27 +119,27 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             internal static void BeginInvokeJS(ILogger logger, long asyncHandle, string identifier) =>
                 _beginInvokeJS(logger, asyncHandle, identifier, null);
 
-            internal static void InvokeDotNetMethodException(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectReference, Exception exception)
+            internal static void InvokeDotNetMethodException(ILogger logger, in DotNetInvocationInfo invocationInfo , Exception exception)
             {
-                if (assemblyName != null)
+                if (invocationInfo.AssemblyName != null)
                 {
-                    _invokeStaticDotNetMethodException(logger, assemblyName, methodIdentifier, callId, exception);
+                    _invokeStaticDotNetMethodException(logger, invocationInfo.AssemblyName, invocationInfo.MethodIdentifier, invocationInfo.CallId, exception);
                 }
                 else
                 {
-                    _invokeInstanceDotNetMethodException(logger, methodIdentifier, dotNetObjectReference, callId, exception);
+                    _invokeInstanceDotNetMethodException(logger, invocationInfo.MethodIdentifier, invocationInfo.DotNetObjectId, invocationInfo.CallId, exception);
                 }
             }
 
-            internal static void InvokeDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            internal static void InvokeDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, in DotNetInvocationInfo invocationInfo)
             {
-                if (assemblyName != null)
+                if (invocationInfo.AssemblyName != null)
                 {
-                    _invokeStaticDotNetMethodSuccess(logger, assemblyName, methodIdentifier, callId, null);
+                    _invokeStaticDotNetMethodSuccess(logger, invocationInfo.AssemblyName, invocationInfo.MethodIdentifier, invocationInfo.CallId, null);
                 }
                 else
                 {
-                    _invokeInstanceDotNetMethodSuccess(logger, methodIdentifier, dotNetObjectId, callId, null);
+                    _invokeInstanceDotNetMethodSuccess(logger, invocationInfo.MethodIdentifier, invocationInfo.DotNetObjectId, invocationInfo.CallId, null);
                 }
 
             }

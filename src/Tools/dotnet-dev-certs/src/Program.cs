@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 app.HelpOption("-h|--help");
 
                 app.OnExecute(() =>
-                    {
-                        app.ShowHelp();
-                        return Success;
-                    });
+                {
+                    app.ShowHelp();
+                    return Success;
+                });
 
                 return app.Execute(args);
             }

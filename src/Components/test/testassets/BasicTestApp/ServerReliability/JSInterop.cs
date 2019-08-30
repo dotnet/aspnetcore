@@ -6,13 +6,13 @@ namespace BasicTestApp.ServerReliability
     public class JSInterop
     {
         [JSInvokable]
-        public static DotNetObjectRef<ImportantInformation> CreateImportant()
+        public static DotNetObjectReference<ImportantInformation> CreateImportant()
         {
-            return DotNetObjectRef.Create(new ImportantInformation());
+            return DotNetObjectReference.Create(new ImportantInformation());
         }
 
         [JSInvokable]
-        public static string ReceiveTrivial(DotNetObjectRef<TrivialInformation> information)
+        public static string ReceiveTrivial(DotNetObjectReference<TrivialInformation> information)
         {
             return information.Value.Message;
         }

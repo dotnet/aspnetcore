@@ -2,18 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -22,55 +20,26 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    [Flaky("https://github.com/aspnet/AspNetCore/issues/13086", FlakyOn.All)]
-    public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>, IDisposable
+    public class InteropReliabilityTests : IgnitorTest<AspNetSiteServerFixture>
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(30);
-        private readonly AspNetSiteServerFixture _serverFixture;
-
         public InteropReliabilityTests(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+            : base(serverFixture, output)
         {
-            _serverFixture = serverFixture;
-            Output = output;
+        }
 
+        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
+        {
             serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
-            CreateDefaultConfiguration();
         }
 
-        public BlazorClient Client { get; set; }
-        public ITestOutputHelper Output { get; set; }
-        private IList<Batch> Batches { get; set; } = new List<Batch>();
-        private List<DotNetCompletion> DotNetCompletions = new List<DotNetCompletion>();
-        private List<JSInteropCall> JSInteropCalls = new List<JSInteropCall>();
-        private IList<string> Errors { get; set; } = new List<string>();
-        private ConcurrentQueue<LogMessage> Logs { get; set; } = new ConcurrentQueue<LogMessage>();
-
-        public TestSink TestSink { get; set; }
-
-        private void CreateDefaultConfiguration()
+        protected async override Task InitializeAsync()
         {
-            Client = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
-            Client.RenderBatchReceived += (id, data) => Batches.Add(new Batch(id, data));
-            Client.DotNetInteropCompletion += (method) => DotNetCompletions.Add(new DotNetCompletion(method));
-            Client.JSInterop += (asyncHandle, identifier, argsJson) => JSInteropCalls.Add(new JSInteropCall(asyncHandle, identifier, argsJson));
-            Client.OnCircuitError += (error) => Errors.Add(error);
-            Client.LoggerProvider = new XunitLoggerProvider(Output);
-            Client.FormatError = (error) =>
-            {
-                var logs = string.Join(Environment.NewLine, Logs);
-                return new Exception(error + Environment.NewLine + logs);
-            };
+            var rootUri = ServerFixture.RootUri;
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
+            Assert.Single(Batches);
 
-            _ = _serverFixture.RootUri; // this is needed for the side-effects of getting the URI.
-            TestSink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            TestSink.MessageLogged += LogMessages;
-        }
-
-        private void LogMessages(WriteContext context)
-        {
-            var log = new LogMessage(context.LogLevel, context.Message, context.Exception);
-            Logs.Enqueue(log);
-            Output.WriteLine(log.ToString());
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
+            Assert.Equal(2, Batches.Count);
         }
 
         [Fact]
@@ -80,7 +49,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "[\"1\"," +
                 "false," +
                 "\"There was an exception invoking \\u0027WriteAllText\\u0027 on assembly \\u0027System.IO.FileSystem\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
-            await GoToTestComponent(Batches);
 
             // Act
             await Client.InvokeDotNetMethod(
@@ -91,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -103,8 +71,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
@@ -114,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -126,18 +92,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "NotifyLocationChanged",
                 null,
-                JsonSerializer.Serialize(new[] { _serverFixture.RootUri }));
+                JsonSerializer.Serialize(new[] { ServerFixture.RootUri }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -149,18 +113,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
                 "",
                 "NotifyLocationChanged",
                 null,
-                JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
+                JsonSerializer.Serialize(new object[] { ServerFixture.RootUri + "counter", false }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -172,18 +134,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "",
                 null,
-                JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
+                JsonSerializer.Serialize(new object[] { ServerFixture.RootUri + "counter", false }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
 
             await ValidateClientKeepsWorking(Client, Batches);
         }
@@ -195,9 +155,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027Reverse\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
-
-            await GoToTestComponent(Batches);
+                "\"There was an exception invoking \\u0027Reverse\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             // Act
             await Client.InvokeDotNetMethod(
@@ -207,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            Assert.Single(DotNetCompletions, c => c.Message == expectedDotNetObjectRef);
+            Assert.Single(DotNetCompletions, c => c == expectedDotNetObjectRef);
 
             await Client.InvokeDotNetMethod(
                 "1",
@@ -217,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == "[\"1\",true,\"tnatropmI\"]");
+            Assert.Single(DotNetCompletions, c => c == "[\"1\",true,\"tnatropmI\"]");
 
             await Client.InvokeDotNetMethod(
                 "1",
@@ -226,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 3, // non existing ref
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -239,8 +197,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
@@ -248,7 +204,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            Assert.Single(DotNetCompletions, c => c.Message == expectedImportantDotNetObjectRef);
+            Assert.Single(DotNetCompletions, c => c == expectedImportantDotNetObjectRef);
 
             // Act
             await Client.InvokeDotNetMethod(
@@ -259,18 +215,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { new { __dotNetObject = 1 } }));
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/13086", FlakyOn.AzP.Windows)]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange
             var expectedError = "An exception occurred executing JS interop: The JSON value could not be converted to System.Int32. Path: $ | LineNumber: 0 | BytePositionInLine: 3.. See InnerException for more details.";
-
-            await GoToTestComponent(Batches);
 
             // Act
             await Client.ClickAsync("triggerjsinterop-malformed");
@@ -279,11 +232,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.NotEqual(default, call);
 
             var id = call.AsyncHandle;
-            await Client.HubConnection.InvokeAsync(
-                "EndInvokeJSFromDotNet",
-                id,
-                true,
-                $"[{id}, true, \"{{\"]");
+            await Client.ExpectRenderBatch(async () =>
+            {
+                await Client.HubConnection.InvokeAsync(
+                    "EndInvokeJSFromDotNet",
+                    id,
+                    true,
+                    $"[{id}, true, \"{{\"]");
+            });
 
             var text = Assert.Single(
                 Client.FindElementById("errormessage-malformed").Children.OfType<TextNode>(),
@@ -296,10 +252,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task JSInteropCompletionSuccess()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
             await Client.ClickAsync("triggerjsinterop-success");
@@ -308,27 +260,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.NotEqual(default, call);
 
             var id = call.AsyncHandle;
-            await Client.HubConnection.InvokeAsync(
-                "EndInvokeJSFromDotNet",
-                id++,
-                true,
-                $"[{id}, true, null]");
+            await Client.ExpectRenderBatch(async () =>
+            {
+                await Client.HubConnection.InvokeAsync(
+                    "EndInvokeJSFromDotNet",
+                    id,
+                    true,
+                    $"[{id}, true, null]");
+            });
 
             Assert.Single(
                 Client.FindElementById("errormessage-success").Children.OfType<TextNode>(),
                 e => "" == e.TextContent);
 
-            Assert.Contains((LogLevel.Debug, "EndInvokeJSSucceeded"), logEvents);
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "EndInvokeJSSucceeded");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
         }
 
         [Fact]
         public async Task JSInteropThrowsInUserCode()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
             await Client.ClickAsync("triggerjsinterop-failure");
@@ -350,9 +302,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 Client.FindElementById("errormessage-failure").Children.OfType<TextNode>(),
                 e => "There was an error invoking sendFailureCallbackReturn" == e.TextContent);
 
-            Assert.Contains((LogLevel.Debug, "EndInvokeJSFailed"), logEvents);
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "EndInvokeJSFailed");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
 
-            Assert.DoesNotContain(logEvents, m => m.logLevel > LogLevel.Information);
+            Assert.DoesNotContain(Logs, m => m.LogLevel > LogLevel.Information);
 
             await ValidateClientKeepsWorking(Client, Batches);
         }
@@ -361,10 +314,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task MalformedJSInteropCallbackDisposesCircuit()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
             await Client.ClickAsync("triggerjsinterop-malformed");
@@ -387,7 +336,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 Client.FindElementById("errormessage-malformed").Children.OfType<TextNode>(),
                 e => "" == e.TextContent);
 
-            Assert.Contains((LogLevel.Debug, "EndInvokeDispatchException"), logEvents);
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "EndInvokeDispatchException");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
 
             await Client.ExpectCircuitErrorAndDisconnect(async () =>
             {
@@ -403,8 +353,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
@@ -414,7 +362,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "[ \"invalidPayload\"}");
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -426,8 +374,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
-            await GoToTestComponent(Batches);
-
             // Act
             await Client.InvokeDotNetMethod(
                 "1",
@@ -437,7 +383,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "[ { \"data\": {\"}} ]");
 
             // Assert
-            Assert.Single(DotNetCompletions, c => c.Message == expectedError);
+            Assert.Single(DotNetCompletions, c => c == expectedError);
             await ValidateClientKeepsWorking(Client, Batches);
         }
 
@@ -445,10 +391,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DispatchingEventsWithInvalidPayloadsShutsDownCircuitGracefully()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
             await Client.ExpectCircuitError(async () =>
@@ -459,9 +401,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 null);
             });
 
-            Assert.Contains(
-                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
-                logEvents);
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "DispatchEventFailedToParseEventData");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>
@@ -474,10 +415,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DispatchingEventsWithInvalidEventDescriptor()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
             await Client.ExpectCircuitError(async () =>
@@ -488,9 +425,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "{}");
             });
 
-            Assert.Contains(
-                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
-                logEvents);
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "DispatchEventFailedToParseEventData");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>
@@ -503,10 +439,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DispatchingEventsWithInvalidEventArgs()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string eventIdName, Exception exception)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
             var browserDescriptor = new WebEventDescriptor()
@@ -525,9 +457,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
 
             Assert.Contains(
-                logEvents,
-                e => e.eventIdName == "DispatchEventFailedToParseEventData" && e.logLevel == LogLevel.Debug &&
-                     e.exception.Message == "There was an error parsing the event arguments. EventId: '6'.");
+                Logs,
+                e => e.EventId.Name == "DispatchEventFailedToParseEventData" && e.LogLevel == LogLevel.Debug &&
+                     e.Exception.Message == "There was an error parsing the event arguments. EventId: '6'.");
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>
@@ -540,13 +472,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task DispatchingEventsWithInvalidEventHandlerId()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string eventIdName, Exception exception)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            var mouseEventArgs = new UIMouseEventArgs()
+            var mouseEventArgs = new MouseEventArgs()
             {
                 Type = "click",
                 Detail = 1
@@ -567,9 +495,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
 
             Assert.Contains(
-                logEvents,
-                e => e.eventIdName == "DispatchEventFailedToDispatchEvent" && e.logLevel == LogLevel.Debug &&
-                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler associated with this event. EventId: '1'."));
+                Logs,
+                e => e.EventId.Name == "DispatchEventFailedToDispatchEvent" && e.LogLevel == LogLevel.Debug &&
+                     e.Exception is ArgumentException ae && ae.Message.Contains("There is no event handler associated with this event. EventId: '1'."));
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>
@@ -582,19 +510,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task EventHandlerThrowsSyncExceptionTerminatesTheCircuit()
         {
             // Arrange
-            await GoToTestComponent(Batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string eventIdName, Exception exception)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
+            await Client.ExpectCircuitError(async () =>
+            {
+                await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
+            });
 
             Assert.Contains(
-                logEvents,
-                e => LogLevel.Error == e.logLevel &&
-                    "CircuitUnhandledException" == e.eventIdName &&
-                    "Handler threw an exception" == e.exception.Message);
+                Logs,
+                e => LogLevel.Error == e.LogLevel &&
+                    "CircuitUnhandledException" == e.EventId.Name &&
+                    "Handler threw an exception" == e.Exception.Message);
 
             // Now if you try to click again, you will get *forcibly* disconnected for trying to talk to
             // a circuit that's gone.
@@ -604,7 +531,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-        private Task ValidateClientKeepsWorking(BlazorClient Client, IList<Batch> batches) =>
+        private Task ValidateClientKeepsWorking(BlazorClient Client, IReadOnlyCollection<CapturedRenderBatch> batches) =>
             ValidateClientKeepsWorking(Client, () => batches.Count);
 
         private async Task ValidateClientKeepsWorking(BlazorClient Client, Func<int> countAccessor)
@@ -613,76 +540,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ClickAsync("thecounter");
 
             Assert.Equal(currentBatches + 1, countAccessor());
-        }
-
-        private async Task GoToTestComponent(IList<Batch> batches)
-        {
-            var rootUri = _serverFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-            Assert.Single(batches);
-
-            await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            Assert.Equal(2, batches.Count);
-        }
-
-        public void Dispose()
-        {
-            TestSink.MessageLogged -= LogMessages;
-        }
-
-        private class LogMessage
-        {
-            public LogMessage(LogLevel logLevel, string message, Exception exception)
-            {
-                LogLevel = logLevel;
-                Message = message;
-                Exception = exception;
-            }
-
-            public LogLevel LogLevel { get; set; }
-            public string Message { get; set; }
-            public Exception Exception { get; set; }
-
-            public override string ToString()
-            {
-                return $"{LogLevel}: {Message}{(Exception != null ? Environment.NewLine : "")}{Exception}";
-            }
-        }
-
-        private class Batch
-        {
-            public Batch(int id, byte[] data)
-            {
-                Id = id;
-                Data = data;
-            }
-
-            public int Id { get; }
-            public byte[] Data { get; }
-        }
-
-        private class DotNetCompletion
-        {
-            public DotNetCompletion(string message)
-            {
-                Message = message;
-            }
-
-            public string Message { get; }
-        }
-
-        private class JSInteropCall
-        {
-            public JSInteropCall(int asyncHandle, string identifier, string argsJson)
-            {
-                AsyncHandle = asyncHandle;
-                Identifier = identifier;
-                ArgsJson = argsJson;
-            }
-
-            public int AsyncHandle { get; }
-            public string Identifier { get; }
-            public string ArgsJson { get; }
         }
     }
 }

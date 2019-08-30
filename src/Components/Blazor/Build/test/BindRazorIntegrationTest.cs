@@ -271,6 +271,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
@@ -292,6 +293,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -314,6 +316,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -338,6 +341,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
@@ -360,6 +364,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""checkbox"" @bind=""@Enabled"" />
 @code {
     public bool Enabled { get; set; }

@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+        private TestCircuitHost(CircuitId circuitId, IServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
             : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
         {
         }
 
         public static CircuitHost Create(
-            string circuitId = null,
+            CircuitId? circuitId = null,
             IServiceScope serviceScope = null,
             RemoteRenderer remoteRenderer = null,
             CircuitHandler[] handlers = null,
@@ -37,14 +37,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
                     NullLoggerFactory.Instance,
                     new CircuitOptions(),
-                    jsRuntime,
                     clientProxy,
                     NullLogger.Instance);
             }
 
             handlers = handlers ?? Array.Empty<CircuitHandler>();
             return new TestCircuitHost(
-                circuitId ?? Guid.NewGuid().ToString(),
+                circuitId is null ? new CircuitId(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()) : circuitId.Value,
                 serviceScope,
                 new CircuitOptions(),
                 clientProxy,

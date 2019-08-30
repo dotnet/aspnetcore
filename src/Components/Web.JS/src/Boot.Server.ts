@@ -6,10 +6,11 @@ import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
-import { startCircuit } from './Platform/Circuits/CircuitManager';
+import { discoverComponents, CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { resolveOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
+import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 
 let renderingFailed = false;
 let started = false;
@@ -27,8 +28,15 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
-  const initialConnection = await initializeConnection(options, logger);
-  const circuit = await startCircuit(initialConnection);
+  const components = discoverComponents(document);
+  const circuit = new CircuitDescriptor(components);
+
+  const initialConnection = await initializeConnection(options, logger, circuit);
+  const circuitStarted = await circuit.startCircuit(initialConnection);
+  if (!circuitStarted) {
+    logger.log(LogLevel.Error, 'Failed to start the circuit.');
+    return;
+  }
 
   const reconnect = async (existingConnection?: signalR.HubConnection): Promise<boolean> => {
     if (renderingFailed) {
@@ -36,7 +44,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
       return false;
     }
 
-    const reconnection = existingConnection || await initializeConnection(options, logger);
+    const reconnection = existingConnection || await initializeConnection(options, logger, circuit);
     if (!(await circuit.reconnect(reconnection))) {
       logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
@@ -51,7 +59,8 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     'unload',
     () => {
       const data = new FormData();
-      data.set('circuitId', circuit.circuitId);
+      const circuitId = circuit.circuitId!;
+      data.append('circuitId', circuitId);
       navigator.sendBeacon('_blazor/disconnect', data);
     },
     false
@@ -62,7 +71,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 }
 
-async function initializeConnection(options: BlazorOptions, logger: Logger): Promise<signalR.HubConnection> {
+async function initializeConnection(options: BlazorOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -83,10 +92,11 @@ async function initializeConnection(options: BlazorOptions, logger: Logger): Pro
     return connection.send('OnLocationChanged', uri, intercepted);
   });
 
+  connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
 
-  const renderQueue = new RenderQueue(/* renderer ID unused with remote renderer */ 0, logger);
+  const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
     renderQueue.processBatch(batchId, batchData, connection);

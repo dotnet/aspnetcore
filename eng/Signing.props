@@ -54,6 +54,7 @@
     <FileSignInfo Include="dotnet-sql-cache.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="dotnet-user-secrets.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="dotnet-watch.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-openapi.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="Microsoft400" />
     <FileSignInfo Include="sni.dll" CertificateName="Microsoft400" />
 
@@ -96,6 +97,12 @@
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
     <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" />
+
+    <!--
+      We include the Microsoft.Build.Locator.dll assembly in our global tool 'Microsoft.dotnet-openapi'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Build.Locator.dll" CertificateName="None" />
 
     <!--
       We include the Microsoft.Data.SqlClient.dll assembly in our global tool 'dotnet-sql-cache'.
