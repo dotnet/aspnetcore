@@ -46,6 +46,9 @@ namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite
                 case "HTTP_HOST":
                     managedVariableThunk = () => new HeaderSegment(HeaderNames.Host);
                     break;
+                case "HTTP_HOST_NAME":
+                    managedVariableThunk = () => new HttpHostNameSegment();
+                    break;
                 case "HTTP_REFERER":
                     managedVariableThunk = () => new HeaderSegment(HeaderNames.Referer);
                     break;
