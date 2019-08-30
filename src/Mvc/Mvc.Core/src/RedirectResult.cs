@@ -126,10 +126,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the status code to redirect with.
         /// </summary>
-        public int? statusCode
-        {
-            get => _statusCode;
-        }
+        public int? StatusCode => _statusCode;
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/> for this result.

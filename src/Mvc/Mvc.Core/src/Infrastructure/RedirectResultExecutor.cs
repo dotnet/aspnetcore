@@ -55,9 +55,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             _logger.RedirectResultExecuting(destinationUrl);
 
-            if(result.statusCode.HasValue)
+            if(result.StatusCode.HasValue)
             {
-                context.HttpContext.Response.StatusCode = result.statusCode.Value;
+                context.HttpContext.Response.StatusCode = result.StatusCode.Value;
                 context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
                 return Task.CompletedTask;
             }
