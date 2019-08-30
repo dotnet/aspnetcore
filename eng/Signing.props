@@ -105,10 +105,11 @@
     <FileSignInfo Include="Microsoft.Build.Locator.dll" CertificateName="None" />
 
     <!--
-      We include the Microsoft.Data.SqlClient.dll assembly in our global tool 'dotnet-sql-cache'.
+      We include the Microsoft.Data.SqlClient.dll and Microsoft.Identity.Client.dll assembly in our global tool 'dotnet-sql-cache'.
       It is already signed by that team, so we don't need to sign it.
     -->
     <FileSignInfo Include="Microsoft.Data.SqlClient.dll" CertificateName="None" />
+    <FileSignInfo Include="Microsoft.Identity.Client.dll" CertificateName="None" />
   </ItemGroup>
 
 </Project>
