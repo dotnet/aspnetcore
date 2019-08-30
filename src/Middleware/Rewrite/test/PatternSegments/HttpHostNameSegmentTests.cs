@@ -11,12 +11,28 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
     public class HttpHostNameSegmentTests
     {
         [Fact]
-        public void HttpHostNameSegment_AssertGettingHostName()
+        public void HttpHostNameSegment_AssertGettingHostName_WithPort()
         {
             // Arrange
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
 
             context.HttpContext.Request.Headers[HeaderNames.Host] = "example.com:443";
+            var segment = new HttpHostNameSegment();
+
+            // Act
+            var results = segment.Evaluate(context, null, null);
+
+            // Assert
+            Assert.Equal("example.com", results);
+        }
+
+        [Fact]
+        public void HttpHostNameSegment_AssertGettingHostName_WithOutPort()
+        {
+            // Arrange
+            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+
+            context.HttpContext.Request.Headers[HeaderNames.Host] = "example.com";
             var segment = new HttpHostNameSegment();
 
             // Act

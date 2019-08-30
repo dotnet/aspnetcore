@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Rewrite.PatternSegments
         public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             var host = context.HttpContext.Request.Headers[HeaderNames.Host].ToString();
-            return host.Remove(host.IndexOf(':'));
+            var indexOfSeperator = host.IndexOf(':');
+            return indexOfSeperator == -1 ? host : host.Remove(indexOfSeperator);
         }
     }
 }
