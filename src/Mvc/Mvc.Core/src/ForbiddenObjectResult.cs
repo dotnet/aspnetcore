@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ObjectResult"/> that when executed will produce a Forbidden (403) response.
+    /// An <see cref="ObjectResult"/> that when executed will produce a Forbidden(403) response.
     /// </summary>
     [DefaultStatusCode(DefaultStatusCode)]
     public class ForbiddenObjectResult : ObjectResult
