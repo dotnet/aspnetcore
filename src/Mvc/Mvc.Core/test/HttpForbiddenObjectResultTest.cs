@@ -36,49 +36,5 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status403Forbidden, forbidden.StatusCode);
             Assert.Equal("Test Content", forbidden.Value);
         }
-
-        [Fact]
-        public async Task HttpForbiddenObjectResult_ExecuteSuccessful()
-        {
-            // Arrange
-            var httpContext = GetHttpContext();
-            var actionContext = new ActionContext()
-            {
-                HttpContext = httpContext,
-            };
-
-            var result = new ForbiddenObjectResult("Test Content");
-
-            // Act
-            await result.ExecuteResultAsync(actionContext);
-
-            // Assert
-            Assert.Equal(StatusCodes.Status403Forbidden, httpContext.Response.StatusCode);
-        }
-
-        private static HttpContext GetHttpContext()
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.PathBase = new PathString("");
-            httpContext.Response.Body = new MemoryStream();
-            httpContext.RequestServices = CreateServices();
-            return httpContext;
-        }
-
-        private static IServiceProvider CreateServices()
-        {
-            var options = Options.Create(new MvcOptions());
-            options.Value.OutputFormatters.Add(new StringOutputFormatter());
-            options.Value.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonOptions()));
-
-            var services = new ServiceCollection();
-            services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
-                new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance,
-                options));
-
-            return services.BuildServiceProvider();
-        }
     }
 }
