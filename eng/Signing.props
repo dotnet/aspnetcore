@@ -85,12 +85,14 @@
     <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
     <FileSignInfo Include="apphost.exe" CertificateName="None" />
 
-    <SignValidationExclusionList Include="**/*.js" />
-    <SignValidationExclusionList Include="**/*.otf" />
-    <SignValidationExclusionList Include="**/*.ttf" />
-    <SignValidationExclusionList Include="**/ancm.mof" />
-    <SignValidationExclusionList Include="**/apphost.exe" />
-    <SignValidationExclusionList Include="**/wix*" />
+    <!-- Escape asterisks and semi-colons because these lines are written to a file and processed outside MSBuild. -->
+    <SignValidationExclusionList Include="%2A.js%3B%3B" />
+    <SignValidationExclusionList Include="%2A.otf%3B%3B" />
+    <SignValidationExclusionList Include="%2A.ttf%3B%3B" />
+    <SignValidationExclusionList Include="ancm.mof%3B%3B" />
+    <SignValidationExclusionList Include="apphost.exe%3B%3B" />
+    <SignValidationExclusionList Include="WixUIWixca%3B%3B" />
+    <SignValidationExclusionList Include="WixDepCA%3B%3B" />
 
     <!--
       These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
