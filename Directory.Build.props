@@ -43,7 +43,7 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <DefaultNetCoreTargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>netcoreapp$(TFMNetCoreMajorVersion).$(TFMNetCoreMinorVersion)</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->

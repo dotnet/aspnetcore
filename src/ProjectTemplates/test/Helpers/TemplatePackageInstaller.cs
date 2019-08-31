@@ -31,9 +31,11 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates"
         };
 
@@ -108,8 +110,8 @@ namespace Templates.Test.Helpers
             foreach (var packageName in _templatePackages)
             {
                 // Depending on the ordering, there may be multiple matches:
-                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.3.0.0-preview7.*.nupkg
-                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-preview7.*.nupkg
+                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1.3.1.0-preview7.*.nupkg
+                // Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1.0-preview7.*.nupkg
                 // Error on the side of caution and uninstall all of them
                 foreach (var command in lines.Where(l => l.Contains("dotnet new") && l.Contains(packageName, StringComparison.OrdinalIgnoreCase)))
                 {
