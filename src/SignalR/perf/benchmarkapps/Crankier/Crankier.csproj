@@ -4,12 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.SignalR.CranksRevenge</RootNamespace>
+    <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
   </PropertyGroup>
-  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
