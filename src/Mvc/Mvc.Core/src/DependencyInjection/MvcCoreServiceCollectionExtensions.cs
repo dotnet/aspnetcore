@@ -259,6 +259,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<ForbiddenObjectResult>, ForbiddenObjectResultExecutor>();
             services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
 
             //
