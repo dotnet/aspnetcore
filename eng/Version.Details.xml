@@ -29,33 +29,33 @@
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>b9dc0ffa64f7313ce5262e03d8e493989f150e6e</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="dotnet-ef" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.0-alpha1.19430.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.0-alpha1.19431.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>1c5e3089b09c786ada8bab7eeee1a81a64cc062e</Sha>
+      <Sha>3b7ce6829c1017246eb219418c510be62dc53549</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.0.0-rc1.19424.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
