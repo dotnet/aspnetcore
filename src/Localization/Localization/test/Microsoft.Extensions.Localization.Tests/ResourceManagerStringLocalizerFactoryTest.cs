@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MyNamespace;
 using Moq;
 using Xunit;
 
@@ -132,7 +133,7 @@ namespace Microsoft.Extensions.Localization.Tests
             var loggerFactory = NullLoggerFactory.Instance;
 
             var resourcePath = Path.Combine("My", "Resources");
-            var rootNamespace = "MyNamespace";
+            var rootNamespace = nameof(MyNamespace);
             var rootNamespaceAttribute = new RootNamespaceAttribute(rootNamespace);
 
             var typeFactory = new TestResourceManagerStringLocalizerFactory(
@@ -141,12 +142,13 @@ namespace Microsoft.Extensions.Localization.Tests
                 rootNamespaceAttribute: rootNamespaceAttribute,
                 loggerFactory: loggerFactory);
 
-            var type = typeof(ResourceManagerStringLocalizerFactoryTest);
+            var type = typeof(Model);
+
             // Act
             typeFactory.Create(type);
 
             // Assert
-            Assert.Equal($"Microsoft.Extensions.Localization.Tests.ResourceManagerStringLocalizerFactoryTest", typeFactory.BaseName);
+            Assert.Equal($"{rootNamespace}.{nameof(Model)}", typeFactory.BaseName);
         }
 
         [Fact]
@@ -159,7 +161,7 @@ namespace Microsoft.Extensions.Localization.Tests
             var loggerFactory = NullLoggerFactory.Instance;
 
             var resourcePath = Path.Combine("My", "Resources");
-            var rootNamespace = "MyNamespace";
+            var rootNamespace = nameof(MyNamespace);
             var resourceLocationAttribute = new ResourceLocationAttribute(resourcePath);
             var rootNamespaceAttribute = new RootNamespaceAttribute(rootNamespace);
 
@@ -169,12 +171,13 @@ namespace Microsoft.Extensions.Localization.Tests
                 rootNamespaceAttribute,
                 loggerFactory);
 
-            var type = typeof(ResourceManagerStringLocalizerFactoryTest);
+            var type = typeof(Model);
+
             // Act
             typeFactory.Create(type);
 
             // Assert
-            Assert.Equal($"MyNamespace.My.Resources.ResourceManagerStringLocalizerFactoryTest", typeFactory.BaseName);
+            Assert.Equal($"{rootNamespace}.My.Resources.{nameof(Model)}", typeFactory.BaseName);
         }
 
         [Fact]
