@@ -2075,7 +2075,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var controller = new TestableController();
-            var obj = new object();
 
             // Act
             var result = controller.Conflict();
@@ -2115,6 +2114,36 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
             var errors = Assert.IsType<SerializableError>(result.Value);
             Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void InternalServerError_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.InternalServerError();
+
+            // Assert
+            Assert.IsType<InternalServerErrorResult>(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+
+        [Fact]
+        public void InternalServerError_SetsStatusCodeAndValue_Object()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var obj = new object();
+
+            // Act
+            var result = controller.InternalServerError(obj);
+
+            // Assert
+            Assert.IsType<InternalServerErrorObjectResult>(result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.Equal(obj, result.Value);
         }
 
         [Theory]

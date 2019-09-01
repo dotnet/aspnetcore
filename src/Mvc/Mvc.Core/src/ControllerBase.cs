@@ -1722,6 +1722,23 @@ namespace Microsoft.AspNetCore.Mvc
         #endregion
 
         /// <summary>
+        /// Creates an <see cref="InternalServerErrorResult"/> that produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="InternalServerErrorResult"/> for the response.</returns>
+        [NonAction]
+        public virtual InternalServerErrorResult InternalServerError()
+            => new InternalServerErrorResult();
+
+        /// <summary>
+        /// Creates an <see cref="InternalServerErrorObjectResult"/> that produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+        /// </summary>
+        /// <param name="error">Contains errors to be returned to the client.</param>
+        /// <returns>The created <see cref="InternalServerErrorObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual InternalServerErrorObjectResult InternalServerError([ActionResultObjectValue] object error)
+            => new InternalServerErrorObjectResult(error);
+
+        /// <summary>
         /// Creates an <see cref="UnauthorizedResult"/> that produces an <see cref="StatusCodes.Status401Unauthorized"/> response.
         /// </summary>
         /// <returns>The created <see cref="UnauthorizedResult"/> for the response.</returns>
@@ -1897,7 +1914,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
              => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
-
 
         /// <summary>
         /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
