@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/13303")]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#", additionalProjects: "ClassLibrary")]
         public async Task Build_ProjectWithDependencyThatReferencesMvc_AddsAttributeToNonCSharpProjects()
         {
