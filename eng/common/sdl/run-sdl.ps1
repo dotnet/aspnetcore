@@ -32,16 +32,16 @@ foreach ($tool in $ToolsList) {
   Write-Host $tool
   # We have to manually configure tools that run on source to look at the source directory only
   if ($tool -eq "credscan") {
-    Write-Host "$GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args `" TargetDirectory : $TargetDirectory `" `" OutputType : pre `" $(If ($CrScanAdditionalRunConfigParams) {$CrScanAdditionalRunConfigParams})"
-    & $GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args " TargetDirectory : $TargetDirectory " "OutputType : pre" $(If ($CrScanAdditionalRunConfigParams) {$CrScanAdditionalRunConfigParams})
+    Write-Host "$GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args `" TargetDirectory < $TargetDirectory `" `" OutputType < pre `" $(If ($CrScanAdditionalRunConfigParams) {$CrScanAdditionalRunConfigParams})"
+    & $GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args " TargetDirectory < $TargetDirectory " "OutputType < pre" $(If ($CrScanAdditionalRunConfigParams) {$CrScanAdditionalRunConfigParams})
     if ($LASTEXITCODE -ne 0) {
       Write-Host "Guardian configure for $tool failed with exit code $LASTEXITCODE."
       exit $LASTEXITCODE
     }
   }
   if ($tool -eq "policheck") {
-    Write-Host "$GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args `" Target : $TargetDirectory `" $(If ($PoliCheckAdditionalRunConfigParams) {$PoliCheckAdditionalRunConfigParams})"
-    & $GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args " Target : $TargetDirectory " $(If ($PoliCheckAdditionalRunConfigParams) {$PoliCheckAdditionalRunConfigParams})
+    Write-Host "$GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args `" Target < $TargetDirectory `" $(If ($PoliCheckAdditionalRunConfigParams) {$PoliCheckAdditionalRunConfigParams})"
+    & $GuardianCliLocation configure --working-directory $WorkingDirectory --tool $tool --output-path $gdnConfigFile --logger-level $GuardianLoggerLevel --noninteractive --force --args " Target < $TargetDirectory " $(If ($PoliCheckAdditionalRunConfigParams) {$PoliCheckAdditionalRunConfigParams})
     if ($LASTEXITCODE -ne 0) {
       Write-Host "Guardian configure for $tool failed with exit code $LASTEXITCODE."
       exit $LASTEXITCODE

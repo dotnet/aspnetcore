@@ -163,6 +163,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   $installScript = Join-Path $dotnetRoot "dotnet-install.ps1"
   if (!(Test-Path $installScript)) {
     Create-Directory $dotnetRoot
+    $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Invoke-WebRequest "https://dot.net/$dotnetInstallScriptVersion/dotnet-install.ps1" -OutFile $installScript
   }
 
@@ -282,6 +283,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 
     Create-Directory $packageDir
     Write-Host "Downloading $packageName $packageVersion"
+    $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Invoke-WebRequest "https://dotnet.myget.org/F/roslyn-tools/api/v2/package/$packageName/$packageVersion/" -OutFile $packagePath
     Unzip $packagePath $packageDir
   }

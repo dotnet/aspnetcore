@@ -1,11 +1,12 @@
 parameters:
-  enableSourceLinkValidation: true
+  enableSourceLinkValidation: false
   enableSigningValidation: true
-  enableSymbolValidation: true
+  enableSymbolValidation: false
   enableNugetValidation: true
   publishInstallersAndChecksums: false
   SDLValidationParameters:
     enable: false
+    continueOnError: false
     params: ''
 
   # These parameters let the user customize the call to sdk-task.ps1 for publishing
@@ -92,6 +93,7 @@ stages:
     - template: /eng/common/templates/job/execute-sdl.yml
       parameters:
         additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
 
 - template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
   parameters:
