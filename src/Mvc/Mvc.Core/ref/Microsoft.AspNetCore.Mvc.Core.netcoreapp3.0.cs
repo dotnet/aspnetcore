@@ -412,6 +412,10 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ForbidResult Forbid(params string[] authenticationSchemes) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.InternalServerErrorResult InternalServerError() { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.InternalServerErrorObjectResult InternalServerError([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.LocalRedirectResult LocalRedirect(string localUrl) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.LocalRedirectResult LocalRedirectPermanent(string localUrl) { throw null; }
@@ -813,6 +817,16 @@ namespace Microsoft.AspNetCore.Mvc
     public partial interface IDesignTimeMvcBuilderConfiguration
     {
         void ConfigureMvc(Microsoft.Extensions.DependencyInjection.IMvcBuilder builder);
+    }
+    [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(500)]
+    public partial class InternalServerErrorObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
+    {
+        public InternalServerErrorObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) : base (default(object)) { }
+    }
+    [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(500)]
+    public partial class InternalServerErrorResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
+    {
+        public InternalServerErrorResult() : base (default(int)) { }
     }
     public partial interface IRequestFormLimitsPolicy : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
     {
