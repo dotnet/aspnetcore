@@ -152,6 +152,8 @@ function Get-File {
   }
   else {
     Write-Verbose "Downloading $Uri"
+    # Don't display the console progress UI - it's a huge perf hit
+    $ProgressPreference = 'SilentlyContinue'   
     while($Attempt -Lt $DownloadRetries)
     {
       try {
