@@ -309,11 +309,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
-            var response = new NegotiationResponse
-            {
-                ConnectionId = connectionId,
-                AvailableTransports = new List<AvailableTransport>(),
-            };
+            var response = new NegotiationResponse();
 
             if (context.Request.Query.TryGetValue("NegotiateVersion", out var queryStringVersion))
             {
@@ -352,6 +348,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 NegotiateProtocol.WriteResponse(response, writer);
                 return;
             }
+
+            response.ConnectionId = connectionId;
+            response.AvailableTransports = new List<AvailableTransport>();
 
             if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
             {

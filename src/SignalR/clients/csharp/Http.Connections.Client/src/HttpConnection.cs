@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     urlBuilder.Path += "/";
                 }
                 urlBuilder.Path += "negotiate";
-                var uri = Utils.AppendQueryString(urlBuilder.Uri, $"NegotiateVersion={_protocolVersionNumber}");
+                var uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
 
                 using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
                 {
@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 throw new FormatException("Invalid connection id.");
             }
 
-            return Utils.AppendQueryString(url, $"version={_protocolVersionNumber}&id=" + connectionId);
+            return Utils.AppendQueryString(url, $"negotiateVersion={_protocolVersionNumber}&id=" + connectionId);
         }
 
         private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
