@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Ignitor
 {
-    public class BlazorClient
+    public class BlazorClient : IAsyncDisposable
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
 
@@ -54,6 +54,8 @@ namespace Ignitor
 
         private TaskCompletionSource<object> TaskCompletionSource { get; }
 
+        private CancellableOperation<CapturedAttachComponentCall> NextAttachComponentReceived { get; set; }
+
         private CancellableOperation<CapturedRenderBatch> NextBatchReceived { get; set; }
 
         private CancellableOperation<string> NextErrorReceived { get; set; }
@@ -82,7 +84,7 @@ namespace Ignitor
 
         public bool ImplicitWait => DefaultOperationTimeout != null;
 
-        public HubConnection HubConnection { get; set; }
+        public HubConnection HubConnection { get; private set; }
 
         public Task<CapturedRenderBatch> PrepareForNextBatch(TimeSpan? timeout)
         {
@@ -345,6 +347,7 @@ namespace Ignitor
             HubConnection = builder.Build();
             await HubConnection.StartAsync(CancellationToken);
 
+            HubConnection.On<int, string>("JS.AttachComponent", OnAttachComponent);
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
             HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
@@ -374,6 +377,14 @@ namespace Ignitor
             DotNetInteropCompletion?.Invoke(message);
 
             NextDotNetInteropCompletionReceived?.Completion?.TrySetResult(null);
+        }
+
+        private void OnAttachComponent(int componentId, string domSelector)
+        {
+            var call = new CapturedAttachComponentCall(componentId, domSelector);
+            Operations?.AttachComponent.Enqueue(call);
+
+            NextAttachComponentReceived?.Completion?.TrySetResult(call);
         }
 
         private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
@@ -481,7 +492,7 @@ namespace Ignitor
         {
             if (!Hive.TryFindElementById(id, out var element))
             {
-                throw new InvalidOperationException("Element not found.");
+                throw new InvalidOperationException($"Element with id '{id}' was not found.");
             }
 
             return element;
@@ -544,14 +555,23 @@ namespace Ignitor
             var markers = matches.Select(s => (value: s.Groups[1].Value, parsed: JsonDocument.Parse(s.Groups[1].Value)))
                 .Where(s =>
                 {
-                    var markerType = s.parsed.RootElement.GetProperty("type");
-                    return markerType.ValueKind != JsonValueKind.Undefined && markerType.GetString() == "server";
+                    return s.parsed.RootElement.TryGetProperty("type", out var markerType) &&
+                        markerType.ValueKind != JsonValueKind.Undefined &&
+                        markerType.GetString() == "server";
                 })
                 .OrderBy(p => p.parsed.RootElement.GetProperty("sequence").GetInt32())
                 .Select(p => p.value)
                 .ToArray();
 
             return markers;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (HubConnection != null)
+            {
+                await HubConnection.DisposeAsync();
+            }
         }
     }
 }
