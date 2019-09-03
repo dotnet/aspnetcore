@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token", 0)]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
-        [InlineData("{\"version\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123)]
-        [InlineData("{\"version\":123,\"version\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321)]
-        [InlineData("{\"ignore\":123,\"version\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"version\":123}", "123", new string[0], null, null, 123)]
+        [InlineData("{\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123)]
+        [InlineData("{\"negotiateVersion\":123,\"negotiateVersion\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321)]
+        [InlineData("{\"ignore\":123,\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123)]
         public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 string json = Encoding.UTF8.GetString(writer.ToArray());
 
-                Assert.Equal("{\"availableTransports\":[]}", json);
+                Assert.Equal("{\"negotiateVersion\":0,\"availableTransports\":[]}", json);
             }
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 string json = Encoding.UTF8.GetString(writer.ToArray());
 
-                Assert.Equal("{\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
+                Assert.Equal("{\"negotiateVersion\":0,\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
             }
         }
     }
