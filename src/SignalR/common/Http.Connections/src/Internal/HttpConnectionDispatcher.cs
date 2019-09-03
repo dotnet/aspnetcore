@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
+        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var response = new NegotiationResponse
             {
@@ -324,6 +324,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     if (clientProtocolVersion < options.MinimumProtocolVersion)
                     {
                         response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
+                        Log.NegotiateProtocolVersionMismatch(_logger, clientProtocolVersion);
                         NegotiateProtocol.WriteResponse(response, writer);
                         return;
                     }
@@ -339,6 +340,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 else
                 {
                     response.Error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
+                    Log.InvalidNegotiateProtocolVersion(_logger, queryStringVersionValue);
                     NegotiateProtocol.WriteResponse(response, writer);
                     return;
                 }
