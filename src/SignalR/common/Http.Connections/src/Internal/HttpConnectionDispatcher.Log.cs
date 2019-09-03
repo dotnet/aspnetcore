@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "FailedToReadHttpRequestBody"), "Connection {TransportConnectionId} failed to read the HTTP request body.");
 
             private static readonly Action<ILogger, int, Exception> _negotiateProtocolVersionMismatch =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(14, "NegotiateProtocolVersionMismatch"), "The client requested version '{clientProtocolVersion}', but the server does not support this version.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(15, "NegotiateProtocolVersionMismatch"), "The client requested version '{clientProtocolVersion}', but the server does not support this version.");
 
             private static readonly Action<ILogger, string, Exception> _invalidNegotiateProtocolVersion =
-               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(14, "InvalidNegotiateProtocolVersion"), "The client requested an invalid protocol version '{queryStringVersionValue}'");
+               LoggerMessage.Define<string>(LogLevel.Debug, new EventId(16, "InvalidNegotiateProtocolVersion"), "The client requested an invalid protocol version '{queryStringVersionValue}'");
 
             public static void ConnectionDisposed(ILogger logger, string connectionId)
             {
