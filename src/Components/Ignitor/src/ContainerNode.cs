@@ -41,7 +41,7 @@ namespace Ignitor
             if (childIndex < Children.Count)
             {
                 // Insert
-                _children[childIndex] = child;
+                _children.Insert(childIndex, child);
             }
             else
             {

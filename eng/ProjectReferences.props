@@ -139,5 +139,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" RefProjectPath="$(RepoRoot)src\Components\Forms\ref\Microsoft.AspNetCore.Components.Forms.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" RefProjectPath="$(RepoRoot)src\Components\Server\ref\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" RefProjectPath="$(RepoRoot)src\Components\Web\ref\Microsoft.AspNetCore.Components.Web.csproj" />
+    <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj" />
   </ItemGroup>
 </Project>
