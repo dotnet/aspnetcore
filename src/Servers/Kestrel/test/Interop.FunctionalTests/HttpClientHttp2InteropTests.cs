@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -318,7 +319,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/corefx/issues/39404")]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task BidirectionalStreamingMoreClientData(string scheme)
         {
@@ -400,7 +401,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/corefx/issues/39404")]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ReverseEcho(string scheme)
         {
@@ -515,6 +516,131 @@ namespace Interop.FunctionalTests
                 return false;
             }
         }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ResponseTrailersWithoutData(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        context.Response.DeclareTrailer("TestTrailer");
+                        context.Response.AppendTrailer("TestTrailer", "TestValue");
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var response = await client.GetAsync(url).DefaultTimeout();
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("TestTrailer", response.Headers.Trailer.Single());
+            // The response is buffered, we must already have the trailers.
+            Assert.Equal("TestValue", response.TrailingHeaders.GetValues("TestTrailer").Single());
+            Assert.Equal("", await response.Content.ReadAsStringAsync());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ResponseTrailersWithData(string scheme)
+        {
+            var headersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        context.Response.DeclareTrailer("TestTrailer");
+                        await context.Response.WriteAsync("Hello ");
+                        await headersReceived.Task.DefaultTimeout();
+                        await context.Response.WriteAsync("World");
+                        context.Response.AppendTrailer("TestTrailer", "TestValue");
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("TestTrailer", response.Headers.Trailer.Single());
+            // The server has not sent trailers yet.
+            Assert.False(response.TrailingHeaders.TryGetValues("TestTrailer", out var none));
+            headersReceived.SetResult(0);
+            var responseBody = await response.Content.ReadAsStringAsync().DefaultTimeout();
+            Assert.Equal("Hello World", responseBody);
+            // The response is buffered, we must already have the trailers.
+            Assert.Equal("TestValue", response.TrailingHeaders.GetValues("TestTrailer").Single());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_BeforeResponse_ClientThrows(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url)).DefaultTimeout();
+            Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_AfterHeaders_ClientBodyThrows(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        await context.Response.BodyWriter.FlushAsync();
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync()).DefaultTimeout();
+            Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.InnerException.Message);
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // ServerReset_AfterEndStream_NoError
+        // ServerReset_AfterTrailers_NoError
+        // ServerReset_BeforeRequestBody_ClientBodyThrows
+        // ServerReset_BeforeRequestBodyEnd_ClientBodyThrows
+        // ClientReset_BeforeRequestData_ReadThrows
+        // ClientReset_BeforeRequestDataEnd_ReadThrows
+        // ClientReset_BeforeResponse_ResponseSuppressed
+        // ClientReset_BeforeAfterEndStream_WritesSuppressed
+        // ClientReset_BeforeAfterTrailers_TrailersSuppressed
 
         private static HttpClient CreateClient()
         {
