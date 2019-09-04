@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly HttpConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
+        private static readonly int _protocolVersion = 1;
 
         public HttpConnectionDispatcher(HttpConnectionManager manager, ILoggerFactory loggerFactory)
         {
@@ -306,9 +307,48 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
+        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var response = new NegotiationResponse();
+
+            if (context.Request.Query.TryGetValue("NegotiateVersion", out var queryStringVersion))
+            {
+                // Set the negotiate response to the protocol we use.
+                var queryStringVersionValue = queryStringVersion.ToString();
+                if (int.TryParse(queryStringVersionValue, out var clientProtocolVersion))
+                {
+                    if (clientProtocolVersion < options.MinimumProtocolVersion)
+                    {
+                        response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
+                        Log.NegotiateProtocolVersionMismatch(_logger, clientProtocolVersion);
+                        NegotiateProtocol.WriteResponse(response, writer);
+                        return;
+                    }
+                    else if (clientProtocolVersion > _protocolVersion)
+                    {
+                        response.Version = _protocolVersion;
+                    }
+                    else
+                    {
+                        response.Version = clientProtocolVersion;
+                    }
+                }
+                else
+                {
+                    response.Error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
+                    Log.InvalidNegotiateProtocolVersion(_logger, queryStringVersionValue);
+                    NegotiateProtocol.WriteResponse(response, writer);
+                    return;
+                }
+            }
+            else if (options.MinimumProtocolVersion > 0)
+            {
+                // NegotiateVersion wasn't parsed meaning the client requests version 0.
+                response.Error = $"The client requested version '0', but the server does not support this version.";
+                NegotiateProtocol.WriteResponse(response, writer);
+                return;
+            }
+
             response.ConnectionId = connectionId;
             response.AvailableTransports = new List<AvailableTransport>();
 

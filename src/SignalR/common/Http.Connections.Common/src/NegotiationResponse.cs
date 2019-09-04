@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public string Url { get; set; }
         public string AccessToken { get; set; }
         public string ConnectionId { get; set; }
+        public int Version { get; set; }
         public IList<AvailableTransport> AvailableTransports { get; set; }
         public string Error { get; set; }
     }

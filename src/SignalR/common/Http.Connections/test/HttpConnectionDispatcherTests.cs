@@ -95,6 +95,64 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        [Fact]
+        public async Task InvalidNegotiateProtocolVersionThrows()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=Invalid");
+
+                var options = new HttpConnectionDispatcherOptions { TransportMaxBufferSize = 4, ApplicationMaxBufferSize = 4 };
+                await dispatcher.ExecuteNegotiateAsync(context, options);
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+
+                var error = negotiateResponse.Value<string>("error");
+                Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                Assert.Null(connectionId);
+            }
+        }
+
+        [Fact]
+        public async Task NoNegotiateVersionInQueryStringThrowsWhenMinProtocolVersionIsSet()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("");
+
+                var options = new HttpConnectionDispatcherOptions { TransportMaxBufferSize = 4, ApplicationMaxBufferSize = 4, MinimumProtocolVersion = 1 };
+                await dispatcher.ExecuteNegotiateAsync(context, options);
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+
+                var error = negotiateResponse.Value<string>("error");
+                Assert.Equal("The client requested version '0', but the server does not support this version.", error);
+
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                Assert.Null(connectionId);
+            }
+        }
+
         [Theory]
         [InlineData(HttpTransportType.LongPolling)]
         [InlineData(HttpTransportType.ServerSentEvents)]

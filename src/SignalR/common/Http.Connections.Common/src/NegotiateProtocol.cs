@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static JsonEncodedText TransferFormatsPropertyNameBytes = JsonEncodedText.Encode(TransferFormatsPropertyName);
         private const string ErrorPropertyName = "error";
         private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
+        private const string NegotiateVersionPropertyName = "negotiateVersion";
+        private static JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
 
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         // Used to detect ASP.NET SignalR Server connection attempt
@@ -40,6 +42,19 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 var writer = reusableWriter.GetJsonWriter();
                 writer.WriteStartObject();
+
+                // If we already have an error its due to a protocol version incompatibility.
+                // We can just write the error and complete the JSON object and return.
+                if (!string.IsNullOrEmpty(response.Error))
+                {
+                    writer.WriteString(ErrorPropertyNameBytes, response.Error);
+                    writer.WriteEndObject();
+                    writer.Flush();
+                    Debug.Assert(writer.CurrentDepth == 0);
+                    return;
+                }
+
+                writer.WriteNumber(NegotiateVersionPropertyNameBytes, response.Version);
 
                 if (!string.IsNullOrEmpty(response.Url))
                 {
@@ -116,6 +131,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 string accessToken = null;
                 List<AvailableTransport> availableTransports = null;
                 string error = null;
+                int version = 0;
 
                 var completed = false;
                 while (!completed && reader.CheckRead())
@@ -134,6 +150,10 @@ namespace Microsoft.AspNetCore.Http.Connections
                             else if (reader.ValueTextEquals(ConnectionIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
+                            }
+                            else if (reader.ValueTextEquals(NegotiateVersionPropertyNameBytes.EncodedUtf8Bytes))
+                            {
+                                version = reader.ReadAsInt32(NegotiateVersionPropertyName).GetValueOrDefault();
                             }
                             else if (reader.ValueTextEquals(AvailableTransportsPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -195,6 +215,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     AccessToken = accessToken,
                     AvailableTransports = availableTransports,
                     Error = error,
+                    Version = version
                 };
             }
             catch (Exception ex)
