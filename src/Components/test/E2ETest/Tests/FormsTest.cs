@@ -228,9 +228,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
             // Can become invalid
-            // Note that we have to update it via JS not via SendKeys, because date inputs are special. Selenium's mechanism for
-            // simulating keystrokes causes date inputs to behave inconsistently in this specific scenario.
-            ChangeDateInputField(".expiry-date input", "11111-11-11");
+            expiryDateInput.ReplaceText("111111111");
             Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
@@ -384,15 +382,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .Select(x => x.Text)
                 .OrderBy(x => x)
                 .ToArray();
-        }
-
-        private void ChangeDateInputField(string cssSelector, string newValue)
-        {
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(
-                $"var elem = document.querySelector('{cssSelector}');"
-                + $"elem.value = {JsonSerializer.Serialize(newValue, TestJsonSerializerOptionsProvider.Options)};"
-                + "elem.dispatchEvent(new KeyboardEvent('change'));");
         }
     }
 }
