@@ -46,7 +46,7 @@ public class UserAgentTest {
 
         String detailedVersion = Version.getDetailedVersion();
         String handMadeUserAgent = "Microsoft SignalR/" + UserAgentHelper.getVersion(detailedVersion) +
-                "; (" + detailedVersion + "; " + UserAgentHelper.getOS() + "; Java; " +
+                " (" + detailedVersion + "; " + UserAgentHelper.getOS() + "; Java; " +
                 UserAgentHelper.getJavaVersion() + "; " + UserAgentHelper.getJavaVendor() + ")";
 
         assertEquals(handMadeUserAgent, userAgent);
