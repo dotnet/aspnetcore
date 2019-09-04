@@ -41,16 +41,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void CanSetCultureAndParseCultueSensitiveNumbersAndDates(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("input_type_text_int"));
@@ -113,16 +104,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("input_type_number_int"));
@@ -179,16 +161,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithFormComponents(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("inputnumber_int"));
@@ -246,6 +219,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             element.SendKeys(Keys.Control + "a");
             element.SendKeys(text);
+        }
+
+        private void SetCulture(string culture)
+        {
+            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
+            selector.SelectByValue(culture);
+
+            // Click the link to return back to the test page
+            WaitUntilExists(By.ClassName("return-from-culture-setter")).Click();
+
+            // That should have triggered a redirect, wait for the main test selector to come up.
+            MountTestComponent<GlobalizationBindCases>();
+            WaitUntilExists(By.Id("globalization-cases"));
+
+            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
+            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
         }
     }
 }
