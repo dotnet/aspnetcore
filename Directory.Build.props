@@ -119,7 +119,7 @@
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
-  <!-- Artifacts layout -->
+  <!-- Artifacts layout. Keep these values consistent with items defined in eng/Publishing.props. -->
   <PropertyGroup>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>
