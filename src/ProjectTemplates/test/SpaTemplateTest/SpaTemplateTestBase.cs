@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -99,6 +98,11 @@ namespace Templates.Test.SpaTemplateTest
                 }
             }
 
+            if (template == "react" || template == "reactredux")
+            {
+                await CleanupReactClientAppBuildFolder(clientAppSubdirPath);
+            }
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -145,6 +149,35 @@ namespace Templates.Test.SpaTemplateTest
                     BrowserFixture.EnforceSupportedConfigurations();
                 }
             }
+        }
+
+        private async Task CleanupReactClientAppBuildFolder(string clientAppSubdirPath)
+        {
+            ProcessEx testResult = null;
+            int? testResultExitCode = null;
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResultExitCode = testResult.ExitCode;
+                    if (testResultExitCode == 0)
+                    {
+                        return;
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    testResult.Dispose();
+                }
+
+                await Task.Delay(3000);
+            }
+
+            Assert.True(testResultExitCode == 0, ErrorMessages.GetFailedProcessMessage("npx rimraf ./build", Project, testResult));
         }
 
         private void ValidatePackageJson(string clientAppSubdirPath)
