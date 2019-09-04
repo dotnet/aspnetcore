@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                         assertion();
                         return true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         lastException = e;
                         return false;
@@ -73,19 +74,42 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
             catch (WebDriverTimeoutException)
             {
+                var fileId = $"{Guid.NewGuid()}.png";
+                var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.Severe);
-                if (errors.Count > 0)
+
+                if (driver is ITakesScreenshot takesScreenshot && E2ETestOptions.Instance.ScreenShotsPath != null)
                 {
-                    throw new BrowserAssertFailedException(errors, lastException);
+                    try
+                    {
+                        if (!Directory.Exists(E2ETestOptions.Instance.ScreenShotsPath))
+                        {
+                            Directory.CreateDirectory(E2ETestOptions.Instance.ScreenShotsPath);
+                        }
+
+                        var screenShot = takesScreenshot.GetScreenshot();
+                        screenShot.SaveAsFile(screenShotPath);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
-                else if (lastException != null)
+                var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
+                    CaptureException(assertion);
+
+                throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath);
+
+                static ExceptionDispatchInfo CaptureException(Action assertion)
                 {
-                    ExceptionDispatchInfo.Capture(lastException).Throw();
-                }
-                else
-                {
-                    // Instead of reporting it as a timeout, report the Xunit exception
-                    assertion();
+                    try
+                    {
+                        assertion();
+                        throw new InvalidOperationException("The assertion succeded after the timeout.");
+                    }
+                    catch (Exception ex)
+                    {
+                        return ExceptionDispatchInfo.Capture(ex);
+                    }
                 }
             }
         }
