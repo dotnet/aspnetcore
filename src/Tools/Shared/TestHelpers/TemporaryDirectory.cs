@@ -14,9 +14,10 @@ namespace Microsoft.Extensions.Tools.Internal
         private Dictionary<string, string> _files = new Dictionary<string, string>();
         private TemporaryDirectory _parent;
 
-        public TemporaryDirectory()
+        public TemporaryDirectory(string baseDir = null)
         {
-            Root = Path.Combine(Path.GetTempPath(), "dotnet-tool-tests", Guid.NewGuid().ToString("N"));
+            baseDir = baseDir ?? Path.GetTempPath();
+            Root = baseDir;
         }
 
         private TemporaryDirectory(string path, TemporaryDirectory parent)

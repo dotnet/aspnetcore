@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
@@ -52,7 +54,10 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         public OpenApiTestBase(ITestOutputHelper output)
         {
-            _tempDir = new TemporaryDirectory();
+            var testDest = typeof(OpenApiTestBase).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                 .Single(a => a.Key == "TestProjectDestination")
+                 .Value;
+            _tempDir = new TemporaryDirectory(Path.Combine(testDest, Path.GetRandomFileName()));
             _outputHelper = output;
         }
 
@@ -61,8 +66,12 @@ namespace Microsoft.DotNet.OpenApi.Tests
             var nswagJsonFile = "openapi.json";
             var project = _tempDir
                 .WithCSharpProject("testproj", sdk: "Microsoft.NET.Sdk.Web")
-                .WithTargetFrameworks("netcoreapp5.0");
+                .WithTargetFrameworks("netcoreapp3.0")
+                .WithProperty("DisablePackageReferenceRestrictions", "true");
             var tmp = project.Dir();
+
+            tmp.WithContentFile("Directory.Build.props");
+            tmp.WithContentFile("Directory.Build.targets");
 
             if (withOpenApi)
             {
