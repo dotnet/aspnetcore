@@ -1,3 +1,12 @@
 {
-  "DefaultWaitTimeoutInSeconds": 120
+  // We give each Selenium test assertion up to two minutes to fail before any other test in the
+  // build has failed
+  "DefaultWaitTimeoutInSeconds": 120,
+  // This value is balanced between completing the build fast enough upon failure and giving
+  // each E2E test a fair chance to pass even in the event that a separate test has failed already.
+  // We have around 10-15 tests that use Selenium and is unlikely they'll all fail at the same time,
+  // and even if that's the case, it'll take them 30 minutes tops to do so, which is why it is acceptable
+  // to give each tests 120 seconds to pass, independent of whether or not a separate test has already
+  // failed.
+  "DefaultAfterFailureWaitTimeoutInSeconds": 120
 }

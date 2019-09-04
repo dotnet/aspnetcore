@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
+        private static bool TestRunFailed = false;
         public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
+        public static TimeSpan FailureTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultAfterFailureWaitTimeoutInSeconds);
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             if (timeout == default)
             {
-                timeout = DefaultTimeout;
+                timeout = !TestRunFailed ? DefaultTimeout : FailureTimeout;
             }
 
             Exception lastException = null;
@@ -74,7 +76,13 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
             catch (WebDriverTimeoutException)
             {
-                var fileId = $"{Guid.NewGuid()}.png";
+                // At this point at least one test failed, so we mark the test as failed. Any assertions after this one
+                // will fail faster. There's a small race condition here between checking the value for TestRunFailed
+                // above and setting it here, but nothing bad can come out of it. Worst case scenario, one or more
+                // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
+                TestRunFailed = true;
+
+                var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.Severe);
 

@@ -54,5 +54,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         public int DefaultWaitTimeoutInSeconds { get; set; } = 3;
 
         public string ScreenShotsPath { get; set; }
+
+        public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
     }
 }

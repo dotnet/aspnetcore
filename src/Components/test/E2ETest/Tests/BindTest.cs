@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Remove the value altogether
             setNullButton.Click();
-            Browser.Equal("fail", () => target.GetAttribute("value"));
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
