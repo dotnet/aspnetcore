@@ -40,16 +40,7 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true)
         {
             _output = output;
-            _httpClient = new HttpClient(new HttpClientHandler()
-            {
-                AllowAutoRedirect = true,
-                UseCookies = true,
-                CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (m, c, ch, p) => true,
-            })
-            {
-                Timeout = TimeSpan.FromMinutes(2)
-            };
+            _httpClient = CreateClient(output);
 
             var now = DateTimeOffset.Now;
             new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
@@ -58,10 +49,28 @@ namespace Templates.Test.Helpers
 
             var arguments = published ? $"exec {dllPath}" : "run";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
-            if(hasListeningUri)
+            if (hasListeningUri)
             {
                 ListeningUri = GetListeningUri(output);
             }
+        }
+
+        private static HttpClient CreateClient(ITestOutputHelper output)
+        {
+            var clientHandler = new HttpClientHandler()
+            {
+                AllowAutoRedirect = true,
+                UseCookies = true,
+                CookieContainer = new CookieContainer(),
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            // The client does retries with exponential back-offs 2, 4, 8, 16, 32.
+            // This helps with transient network issues
+            return new HttpClient(new RetryHandler(clientHandler, output, TimeSpan.FromSeconds(2), 5))
+            {
+                Timeout = TimeSpan.FromMinutes(2)
+            };
         }
 
         public void VisitInBrowser(IWebDriver driver)
