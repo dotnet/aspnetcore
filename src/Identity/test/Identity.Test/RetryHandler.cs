@@ -53,11 +53,13 @@ namespace Microsoft.AspNetCore.Identity.Test
                     }
                     finally
                     {
-                        await Task.Delay(_waitIntervalBeforeRetry);
+                        await Task.Delay(_waitIntervalBeforeRetry, cancellationToken);
                         _waitIntervalBeforeRetry = _waitIntervalBeforeRetry * 2;
                     }
                 }
-                return result;
+                
+                // Try one last time to show the actual error.
+                return await base.SendAsync(request, cancellationToken);
             }
         }
 }
