@@ -24,39 +24,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
+                var sync = new object();
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
 
-                // No need to pass in a real sync object since all the calls in this test are passthrough.
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
+                ValueTask<FlushResult> flushTask;
 
-                var memory = concurrentPipeWriter.GetMemory();
-                Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
+                lock (sync)
+                {
+                    var memory = concurrentPipeWriter.GetMemory();
+                    Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
 
-                concurrentPipeWriter.Advance(memory.Length);
-                Assert.Equal(1, mockPipeWriter.AdvanceCallCount);
+                    concurrentPipeWriter.Advance(memory.Length);
+                    Assert.Equal(1, mockPipeWriter.AdvanceCallCount);
 
-                var flushTask0 = concurrentPipeWriter.FlushAsync();
-                Assert.Equal(1, mockPipeWriter.FlushCallCount);
+                    flushTask = concurrentPipeWriter.FlushAsync();
+                    Assert.Equal(1, mockPipeWriter.FlushCallCount);
 
-                pipeWriterFlushTcsArray[0].SetResult(default);
+                    pipeWriterFlushTcsArray[0].SetResult(default);
+                }
 
-                await flushTask0.DefaultTimeout();
+                await flushTask.DefaultTimeout();
 
-                memory = concurrentPipeWriter.GetMemory();
-                Assert.Equal(2, mockPipeWriter.GetMemoryCallCount);
+                lock (sync)
+                {
+                    var memory = concurrentPipeWriter.GetMemory();
+                    Assert.Equal(2, mockPipeWriter.GetMemoryCallCount);
 
-                concurrentPipeWriter.Advance(memory.Length);
-                Assert.Equal(2, mockPipeWriter.AdvanceCallCount);
+                    concurrentPipeWriter.Advance(memory.Length);
+                    Assert.Equal(2, mockPipeWriter.AdvanceCallCount);
 
-                var flushTask1 = concurrentPipeWriter.FlushAsync();
-                Assert.Equal(2, mockPipeWriter.FlushCallCount);
+                    flushTask = concurrentPipeWriter.FlushAsync();
+                    Assert.Equal(2, mockPipeWriter.FlushCallCount);
 
-                pipeWriterFlushTcsArray[1].SetResult(default);
+                    pipeWriterFlushTcsArray[1].SetResult(default);
+                }
 
-                await flushTask1.DefaultTimeout();
+                await flushTask.DefaultTimeout();
 
                 var completeEx = new Exception();
-                await concurrentPipeWriter.CompleteAsync(completeEx).DefaultTimeout();
+                ValueTask completeTask;
+
+                lock (sync)
+                {
+                    completeTask = concurrentPipeWriter.CompleteAsync(completeEx);
+                }
+
+                await completeTask.DefaultTimeout();
+
                 Assert.Same(completeEx, mockPipeWriter.CompleteException);
             }
         }

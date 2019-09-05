@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseEndpoints(ConfigureEndpoints);
-                    });                
+                    });
                 });
 
             return builder.StartAsync();

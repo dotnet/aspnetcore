@@ -252,6 +252,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     ParseFormValuesFast(keyValuePair.FirstSpan, ref accumulator, isFinalBlock: true, out var segmentConsumed);
                     Debug.Assert(segmentConsumed == keyValuePair.FirstSpan.Length);
+                    consumedBytes = sequenceReader.Consumed;
+                    consumed = sequenceReader.Position;
                     continue;
                 }
 

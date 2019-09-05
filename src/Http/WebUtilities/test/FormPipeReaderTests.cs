@@ -184,6 +184,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var formReader = new FormPipeReader(null, encoding);
 
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(2, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -201,6 +202,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -219,6 +221,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -237,6 +240,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(2, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -254,6 +258,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -272,6 +277,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -290,11 +296,29 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var formReader = new FormPipeReader(null, encoding);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             Assert.Equal(2, accumulator.KeyCount);
             var dict = accumulator.GetResults();
             Assert.Equal("\"%-.<>\\^_`{|}~", dict["\"%-.<>\\^_`{|}~"]);
             Assert.Equal("wow", dict["\"%-.<>\\^_`{|}"]);
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentFastPathWorks()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&"), Encoding.UTF8.GetBytes("baz=boo"));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
+
+            Assert.Equal(2, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
         }
 
         [Fact]
@@ -411,6 +435,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
 
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             IDictionary<string, StringValues> values = accumulator.GetResults();
             Assert.Contains("fo", values);
@@ -431,6 +456,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
 
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
 
             IDictionary<string, StringValues> values = accumulator.GetResults();
             Assert.Contains("fo", values);

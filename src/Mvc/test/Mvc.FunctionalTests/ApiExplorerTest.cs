@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using ApiExplorerWebSite;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Xunit;
 

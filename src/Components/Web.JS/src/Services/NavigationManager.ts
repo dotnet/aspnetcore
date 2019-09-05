@@ -17,11 +17,11 @@ export const internalFunctions = {
 };
 
 function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
+  notifyLocationChangedCallback = callback;
+
   if (hasRegisteredNavigationEventListeners) {
     return;
   }
-
-  notifyLocationChangedCallback = callback;
 
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', () => notifyLocationChanged(false));

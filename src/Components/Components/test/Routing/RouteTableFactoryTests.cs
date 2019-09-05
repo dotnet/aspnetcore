@@ -12,6 +12,45 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
+        public void CanCacheRouteTable()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { typeof(object).Assembly, GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void DoesNotCacheRouteTableForDifferentAssemblies()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.NotSame(routes1, routes2);
+        }
+
+        [Fact]
         public void CanDiscoverRoute()
         {
             // Arrange & Act
@@ -325,6 +364,41 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
             // Act
             Assert.Equal("a/brilliant", routeTable.Routes[0].Template.TemplateText);
+        }
+
+        [Fact]
+        public void DoesNotThrowIfStableSortComparesRouteWithItself()
+        {
+            // Test for https://github.com/aspnet/AspNetCore/issues/13313
+            // Arrange & Act
+            var builder = new TestRouteTableBuilder();
+            builder.AddRoute("r16");
+            builder.AddRoute("r05");
+            builder.AddRoute("r09");
+            builder.AddRoute("r00");
+            builder.AddRoute("r13");
+            builder.AddRoute("r02");
+            builder.AddRoute("r03");
+            builder.AddRoute("r10");
+            builder.AddRoute("r15");
+            builder.AddRoute("r14");
+            builder.AddRoute("r12");
+            builder.AddRoute("r07");
+            builder.AddRoute("r11");
+            builder.AddRoute("r08");
+            builder.AddRoute("r06");
+            builder.AddRoute("r04");
+            builder.AddRoute("r01");
+
+            var routeTable = builder.Build();
+
+            // Act
+            Assert.Equal(17, routeTable.Routes.Length);
+            for (var i = 0; i < 17; i++)
+            {
+                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
+            }
         }
 
         [Theory]

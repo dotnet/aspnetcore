@@ -419,6 +419,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void RoutingToComponentOutsideMainAppWorksWithAdditionalAssemblySpecified()
+        {
+            SetUrlViaPushState("/routeablecomponentfrompackage.html");
+
+            var app = MountTestComponent<TestRouterWithAdditionalAssembly>();
+            Assert.Contains("This component, including the CSS and image required to produce its", app.FindElement(By.CssSelector("div.special-style")).Text);
+        }
+
+        [Fact]
         public void ResetsScrollPositionWhenPerformingInternalNavigation_LinkClick()
         {
             SetUrlViaPushState("/LongPage1");

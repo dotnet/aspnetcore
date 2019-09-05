@@ -1,11 +1,11 @@
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
-namespace RazorClassLibrary_CSharp
+namespace Company.RazorClassLibrary1
 {
     public class ExampleJsInterop
     {
-        public static Task<string> Prompt(IJSRuntime jsRuntime, string message)
+        public static ValueTask<string> Prompt(IJSRuntime jsRuntime, string message)
         {
             // Implemented in exampleJsInterop.js
             return jsRuntime.InvokeAsync<string>(

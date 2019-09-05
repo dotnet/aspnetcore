@@ -1,9 +1,9 @@
 param (
     $darcVersion = $null,
-    $versionEndpoint = "https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16"
+    $versionEndpoint = "https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16",
+    $verbosity = "m"
 )
 
-$verbosity = "m"
 . $PSScriptRoot\tools.ps1
 
 function InstallDarcCli ($darcVersion) {

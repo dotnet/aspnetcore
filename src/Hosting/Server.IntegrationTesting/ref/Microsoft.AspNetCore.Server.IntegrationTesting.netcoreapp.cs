@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         None = 0,
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true)]
-    public partial class SkipIfEnvironmentVariableNotEnabledAttribute : System.Attribute, Microsoft.AspNetCore.Testing.xunit.ITestCondition
+    public partial class SkipIfEnvironmentVariableNotEnabledAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
         public SkipIfEnvironmentVariableNotEnabledAttribute(string environmentVariableName) { }
         public string AdditionalInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -192,14 +192,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public string SkipReason { get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class | System.AttributeTargets.Method)]
-    public sealed partial class SkipIfIISExpressSchemaMissingInProcessAttribute : System.Attribute, Microsoft.AspNetCore.Testing.xunit.ITestCondition
+    public sealed partial class SkipIfIISExpressSchemaMissingInProcessAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
         public SkipIfIISExpressSchemaMissingInProcessAttribute() { }
         public bool IsMet { get { throw null; } }
         public string SkipReason { get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=false)]
-    public partial class SkipOn32BitOSAttribute : System.Attribute, Microsoft.AspNetCore.Testing.xunit.ITestCondition
+    public partial class SkipOn32BitOSAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
         public SkipOn32BitOSAttribute() { }
         public bool IsMet { get { throw null; } }

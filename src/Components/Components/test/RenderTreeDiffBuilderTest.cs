@@ -2231,7 +2231,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public object ObjectProperty { get; set; }
 
             [Parameter]
-            public string ReadonlyProperty { get; private set; }
+            public string ReadonlyProperty { get; set; }
 
             [Parameter]
             public string PrivateProperty { get; set; }

@@ -1,5 +1,8 @@
 parameters:
   enableSymbolValidation: true
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
+  publishInstallersAndChecksums: false
 
 stages:
 - stage: NetCore_Dev5_Publish
@@ -20,10 +23,16 @@ stages:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Artifacts
+        displayName: Download Blob Artifacts
         inputs:
-          downloadType: specific files
-          matchingPattern: "*Artifacts*"
+          artifactName: 'BlobArtifacts'
+        continueOnError: true
+
+      - task: DownloadBuildArtifacts@0
+        displayName: Download PDB Artifacts
+        inputs:
+          artifactName: 'PDBArtifacts'
+        continueOnError: true
 
       - task: PowerShell@2
         displayName: Publish
@@ -34,7 +43,9 @@ stages:
             /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
+            ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job:
     displayName: Publish Assets
@@ -91,7 +102,13 @@ stages:
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
-            /p:Configuration=Release 
+            /p:Configuration=Release
+            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
+            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
+            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
+            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            ${{ parameters.artifactsPublishingAdditionalParameters }}
         
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed

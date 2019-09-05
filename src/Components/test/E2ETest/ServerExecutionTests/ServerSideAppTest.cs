@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
+        [Fact]
         public void ReconnectUI()
         {
             Browser.FindElement(By.LinkText("Counter")).Click();
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
+        [Fact]
         public void RendersContinueAfterReconnect()
         {
             Browser.FindElement(By.LinkText("Ticker")).Click();
