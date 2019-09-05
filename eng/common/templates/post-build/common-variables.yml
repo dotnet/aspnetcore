@@ -49,6 +49,6 @@ variables:
 
   # Default locations for Installers and checksums
   - name: ChecksumsBlobFeedUrl
-    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json
-  - name: InstallersBlobFeedUrl
     value: https://dotnetclichecksums.blob.core.windows.net/dotnet/index.json
+  - name: InstallersBlobFeedUrl
+    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json

@@ -3,6 +3,7 @@
 source="${BASH_SOURCE[0]}"
 darcVersion=''
 versionEndpoint="https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16"
+verbosity=m
 
 while [[ $# > 0 ]]; do
   opt="$(echo "$1" | awk '{print tolower($0)}')"
@@ -13,6 +14,10 @@ while [[ $# > 0 ]]; do
       ;;
     --versionendpoint)
       versionEndpoint=$2
+      shift
+      ;;
+    --verbosity)
+      verbosity=$2
       shift
       ;;
     *)
@@ -34,7 +39,6 @@ while [[ -h "$source" ]]; do
   [[ $source != /* ]] && source="$scriptroot/$source"
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
-verbosity=m
 
 . "$scriptroot/tools.sh"
 

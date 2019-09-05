@@ -37,10 +37,10 @@ function FirstMatchingSymbolDescriptionOrDefault {
   # DWARF file for a .dylib
   $DylibDwarf = $SymbolPath.Replace($Extension, ".dylib.dwarf")
  
-  $dotnetsymbolExe = "$env:USERPROFILE\.dotnet\tools"
-  $dotnetsymbolExe = Resolve-Path "$dotnetsymbolExe\dotnet-symbol.exe"
+  $dotnetSymbolExe = "$env:USERPROFILE\.dotnet\tools"
+  $dotnetSymbolExe = Resolve-Path "$dotnetSymbolExe\dotnet-symbol.exe"
 
-  & $dotnetsymbolExe --symbols --modules --windows-pdbs $TargetServerParam $FullPath -o $SymbolsPath | Out-Null
+  & $dotnetSymbolExe --symbols --modules --windows-pdbs $TargetServerParam $FullPath -o $SymbolsPath | Out-Null
 
   if (Test-Path $PdbPath) {
     return "PDB"
@@ -159,25 +159,25 @@ function CheckSymbolsAvailable {
     }
 }
 
-function Installdotnetsymbol {
-  $dotnetsymbolPackageName = "dotnet-symbol"
+function InstallDotnetSymbol {
+  $dotnetSymbolPackageName = "dotnet-symbol"
 
   $dotnetRoot = InitializeDotNetCli -install:$true
   $dotnet = "$dotnetRoot\dotnet.exe"
   $toolList = & "$dotnet" tool list --global
 
-  if (($toolList -like "*$dotnetsymbolPackageName*") -and ($toolList -like "*$dotnetsymbolVersion*")) {
-    Write-Host "dotnet-symbol version $dotnetsymbolVersion is already installed."
+  if (($toolList -like "*$dotnetSymbolPackageName*") -and ($toolList -like "*$dotnetSymbolVersion*")) {
+    Write-Host "dotnet-symbol version $dotnetSymbolVersion is already installed."
   }
   else {
-    Write-Host "Installing dotnet-symbol version $dotnetsymbolVersion..."
+    Write-Host "Installing dotnet-symbol version $dotnetSymbolVersion..."
     Write-Host "You may need to restart your command window if this is the first dotnet tool you have installed."
-    & "$dotnet" tool install $dotnetsymbolPackageName --version $dotnetsymbolVersion --verbosity "minimal" --global
+    & "$dotnet" tool install $dotnetSymbolPackageName --version $dotnetSymbolVersion --verbosity "minimal" --global
   }
 }
 
 try {
-  Installdotnetsymbol
+  InstallDotnetSymbol
 
   CheckSymbolsAvailable
 }
