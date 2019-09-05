@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             using (var scope = _services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
-                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml)).ToList().AsReadOnly();
+                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, _logger)).ToList().AsReadOnly();
             }
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
         }
 
-        private XElement TryParseKeyXml(string xml)
+        private static XElement TryParseKeyXml(string xml, ILogger logger)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
             catch (Exception e)
             {
-                _logger?.LogExceptionWhileParsingKeyXml(xml, e);
+                logger?.LogExceptionWhileParsingKeyXml(xml, e);
                 return null;
             }
         }
