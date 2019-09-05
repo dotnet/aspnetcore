@@ -586,7 +586,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
+            await Client.ExpectCircuitError(() =>
+                Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false));
 
             Assert.Contains(
                 logEvents,
