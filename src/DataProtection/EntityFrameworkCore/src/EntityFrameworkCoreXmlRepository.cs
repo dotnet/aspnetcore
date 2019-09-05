@@ -43,7 +43,10 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             using (var scope = _services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
-                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, _logger)).ToList().AsReadOnly();
+
+                // Put logger in a local such that `this` isn't captured.
+                var logger = _logger;
+                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, logger)).ToList().AsReadOnly();
             }
         }
 
