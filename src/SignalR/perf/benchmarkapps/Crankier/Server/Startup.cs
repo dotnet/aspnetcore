@@ -16,9 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
         public Startup(IConfiguration configuration)
         {
             _config = configuration;
-            _azureSignalrConnectionString = configuration.GetSection("Azure:SignalR").GetValue<string>("ConnectionString", null);
-            if (_azureSignalrConnectionString != null)
-                Console.WriteLine("Using Azure SignalR");
+            _azureSignalrConnectionString = configuration.GetSection("Azure:SignalR").GetValue<string>("ConnectionString", null);    
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -26,7 +24,9 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
             var signalrBuilder = services.AddSignalR();
 
             if (_azureSignalrConnectionString != null)
+            {
                 signalrBuilder.AddAzureSignalR();
+            }
 
             signalrBuilder.AddMessagePackProtocol();
 

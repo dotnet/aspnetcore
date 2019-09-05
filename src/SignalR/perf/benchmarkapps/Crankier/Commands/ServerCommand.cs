@@ -51,7 +51,10 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_");
 
             if (azureSignalRConnectionString != null)
+            {
                 configBuilder.AddInMemoryCollection(new [] { new KeyValuePair<string, string>("Azure:SignalR:ConnectionString", azureSignalRConnectionString) });
+                Console.WriteLine("Using Azure SignalR");
+            }
             
             var config = configBuilder.Build();
 
