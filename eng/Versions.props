@@ -9,7 +9,7 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
+    <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
     <PreReleaseVersionLabel>rc$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
     <PreReleaseBrandingLabel>Release Candidate $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <!-- Blazor Client packages will not RTM with 3.0 -->
