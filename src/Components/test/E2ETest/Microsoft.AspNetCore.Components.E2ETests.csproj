@@ -40,7 +40,7 @@
 
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\**\AzureAD.WebSite.deps.json" />
       <_testFiles Include="..\testassets\**\*" />
     </ItemGroup>
     <Copy
@@ -59,7 +59,6 @@
     <HelixContent Include="yarn.lock" />
     <!-- This is currently windows only -->
     <HelixProjectPlatform Remove="Linux;OSX" />
-    <HelixProjectTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
