@@ -22,7 +22,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    [Flaky("https://github.com/aspnet/AspNetCore/issues/13086", FlakyOn.All)]
     public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>, IDisposable
     {
         private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(30);
@@ -264,7 +263,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/13086", FlakyOn.AzP.Windows)]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange
@@ -279,11 +277,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.NotEqual(default, call);
 
             var id = call.AsyncHandle;
-            await Client.HubConnection.InvokeAsync(
+            await Client.ExpectRenderBatch(() => Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
                 id,
                 true,
-                $"[{id}, true, \"{{\"]");
+                $"[{id}, true, \"{{\"]"));
 
             var text = Assert.Single(
                 Client.FindElementById("errormessage-malformed").Children.OfType<TextNode>(),
@@ -308,15 +306,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.NotEqual(default, call);
 
             var id = call.AsyncHandle;
-            await Client.HubConnection.InvokeAsync(
+            await Client.ExpectRenderBatch(() => Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
-                id++,
+                id,
                 true,
-                $"[{id}, true, null]");
+                $"[{id}, true, null]"));
 
             Assert.Single(
                 Client.FindElementById("errormessage-success").Children.OfType<TextNode>(),
-                e => "" == e.TextContent);
+                e => "Success" == e.TextContent);
 
             Assert.Contains((LogLevel.Debug, "EndInvokeJSSucceeded"), logEvents);
         }

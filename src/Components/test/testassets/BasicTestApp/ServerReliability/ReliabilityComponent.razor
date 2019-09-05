@@ -116,6 +116,7 @@
             var result = await JSRuntime.InvokeAsync<object>(
                 "sendSuccessCallbackReturn",
                 Array.Empty<object>());
+            errorSuccess = "Success";
         }
         catch (Exception e)
         {
