@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Click the link to return back to the test page
             WaitUntilExists(By.ClassName("return-from-culture-setter")).Click();
 
-            // That should have triggered a redirect, wait for the main test selector to come up.
+            // That should have triggered a page load, so wait for the main test selector to come up.
             MountTestComponent<GlobalizationBindCases>();
             WaitUntilExists(By.Id("globalization-cases"));
 
