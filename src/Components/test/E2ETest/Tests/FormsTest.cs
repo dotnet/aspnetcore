@@ -196,21 +196,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Validates on edit
             Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
-            renewalDateInput.SendKeys("01/01/2000\t");
+            renewalDateInput.ReplaceText("01/01/2000\t");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
-            renewalDateInput.SendKeys("0/0/0");
+            renewalDateInput.ReplaceText("0/0/0");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Empty is invalid, because it's not nullable
-            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            renewalDateInput.ReplaceText($"{Keys.Backspace}");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
             // Can become valid
-            renewalDateInput.SendKeys("01/01/01\t");
+            renewalDateInput.ReplaceText("01/01/01");
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
             Browser.Empty(messagesAccessor);
         }
