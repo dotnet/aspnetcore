@@ -1116,7 +1116,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         AtomicBoolean done = new AtomicBoolean();
-        Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null);
+        Single<String> result = hubConnection.invoke(String.class, "fixedMessage", (Object)null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(done.get());

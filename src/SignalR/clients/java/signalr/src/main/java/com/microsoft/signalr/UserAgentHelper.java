@@ -17,7 +17,7 @@ public class UserAgentHelper {
         // Parsing version numbers
         String detailedVersion = Version.getDetailedVersion();
         agentBuilder.append(getVersion(detailedVersion));
-        agentBuilder.append("; (");
+        agentBuilder.append(" (");
         agentBuilder.append(detailedVersion);
         agentBuilder.append("; ");
 
