@@ -28,10 +28,10 @@ namespace Templates.Test.Helpers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            HttpResponseMessage result = null;
             var url = request.RequestUri;
             var method = request.Method;
 
+            HttpResponseMessage result = null;
             for (var i = 0; i < _maxRetries; i++)
             {
                 try
@@ -44,14 +44,18 @@ namespace Templates.Test.Helpers
                 catch (Exception e)
                 {
                     _output.WriteLine($"Request '{method} - {url}' failed with {e.ToString()}");
+                    result?.Dispose();
                 }
                 finally
                 {
-                    await Task.Delay(_waitIntervalBeforeRetry);
+                    await Task.Delay(_waitIntervalBeforeRetry, cancellationToken);
                     _waitIntervalBeforeRetry = _waitIntervalBeforeRetry * 2;
                 }
             }
 
+            _output.WriteLine($"Sending request '{method} - {url}' {_maxRetries + 1} attempt.");
+            result = await base.SendAsync(request, cancellationToken);
+            _output.WriteLine($"Request '{method} - {url}' ended with {result.StatusCode}.");
             return result;
         }
     }

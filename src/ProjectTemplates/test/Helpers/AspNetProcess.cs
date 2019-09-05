@@ -61,7 +61,7 @@ namespace Templates.Test.Helpers
             {
                 AllowAutoRedirect = true,
                 UseCookies = true,
-                CookieContainer = new CookieContainer(),
+                CookieContainer = new CookieContainer(),                
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 
