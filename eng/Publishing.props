@@ -14,8 +14,9 @@
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)\symbols\**\*.pdb" />
 
     <!-- Prepare for _PublishInstallers target. -->
+    <_InstallersToPublish Remove="@(_InstallersToPublish)" />
     <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.jar" UploadPathSegment="jar" />
-    <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.pom" UploadPathSegment="jar"/>
+    <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.pom" UploadPathSegment="jar" />
     <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.tgz" UploadPathSegment="npm" />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.deb" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.exe" UploadPathSegment="Runtime" />
@@ -44,7 +45,7 @@
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
         <IsShipping>false</IsShipping>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
-        <RelativeBlobPath>$(_UploadPathRoot)/%(UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)'</RelativeBlobPath>
+        <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
     </ItemGroup>
   </Target>
