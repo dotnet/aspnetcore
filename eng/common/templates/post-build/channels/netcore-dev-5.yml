@@ -9,7 +9,7 @@ stages:
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: .NET Core 5 Dev Channel
+  displayName: .NET Core 5 Dev Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
@@ -39,8 +39,8 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) 
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
@@ -85,7 +85,7 @@ stages:
           AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
-          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
+          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
             /p:ChannelId=$(NetCore_5_Dev_Channel_Id)
             /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
@@ -93,15 +93,15 @@ stages:
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
-            /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
-            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
-            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)'
+            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)'
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)'
+            /p:BARBuildId=$(BARBuildId)
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)'
+            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/'
             /p:Configuration=Release
             /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
@@ -109,7 +109,7 @@ stages:
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
-        
+
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed
         condition: contains(variables['TargetAzDOFeed'], 'pkgs.visualstudio.com')
@@ -123,16 +123,16 @@ stages:
         displayName: Publish Blobs to AzDO Feed
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-blobs-to-azdo.ps1
-          arguments: -FeedName $(AzDoFeedName) 
+          arguments: -FeedName $(AzDoFeedName)
             -SourceFolderCollection $(Build.ArtifactStagingDirectory)/BlobArtifacts/
             -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
         enabled: false
 
 
-- stage: NetCore_Dev5_PublishValidation
-  displayName: Publish Validation
+- stage: NetCore_Dev5_Publish_Validation
+  displayName: .NET Core 5 Dev Publish Validation
   variables:
-    - template: ../common-variables.yml  
+    - template: ../common-variables.yml
   jobs:
   - template: ../setup-maestro-vars.yml
 
@@ -160,6 +160,6 @@ stages:
     parameters:
       ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}
 
-  - template: ../promote-build.yml	
-    parameters:	
+  - template: ../promote-build.yml
+    parameters:
       ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}
