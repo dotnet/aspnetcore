@@ -34,9 +34,6 @@ namespace Microsoft.AspNetCore
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
-            // Workaround https://github.com/aspnet/AspNetCore/issues/11206
-            dlls = dlls.Where(d => !d.Contains("System.IO.Pipelines"));
-
             Assert.All(dlls, path =>
             {
                 var assemblyName = AssemblyName.GetAssemblyName(path);
