@@ -472,6 +472,22 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.NotNull(responseType.ModelMetadata);
         }
 
+        [Fact]
+        public void GetApiDescription_PopulatesResponseType_WithValueTaskOfProduct()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(ReturnsValueTaskOfProduct));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(typeof(Product), responseType.Type);
+            Assert.NotNull(responseType.ModelMetadata);
+        }
+
         [Theory]
         [InlineData(nameof(ReturnsObject))]
         [InlineData(nameof(ReturnsActionResult))]
@@ -479,6 +495,9 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData(nameof(ReturnsTaskOfObject))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
+        [InlineData(nameof(ReturnsValueTaskOfObject))]
+        [InlineData(nameof(ReturnsValueTaskOfActionResult))]
+        [InlineData(nameof(ReturnsValueTaskOfJsonResult))]
         public void GetApiDescription_DoesNotPopulatesResponseInformation_WhenUnknown(string methodName)
         {
             // Arrange
@@ -521,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     },
                     {
                         typeof(DefaultApiDescriptionProviderTest),
-                        nameof(DefaultApiDescriptionProviderTest.ReturnsActionResult),
+                        nameof(DefaultApiDescriptionProviderTest.ReturnsValueTaskOfActionResult),
                         filterDescriptors
                     },
                     {
@@ -625,6 +644,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
                         filterDescriptors
                     },
                     {
+                        typeof(DefaultApiDescriptionProviderTest),
+                        nameof(DefaultApiDescriptionProviderTest.ReturnsValueTask),
+                        filterDescriptors
+                    },
+                    {
                         typeof(DerivedProducesController),
                         nameof(DerivedProducesController.ReturnsVoid),
                         filterDescriptors
@@ -632,6 +656,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     {
                         typeof(DerivedProducesController),
                         nameof(DerivedProducesController.ReturnsTask),
+                        filterDescriptors
+                    },
+                    {
+                        typeof(DerivedProducesController),
+                        nameof(DerivedProducesController.ReturnsValueTask),
                         filterDescriptors
                     },
                 };
@@ -895,6 +924,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
+        [InlineData(nameof(ReturnsValueTask))]
         public void GetApiDescription_DefaultVoidStatus(string methodName)
         {
             // Arrange
@@ -914,6 +944,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
+        [InlineData(nameof(ReturnsValueTask))]
         public void GetApiDescription_VoidWithResponseTypeAttributeStatus(string methodName)
         {
             // Arrange
@@ -944,6 +975,10 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData(nameof(ReturnsTask))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
+        [InlineData(nameof(ReturnsValueTask))]
+        [InlineData(nameof(ReturnsValueTaskOfObject))]
+        [InlineData(nameof(ReturnsValueTaskOfActionResult))]
+        [InlineData(nameof(ReturnsValueTaskOfJsonResult))]
         public void GetApiDescription_PopulatesResponseInformation_WhenSetByFilter(string methodName)
         {
             // Arrange
@@ -2026,6 +2061,31 @@ namespace Microsoft.AspNetCore.Mvc.Description
             return null;
         }
 
+        private ValueTask<Product> ReturnsValueTaskOfProduct()
+        {
+            return default;
+        }
+
+        private ValueTask<object> ReturnsValueTaskOfObject()
+        {
+            return default;
+        }
+
+        private ValueTask ReturnsValueTask()
+        {
+            return default;
+        }
+
+        private ValueTask<IActionResult> ReturnsValueTaskOfActionResult()
+        {
+            return default;
+        }
+
+        private ValueTask<JsonResult> ReturnsValueTaskOfJsonResult()
+        {
+            return default;
+        }
+
         private Product ReturnsProduct()
         {
             return null;
@@ -2194,6 +2254,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             public Task ReturnsTask()
             {
                 return null;
+            }
+
+            public ValueTask ReturnsValueTask()
+            {
+                return default;
             }
 
             public void ReturnsVoid()
