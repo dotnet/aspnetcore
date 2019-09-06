@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -15,7 +16,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+        private static bool TestRunFailed = false;
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
+        public static TimeSpan FailureTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultAfterFailureWaitTimeoutInSeconds);
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
@@ -51,7 +54,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         {
             if (timeout == default)
             {
-                timeout = DefaultTimeout;
+                timeout = !TestRunFailed ? DefaultTimeout : FailureTimeout;
             }
 
             Exception lastException = null;
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                         assertion();
                         return true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         lastException = e;
                         return false;
@@ -73,19 +76,51 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
             catch (WebDriverTimeoutException)
             {
+                // At this point at least one test failed, so we mark the test as failed. Any assertions after this one
+                // will fail faster. There's a small race condition here between checking the value for TestRunFailed
+                // above and setting it here, but nothing bad can come out of it. Worst case scenario, one or more
+                // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
+                TestRunFailed = true;
+
+                var fileId = $"{Guid.NewGuid():N}.png";
+                var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.Severe);
-                if (errors.Count > 0)
+
+                TakeScreenShot(driver, screenShotPath);
+                var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
+                    CaptureException(assertion);
+
+                throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath);
+
+            }
+        }
+        private static ExceptionDispatchInfo CaptureException(Action assertion)
+        {
+            try
+            {
+                assertion();
+                throw new InvalidOperationException("The assertion succeded after the timeout.");
+            }
+            catch (Exception ex)
+            {
+                return ExceptionDispatchInfo.Capture(ex);
+            }
+        }
+
+        private static void TakeScreenShot(IWebDriver driver, string screenShotPath)
+        {
+            if (driver is ITakesScreenshot takesScreenshot && E2ETestOptions.Instance.ScreenShotsPath != null)
+            {
+                try
                 {
-                    throw new BrowserAssertFailedException(errors, lastException);
+                    Directory.CreateDirectory(E2ETestOptions.Instance.ScreenShotsPath);
+
+                    var screenShot = takesScreenshot.GetScreenshot();
+                    screenShot.SaveAsFile(screenShotPath);
                 }
-                else if (lastException != null)
+                catch (Exception ex)
                 {
-                    ExceptionDispatchInfo.Capture(lastException).Throw();
-                }
-                else
-                {
-                    // Instead of reporting it as a timeout, report the Xunit exception
-                    assertion();
+                    Console.WriteLine($"Failed to take a screenshot {ex.ToString()}");
                 }
             }
         }
