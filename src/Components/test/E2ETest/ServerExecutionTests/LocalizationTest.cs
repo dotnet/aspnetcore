@@ -40,7 +40,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
             selector.SelectByValue(culture);
 
-            // That should have triggered a redirect, wait for the main test selector to come up.
+            // Click the link to return back to the test page
+            WaitUntilExists(By.ClassName("return-from-culture-setter")).Click();
+
+            // That should have triggered a page load, so wait for the main test selector to come up.
             MountTestComponent<LocalizedText>();
 
             var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));

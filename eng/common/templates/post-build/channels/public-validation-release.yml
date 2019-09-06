@@ -1,13 +1,15 @@
 parameters:
   artifactsPublishingAdditionalParameters: ''
   publishInstallersAndChecksums: false
+  publishToAzureDevOpsFeeds: false
+  azureDevOpsToolsFeed: 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
 
 stages:
 - stage: PVR_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Validation Channel
+  displayName: .NET Tools - Validation Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
@@ -49,7 +51,7 @@ stages:
           AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
-          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
+          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
             /p:ChannelId=$(PublicValidationRelease_30_Channel_Id)
             /p:ArtifactsCategory=$(_DotNetValidationArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
@@ -57,21 +59,26 @@ stages:
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
-            /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
-            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
-            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)'
+            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)'
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)'
+            /p:BARBuildId=$(BARBuildId)
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)'
+            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts'
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts'
             /p:Configuration=Release
             /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:PublishToAzureDevOpsNuGetFeeds=${{ parameters.publishToAzureDevOpsFeeds }}
+            /p:AzureDevOpsStaticShippingFeed=${{ parameters.azureDevOpsToolsFeed }}
+            /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticTransportFeed=${{ parameters.azureDevOpsToolsFeed }}
+            /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - task: NuGetCommand@2
@@ -87,14 +94,14 @@ stages:
         displayName: Publish Blobs to AzDO Feed
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-blobs-to-azdo.ps1
-          arguments: -FeedName $(AzDoFeedName) 
+          arguments: -FeedName $(AzDoFeedName)
             -SourceFolderCollection $(Build.ArtifactStagingDirectory)/BlobArtifacts/
             -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
         enabled: false
 
 
 - stage: PVR_PublishValidation
-  displayName: Publish Validation
+  displayName: .NET Tools - Validation Publish Validation
   variables:
     - template: ../common-variables.yml
   jobs:
@@ -104,6 +111,6 @@ stages:
     parameters:
       ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}
 
-  - template: ../promote-build.yml	
-    parameters:	
+  - template: ../promote-build.yml
+    parameters:
       ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}

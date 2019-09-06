@@ -2,21 +2,20 @@ parameters:
   enableSymbolValidation: true
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
-  publishInstallersAndChecksums: false
 
 stages:
-- stage: Publish
+- stage: NetCore_30_Internal_Servicing_Publishing
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Developer Channel
+  displayName: .NET Core 3.0 Internal Servicing Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
   - job:
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.InternalServicing_30_Channel_Id))
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
@@ -39,15 +38,15 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) 
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
             ${{ parameters.symbolPublishingAdditionalParameters }}
 
-  - job:
+  - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
@@ -57,7 +56,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.InternalServicing_30_Channel_Id))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -85,31 +84,26 @@ stages:
           AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
-          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ChannelId=$(PublicDevRelease_30_Channel_Id)
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
+          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
+            /p:ChannelId=$(InternalServicing_30_Channel_Id)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
+            /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
+            /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
+            /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
+            /p:StaticInternalFeed=$(dotnetfeed-internal-nonstable-feed-url)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
-            /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
-            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
-            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
-            /p:Configuration=Release 
-            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
-            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
-            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
-            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
-            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:BARBuildId=$(BARBuildId)
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)'
+            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts'
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts'
+            /p:Configuration=Release
             ${{ parameters.artifactsPublishingAdditionalParameters }}
-        
+
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed
         condition: contains(variables['TargetAzDOFeed'], 'pkgs.visualstudio.com')
@@ -123,16 +117,19 @@ stages:
         displayName: Publish Blobs to AzDO Feed
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-blobs-to-azdo.ps1
-          arguments: -FeedName $(AzDoFeedName) 
+          arguments: -FeedName $(AzDoFeedName)
             -SourceFolderCollection $(Build.ArtifactStagingDirectory)/BlobArtifacts/
             -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
         enabled: false
 
+      - template: ../trigger-subscription.yml
+        parameters:
+          ChannelId: ${{ variables.InternalServicing_30_Channel_Id }}
 
-- stage: PublishValidation
-  displayName: Publish Validation
+- stage: NetCore_30_Internal_Servicing_Publish_Validation
+  displayName: .NET Core 3.0 Internal Servicing Publish Validation
   variables:
-    - template: ../common-variables.yml  
+    - template: ../common-variables.yml
   jobs:
   - template: ../setup-maestro-vars.yml
 
@@ -140,7 +137,7 @@ stages:
     - job:
       displayName: Symbol Availability
       dependsOn: setupMaestroVars
-      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicDevRelease_30_Channel_Id))
+      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.InternalServicing_30_Channel_Id))
       pool:
         vmImage: 'windows-2019'
       steps:
@@ -156,10 +153,6 @@ stages:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/symbols-validation.ps1
             arguments: -InputPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ -ExtractPath $(Agent.BuildDirectory)/Temp/ -DotnetSymbolVersion $(SymbolToolVersion)
 
-  - template: ../darc-gather-drop.yml
+  - template: ../promote-build.yml
     parameters:
-      ChannelId: ${{ variables.PublicDevRelease_30_Channel_Id }}
-
-  - template: ../promote-build.yml	
-    parameters:	
-      ChannelId: ${{ variables.PublicDevRelease_30_Channel_Id }}
+      ChannelId: ${{ variables.InternalServicing_30_Channel_Id }}
