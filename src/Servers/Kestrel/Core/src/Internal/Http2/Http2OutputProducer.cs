@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [StackTraceHidden]
         private static void ThrowDisposed()
         {
-            throw new InvalidOperationException("Cannot write to response after the request middleware has completed.");
+            throw new InvalidOperationException("Cannot write to response after the request has completed.");
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)
