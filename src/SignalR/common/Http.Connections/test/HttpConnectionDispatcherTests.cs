@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Response.Body = ms;
                 await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-                var connectionId = negotiateResponse.Value<string>("connectionId");
+                var connectionId = negotiateResponse.Value<string>("publicId");
                 Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
                 Assert.Equal(connectionId, connectionContext.ConnectionId);
             }

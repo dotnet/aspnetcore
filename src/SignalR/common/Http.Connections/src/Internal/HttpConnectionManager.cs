@@ -81,15 +81,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
             var id = MakeNewConnectionId();
+            var privateId = MakeNewConnectionId();
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, _connectionLogger);
+            var connection = new HttpConnectionContext(id, privateId, _connectionLogger);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
 
             _connections.TryAdd(id, (connection, connectionTimer));
+            _connections.TryAdd(privateId, (connection, connectionTimer));
+
             return connection;
         }
 

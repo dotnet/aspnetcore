@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             try
             {
                 // Get the bytes for the connection id
-                WriteNegotiatePayload(writer, connection.ConnectionId, context, options);
+                WriteNegotiatePayload(writer, connection.ConnectionId, connection.PrivateId, context, options);
 
                 Log.NegotiationRequest(_logger);
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, HttpContext context, HttpConnectionDispatcherOptions options)
+        private void WriteNegotiatePayload(IBufferWriter<byte> writer, string connectionId, string privateId, HttpContext context, HttpConnectionDispatcherOptions options)
         {
             var response = new NegotiationResponse();
 
@@ -349,7 +349,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            response.ConnectionId = connectionId;
+            response.ConnectionId = privateId;
+            response.PublicId = connectionId;
             response.AvailableTransports = new List<AvailableTransport>();
 
             if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))

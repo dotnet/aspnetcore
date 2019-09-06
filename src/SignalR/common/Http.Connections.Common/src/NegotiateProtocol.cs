@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         private const string ConnectionIdPropertyName = "connectionId";
         private static JsonEncodedText ConnectionIdPropertyNameBytes = JsonEncodedText.Encode(ConnectionIdPropertyName);
+        private const string PublicIdPropertyName = "publicId";
+        private static JsonEncodedText PublicIdPropertyNameBytes = JsonEncodedText.Encode(PublicIdPropertyName);
         private const string UrlPropertyName = "url";
         private static JsonEncodedText UrlPropertyNameBytes = JsonEncodedText.Encode(UrlPropertyName);
         private const string AccessTokenPropertyName = "accessToken";
@@ -69,6 +71,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                 if (!string.IsNullOrEmpty(response.ConnectionId))
                 {
                     writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
+                }
+
+                if (!string.IsNullOrEmpty(response.PublicId))
+                {
+                    writer.WriteString(PublicIdPropertyName, response.PublicId);
                 }
 
                 writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -127,6 +134,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 reader.EnsureObjectStart();
 
                 string connectionId = null;
+                string publicId = null;
                 string url = null;
                 string accessToken = null;
                 List<AvailableTransport> availableTransports = null;
@@ -150,6 +158,10 @@ namespace Microsoft.AspNetCore.Http.Connections
                             else if (reader.ValueTextEquals(ConnectionIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
+                            }
+                            else if (reader.ValueTextEquals(PublicIdPropertyNameBytes.EncodedUtf8Bytes))
+                            {
+                                publicId = reader.ReadAsString(PublicIdPropertyName);
                             }
                             else if (reader.ValueTextEquals(NegotiateVersionPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -211,6 +223,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 return new NegotiationResponse
                 {
                     ConnectionId = connectionId,
+                    PublicId = publicId,
                     Url = url,
                     AccessToken = accessToken,
                     AvailableTransports = availableTransports,

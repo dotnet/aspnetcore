@@ -13,17 +13,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class NegotiateProtocolTests
     {
         [Theory]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 0)]
-        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0], null, null, 0)]
-        [InlineData("{\"url\": \"http://foo.com/chat\"}", null, null, "http://foo.com/chat", null, 0)]
-        [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token", 0)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0)]
-        [InlineData("{\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123)]
-        [InlineData("{\"negotiateVersion\":123,\"negotiateVersion\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321)]
-        [InlineData("{\"ignore\":123,\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123)]
-        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version)
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 0, null)]
+        [InlineData("{\"connectionId\":\"\",\"availableTransports\":[]}", "", new string[0], null, null, 0, null)]
+        [InlineData("{\"url\": \"http://foo.com/chat\"}", null, null, "http://foo.com/chat", null, 0, null)]
+        [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token", 0, null)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0, null)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0, null)]
+        [InlineData("{\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123, null)]
+        [InlineData("{\"negotiateVersion\":123,\"negotiateVersion\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321, null)]
+        [InlineData("{\"ignore\":123,\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123, null)]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, null)]
+        [InlineData("{\"connectionId\":\"123\",\"publicId\":\"789\",\"availableTransports\":[]}", "123", new string[0], null, null, 0, "789")]
+        [InlineData("{\"publicId\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, "789")]
+
+        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version, string publicId)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
             var response = NegotiateProtocol.ParseResponse(responseData);
@@ -33,6 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Equal(url, response.Url);
             Assert.Equal(accessToken, response.AccessToken);
             Assert.Equal(version, response.Version);
+            Assert.Equal(publicId, response.PublicId);
 
             if (response.AvailableTransports != null)
             {

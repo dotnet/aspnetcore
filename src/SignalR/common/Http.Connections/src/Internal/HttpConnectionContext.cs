@@ -49,10 +49,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="privateId"></param>
         /// <param name="logger"></param>
-        public HttpConnectionContext(string id, ILogger logger)
+        public HttpConnectionContext(string id, string privateId, ILogger logger)
         {
             ConnectionId = id;
+            PrivateId = privateId;
             LastSeenUtc = DateTime.UtcNow;
 
             // The default behavior is that both formats are supported.
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         }
 
         public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
-            : this(id, logger)
+            : this(id, null, logger)
         {
             Transport = transport;
             Application = application;
@@ -112,6 +114,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
         public override string ConnectionId { get; set; }
+
+        internal string PrivateId { get; set; }
 
         public override IFeatureCollection Features { get; }
 
