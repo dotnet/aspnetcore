@@ -15,6 +15,7 @@
     <ProjectReferenceProvider Include="GetDocument.Insider" ProjectPath="$(RepoRoot)src\Tools\GetDocumentInsider\src\GetDocumentInsider.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepoRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
+    <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepoRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepoRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" RefProjectPath="$(RepoRoot)src\Features\JsonPatch\ref\Microsoft.AspNetCore.JsonPatch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" RefProjectPath="$(RepoRoot)src\DataProtection\Abstractions\ref\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
@@ -139,6 +140,5 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" RefProjectPath="$(RepoRoot)src\Components\Forms\ref\Microsoft.AspNetCore.Components.Forms.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" RefProjectPath="$(RepoRoot)src\Components\Server\ref\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Web" ProjectPath="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" RefProjectPath="$(RepoRoot)src\Components\Web\ref\Microsoft.AspNetCore.Components.Web.csproj" />
-    <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj" />
   </ItemGroup>
 </Project>
