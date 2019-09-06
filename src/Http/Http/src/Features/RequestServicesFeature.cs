@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     }
                     // If its a IValueTaskSource backed ValueTask,
                     // inform it its result has been read so it can reset
-                    vt.GetAwaiter().GetResult();
+                    vt.Result;
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();

@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
             bool result;
 
-            if (waitInQueueTask.IsCompleted)
+            if (waitInQueueTask.IsCompletedSuccessfully)
             {
                 ConcurrencyLimiterEventSource.Log.QueueSkipped();
                 result = waitInQueueTask.Result;
