@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Internal
             if (valueTask.IsCompletedSuccessfully)
             {
                 // Signal consumption to the IValueTaskSource
-                valueTask.GetAwaiter().GetResult();
+                _ = valueTask.Result;
                 return Task.CompletedTask;
             }
             else
