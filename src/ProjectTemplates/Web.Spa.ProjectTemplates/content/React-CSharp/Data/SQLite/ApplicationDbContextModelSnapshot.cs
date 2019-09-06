@@ -338,7 +338,7 @@ namespace Company.WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Company.Webapplication1.Models.ApplicationUser", null)
+                    b.HasOne("Company.WebApplication1.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
