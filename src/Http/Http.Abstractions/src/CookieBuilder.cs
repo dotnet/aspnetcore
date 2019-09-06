@@ -49,12 +49,12 @@ namespace Microsoft.AspNetCore.Http
         public virtual bool HttpOnly { get; set; }
 
         /// <summary>
-        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.None"/>
+        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <remarks>
         /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.None;
+        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
         /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.
