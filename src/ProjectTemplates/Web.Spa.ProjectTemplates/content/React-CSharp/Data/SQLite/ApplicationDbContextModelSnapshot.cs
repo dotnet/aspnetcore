@@ -14,7 +14,7 @@ namespace Company.WebApplication1.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0-preview9.19405.13");
+                .HasAnnotation("ProductVersion", "3.0.0-rc1.19455.8");
 
             modelBuilder.Entity("Company.WebApplication1.Models.ApplicationUser", b =>
                 {
@@ -155,7 +155,9 @@ namespace Company.WebApplication1.Data.Migrations
 
                     b.HasKey("Key");
 
-                    b.HasIndex("SubjectId", "ClientId", "Type", "Expiration");
+                    b.HasIndex("Expiration");
+
+                    b.HasIndex("SubjectId", "ClientId", "Type");
 
                     b.ToTable("PersistedGrants");
                 });
@@ -336,7 +338,7 @@ namespace Company.WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser", null)
+                    b.HasOne("Company.Webapplication1.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
