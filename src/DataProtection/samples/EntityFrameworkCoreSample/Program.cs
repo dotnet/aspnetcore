@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,6 +20,8 @@ namespace EntityFrameworkCoreSample
                 .AddDbContext<DataProtectionKeyContext>(o =>
                 {
                     o.UseInMemoryDatabase("DataProtection_EntityFrameworkCore");
+                    // Make sure to create a sql server called DataProtectionApp
+                    //o.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DataProtectionApp;Trusted_Connection=True;Connect Timeout=5;ConnectRetryCount=0");
                     o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
                     o.EnableSensitiveDataLogging();
                 })
@@ -29,7 +31,7 @@ namespace EntityFrameworkCoreSample
                 .Services
                 .BuildServiceProvider(validateScopes: true);
 
-            using(services)
+            using (services)
             {
                 // Run a sample payload
                 var protector = services.GetDataProtector("sample-purpose");
