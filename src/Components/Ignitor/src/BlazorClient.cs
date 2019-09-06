@@ -432,6 +432,7 @@ namespace Ignitor
             NextBatchReceived?.Completion?.TrySetException(exception);
             NextDotNetInteropCompletionReceived?.Completion.TrySetException(exception);
             NextJSInteropReceived?.Completion.TrySetException(exception);
+            NextAttachComponentReceived?.Completion?.TrySetException(exception);
             NextErrorReceived?.Completion?.TrySetResult(null);
         }
 
