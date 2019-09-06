@@ -44,7 +44,7 @@ namespace Company.WebApplication1
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
 
-            services.AddDefaultIdentity<ApplicationUser>()
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
