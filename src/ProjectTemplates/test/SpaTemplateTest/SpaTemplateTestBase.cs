@@ -254,6 +254,9 @@ namespace Templates.Test.SpaTemplateTest
                     browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
                     browser.FindElement(By.Name("Input.Password")).SendKeys(password);
                     browser.FindElement(By.Id("login-submit")).Click();
+
+                    // Need to navigate to fetch page
+                    browser.FindElement(By.PartialLinkText("Fetch data")).Click();
                 }
 
                 // Can navigate to the 'fetch data' page
