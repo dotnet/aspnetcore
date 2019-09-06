@@ -59,36 +59,33 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 // Launch the host process.
                 for (var i = 0; i < RetryCount; i++)
                 {
-                    try
-                    {
-                        var hintUrl = TestUriHelper.BuildTestUri(
-                            DeploymentParameters.ServerType,
-                            DeploymentParameters.Scheme,
-                            DeploymentParameters.ApplicationBaseUriHint,
-                            DeploymentParameters.StatusMessagesEnabled);
-                        var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
+                    var hintUrl = TestUriHelper.BuildTestUri(
+                        DeploymentParameters.ServerType,
+                        DeploymentParameters.Scheme,
+                        DeploymentParameters.ApplicationBaseUriHint,
+                        DeploymentParameters.StatusMessagesEnabled);
+                    var (actualUrl, hostExitToken, retry) = await StartSelfHostAsync(hintUrl);
 
-                        Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
-
-                        return new DeploymentResult(
-                            LoggerFactory,
-                            DeploymentParameters,
-                            applicationBaseUri: actualUrl.ToString(),
-                            contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
-                            hostShutdownToken: hostExitToken);
-                    }
-                    catch (InvalidOperationException invalidOperationException)
+                    if (retry)
                     {
-                        Logger.LogWarning($"Failed to start application due to non fatal error. Exception: {invalidOperationException.Message}");
                         continue;
                     }
+
+                    Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
+
+                    return new DeploymentResult(
+                        LoggerFactory,
+                        DeploymentParameters,
+                        applicationBaseUri: actualUrl.ToString(),
+                        contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
+                        hostShutdownToken: hostExitToken);
                 }
 
                 throw new Exception($"Failed to start Self hosted application after {RetryCount} retries.");
             }
         }
 
-        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync(Uri hintUrl)
+        protected async Task<(Uri url, CancellationToken hostExitToken, bool retry)> StartSelfHostAsync(Uri hintUrl)
         {
             using (Logger.BeginScope("StartSelfHost"))
             {
@@ -97,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
                     : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
+                var retry = false;
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
@@ -186,8 +184,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
                     if (allowRetry)
                     {
-                        started.TrySetException(new InvalidOperationException("Failed to bind to port in HttpSys."));
-
+                        retry = true;
                     }
                     else
                     {
@@ -223,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10));
                 }
 
-                return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);
+                return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token, retry);
             }
         }
 
