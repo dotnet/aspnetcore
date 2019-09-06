@@ -316,12 +316,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                     }
 
-                    else if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
-                    {
-                        // Send Async, no response expected
-                        invocation = ExecuteHubMethod(methodExecutor, hub, arguments);
-                    }
-
                     else
                     {
                         // Invoke Async, one reponse expected
@@ -350,7 +344,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 }
                             }
 
-                            await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
+                            // Send Async, no response expected
+                            if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+                            {
+                                await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
+                            }
                         }
                         invocation = ExecuteInvocation();
                     }
