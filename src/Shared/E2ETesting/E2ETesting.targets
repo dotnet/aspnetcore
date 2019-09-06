@@ -4,17 +4,10 @@
 
   <!-- Make sure the settings files get copied to the test output folder. -->
   <ItemGroup>
-    <None Update="e2eTestSettings.ci.json">
+    <None Update="e2eTestSettings.*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="e2eTestSettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    
-    <Content Update="e2eTestSettings.ci.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="e2eTestSettings.json">
+    <Content Update="e2eTestSettings.*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

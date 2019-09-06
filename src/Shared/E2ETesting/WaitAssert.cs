@@ -86,38 +86,41 @@ namespace Microsoft.AspNetCore.E2ETesting
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.Severe);
 
-                if (driver is ITakesScreenshot takesScreenshot && E2ETestOptions.Instance.ScreenShotsPath != null)
-                {
-                    try
-                    {
-                        if (!Directory.Exists(E2ETestOptions.Instance.ScreenShotsPath))
-                        {
-                            Directory.CreateDirectory(E2ETestOptions.Instance.ScreenShotsPath);
-                        }
-
-                        var screenShot = takesScreenshot.GetScreenshot();
-                        screenShot.SaveAsFile(screenShotPath);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
+                TakeScreenShot(driver, screenShotPath);
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
                     CaptureException(assertion);
 
                 throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath);
 
-                static ExceptionDispatchInfo CaptureException(Action assertion)
+            }
+        }
+        private static ExceptionDispatchInfo CaptureException(Action assertion)
+        {
+            try
+            {
+                assertion();
+                throw new InvalidOperationException("The assertion succeded after the timeout.");
+            }
+            catch (Exception ex)
+            {
+                return ExceptionDispatchInfo.Capture(ex);
+            }
+        }
+
+        private static void TakeScreenShot(IWebDriver driver, string screenShotPath)
+        {
+            if (driver is ITakesScreenshot takesScreenshot && E2ETestOptions.Instance.ScreenShotsPath != null)
+            {
+                try
                 {
-                    try
-                    {
-                        assertion();
-                        throw new InvalidOperationException("The assertion succeded after the timeout.");
-                    }
-                    catch (Exception ex)
-                    {
-                        return ExceptionDispatchInfo.Capture(ex);
-                    }
+                    Directory.CreateDirectory(E2ETestOptions.Instance.ScreenShotsPath);
+
+                    var screenShot = takesScreenshot.GetScreenshot();
+                    screenShot.SaveAsFile(screenShotPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to take a screenshot {ex.ToString()}");
                 }
             }
         }
