@@ -237,9 +237,14 @@ namespace Company.WebApplication1.Data.Migrations
                 column: "Expiration");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PersistedGrants_SubjectId_ClientId_Type_Expiration",
+                name: "IX_PersistedGrants_Expiration",
                 table: "PersistedGrants",
-                columns: new[] { "SubjectId", "ClientId", "Type", "Expiration" });
+                column: "Expiration");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PersistedGrants_SubjectId_ClientId_Type",
+                table: "PersistedGrants",
+                columns: new[] { "SubjectId", "ClientId", "Type" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
