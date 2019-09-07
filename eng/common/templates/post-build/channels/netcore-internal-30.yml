@@ -1,14 +1,13 @@
 parameters:
-  enableSymbolValidation: true
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
 
 stages:
-- stage: IS_Publish
+- stage: NetCore_30_Internal_Servicing_Publishing
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Internal Servicing
+  displayName: .NET Core 3.0 Internal Servicing Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
@@ -38,8 +37,8 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) 
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
@@ -78,80 +77,52 @@ stages:
           buildType: current
           artifactName: AssetManifests
 
+      - task: NuGetToolInstaller@1
+        displayName: 'Install NuGet.exe'
+
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
       - task: PowerShell@2
-        displayName: Add Assets Location
+        displayName: Publish Assets
         env:
-          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
+          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-universal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ChannelId=$(InternalServicing_30_Channel_Id)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
-            /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
-            /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
-            /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
-            /p:StaticInternalFeed=$(dotnetfeed-internal-nonstable-feed-url)
-            /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
+            /p:StaticInternalFeed=$(StaticInternalFeed)
+            /p:InternalChecksumsTargetStaticFeed=$(InternalChecksumsBlobFeedUrl)
+            /p:InternalChecksumsTargetStaticFeedKey=$(InternalChecksumsBlobFeedKey)
+            /p:InternalInstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
+            /p:InternalInstallersTargetStaticFeedKey=$(InternalInstallersBlobFeedKey)
+            /p:NugetPath=$(NuGetExeToolPath)
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 	
+            /p:TargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
             /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
             /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
             /p:Configuration=Release 
             ${{ parameters.artifactsPublishingAdditionalParameters }}
-        
-      - task: NuGetCommand@2
-        displayName: Publish Packages to AzDO Feed
-        condition: contains(variables['TargetAzDOFeed'], 'pkgs.visualstudio.com')
-        inputs:
-          command: push
-          vstsFeed: $(AzDoFeedName)
-          packagesToPush: $(Build.ArtifactStagingDirectory)\PackageArtifacts\*.nupkg
-          publishVstsFeed: $(AzDoFeedName)
-
-      - task: PowerShell@2
-        displayName: Publish Blobs to AzDO Feed
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-blobs-to-azdo.ps1
-          arguments: -FeedName $(AzDoFeedName) 
-            -SourceFolderCollection $(Build.ArtifactStagingDirectory)/BlobArtifacts/
-            -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
-        enabled: false
 
       - template: ../trigger-subscription.yml
         parameters:
           ChannelId: ${{ variables.InternalServicing_30_Channel_Id }}
-        
-- stage: IS_PublishValidation
-  displayName: Publish Validation
+
+- stage: NetCore_30_Internal_Servicing_Publish_Validation
+  displayName: .NET Core 3.0 Internal Servicing Publish Validation
   variables:
-    - template: ../common-variables.yml  
+    - template: ../common-variables.yml
   jobs:
   - template: ../setup-maestro-vars.yml
-
-  - ${{ if eq(parameters.enableSymbolValidation, 'true') }}:
-    - job:
-      displayName: Symbol Availability
-      dependsOn: setupMaestroVars
-      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.InternalServicing_30_Channel_Id))
-      pool:
-        vmImage: 'windows-2019'
-      steps:
-        - task: DownloadBuildArtifacts@0
-          displayName: Download Package Artifacts
-          inputs:
-            buildType: current
-            artifactName: PackageArtifacts
-
-        - task: PowerShell@2
-          displayName: Check Symbol Availability
-          inputs:
-            filePath: $(Build.SourcesDirectory)/eng/common/post-build/symbols-validation.ps1
-            arguments: -InputPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ -ExtractPath $(Agent.BuildDirectory)/Temp/ -DotnetSymbolVersion $(SymbolToolVersion)
 
   - template: ../promote-build.yml
     parameters:

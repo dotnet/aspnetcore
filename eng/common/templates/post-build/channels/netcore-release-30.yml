@@ -1,22 +1,20 @@
 parameters:
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
-  publishInstallersAndChecksums: false
-  publishToAzureDevOpsFeeds: true
 
 stages:
-- stage: NetCore_Dev5_Publish
+- stage: NetCore_Release30_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: .NET Core 5 Dev Publishing
+  displayName: .NET Core 3.0 Release Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
   - job:
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.NetCore_5_Dev_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_30_Channel_Id))
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
@@ -57,7 +55,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.NetCore_5_Dev_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_30_Channel_Id))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -93,7 +91,6 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -104,7 +101,7 @@ stages:
             /p:InternalInstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
             /p:InternalInstallersTargetStaticFeedKey=$(InternalInstallersBlobFeedKey)
             /p:NugetPath=$(NuGetExeToolPath)
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)'
             /p:TargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
             /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
@@ -113,22 +110,15 @@ stages:
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
-            /p:Configuration=Release
-            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
-            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
-            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
-            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
-            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
-            /p:PublishToAzureDevOpsNuGetFeeds=${{ parameters.publishToAzureDevOpsFeeds }}
-            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
-            /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
-            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
-            /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:Configuration=Release 
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
+      - template: ../trigger-subscription.yml
+        parameters:
+          ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}
 
-- stage: NetCore_Dev5_Publish_Validation
-  displayName: .NET Core 5 Dev Publish Validation
+- stage: NetCore_Release30_Publish_Validation
+  displayName: .NET Core 3.0 Release Publish Validation
   variables:
     - template: ../common-variables.yml
   jobs:
@@ -136,4 +126,4 @@ stages:
 
   - template: ../promote-build.yml
     parameters:
-      ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}
+      ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}

@@ -113,7 +113,7 @@ while (($# > 0)); do
   esac
 done
 
-if [[ "$repository" == "dotnet/performance" ]]; then
+if [ "$repository" == "dotnet/performance" ] || [ "$repository" == "dotnet-performance" ]; then
     run_from_perf_repo=true
 fi
 
