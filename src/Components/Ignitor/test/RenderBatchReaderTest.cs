@@ -5,20 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Ignitor
 {
     public class RenderBatchReaderTest
     {
-        static object NullStringMarker = new object();
+        static readonly object NullStringMarker = new object();
 
         // All of these tests are copies from the RenderBatchWriterTest but converted to be round-trippable tests.
 
@@ -102,7 +95,7 @@ namespace Ignitor
                 RenderTreeEdit.UpdateMarkup(108, 109),
                 RenderTreeEdit.RemoveAttribute(110, "Some removed attribute"), // To test deduplication
             };
-            var editsBuilder = new Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<RenderTreeEdit>();
+            var editsBuilder = new ArrayBuilder<RenderTreeEdit>();
             editsBuilder.Append(edits, 0, edits.Length);
             var editsSegment = editsBuilder.ToSegment(1, edits.Length); // Skip first to show offset is respected
             var bytes = RoundTripSerialize(new RenderBatch(
@@ -142,7 +135,6 @@ namespace Ignitor
         public void CanRoundTripReferenceFrames()
         {
             // Arrange/Act
-            var renderer = new FakeRenderer();
             var bytes = RoundTripSerialize(new RenderBatch(
                 default,
                 new ArrayRange<RenderTreeFrame>(new[] {
@@ -152,7 +144,7 @@ namespace Ignitor
                         .WithAttributeEventHandlerId((ulong)uint.MaxValue + 1),
                     RenderTreeFrame.ChildComponent(126, typeof(object))
                         .WithComponentSubtreeLength(5678)
-                        .WithComponent(new ComponentState(renderer, 2000, new FakeComponent(), null)),
+                        .WithComponent(new ComponentState(2000)),
                     RenderTreeFrame.ComponentReferenceCapture(127, value => { }, 1001),
                     RenderTreeFrame.Element(128, "Some element")
                         .WithElementSubtreeLength(1234),
@@ -324,33 +316,6 @@ namespace Ignitor
             }
 
             return result;
-        }
-
-        class FakeComponent : IComponent
-        {
-            public void Attach(RenderHandle renderHandle)
-                => throw new NotImplementedException();
-
-            public Task SetParametersAsync(ParameterView parameters)
-                => throw new NotImplementedException();
-        }
-
-        class FakeRenderer : Renderer
-        {
-            public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
-            {
-            }
-
-            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
-
-            protected override void HandleException(Exception exception)
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
-                => throw new NotImplementedException();
         }
     }
 }

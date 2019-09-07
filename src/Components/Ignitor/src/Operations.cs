@@ -7,6 +7,8 @@ namespace Ignitor
 {
     public sealed class Operations
     {
+        public ConcurrentQueue<CapturedAttachComponentCall> AttachComponent { get; } = new ConcurrentQueue<CapturedAttachComponentCall>();
+
         public ConcurrentQueue<CapturedRenderBatch> Batches { get; } = new ConcurrentQueue<CapturedRenderBatch>();
 
         public ConcurrentQueue<string> DotNetCompletions { get; } = new ConcurrentQueue<string>();

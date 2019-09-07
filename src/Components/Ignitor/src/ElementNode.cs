@@ -5,10 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Ignitor
@@ -71,17 +67,17 @@ namespace Ignitor
                 throw new InvalidOperationException("Element does not have a change event.");
             }
 
-            var args = new ChangeEventArgs()
+            var args = new
             {
                 Value = value
             };
 
-            var webEventDescriptor = new WebEventDescriptor()
+            var webEventDescriptor = new
             {
                 BrowserRendererId = 0,
                 EventHandlerId = changeEventDescriptor.EventId,
                 EventArgsType = "change",
-                EventFieldInfo = new EventFieldInfo
+                EventFieldInfo = new
                 {
                     ComponentId = 0,
                     FieldValue = value
@@ -98,12 +94,12 @@ namespace Ignitor
                 throw new InvalidOperationException("Element does not have a click event.");
             }
 
-            var mouseEventArgs = new MouseEventArgs()
+            var mouseEventArgs = new
             {
                 Type = clickEventDescriptor.EventName,
                 Detail = 1
             };
-            var webEventDescriptor = new WebEventDescriptor
+            var webEventDescriptor = new
             {
                 BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
