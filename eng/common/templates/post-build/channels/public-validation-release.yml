@@ -1,17 +1,18 @@
 parameters:
   artifactsPublishingAdditionalParameters: ''
   publishInstallersAndChecksums: false
+  publishToAzureDevOpsFeeds: true
 
 stages:
 - stage: PVR_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Validation Channel
+  displayName: .NET Tools - Validation Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - job:
+  - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
@@ -43,67 +44,56 @@ stages:
           buildType: current
           artifactName: AssetManifests
 
+      - task: NuGetToolInstaller@1
+        displayName: 'Install NuGet.exe'
+
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
       - task: PowerShell@2
-        displayName: Add Assets Location
+        displayName: Publish Assets
         env:
-          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
+          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-universal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ChannelId=$(PublicValidationRelease_30_Channel_Id)
             /p:ArtifactsCategory=$(_DotNetValidationArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
-            /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
+            /p:NugetPath=$(NuGetExeToolPath)
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
+            /p:TargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
             /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
             /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
             /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
             /p:Configuration=Release
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
             /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
-            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:PublishToAzureDevOpsNuGetFeeds=${{ parameters.publishToAzureDevOpsFeeds }}
+            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+            /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
+            /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
-
-      - task: NuGetCommand@2
-        displayName: Publish Packages to AzDO Feed
-        condition: contains(variables['TargetAzDOFeed'], 'pkgs.visualstudio.com')
-        inputs:
-          command: push
-          vstsFeed: $(AzDoFeedName)
-          packagesToPush: $(Build.ArtifactStagingDirectory)\PackageArtifacts\*.nupkg
-          publishVstsFeed: $(AzDoFeedName)
-
-      - task: PowerShell@2
-        displayName: Publish Blobs to AzDO Feed
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-blobs-to-azdo.ps1
-          arguments: -FeedName $(AzDoFeedName) 
-            -SourceFolderCollection $(Build.ArtifactStagingDirectory)/BlobArtifacts/
-            -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
-        enabled: false
 
 
 - stage: PVR_PublishValidation
-  displayName: Publish Validation
+  displayName: .NET Tools - Validation Publish Validation
   variables:
     - template: ../common-variables.yml
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - template: ../darc-gather-drop.yml
+  - template: ../promote-build.yml
     parameters:
-      ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}
-
-  - template: ../promote-build.yml	
-    parameters:	
       ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}
