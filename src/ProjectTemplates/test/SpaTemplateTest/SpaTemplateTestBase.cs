@@ -273,6 +273,23 @@ namespace Templates.Test.SpaTemplateTest
                     browser.FindElement(By.Name("Input.Password")).SendKeys(password);
                     browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
                     browser.FindElement(By.Id("registerSubmit")).Click();
+
+                    // We will be redirected to the RegisterConfirmation
+                    browser.Contains("/Identity/Account/RegisterConfirmation", () => browser.Url);
+                    browser.FindElement(By.PartialLinkText("Click here to confirm your account")).Click();
+
+                    // We will be redirected to the ConfirmEmail
+                    browser.Contains("/Identity/Account/ConfirmEmail", () => browser.Url);
+
+                    // Now we can login
+                    browser.FindElement(By.PartialLinkText("Login")).Click();
+                    browser.Exists(By.Name("Input.Email"));
+                    browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
+                    browser.FindElement(By.Name("Input.Password")).SendKeys(password);
+                    browser.FindElement(By.Id("login-submit")).Click();
+
+                    // Need to navigate to fetch page
+                    browser.FindElement(By.PartialLinkText("Fetch data")).Click();
                 }
 
                 // Can navigate to the 'fetch data' page

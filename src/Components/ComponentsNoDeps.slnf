@@ -36,8 +36,8 @@
       "test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
       "test\\testassets\\TestServer\\Components.TestServer.csproj",
-      "test\\testassets\\Ignitor\\Ignitor.csproj",
-      "test\\Ignitor.Test\\Ignitor.Test.csproj"
+      "Ignitor\\src\\Ignitor.csproj",
+      "Ignitor\\test\\Ignitor.Test.csproj"
     ]
   }
 }
