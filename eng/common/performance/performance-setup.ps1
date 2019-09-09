@@ -17,7 +17,7 @@ Param(
     [string] $Configurations="CompilationMode=$CompilationMode"
 )
 
-$RunFromPerformanceRepo = ($Repository -eq "dotnet/performance")
+$RunFromPerformanceRepo = ($Repository -eq "dotnet/performance") -or ($Repository -eq "dotnet-performance")
 $UseCoreRun = ($CoreRootDirectory -ne [string]::Empty)
 $UseBaselineCoreRun = ($BaselineCoreRootDirectory -ne [string]::Empty)
 
