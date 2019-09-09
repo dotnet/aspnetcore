@@ -10,8 +10,12 @@
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
-    <PreReleaseVersionLabel>rc$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>Release Candidate $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
+
+    <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition="$(IsStableBuild)">false</IncludePreReleaseLabelInPackageVersion>
+    <PreReleaseVersionLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">>rc$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">Release Candidate $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
+
     <!-- Blazor Client packages will not RTM with 3.0 -->
     <BlazorClientPreReleasePreviewNumber>9</BlazorClientPreReleasePreviewNumber>
     <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
