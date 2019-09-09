@@ -1,0 +1,7 @@
+content/**/apphost.exe;; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
+*.js;; We do not sign JavaScript files.
+*.binlog;; MSBuild binary logs are not signed though they are sometimes placed where validation thinks they should be.
+*.otf;; We do not sign font files.
+*.ttf;;
+WixUIWixca;*.msi; We do not sign WiX content in our installers.
+WixDepCA;*.msi;
