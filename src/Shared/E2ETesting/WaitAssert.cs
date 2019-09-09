@@ -84,9 +84,10 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
-                var errors = driver.GetBrowserLogs(LogLevel.Severe);
+                var errors = driver.GetBrowserLogs(E2ETestOptions.Instance.BrowserLogLevel);
 
                 TakeScreenShot(driver, screenShotPath);
+
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
                     CaptureException(assertion);
 

@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using OpenQA.Selenium;
 
 namespace Microsoft.AspNetCore.E2ETesting
 {
@@ -56,5 +57,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         public string ScreenShotsPath { get; set; }
 
         public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+
+        public LogLevel BrowserLogLevel { get; set; } = LogLevel.Severe;
     }
 }

@@ -1,4 +1,6 @@
 {
   "DefaultWaitTimeoutInSeconds": 20,
-  "ScreenShotsPath": "../../screenshots"
+  "ScreenShotsPath": "../../screenshots",
+  // Capture all the logs from the browser when an exception occurs.
+  "BrowserLogLevel": "All"
 }
