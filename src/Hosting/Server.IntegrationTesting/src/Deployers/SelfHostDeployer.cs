@@ -151,7 +151,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
                 Uri actualUrl = null;
-                bool allowRetry = false;
                 var started = new TaskCompletionSource<object>();
 
                 HostProcess = new Process() { StartInfo = startInfo };
@@ -170,9 +169,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
 
-                        if (dataArgs.Data.Contains("HttpSysException: The process cannot access the file because it is being used by another process."))
+                        if (dataArgs.Data.Contains("The process cannot access the file because it is being used by another process."))
                         {
-                            allowRetry = true;
+                            retry = true;
                         }
                     }
                 };
@@ -182,11 +181,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    if (allowRetry)
-                    {
-                        retry = true;
-                    }
-                    else
+                    if (!retry)
                     {
                         started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
                     }
@@ -202,7 +197,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     Logger.LogError("Error occurred while starting the process. Exception: {exception}", ex.ToString());
                 }
-
                 if (HostProcess.HasExited)
                 {
                     Logger.LogError("Host process {processName} {pid} exited with code {exitCode} or failed to start.", startInfo.FileName, HostProcess.Id, HostProcess.ExitCode);
