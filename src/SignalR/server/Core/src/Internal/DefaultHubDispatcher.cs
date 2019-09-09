@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     else
                     {
-                        // Invoke Async, one reponse expected
+                        // Invoke or Send
                         async Task ExecuteInvocation()
                         {
                             object result;
@@ -344,9 +344,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 }
                             }
 
-                            // Send Async, no response expected
+                            // No InvocationId - Send Async, no response expected
                             if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                             {
+                                // Invoke Async, one reponse expected
                                 await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                             }
                         }

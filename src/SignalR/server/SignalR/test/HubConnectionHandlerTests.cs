@@ -3417,19 +3417,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
-                    await client.BeginUploadStreamAsync(invocationId: null, nameof(MethodHub.UploadDoesWorkOnComplete), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
+                    var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
+                    var createTask = hubActivator.CreateTask.Task;
 
+                    // null ID means we're doing a Send and not an Invoke
+                    await client.BeginUploadStreamAsync(invocationId: null, nameof(MethodHub.StreamingConcat), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
                     await client.SendHubMessageAsync(new StreamItemMessage("id", "hello")).OrTimeout();
                     await client.SendHubMessageAsync(new StreamItemMessage("id", " world")).OrTimeout();
+
+                    await createTask.OrTimeout();
+                    var tcs = hubActivator.ReleaseTask;
                     await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
 
-                    // This task completes if the upload stream is completed, via closing the connection
-                    var task = (Task<int>)client.Connection.Items[nameof(MethodHub.UploadDoesWorkOnComplete)];
-                    await task.OrTimeout();
+                    await tcs.Task.OrTimeout();
 
-                    var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
-
-                    // OnConnectedAsync and UploadDoesWorkOnComplete hubs have been disposed
+                    // OnConnectedAsync and StreamingConcat hubs have been disposed
                     Assert.Equal(2, hubActivator.ReleaseCount);
 
                     // Shut down
@@ -3778,6 +3780,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public int ReleaseCount;
             private IServiceProvider _serviceProvider;
+            public TaskCompletionSource<object> ReleaseTask;
+            public TaskCompletionSource<object> CreateTask = new TaskCompletionSource<object>();
 
             public CustomHubActivator(IServiceProvider serviceProvider)
             {
@@ -3786,13 +3790,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public THub Create()
             {
-                return new DefaultHubActivator<THub>(_serviceProvider).Create();
+                ReleaseTask = new TaskCompletionSource<object>();
+                var hub = new DefaultHubActivator<THub>(_serviceProvider).Create();
+                CreateTask.SetResult(null);
+                return hub;
             }
 
             public void Release(THub hub)
             {
                 ReleaseCount++;
                 hub.Dispose();
+                ReleaseTask.SetResult(null);
+                CreateTask = new TaskCompletionSource<object>();
             }
         }
 
