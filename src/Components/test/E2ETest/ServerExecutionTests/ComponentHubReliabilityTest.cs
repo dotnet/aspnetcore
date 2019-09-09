@@ -284,6 +284,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [InlineData("afterrender-async-throw")]
         public async Task ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
         {
+            if (id == "setparameters-async-throw")
+            {
+                // In the case of setparameters-async-throw, the exception isn't triggered until after
+                // a renderbatch. This would lead to timing-based flakiness, because that batch's ACK
+                // may be received either before or after the subsequent event that is meant to trigger
+                // circuit termination. If it was received before, then the circuit would be terminated
+                // prematurely by the OnRenderCompleted call. To avoid timing-based flakiness, we can
+                // just not send OnRenderCompleted calls as they aren't required for this scenario.
+                Client.ConfirmRenderBatch = false;
+            }
+
             // Arrange
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = ServerFixture.RootUri;
