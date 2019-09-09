@@ -3780,7 +3780,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public int ReleaseCount;
             private IServiceProvider _serviceProvider;
-            public TaskCompletionSource<object> ReleaseTask;
+            public TaskCompletionSource<object> ReleaseTask = new TaskCompletionSource<object>();
             public TaskCompletionSource<object> CreateTask = new TaskCompletionSource<object>();
 
             public CustomHubActivator(IServiceProvider serviceProvider)
@@ -3792,7 +3792,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 ReleaseTask = new TaskCompletionSource<object>();
                 var hub = new DefaultHubActivator<THub>(_serviceProvider).Create();
-                CreateTask.SetResult(null);
+                CreateTask.TrySetResult(null);
                 return hub;
             }
 
@@ -3800,7 +3800,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 ReleaseCount++;
                 hub.Dispose();
-                ReleaseTask.SetResult(null);
+                ReleaseTask.TrySetResult(null);
                 CreateTask = new TaskCompletionSource<object>();
             }
         }
