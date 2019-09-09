@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                var (appUri, exitToken, _) = await StartSelfHostAsync(redirectUri);
+                var (appUri, exitToken) = await StartSelfHostAsync(redirectUri);
 
                 SetupNginx(appUri.ToString(), uri);
 

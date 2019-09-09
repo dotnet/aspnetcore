@@ -64,10 +64,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         DeploymentParameters.Scheme,
                         DeploymentParameters.ApplicationBaseUriHint,
                         DeploymentParameters.StatusMessagesEnabled);
-                    var (actualUrl, hostExitToken, retry) = await StartSelfHostAsync(hintUrl);
+                    var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
-                    if (retry)
+                    if (DeploymentParameters.ServerType == ServerType.HttpSys)
                     {
+                        // Retry HttpSys deployments due to port conflicts.
+                        // TODO consider implementing port 0 for HttpSys
                         continue;
                     }
 
@@ -85,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        protected async Task<(Uri url, CancellationToken hostExitToken, bool retry)> StartSelfHostAsync(Uri hintUrl)
+        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync(Uri hintUrl)
         {
             using (Logger.BeginScope("StartSelfHost"))
             {
@@ -94,7 +96,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var workingDirectory = string.Empty;
                 var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll"
                     : (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "");
-                var retry = false;
 
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
@@ -168,11 +169,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         {
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
-
-                        if (dataArgs.Data.Contains("The process cannot access the file because it is being used by another process."))
-                        {
-                            retry = true;
-                        }
                     }
                 };
                 var hostExitTokenSource = new CancellationTokenSource();
@@ -181,11 +177,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    if (!retry)
-                    {
-                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
-                    }
-
                     TriggerHostShutdown(hostExitTokenSource);
                 };
 
@@ -214,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10));
                 }
 
-                return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token, retry);
+                return (url: actualUrl ?? hintUrl, hostExitToken: hostExitTokenSource.Token);
             }
         }
 
