@@ -5,6 +5,7 @@ parameters:
   displayName: ''                 # optional -- display name for the job. Will use jobName if not passed
   pool: ''                        # required -- name of the Build pool
   container: ''                   # required -- name of the container
+  osGroup: ''                     # required -- operating system for the job
   extraSetupParameters: ''        # optional -- extra arguments to pass to the setup script
   frameworks: ['netcoreapp3.0']   # optional -- list of frameworks to run against
   continueOnError: 'false'        # optional -- determines whether to continue the build if the step errors
@@ -44,12 +45,13 @@ jobs:
         - HelixPreCommand: ''
 
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - ${{ if eq(variables['Agent.Os'], 'Windows_NT') }}:
+          - ${{ if eq( parameters.osGroup, 'Windows_NT') }}:
             - HelixPreCommand: 'set "PERFLAB_UPLOAD_TOKEN=$(PerfCommandUploadToken)"'
             - IsInternal: -Internal
-          - ${{ if ne(variables['Agent.Os'], 'Windows_NT') }}:
+          - ${{ if ne(parameters.osGroup, 'Windows_NT') }}:
             - HelixPreCommand: 'export PERFLAB_UPLOAD_TOKEN="$(PerfCommandUploadTokenLinux)"'
             - IsInternal: --internal
+            
           - group: DotNet-HelixApi-Access
           - group: dotnet-benchview
 

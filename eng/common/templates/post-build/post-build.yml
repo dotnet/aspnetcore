@@ -98,28 +98,25 @@ stages:
 
 - template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
   parameters:
-    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    enableAzDONuGetFeeds: ${{ parameters.enableAzDONuGetFeeds }}
 
 - template: \eng\common\templates\post-build\channels\netcore-dev-30.yml
   parameters:
-    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
 
 - template: \eng\common\templates\post-build\channels\netcore-dev-31.yml
   parameters:
-    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
 
 - template: \eng\common\templates\post-build\channels\netcore-tools-latest.yml
   parameters:
-    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
     symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
     artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
     publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
