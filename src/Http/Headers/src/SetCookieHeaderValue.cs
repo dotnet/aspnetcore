@@ -25,7 +25,7 @@ namespace Microsoft.Net.Http.Headers
 
         // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
         // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
-        internal static bool UseSameSite2016Compat;
+        internal static bool SuppressSameSiteNone;
 
         private const string HttpOnlyToken = "httponly";
         private const string SeparatorToken = "; ";
@@ -42,9 +42,9 @@ namespace Microsoft.Net.Http.Headers
 
         static SetCookieHeaderValue()
         {
-            if (AppContext.TryGetSwitch("Microsoft.Net.Http.Headers.SetCookieHeaderValue.UseSameSite2016Compat", out var enabled))
+            if (AppContext.TryGetSwitch("Microsoft.Net.Http.Headers.SetCookieHeaderValue.SuppressSameSiteNone", out var enabled))
             {
-                UseSameSite2016Compat = enabled;
+                SuppressSameSiteNone = enabled;
             }
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.Net.Http.Headers
 
         public bool Secure { get; set; }
 
-        public SameSiteMode SameSite { get; set; } = UseSameSite2016Compat ? SameSiteMode.None : (SameSiteMode)(-1); // Unspecified
+        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : (SameSiteMode)(-1); // Unspecified
 
         public bool HttpOnly { get; set; }
 
@@ -145,7 +145,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Allow for Unspecified (-1) to skip SameSite
-            if (SameSite == SameSiteMode.None && !UseSameSite2016Compat)
+            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
             {
                 sameSite = SameSiteNoneToken;
                 length += SeparatorToken.Length + SameSiteToken.Length + EqualsToken.Length + sameSite.Length;
@@ -261,7 +261,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Allow for Unspecified (-1) to skip SameSite
-            if (SameSite == SameSiteMode.None && !UseSameSite2016Compat)
+            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
             {
                 AppendSegment(builder, SameSiteToken, SameSiteNoneToken);
             }
@@ -464,7 +464,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     if (!ReadEqualsSign(input, ref offset))
                     {
-                        result.SameSite = UseSameSite2016Compat ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                        result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
                     }
                     else
                     {
@@ -478,14 +478,14 @@ namespace Microsoft.Net.Http.Headers
                         {
                             result.SameSite = SameSiteMode.Lax;
                         }
-                        else if (!UseSameSite2016Compat
+                        else if (!SuppressSameSiteNone
                             && StringSegment.Equals(enforcementMode, SameSiteNoneToken, StringComparison.OrdinalIgnoreCase))
                         {
                             result.SameSite = SameSiteMode.None;
                         }
                         else
                         {
-                            result.SameSite = UseSameSite2016Compat ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                            result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
                         }
                     }
                 }
