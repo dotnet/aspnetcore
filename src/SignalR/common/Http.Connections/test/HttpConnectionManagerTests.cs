@@ -143,7 +143,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-
                 var transport = connection.Transport;
 
                 Assert.NotNull(connection.ConnectionId);
@@ -152,6 +151,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
                 Assert.Same(newConnection, connection);
                 Assert.Same(transport, newConnection.Transport);
+            }
+        }
+
+        [Fact]
+        public void CanReferenceConnectionWithPublicOrPrivateId()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionManager = CreateConnectionManager(LoggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var transport = connection.Transport;
+
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(connection.PrivateId);
+                Assert.NotNull(transport);
+
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.True(connectionManager.TryGetConnection(connection.PrivateId, out var sameConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(newConnection, sameConnection);
+                Assert.Same(transport, newConnection.Transport);
+                Assert.Same(transport, sameConnection.Transport);
             }
         }
 
