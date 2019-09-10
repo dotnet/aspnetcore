@@ -96,6 +96,8 @@
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
 
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />

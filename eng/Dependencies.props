@@ -110,6 +110,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
