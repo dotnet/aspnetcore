@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData("{\"url\": \"http://foo.com/chat\", \"accessToken\": \"token\"}", null, null, "http://foo.com/chat", "token", 0, null)]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0, null)]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 0, null)]
-        [InlineData("{\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123, null)]
-        [InlineData("{\"negotiateVersion\":123,\"negotiateVersion\":321,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321, null)]
-        [InlineData("{\"ignore\":123,\"negotiateVersion\":123,\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123, null)]
-        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, null)]
-        [InlineData("{\"connectionId\":\"123\",\"publicId\":\"789\",\"availableTransports\":[]}", "123", new string[0], null, null, 0, "789")]
-        [InlineData("{\"publicId\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, "789")]
-
+        [InlineData("{\"negotiateVersion\":123,\"connectionId\":\"123\",\"connectionToken\":\"789\",\"availableTransports\":[{\"\\u0074ransport\":\"test\",\"transferFormats\":[]}]}", "123", new[] { "test" }, null, null, 123, "789")]
+        [InlineData("{\"negotiateVersion\":123,\"negotiateVersion\":321, \"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 321, "789")]
+        [InlineData("{\"ignore\":123,\"negotiateVersion\":123, \"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[]}", "123", new string[0], null, null, 123, "789")]
+        [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123, \"connectionToken\":\"789\"}", "123", new string[0], null, null, 123, "789")]
+        [InlineData("{\"connectionId\":\"123\",\"connectionToken\":\"789\",\"availableTransports\":[]}", "123", new string[0], null, null, 0, "789")]
+        [InlineData("{\"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, "789")]
+        [InlineData("{\"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123, \"connectionToken\":\"987\"}", "123", new string[0], null, null, 123, "987")]
         public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version, string publicId)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Equal(url, response.Url);
             Assert.Equal(accessToken, response.AccessToken);
             Assert.Equal(version, response.Version);
-            Assert.Equal(publicId, response.PublicId);
+            Assert.Equal(publicId, response.ConnectionToken);
 
             if (response.AvailableTransports != null)
             {
@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":null}", "Unexpected JSON Token Type 'Null'. Expected a JSON Array.")]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transferFormats\":[]}]}", "Missing required property 'transport'.")]
         [InlineData("{\"connectionId\":\"123\",\"availableTransports\":[{\"transport\":\"test\"}]}", "Missing required property 'transferFormats'.")]
+        [InlineData("{\"connectionId\":\"123\",\"negotiateVersion\":123,\"availableTransports\":[]}", "Missing required property 'connectionToken'.")]
         public void ParsingNegotiateResponseMessageThrowsForInvalid(string payload, string expectedMessage)
         {
             var responseData = Encoding.UTF8.GetBytes(payload);

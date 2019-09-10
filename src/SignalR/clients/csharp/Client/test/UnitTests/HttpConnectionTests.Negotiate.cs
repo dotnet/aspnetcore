@@ -37,6 +37,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public Task Test()
+            {
+                return RunInvalidNegotiateResponseTest<InvalidDataException>(ResponseUtils.CreateNegotiationContent(negotiateVersion: 1, connectionToken: null), "Invalid negotiation response received.");
+            }
+
+
+            [Fact]
             public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer()
             {
                 return RunInvalidNegotiateResponseTest<AggregateException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.ServerSentEvents),
@@ -157,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task PublicIdGetsSetToConnectionId()
+            public async Task ConnectionIdGetsSetWithNegotiateProtocolGreaterThanZero()
             {
                 string connectionId = null;
 
@@ -167,46 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
                         negotiateVersion = 1,
-                        publicId = "different-id",
-                        availableTransports = new object[]
-                        {
-                            new
-                            {
-                                transport = "LongPolling",
-                                transferFormats = new[] { "Text" }
-                            },
-                        },
-                        newField = "ignore this",
-                    })));
-                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
-                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
-
-                using (var noErrorScope = new VerifyNoErrorsScope())
-                {
-                    await WithConnectionAsync(
-                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
-                        async (connection) =>
-                        {
-                            await connection.StartAsync().OrTimeout();
-                            connectionId = connection.ConnectionId;
-                        });
-                }
-
-                Assert.Equal("different-id", connectionId);
-            }
-
-            [Fact]
-            public async Task PublicIdFieldIsIgnoredForNegotiateIdLessThanOne()
-            {
-                string connectionId = null;
-
-                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
-                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
-                    JsonConvert.SerializeObject(new
-                    {
-                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
-                        negotiateVersion = 0,
-                        publicId = "different-id",
+                        connectionToken = "different-id",
                         availableTransports = new object[]
                         {
                             new
@@ -235,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task NegotiateVersionGreaterThanOneExpectsPublicId()
+            public async Task ConnectionTokenFieldIsIgnoredForNegotiateIdLessThanOne()
             {
                 string connectionId = null;
 
@@ -244,7 +212,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     JsonConvert.SerializeObject(new
                     {
                         connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
-                        negotiateVersion = 3,
+                        negotiateVersion = 0,
+                        connectionToken = "different-id",
                         availableTransports = new object[]
                         {
                             new
@@ -269,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                 }
 
-                Assert.Null(connectionId);
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
             }
 
             [Fact]

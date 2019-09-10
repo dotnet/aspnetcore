@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
         private string _connectionToken;
-        private string _connectionAddress;
+        private string _connectionId;
         private readonly ConnectionLogScope _logScope;
         private readonly ILoggerFactory _loggerFactory;
         private Func<Task<string>> _accessTokenProvider;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public override string ConnectionId
         {
-            get => _connectionAddress;
+            get => _connectionId;
             set => throw new InvalidOperationException("The ConnectionId is set internally and should not be set by user code.");
         }
 
@@ -632,13 +632,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
             if (negotiationResponse.Version > 0)
             {
-                _connectionToken = negotiationResponse.ConnectionId;
-                _connectionAddress = negotiationResponse.PublicId;
-                _logScope.ConnectionId = _connectionAddress;
+                _connectionId = negotiationResponse.ConnectionId;
+                _connectionToken = negotiationResponse.ConnectionToken;
+                _logScope.ConnectionId = _connectionId;
             }
             else
             {
-                _connectionToken = _connectionAddress = negotiationResponse.ConnectionId;
+                _connectionToken = _connectionId = negotiationResponse.ConnectionId;
                 _logScope.ConnectionId = _connectionToken;
             }
 

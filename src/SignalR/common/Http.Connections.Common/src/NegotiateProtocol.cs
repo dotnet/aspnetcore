@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         private const string ConnectionIdPropertyName = "connectionId";
         private static JsonEncodedText ConnectionIdPropertyNameBytes = JsonEncodedText.Encode(ConnectionIdPropertyName);
-        private const string PublicIdPropertyName = "publicId";
-        private static JsonEncodedText PublicIdPropertyNameBytes = JsonEncodedText.Encode(PublicIdPropertyName);
+        private const string ConnectionTokenPropertyName = "connectionToken";
+        private static JsonEncodedText ConnectionTokenPropertyNameBytes = JsonEncodedText.Encode(ConnectionTokenPropertyName);
         private const string UrlPropertyName = "url";
         private static JsonEncodedText UrlPropertyNameBytes = JsonEncodedText.Encode(UrlPropertyName);
         private const string AccessTokenPropertyName = "accessToken";
@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Http.Connections
                     writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
                 }
 
-                if (!string.IsNullOrEmpty(response.PublicId))
+                if (!string.IsNullOrEmpty(response.ConnectionToken))
                 {
-                    writer.WriteString(PublicIdPropertyName, response.PublicId);
+                    writer.WriteString(ConnectionTokenPropertyName, response.ConnectionToken);
                 }
 
                 writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 reader.EnsureObjectStart();
 
                 string connectionId = null;
-                string publicId = null;
+                string connectionToken = null;
                 string url = null;
                 string accessToken = null;
                 List<AvailableTransport> availableTransports = null;
@@ -159,9 +159,9 @@ namespace Microsoft.AspNetCore.Http.Connections
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
                             }
-                            else if (reader.ValueTextEquals(PublicIdPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(ConnectionTokenPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                publicId = reader.ReadAsString(PublicIdPropertyName);
+                                connectionToken = reader.ReadAsString(ConnectionTokenPropertyName);
                             }
                             else if (reader.ValueTextEquals(NegotiateVersionPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -214,6 +214,14 @@ namespace Microsoft.AspNetCore.Http.Connections
                         throw new InvalidDataException($"Missing required property '{ConnectionIdPropertyName}'.");
                     }
 
+                    if (version > 0)
+                    {
+                        if (connectionToken == null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{ConnectionTokenPropertyNameBytes}'.");
+                        }
+                    }
+
                     if (availableTransports == null)
                     {
                         throw new InvalidDataException($"Missing required property '{AvailableTransportsPropertyName}'.");
@@ -223,7 +231,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 return new NegotiationResponse
                 {
                     ConnectionId = connectionId,
-                    PublicId = publicId,
+                    ConnectionToken = connectionToken,
                     Url = url,
                     AccessToken = accessToken,
                     AvailableTransports = availableTransports,

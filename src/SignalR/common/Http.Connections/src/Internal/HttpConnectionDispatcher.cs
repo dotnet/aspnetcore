@@ -349,8 +349,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            response.ConnectionId = privateId;
-            response.PublicId = connectionId;
+            response.ConnectionId = connectionId;
+            response.ConnectionToken = privateId;
             response.AvailableTransports = new List<AvailableTransport>();
 
             if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
