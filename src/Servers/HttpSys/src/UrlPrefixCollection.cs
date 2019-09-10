@@ -4,7 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -16,8 +18,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private UrlGroup _urlGroup;
         private int _nextId = 1;
-        private const int BasePort = 5001;
-        private const int MaxPort = 8000;
+        private const int BasePortIndex = 0;
+        private const int MaxPortIndex = 3000;
+        private const int BasePort = 5000;
+        private static int NextPortIndex = BasePortIndex;
 
         internal UrlPrefixCollection()
         {
@@ -153,18 +157,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             throw new InvalidOperationException("Cannot bind to port 0 with https.");
                         }
 
-                        for (var port = BasePort; port < MaxPort; port++)
+                        if (!FindHttpPortUnsynchronized(pair, urlPrefix))
                         {
-                            try
-                            {
-                                var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, port, urlPrefix.Path);
-                                _urlGroup.RegisterPrefix(newPrefix.FullPrefix, pair.Key);
-                                _prefixes[pair.Key] = newPrefix;
-                                break;
-                            }
-                            catch (HttpSysException)
-                            {
-                            }
+                            throw new HttpSysException(Marshal.GetLastWin32Error(), "Could not bind to port 0.");
                         }
                     }
                     else
@@ -174,6 +169,33 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                 }
             }
+        }
+
+        private bool FindHttpPortUnsynchronized(KeyValuePair<int, UrlPrefix> pair, UrlPrefix urlPrefix)
+        {
+            for (var index = BasePortIndex; index < MaxPortIndex; index++)
+            {
+                try
+                {
+                    // Bit of complicated math to always try 3000 ports, starting from NextPortIndex + 5000,
+                    // circling back around if we go above 8000 back to 5000, and so on.
+                    var port = ((index + NextPortIndex) % MaxPortIndex) + BasePort;
+
+                    Debug.Assert(port >= 5000 || port < 8000);
+
+                    var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, index, urlPrefix.Path);
+                    _urlGroup.RegisterPrefix(newPrefix.FullPrefix, pair.Key);
+                    _prefixes[pair.Key] = newPrefix;
+
+                    NextPortIndex = BasePortIndex + 1;
+                    return true;
+                }
+                catch (HttpSysException)
+                {
+                }
+            }
+
+            return false;
         }
 
         internal void UnregisterAllPrefixes()

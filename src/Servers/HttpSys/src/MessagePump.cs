@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using System.Linq;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -85,10 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Listener.Options.UrlPrefixes.Clear();
                 }
 
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes();
             }
             else if (_options.UrlPrefixes.Count > 0)
             {
@@ -100,17 +99,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _serverAddresses.Addresses.Clear();
                 }
 
-                foreach (var prefix in _options.UrlPrefixes)
-                {
-                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
-                }
+                
             }
             else if (hostingUrlsPresent)
             {
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes();
             }
             else
             {
@@ -129,9 +122,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Listener.Start();
 
+            if (hostingUrlsPresent)
+            {
+                // Update server addresses after we start listening as port 0
+                // needs to be selected at the point of binding.
+                foreach (var prefix in _options.UrlPrefixes)
+                {
+                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
+                }
+            }
+
             ActivateRequestProcessingLimits();
 
             return Task.CompletedTask;
+        }
+
+        private void UpdateUrlPrefixes()
+        {
+            var serverAddressCopy = _serverAddresses.Addresses.ToList();
+
+            _serverAddresses.Addresses.Clear();
+
+            foreach (var value in serverAddressCopy)
+            {
+                Listener.Options.UrlPrefixes.Add(value);
+            }
         }
 
         private void ActivateRequestProcessingLimits()

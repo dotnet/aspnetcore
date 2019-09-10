@@ -82,30 +82,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            lock (PortLock)
-            {
-                var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
+            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-                var builder = new WebHostBuilder()
-                    .UseHttpSys(options =>
-                    {
-                        options.UrlPrefixes.Add(prefix);
-                        configureOptions(options);
-                    })
-                    .Configure(appBuilder => appBuilder.Run(app));
+            var builder = new WebHostBuilder()
+                .UseHttpSys(options =>
+                {
+                    options.UrlPrefixes.Add(prefix);
+                    configureOptions(options);
+                })
+                .Configure(appBuilder => appBuilder.Run(app));
 
-                var host = builder.Build();
+            var host = builder.Build();
 
-                host.Start();
+            host.Start();
 
-                var server = (MessagePump)host.Services.GetRequiredService<IServer>();
-                prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
-                root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-                baseAddress = prefix.ToString();
+            var options = host.Services.GetRequiredService<IOptions<HttpSysOptions>>();
+            prefix = options.Value.UrlPrefixes.First(); // Has new port
+            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+            baseAddress = prefix.ToString();
 
-                return host;
-            }
-            throw new Exception("Failed to locate a free port.");
+            return host;
         }
 
         internal static MessagePump CreatePump()
@@ -113,22 +109,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            lock (PortLock)
-            {
-                var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
+            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-                var server = CreatePump();
-                server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
-                configureOptions(server.Listener.Options);
-                server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
+            var server = CreatePump();
+            server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
+            configureOptions(server.Listener.Options);
+            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
-                prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
-                root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-                baseAddress = prefix.ToString();
+            prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
+            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+            baseAddress = prefix.ToString();
 
-                return server;
-            }
-            throw new Exception("Failed to locate a free port.");
+            return server;
         }
 
         internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app)

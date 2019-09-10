@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                 }
                 else if (serverType == ServerType.HttpSys)
                 {
-                    return new UriBuilder(scheme, "localhost", TestPortHelper.GetNextHttpSysPort(scheme)).Uri;
+                    return new UriBuilder(scheme, "localhost", 0).Uri;
                 }
                 else
                 {
