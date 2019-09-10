@@ -126,14 +126,6 @@ stages:
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-
-- stage: NetCore_Dev5_Publish_Validation
-  displayName: .NET Core 5 Dev Publish Validation
-  variables:
-    - template: ../common-variables.yml
-  jobs:
-  - template: ../setup-maestro-vars.yml
-
-  - template: ../promote-build.yml
-    parameters:
-      ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}
+      - template: ../../steps/promote-build.yml
+        parameters:
+          ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}

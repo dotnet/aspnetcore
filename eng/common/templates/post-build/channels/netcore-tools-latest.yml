@@ -125,15 +125,7 @@ stages:
             /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
-        
-
-- stage: NetCore_Tools_Latest_PublishValidation
-  displayName: .NET Tools - Latest Publish Validation
-  variables:
-    - template: ../common-variables.yml
-  jobs:
-  - template: ../setup-maestro-vars.yml
-
-  - template: ../promote-build.yml
-    parameters:
-      ChannelId: ${{ variables.NetCore_Tools_Latest_Channel_Id }}
+              
+      - template: ../../steps/promote-build.yml
+        parameters:
+          ChannelId: ${{ variables.NetCore_Tools_Latest_Channel_Id }}

@@ -113,17 +113,6 @@ stages:
             /p:Configuration=Release 
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-      - template: ../trigger-subscription.yml
+      - template: ../../steps/promote-build.yml
         parameters:
           ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}
-
-- stage: NetCore_Release30_Publish_Validation
-  displayName: .NET Core 3.0 Release Publish Validation
-  variables:
-    - template: ../common-variables.yml
-  jobs:
-  - template: ../setup-maestro-vars.yml
-
-  - template: ../promote-build.yml
-    parameters:
-      ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}

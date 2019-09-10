@@ -119,17 +119,6 @@ stages:
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-      - template: ../trigger-subscription.yml
+      - template: ../../steps/promote-build.yml
         parameters:
           ChannelId: ${{ variables.PublicRelease_31_Channel_Id }}
-
-- stage: NetCore_Release31_Publish_Validation
-  displayName: .NET Core 3.1 Release Publish Validation
-  variables:
-    - template: ../common-variables.yml
-  jobs:
-  - template: ../setup-maestro-vars.yml
-
-  - template: ../promote-build.yml
-    parameters:
-      ChannelId: ${{ variables.PublicRelease_31_Channel_Id }}
