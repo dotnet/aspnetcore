@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -76,6 +77,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
+            var serverAddressCopy = _serverAddresses.Addresses.ToList();
+            _serverAddresses.Addresses.Clear();
 
             if (_serverAddresses.PreferHostingUrls && hostingUrlsPresent)
             {
@@ -87,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Listener.Options.UrlPrefixes.Clear();
                 }
 
-                UpdateUrlPrefixes();
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else if (_options.UrlPrefixes.Count > 0)
             {
@@ -99,17 +102,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _serverAddresses.Addresses.Clear();
                 }
 
-                
             }
             else if (hostingUrlsPresent)
             {
-                UpdateUrlPrefixes();
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else
             {
                 LogHelper.LogDebug(_logger, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
-                _serverAddresses.Addresses.Add(Constants.DefaultServerAddress);
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
 
@@ -122,27 +123,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Listener.Start();
 
-            if (hostingUrlsPresent)
-            {
-                // Update server addresses after we start listening as port 0
-                // needs to be selected at the point of binding.
-                foreach (var prefix in _options.UrlPrefixes)
-                {
-                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
-                }
-            }
+            UpdateServerAddresses();
 
             ActivateRequestProcessingLimits();
 
             return Task.CompletedTask;
         }
 
-        private void UpdateUrlPrefixes()
+        private void UpdateServerAddresses()
         {
-            var serverAddressCopy = _serverAddresses.Addresses.ToList();
+            // Update server addresses after we start listening as port 0
+            // needs to be selected at the point of binding.
+            foreach (var prefix in _options.UrlPrefixes)
+            {
+                _serverAddresses.Addresses.Add(prefix.FullPrefix);
+            }
+        }
 
-            _serverAddresses.Addresses.Clear();
-
+        private void UpdateUrlPrefixes(IList<string> serverAddressCopy)
+        {
             foreach (var value in serverAddressCopy)
             {
                 Listener.Options.UrlPrefixes.Add(value);
