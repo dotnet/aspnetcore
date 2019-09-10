@@ -42,6 +42,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows. -->
+      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT'" />
+
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
         <IsShipping>false</IsShipping>
         <ManifestArtifactData>NonShipping=true;ShipInstaller=dotnetcli</ManifestArtifactData>
