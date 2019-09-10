@@ -2,6 +2,7 @@
   <ItemDefinitionGroup>
     <HelixAvailableTargetQueue>
       <EnableByDefault>true</EnableByDefault>
+      <ForPR>false</EnableByDefault>
     </HelixAvailableTargetQueue>
   </ItemDefinitionGroup>
 
