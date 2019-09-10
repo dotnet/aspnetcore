@@ -1413,7 +1413,7 @@ describe("TransportSendQueue", () => {
 
         const queue = new TransportSendQueue(transport);
 
-        const first = queue.send(new Uint8Array([4, 5, 6]));
+        const first = queue.send(new Uint8Array([4, 5, 6]).buffer);
         // This should allow first to enter transport.send
         promiseSource1.resolve();
         // Wait until we're inside transport.send
@@ -1428,8 +1428,8 @@ describe("TransportSendQueue", () => {
         await Promise.all([first, second, third]);
 
         expect(sendMock.mock.calls.length).toBe(2);
-        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
-        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]).buffer);
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]).buffer);
 
         await queue.stop();
     });

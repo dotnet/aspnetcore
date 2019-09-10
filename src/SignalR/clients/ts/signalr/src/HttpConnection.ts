@@ -475,7 +475,7 @@ export class HttpConnection implements IConnection {
         }
 
         if (this.connectionState === ConnectionState.Connecting) {
-            this.logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection hasn't yet left the in the connecting state.`);
+            this.logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection is still in the connecting state.`);
             return;
         }
 
@@ -626,7 +626,7 @@ export class TransportSendQueue {
             offset += item.byteLength;
         }
 
-        return result;
+        return result.buffer;
     }
 }
 
