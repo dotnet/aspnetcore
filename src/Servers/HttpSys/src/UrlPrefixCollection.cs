@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -14,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private UrlGroup _urlGroup;
         private int _nextId = 1;
+        private const int BasePort = 5001;
+        private const int MaxPort = 8000;
 
         internal UrlPrefixCollection()
         {
@@ -138,10 +142,36 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 _urlGroup = urlGroup;
                 // go through the uri list and register for each one of them
-                foreach (var pair in _prefixes)
+                // Call ToList to avoid modification when enumerating.
+                foreach (var pair in _prefixes.ToList())
                 {
-                    // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    var urlPrefix = pair.Value;
+                    if (urlPrefix.PortValue == 0)
+                    {
+                        if (urlPrefix.IsHttps)
+                        {
+                            throw new InvalidOperationException("Cannot bind to port 0 with https.");
+                        }
+
+                        for (var port = BasePort; port < MaxPort; port++)
+                        {
+                            try
+                            {
+                                var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, port, urlPrefix.Path);
+                                _urlGroup.RegisterPrefix(newPrefix.FullPrefix, pair.Key);
+                                _prefixes[pair.Key] = newPrefix;
+                                break;
+                            }
+                            catch (HttpSysException)
+                            {
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
+                        _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    }
                 }
             }
         }

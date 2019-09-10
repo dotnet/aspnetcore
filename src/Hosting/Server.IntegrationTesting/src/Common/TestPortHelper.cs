@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
         // GetNextPort doesn't check for HttpSys urlacls.
         public static int GetNextHttpSysPort(string scheme)
         {
+            if (scheme == "http")
+            {
+                return 0;
+            }
+
             while (NextPort < MaxPort)
             {
                 var port = NextPort++;
