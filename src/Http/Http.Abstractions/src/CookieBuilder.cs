@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http
 
         static CookieBuilder()
         {
-            if (AppContext.TryGetSwitch("Microsoft.Net.Http.Headers.SetCookieHeaderValue.SuppressSameSiteNone", out var enabled))
+            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
             {
                 SuppressSameSiteNone = enabled;
             }
