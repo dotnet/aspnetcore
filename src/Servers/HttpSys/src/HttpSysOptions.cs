@@ -40,13 +40,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value.Length > MaximumRequestQueueNameLength)
                 {
-                    throw new ArgumentException($"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length",
-                                                nameof(value));
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                                                          value,
+                                                          $"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length");
                 }
-                else
-                {
-                    _requestQueueName = value;
-                }
+                _requestQueueName = value;
             }
         }
 
