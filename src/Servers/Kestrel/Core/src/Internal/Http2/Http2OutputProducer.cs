@@ -383,8 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             }
                             else
                             {
-                                // Write data without flushing
-                                // This allows remaining content and trailers to be sent in the same packet
+                                // Writing remaining content without flushing allows content and trailers to be sent in the same packet
                                 _frameWriter.WriteDataWithoutFlush(_streamId, _flowControl, readResult.Buffer, endStream: false);
                             }
                         }
