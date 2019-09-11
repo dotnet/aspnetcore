@@ -18,12 +18,13 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. There is an optional `negotiateVersion` querystring parameter that can be added to the negotiate post request. This determines the protocol versional between the server and the client. If ommited, the version is defaulted to zero The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
 
-1. A response that contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server.
+1. A response that contains the `connectionToken` which will be used to identify the connection on the server and the list of the transports supported by the server. The `connectionToken` should be kept secret. It also contains the `connectionId` which is a public id  
 
   ```json
   {
+    "connectionToken":"05265228-1e2c-46c5-82a1-6a5bcc3f0143",
     "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
     "availableTransports":[
       {
@@ -44,7 +45,8 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
   The payload returned from this endpoint provides the following data:
 
-  * The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `connectionId` which the id by which other clients can refer to it.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
 
