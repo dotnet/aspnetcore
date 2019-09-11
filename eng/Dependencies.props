@@ -172,6 +172,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.Storage.Blob" Version="$(MicrosoftAzureStorageBlobPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Mono.WebAssembly.Interop" Version="$(MonoWebAssemblyInteropPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />

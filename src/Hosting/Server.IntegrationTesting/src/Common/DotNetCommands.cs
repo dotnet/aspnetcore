@@ -16,8 +16,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         // Compare to https://github.com/aspnet/BuildTools/blob/314c98e4533217a841ff9767bb38e144eb6c93e4/tools/KoreBuild.Console/Commands/CommandContext.cs#L76
         public static string GetDotNetHome()
         {
+            // runtest.* scripts throughout the repo define $env:DOTNET_HOME
             var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_HOME");
+            // /activate.* and runtest.* scripts define $env:DOTNET_ROOT and (for /activate.*) $env:{DOTNET_ROOT(x86)}
             var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            // /eng/common/tools.* scripts define $env:DOTNET_INSTALL_DIR
+            var dotnetInstallDir = Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
+
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             var home = Environment.GetEnvironmentVariable("HOME");
 
@@ -28,8 +33,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             else if (!string.IsNullOrEmpty(dotnetRoot))
             {
-                // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
-                result = dotnetRoot.Substring(0, dotnetRoot.Length - 3);
+                if (dotnetRoot.EndsWith("x64"))
+                {
+                    // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
+                    result = dotnetRoot[0..^3];
+                }
+                else
+                {
+                    result = dotnetRoot;
+                }
+            }
+            else if (!string.IsNullOrEmpty(dotnetInstallDir))
+            {
+                result = dotnetInstallDir;
             }
             else if (!string.IsNullOrEmpty(userProfile))
             {
@@ -46,9 +62,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public static string GetDotNetInstallDir(RuntimeArchitecture arch)
         {
             var dotnetDir = DotNetHome;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            var archSpecificDir = Path.Combine(dotnetDir, arch.ToString());
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Directory.Exists(archSpecificDir))
             {
-                dotnetDir = Path.Combine(dotnetDir, arch.ToString());
+                dotnetDir = archSpecificDir;
             }
 
             return dotnetDir;
