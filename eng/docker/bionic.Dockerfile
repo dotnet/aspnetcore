@@ -3,8 +3,9 @@ FROM microsoft/dotnet:2.1-runtime-deps-bionic
 ARG USER
 ARG USER_ID
 ARG GROUP_ID
+ARG WORKDIR
 
-WORKDIR /code/build
+WORKDIR ${WORKDIR}
 RUN mkdir -p "/home/$USER" && chown "${USER_ID}:${GROUP_ID}" "/home/$USER"
 ENV HOME "/home/$USER"
 

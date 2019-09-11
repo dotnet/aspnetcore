@@ -124,6 +124,7 @@ docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
     --build-arg "USER_ID=$(id -u)" \
     --build-arg "GROUP_ID=$(id -g)" \
+    --build-arg "WORKDIR=$DIR" \
     --tag $tagname \
     -f "$dockerfile"
 
@@ -138,7 +139,7 @@ docker run \
     -e BUILD_SOURCEBRANCH \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
-    -v "$DIR:/code/build" \
+    -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \
