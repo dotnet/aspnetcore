@@ -634,14 +634,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             {
                 _connectionId = negotiationResponse.ConnectionId;
                 _connectionToken = negotiationResponse.ConnectionToken;
-                _logScope.ConnectionId = _connectionId;
             }
             else
             {
                 _connectionToken = _connectionId = negotiationResponse.ConnectionId;
-                _logScope.ConnectionId = _connectionToken;
             }
 
+            _logScope.ConnectionId = _connectionId;
             return negotiationResponse;
         }
     }

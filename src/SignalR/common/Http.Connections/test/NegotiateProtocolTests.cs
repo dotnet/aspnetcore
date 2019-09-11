@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData("{\"connectionId\":\"123\",\"connectionToken\":\"789\",\"availableTransports\":[]}", "123", new string[0], null, null, 0, "789")]
         [InlineData("{\"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123}", "123", new string[0], null, null, 123, "789")]
         [InlineData("{\"connectionToken\":\"789\",\"connectionId\":\"123\",\"availableTransports\":[],\"negotiateVersion\":123, \"connectionToken\":\"987\"}", "123", new string[0], null, null, 123, "987")]
-        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version, string publicId)
+        public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken, int version, string connectionToken)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
             var response = NegotiateProtocol.ParseResponse(responseData);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Assert.Equal(url, response.Url);
             Assert.Equal(accessToken, response.AccessToken);
             Assert.Equal(version, response.Version);
-            Assert.Equal(publicId, response.ConnectionToken);
+            Assert.Equal(connectionToken, response.ConnectionToken);
 
             if (response.AvailableTransports != null)
             {
