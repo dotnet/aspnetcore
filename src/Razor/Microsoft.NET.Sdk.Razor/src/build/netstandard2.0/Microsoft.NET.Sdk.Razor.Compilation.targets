@@ -35,7 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove comment above ^
 
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
-    
+
     Remove Returns="@(CscCommandLineArgs)"
     Remove <Import Project="Microsoft.Managed.Core.targets"/>
     Remove Returns="@(CscCommandLineArgs)"
@@ -60,7 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove additional steps after calling CSC
 
     Add our FileWrites after the call to CSC
-    
+
     Add Condition="'@(RazorCompile)'!=''" as a condition to the RazorCoreCompile target.
   -->
   <Target Name="RazorCoreCompile"
