@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.CookiePolicy
         private bool CheckPolicyRequired()
         {
             return !CanTrack
-                || Options.MinimumSameSitePolicy != SameSiteMode.Unspecified
+                || (CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.None)
+                || (!CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.Unspecified)
                 || Options.HttpOnly != HttpOnlyPolicy.None
                 || Options.Secure != CookieSecurePolicy.None;
         }

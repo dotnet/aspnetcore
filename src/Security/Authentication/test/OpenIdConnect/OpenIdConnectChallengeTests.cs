@@ -453,6 +453,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(correlationCookie.HttpOnly);
             Assert.Equal("/signin-oidc", correlationCookie.Path);
             Assert.False(StringSegment.IsNullOrEmpty(correlationCookie.Value));
+            Assert.Equal(Net.Http.Headers.SameSiteMode.None, correlationCookie.SameSite);
 
             Assert.Equal(2, challengeCookies.Count);
         }
