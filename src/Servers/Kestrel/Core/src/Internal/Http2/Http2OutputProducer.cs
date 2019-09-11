@@ -371,11 +371,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     if (readResult.IsCompleted && _stream.ResponseTrailers?.Count > 0)
                     {
-                        var dataLength = readResult.Buffer.Length;
-
                         // Output is ending and there are trailers to write
                         // Write any remaining content then write trailers
-                        if (dataLength > 0)
+                        if (readResult.Buffer.Length > 0)
                         {
                             // Only flush if required (i.e. content length exceeds flow control availability)
                             // Writing remaining content without flushing allows content and trailers to be sent in the same packet
