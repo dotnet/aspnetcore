@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -24,10 +25,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private const int MaxPortIndex = 43000;
         private const int MaxRetries = 1000;
         private static int NextPortIndex;
-
-        private const int ErrorAccessDenied = 5;
-        private const int ErrorSharingViolation = 32;
-        private const int ErrorAlreadyRegistered = 183;
 
         internal UrlPrefixCollection()
         {
@@ -190,14 +187,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _urlGroup.RegisterPrefix(newPrefix.FullPrefix, key);
                     _prefixes[key] = newPrefix;
 
-                    NextPortIndex = NextPortIndex++;
+                    NextPortIndex += index + 1;
                     return;
                 }
                 catch (HttpSysException ex)
                 {
-                    if ((ex.ErrorCode != ErrorSharingViolation
-                        && ex.ErrorCode != ErrorAlreadyRegistered
-                        && ex.ErrorCode != ErrorAccessDenied) || index == MaxRetries - 1)
+                    if ((ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS) || index == MaxRetries - 1)
                     {
                         throw;
                     }
