@@ -8,57 +8,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal static class IntegerEncoder
     {
-        public static bool Encode(int i, int n, Span<byte> buffer, out int length)
+         /// <summary>
+        /// Encodes an integer into one or more bytes.
+        /// </summary>
+        /// <param name="value">The value to encode. Must not be negative.</param>
+        /// <param name="numBits">The length of the prefix, in bits, to encode <paramref name="value"/> within. Must be between 1 and 8.</param>
+        /// <param name="destination">The destination span to encode <paramref name="value"/> to.</param>
+        /// <param name="bytesWritten">The number of bytes used to encode <paramref name="value"/>.</param>
+        /// <returns>If <paramref name="destination"/> had enough storage to encode <paramref name="value"/>, true. Otherwise, false.</returns>
+        public static bool Encode(int value, int numBits, Span<byte> destination, out int bytesWritten)
         {
-            Debug.Assert(i >= 0);
-            Debug.Assert(n >= 1 && n <= 8);
+            Debug.Assert(value >= 0);
+            Debug.Assert(numBits >= 1 && numBits <= 8);
 
-            var j = 0;
-            length = 0;
-
-            if (buffer.Length == 0)
+            if (destination.Length == 0)
             {
+                bytesWritten = 0;
                 return false;
             }
 
-            if (i < (1 << n) - 1)
+            destination[0] &= MaskHigh(8 - numBits);
+
+            if (value < (1 << numBits) - 1)
             {
-                buffer[j] &= MaskHigh(8 - n);
-                buffer[j++] |= (byte)i;
+                destination[0] |= (byte)value;
+
+                bytesWritten = 1;
+                return true;
             }
             else
             {
-                buffer[j] &= MaskHigh(8 - n);
-                buffer[j++] |= (byte)((1 << n) - 1);
+                destination[0] |= (byte)((1 << numBits) - 1);
 
-                if (j == buffer.Length)
+                if (1 == destination.Length)
                 {
+                    bytesWritten = 0;
                     return false;
                 }
 
-                i -= ((1 << n) - 1);
-                while (i >= 128)
-                {
-                    var ui = (uint)i; // Use unsigned for optimizations
-                    buffer[j++] = (byte)((ui % 128) + 128);
+                value = value - ((1 << numBits) - 1);
+                int i = 1;
 
-                    if (j >= buffer.Length)
+                while (value >= 128)
+                {
+                    destination[i++] = (byte)(value % 128 + 128);
+
+                    if (i >= destination.Length)
                     {
+                        bytesWritten = 0;
                         return false;
                     }
 
-                    i = (int)(ui / 128); // Jit converts unsigned divide by power-of-2 constant to clean shift
+                    value = value / 128;
                 }
-                buffer[j++] = (byte)i;
-            }
+                destination[i++] = (byte)value;
 
-            length = j;
+            bytesWritten = i;
             return true;
+            }
         }
 
-        private static byte MaskHigh(int n)
-        {
-            return (byte)(sbyte.MinValue >> (n - 1));
-        }
+        private static byte MaskHigh(int n) => (byte)(sbyte.MinValue >> (n - 1));
     }
 }

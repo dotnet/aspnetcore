@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Text;
+
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
@@ -10,8 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
         public const int RfcOverhead = 32;
 
-        public HeaderField(Span<byte> name, Span<byte> value)
+        public HeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            Debug.Assert(name.Length > 0);
+
+            // TODO: We're allocating here on every new table entry.
+            // That means a poorly-behaved server could cause us to allocate repeatedly.
+            // We should revisit our allocation strategy here so we don't need to allocate per entry
+            // and we have a cap to how much allocation can happen per dynamic table
+            // (without limiting the number of table entries a server can provide within the table size limit).
             Name = new byte[name.Length];
             name.CopyTo(Name);
 
@@ -25,6 +35,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public int Length => GetLength(Name.Length, Value.Length);
 
-        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + 32;
+        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + RfcOverhead;
+        
+        public override string ToString()
+        {
+            if (Name != null)
+            {
+                return Encoding.ASCII.GetString(Name) + ": " + Encoding.ASCII.GetString(Value);
+            }
+            else
+            {
+                return "<empty>";
+            }
+        }
     }
 }

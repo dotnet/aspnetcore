@@ -1,25 +1,44 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
+using System.Numerics;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    /// <summary>
-    /// The maximum we will decode is Int32.MaxValue, which is also the maximum request header field size.
-    /// </summary>
     internal class IntegerDecoder
     {
         private int _i;
         private int _m;
 
         /// <summary>
-        /// Callers must ensure higher bits above the prefix are cleared before calling this method.
+        /// Decodes the first byte of the integer.
         /// </summary>
-        /// <param name="b"></param>
-        /// <param name="prefixLength"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
+        /// <param name="b">
+        /// The first byte of the variable-length encoded integer.
+        /// </param>
+        /// <param name="prefixLength">
+        /// The number of lower bits in this prefix byte that the
+        /// integer has been encoded into. Must be between 1 and 8.
+        /// Upper bits must be zero.
+        /// </param>
+        /// <param name="result">
+        /// If decoded successfully, contains the decoded integer.
+        /// </param>
+        /// <returns>
+        /// If the integer has been fully decoded, true.
+        /// Otherwise, false -- <see cref="TryDecode(byte, out int)"/> must be called on subsequent bytes.
+        /// </returns>
+        /// <remarks>
+        /// The term "prefix" can be confusing. From the HPACK spec:
+        /// An integer is represented in two parts: a prefix that fills the current octet and an
+        /// optional list of octets that are used if the integer value does not fit within the prefix.
+        /// </remarks>
         public bool BeginTryDecode(byte b, int prefixLength, out int result)
         {
+            Debug.Assert(prefixLength >= 1 && prefixLength <= 8);
+            Debug.Assert((b & ~((1 << prefixLength) - 1)) == 0, "bits other than prefix data must be set to 0.");
+            
             if (b < ((1 << prefixLength) - 1))
             {
                 result = b;
@@ -32,30 +51,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             return false;
         }
 
+        /// <summary>
+        /// Decodes subsequent bytes of an integer.
+        /// </summary>
+        /// <param name="b">
+        /// The byte to decode
+        /// </param>
+        /// <param name="result">
+        /// If decoded successfully, contains the decoded integer.
+        /// </param>
+        /// <returns>If the integer has been fully decoded, true. Otherwise, false -- <see cref="TryDecode(byte, out int)"/> must be called on subsequent bytes.</returns>
         public bool TryDecode(byte b, out int result)
         {
-            var m = _m; // Enregister
-            var i = _i + ((b & 0x7f) << m); // Enregister
-
-            if ((b & 0x80) == 0)
+            // Check if shifting b by _m would result in > 31 bits.
+            // No masking is required: if the 8th bit is set, it indicates there is a
+            // bit set in a future byte, so it is fine to check that here as if it were
+            // bit 0 on the next byte.
+            // This is a simplified form of:
+            //   int additionalBitsRequired = 32 - BitOperations.LeadingZeroCount((uint)b);
+            //   if (_m + additionalBitsRequired > 31)
+            if (BitOperations.LeadingZeroCount((uint)b) <= _m)
             {
-                // Int32.MaxValue only needs a maximum of 5 bytes to represent and the last byte cannot have any value set larger than 0x7
-                if ((m > 21 && b > 0x7) || i < 0)
+                throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
+            }
+
+            _i = _i + ((b & 0x7f) << _m);
+
+            // If the addition overflowed, the result will be negative.
+            if (_i < 0)
+            {
+                throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
+            }
+
+            _m = _m + 7;
+
+            if ((b & 128) == 0)
+            {
+                if (b == 0 && _m / 7 > 1)
                 {
-                    ThrowIntegerTooBigException();
+                    // Do not accept overlong encodings.
+                    throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
                 }
 
-                result = i;
+                result = _i;
                 return true;
             }
-            else if (m > 21)
-            {
-                // Int32.MaxValue only needs a maximum of 5 bytes to represent
-                ThrowIntegerTooBigException();
-            }
-
-            _m = m + 7;
-            _i = i;
 
             result = 0;
             return false;

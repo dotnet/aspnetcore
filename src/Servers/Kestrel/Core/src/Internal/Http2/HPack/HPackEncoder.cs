@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 case 400:
                 case 404:
                 case 500:
-                    buffer[0] = (byte)(0x80 | StaticTable.Instance.StatusIndex[statusCode]);
+                    buffer[0] = (byte)(0x80 | StaticTable.StatusIndex[statusCode]);
                     return 1;
                 default:
                     // Send as Literal Header Field Without Indexing - Indexed Name

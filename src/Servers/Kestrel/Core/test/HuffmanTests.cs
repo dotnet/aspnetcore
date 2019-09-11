@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void HuffmanDecodeArray(byte[] encoded, byte[] expected)
         {
             var dst = new byte[expected.Length];
-            Assert.Equal(expected.Length, Huffman.Decode(new ReadOnlySpan<byte>(encoded), dst));
+            Assert.Equal(expected.Length, Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(expected, dst);
         }
 
@@ -88,7 +88,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_longPaddingData))]
         public void ThrowsOnPaddingLongerThanSevenBits(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
+            var dst = new byte[encoded.Length * 2];
+            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
         }
 
@@ -104,7 +105,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_eosData))]
         public void ThrowsOnEOS(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
+            var dst = new byte[encoded.Length * 2];
+            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(CoreStrings.HPackHuffmanErrorEOS, exception.Message);
         }
 
@@ -113,7 +115,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             //                           h      e         l          l      o         *
             var encoded = new byte[] { 0b100111_00, 0b101_10100, 0b0_101000_0, 0b0111_1111 };
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length]));
+            var dst = new byte[encoded.Length * 2];
+            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(CoreStrings.HPackHuffmanErrorDestinationTooSmall, exception.Message);
         }
 
@@ -145,7 +148,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_incompleteSymbolData))]
         public void ThrowsOnIncompleteSymbol(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
+            var dst = new byte[encoded.Length * 2];
+            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
         }
 
@@ -156,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var decodedBytes = new byte[expectedLength];
             //                           B       LF                                             EOS
             var encoded = new byte[] { 0b1011101_1, 0b11111111, 0b11111111, 0b11111111, 0b11100_111 };
-            var decodedLength = Huffman.Decode(new ReadOnlySpan<byte>(encoded, 0, encoded.Length), decodedBytes);
+            var decodedLength = Huffman.Decode(new ReadOnlySpan<byte>(encoded, 0, encoded.Length), ref decodedBytes);
 
             Assert.Equal(expectedLength, decodedLength);
             Assert.Equal(new byte [] { (byte)'B', (byte)'\n' }, decodedBytes);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
@@ -22,6 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             HeaderValue,
             DynamicTableSizeUpdate
         }
+
+        public const int DefaultHeaderTableSize = 4096;
+        public const int DefaultStringOctetsSize = 4096;
+        public const int DefaultMaxResponseHeadersLength = 64 * 1024;
 
         // http://httpwg.org/specs/rfc7541.html#rfc.section.6.1
         //   0   1   2   3   4   5   6   7
@@ -78,11 +83,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         private const int StringLengthPrefix = 7;
 
         private readonly int _maxDynamicTableSize;
+        private readonly int _maxResponseHeadersLength;
         private readonly DynamicTable _dynamicTable;
         private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
-        private readonly byte[] _stringOctets;
-        private readonly byte[] _headerNameOctets;
-        private readonly byte[] _headerValueOctets;
+        private byte[] _stringOctets;
+        private byte[] _headerNameOctets;
+        private byte[] _headerValueOctets;
 
         private State _state = State.Ready;
         private byte[] _headerName;
@@ -94,18 +100,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         private bool _huffman;
         private bool _headersObserved;
 
-        public HPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize)
-            : this(maxDynamicTableSize, maxRequestHeaderFieldSize, new DynamicTable(maxDynamicTableSize)) { }
+        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxResponseHeadersLength = DefaultMaxResponseHeadersLength)
+            : this(maxDynamicTableSize, maxResponseHeadersLength, new DynamicTable(maxDynamicTableSize)) 
+        {
+        }
 
         // For testing.
-        internal HPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize, DynamicTable dynamicTable)
+        internal HPackDecoder(int maxDynamicTableSize, int maxResponseHeadersLength, DynamicTable dynamicTable)
         {
             _maxDynamicTableSize = maxDynamicTableSize;
+            _maxResponseHeadersLength = maxResponseHeadersLength;
             _dynamicTable = dynamicTable;
 
-            _stringOctets = new byte[maxRequestHeaderFieldSize];
-            _headerNameOctets = new byte[maxRequestHeaderFieldSize];
-            _headerValueOctets = new byte[maxRequestHeaderFieldSize];
+            _stringOctets = new byte[maxResponseHeadersLength];
+            _headerNameOctets = new byte[maxResponseHeadersLength];
+            _headerValueOctets = new byte[maxResponseHeadersLength];
         }
 
         public void Decode(in ReadOnlySequence<byte> data, bool endHeaders, IHttpHeadersHandler handler)
@@ -136,10 +145,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             switch (_state)
             {
                 case State.Ready:
+                    // TODO: Instead of masking and comparing each prefix value,
+                    // consider doing a 16-way switch on the first four bits (which is the max prefix size).
+                    // Look at this once we have more concrete perf data.
                     if ((b & IndexedHeaderFieldMask) == IndexedHeaderFieldRepresentation)
                     {
                         _headersObserved = true;
-                        var val = b & ~IndexedHeaderFieldMask;
+
+                        int val = b & ~IndexedHeaderFieldMask;
 
                         if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out intResult))
                         {
@@ -153,8 +166,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     else if ((b & LiteralHeaderFieldWithIncrementalIndexingMask) == LiteralHeaderFieldWithIncrementalIndexingRepresentation)
                     {
                         _headersObserved = true;
+
                         _index = true;
-                        var val = b & ~LiteralHeaderFieldWithIncrementalIndexingMask;
+                        int val = b & ~LiteralHeaderFieldWithIncrementalIndexingMask;
 
                         if (val == 0)
                         {
@@ -172,8 +186,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     else if ((b & LiteralHeaderFieldWithoutIndexingMask) == LiteralHeaderFieldWithoutIndexingRepresentation)
                     {
                         _headersObserved = true;
+
                         _index = false;
-                        var val = b & ~LiteralHeaderFieldWithoutIndexingMask;
+                        int val = b & ~LiteralHeaderFieldWithoutIndexingMask;
 
                         if (val == 0)
                         {
@@ -191,8 +206,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     else if ((b & LiteralHeaderFieldNeverIndexedMask) == LiteralHeaderFieldNeverIndexedRepresentation)
                     {
                         _headersObserved = true;
+
                         _index = false;
-                        var val = b & ~LiteralHeaderFieldNeverIndexedMask;
+                        int val = b & ~LiteralHeaderFieldNeverIndexedMask;
 
                         if (val == 0)
                         {
@@ -215,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         // following the change to the dynamic table size.
                         if (_headersObserved)
                         {
-                            throw new HPackDecodingException(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock);
+                            throw new HPackDecodingException(/*SR.net_http_hpack_late_dynamic_table_size_update*/);
                         }
 
                         if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out intResult))
@@ -230,7 +246,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     else
                     {
                         // Can't happen
-                        throw new HPackDecodingException($"Byte value {b} does not encode a valid header field representation.");
+                        Debug.Fail("Unreachable code");
+                        throw new InvalidOperationException();
                     }
 
                     break;
@@ -253,6 +270,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out intResult))
                     {
+                        if (intResult == 0)
+                        {
+                            throw new HPackDecodingException(/*SR.Format(SR.net_http_invalid_response_header_name, "")*/);
+                        }
+
                         OnStringLength(intResult, nextState: State.HeaderName);
                     }
                     else
@@ -264,6 +286,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 case State.HeaderNameLengthContinue:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
+                        // IntegerDecoder disallows overlong encodings, where an integer is encoded with more bytes than is strictly required.
+                        // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
+                        Debug.Assert(intResult != 0, "A header name length of 0 should never be encoded with a continuation byte.");
+
                         OnStringLength(intResult, nextState: State.HeaderName);
                     }
 
@@ -283,6 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out intResult))
                     {
                         OnStringLength(intResult, nextState: State.HeaderValue);
+
                         if (intResult == 0)
                         {
                             ProcessHeaderValue(handler);
@@ -297,11 +324,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 case State.HeaderValueLengthContinue:
                     if (_integerDecoder.TryDecode(b, out intResult))
                     {
+                        // IntegerDecoder disallows overlong encodings where an integer is encoded with more bytes than is strictly required.
+                        // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
+                        Debug.Assert(intResult != 0, "A header value length of 0 should never be encoded with a continuation byte.");
+
                         OnStringLength(intResult, nextState: State.HeaderValue);
-                        if (intResult == 0)
-                        {
-                            ProcessHeaderValue(handler);
-                        }
                     }
 
                     break;
@@ -324,7 +351,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     break;
                 default:
                     // Can't happen
-                    throw new HPackDecodingException("The HPACK decoder reached an invalid state.");
+                    Debug.Fail("HPACK decoder reach an invalid state");
+                    throw new InvalidOperationException();
             }
         }
 
@@ -345,14 +373,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
         {
-            var header = GetHeader(index);
+            HeaderField header = GetHeader(index);
             handler.OnHeader(new Span<byte>(header.Name), new Span<byte>(header.Value));
             _state = State.Ready;
         }
 
         private void OnIndexedHeaderName(int index)
         {
-            var header = GetHeader(index);
+            HeaderField header = GetHeader(index);
             _headerName = header.Name;
             _headerNameLength = header.Name.Length;
             _state = State.HeaderValueLength;
@@ -362,7 +390,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             if (length > _stringOctets.Length)
             {
-                throw new HPackDecodingException(CoreStrings.FormatHPackStringLengthTooLarge(length, _stringOctets.Length));
+                if (length > _maxResponseHeadersLength)
+                {
+                    throw new HPackDecodingException(/*SR.Format(SR.net_http_response_headers_exceeded_length, _maxResponseHeadersLength)*/);
+                }
+
+                _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];
             }
 
             _stringLength = length;
@@ -372,14 +405,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private void OnString(State nextState)
         {
-            int Decode(byte[] dst)
+            int Decode(ref byte[] dst)
             {
                 if (_huffman)
                 {
-                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), dst);
+                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), ref dst);
                 }
                 else
                 {
+                    if (dst.Length < _stringLength)
+                    {
+                        dst = new byte[Math.Max(_stringLength, dst.Length * 2)];
+                    }
+
                     Buffer.BlockCopy(_stringOctets, 0, dst, 0, _stringLength);
                     return _stringLength;
                 }
@@ -389,17 +427,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             {
                 if (_state == State.HeaderName)
                 {
+                    _headerNameLength = Decode(ref _headerNameOctets);
                     _headerName = _headerNameOctets;
-                    _headerNameLength = Decode(_headerNameOctets);
                 }
                 else
                 {
-                    _headerValueLength = Decode(_headerValueOctets);
+                    _headerValueLength = Decode(ref _headerValueOctets);
                 }
             }
             catch (HuffmanDecodingException ex)
             {
-                throw new HPackDecodingException(CoreStrings.HPackHuffmanError, ex);
+                throw new HPackDecodingException("", ex);
             }
 
             _state = nextState;
@@ -409,13 +447,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             try
             {
-                return index <= StaticTable.Instance.Count
-                    ? StaticTable.Instance[index - 1]
-                    : _dynamicTable[index - StaticTable.Instance.Count - 1];
+                return index <= StaticTable.Count
+                    ? StaticTable.Get(index - 1)
+                    : _dynamicTable[index - StaticTable.Count - 1];
             }
-            catch (IndexOutOfRangeException ex)
+            catch (IndexOutOfRangeException)
             {
-                throw new HPackDecodingException(CoreStrings.FormatHPackErrorIndexOutOfRange(index), ex);
+                // Header index out of range.
+                throw new HPackDecodingException();
             }
         }
 
@@ -423,8 +462,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             if (size > _maxDynamicTableSize)
             {
-                throw new HPackDecodingException(
-                    CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(size, _maxDynamicTableSize));
+                throw new HPackDecodingException( /* TODO CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(size, _maxDynamicTableSize) */);
+
             }
 
             _dynamicTable.Resize(size);
