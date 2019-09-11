@@ -1,0 +1,22 @@
+Markup block - Gen<None> - 45 - (0:0,0)
+    Tag block - Gen<TagHelper> - 45 - (0:0,0) - p - pTagHelper
+        StartTagAndEndTag - <p class="btn"> ... </p>
+        class - DoubleQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
+                HtmlTokenType.Text;[btn];
+        Tag block - Gen<TagHelper> - 26 - (15:0,15) - p - pTagHelper
+            StartTagAndEndTag - <p class="btn"> ... </p>
+            class - DoubleQuotes
+                Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
+                    HtmlTokenType.Text;[btn];
+            Tag block - Gen<None> - 3 - (30:0,30)
+                Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:3
+                    HtmlTokenType.OpenAngle;[<];
+                    HtmlTokenType.Text;[p];
+                    HtmlTokenType.CloseAngle;[>];
+            Tag block - Gen<None> - 4 - (33:0,33)
+                Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:4
+                    HtmlTokenType.OpenAngle;[<];
+                    HtmlTokenType.ForwardSlash;[/];
+                    HtmlTokenType.Text;[p];
+                    HtmlTokenType.CloseAngle;[>];

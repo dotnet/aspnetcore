@@ -73,11 +73,17 @@ namespace Microsoft.AspNetCore.Mvc
             if (_factory == null)
             {
                 var argumentTypes = Arguments?.Select(a => a.GetType())?.ToArray();
-
                 _factory = ActivatorUtilities.CreateFactory(ImplementationType, argumentTypes ?? Type.EmptyTypes);
             }
 
-            return (IFilterMetadata)_factory(serviceProvider, Arguments);
+            var filter = (IFilterMetadata)_factory(serviceProvider, Arguments);
+            if (filter is IFilterFactory filterFactory)
+            {
+                // Unwrap filter factories
+                filter = filterFactory.CreateInstance(serviceProvider);
+            }
+
+            return filter;
         }
     }
 }

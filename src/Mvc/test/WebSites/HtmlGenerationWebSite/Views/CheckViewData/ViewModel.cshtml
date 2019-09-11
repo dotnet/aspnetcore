@@ -24,7 +24,7 @@
     @Html.DisplayFor(m => m, templateName: "LackModel")
 </div>
 <div class="row">
-    @Html.Partial(partialViewName: "DisplayTemplates/LackModel.cshtml")
+    @(await Html.PartialAsync(partialViewName: "DisplayTemplates/LackModel.cshtml"))
 </div>
 <div class="row">
     @(await Component.InvokeAsync<CheckViewData___LackModel>())

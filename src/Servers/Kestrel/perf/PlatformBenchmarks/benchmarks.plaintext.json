@@ -8,7 +8,7 @@
     },
     "Source": {
       "Repository": "https://github.com/aspnet/KestrelHttpServer.git",
-      "BranchOrCommit": "dev",
+      "BranchOrCommit": "release/2.2",
       "Project": "benchmarkapps/PlatformBenchmarks/PlatformBenchmarks.csproj"
     },
     "Port": 8080

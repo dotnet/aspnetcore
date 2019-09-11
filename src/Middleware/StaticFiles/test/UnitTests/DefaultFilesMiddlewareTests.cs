@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders;
@@ -75,6 +76,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("", @"./", "/SubFolder/")]
         [InlineData("", @"./SubFolder", "/")]
+        [InlineData("", @"./SubFolder", "/你好/")]
+        [InlineData("", @"./SubFolder", "/你好/世界/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified_All(string baseUrl, string baseDir, string requestUrl)
         {
             await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
@@ -85,6 +88,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("", @".\", "/SubFolder/")]
         [InlineData("", @".\subFolder", "/")]
+        [InlineData("", @".\SubFolder", "/你好/")]
+        [InlineData("", @".\SubFolder", "/你好/世界/")]
         public async Task FoundDirectoryWithDefaultFile_PathModified_Windows(string baseUrl, string baseDir, string requestUrl)
         {
             await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
@@ -114,6 +119,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("", @".", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "?a=b")]
+        [InlineData("", @"./SubFolder", "/你好", "?a=b")]
+        [InlineData("", @"./SubFolder", "/你好/世界", "?a=b")]
         public async Task NearMatch_RedirectAddSlash_All(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
@@ -124,6 +131,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("", @".\", "/SubFolder", "")]
         [InlineData("", @".\", "/SubFolder", "?a=b")]
+        [InlineData("", @".\SubFolder", "/你好", "?a=b")]
+        [InlineData("", @".\SubFolder", "/你好/世界", "?a=b")]
         public async Task NearMatch_RedirectAddSlash_Windows(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
@@ -141,7 +150,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                // the url in the header of `Location: /xxx/xxx` should be encoded
+                var expectedURL = UriHelper.BuildRelative(baseUrl, requestUrl + "/", new QueryString(queryString), new FragmentString());
+                var actualURL = response.Headers.GetValues("Location").FirstOrDefault();
+                Assert.Equal(expectedURL, actualURL);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
@@ -169,12 +181,12 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvder = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
                     RequestPath = new PathString(baseUrl),
-                    FileProvider = fileProvder
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
 

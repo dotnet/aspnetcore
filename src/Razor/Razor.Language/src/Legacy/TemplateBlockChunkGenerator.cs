@@ -19,5 +19,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             //context.ChunkTreeBuilder.EndParentChunk();
         }
+
+        public override string ToString()
+        {
+            return "Template";
+        }
     }
 }

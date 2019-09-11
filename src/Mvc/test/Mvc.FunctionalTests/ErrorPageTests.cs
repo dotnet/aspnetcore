@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>, IDisposable
     {
         private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
-            "One or more compilation references are missing. Ensure that your project is referencing " +
-            "'Microsoft.NET.Sdk.Web' and the 'PreserveCompilationContext' property is not set to false.");
+            "One or more compilation references may be missing. " +
+            "If you're seeing this in a published application, set 'CopyRefAssembliesToPublishDirectory' to true in your project file to ensure files in the refs directory are published.");
         private readonly AssemblyTestLog _assemblyTestLog;
 
         public ErrorPageTests(

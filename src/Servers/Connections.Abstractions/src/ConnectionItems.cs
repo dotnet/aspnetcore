@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Connections
@@ -98,8 +96,7 @@ namespace Microsoft.AspNetCore.Connections
 
         bool ICollection<KeyValuePair<object, object>>.Remove(KeyValuePair<object, object> item)
         {
-            object value;
-            if (Items.TryGetValue(item.Key, out value) && Equals(item.Value, value))
+            if (Items.TryGetValue(item.Key, out var value) && Equals(item.Value, value))
             {
                 return Items.Remove(item.Key);
             }

@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
         public static readonly string DisplayName = "Google";
 
+        // https://developers.google.com/identity/protocols/OAuth2WebServer
         public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 
         public static readonly string TokenEndpoint = "https://www.googleapis.com/oauth2/v4/token";
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         {
             if (AppContext.TryGetSwitch(UseGooglePlusSwitch, out UseGooglePlus) && UseGooglePlus)
             {
+                // https://developers.google.com/+/web/people/
                 UserInformationEndpoint = "https://www.googleapis.com/plus/v1/people/me";
             }
             else

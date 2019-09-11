@@ -16,8 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public const string PageFilter = "Page Filter";
 
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
+        private static readonly Action<ILogger, ModelValidationState, Exception> _implicitHandlerMethodExecuting;
         private static readonly Action<ILogger, string, string[], Exception> _handlerMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
+        private static readonly Action<ILogger, string, Exception> _implicitHandlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
         private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
         private static readonly Action<ILogger, string, Exception> _unsupportedAreaPath;
@@ -40,9 +42,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 "Executing handler method {HandlerName} with arguments ({Arguments})");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
-                LogLevel.Debug,
+                LogLevel.Information,
                 102,
                 "Executed handler method {HandlerName}, returned result {ActionResult}.");
+
+            _implicitHandlerMethodExecuting = LoggerMessage.Define<ModelValidationState>(
+                LogLevel.Information,
+                103,
+                "Executing an implicit handler method - ModelState is {ValidationState}");
+
+            _implicitHandlerMethodExecuted = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                104,
+                "Executed an implicit handler method, returned result {ActionResult}.");
 
             _pageFilterShortCircuit = LoggerMessage.Define<object>(
                LogLevel.Debug,
@@ -79,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var handlerName = handler.MethodInfo.Name;
+                var handlerName = handler.MethodInfo.DeclaringType.FullName + "." + handler.MethodInfo.Name;
 
                 var validationState = context.ModelState.ValidationState;
                 _handlerMethodExecuting(logger, handlerName, validationState, null);
@@ -97,12 +109,30 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
+        public static void ExecutingImplicitHandlerMethod(this ILogger logger, PageContext context)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var validationState = context.ModelState.ValidationState;
+
+                _implicitHandlerMethodExecuting(logger, validationState, null);
+            }
+        }
+
         public static void ExecutedHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, IActionResult result)
         {
-            if (logger.IsEnabled(LogLevel.Debug))
+            if (logger.IsEnabled(LogLevel.Information))
             {
                 var handlerName = handler.MethodInfo.Name;
                 _handlerMethodExecuted(logger, handlerName, Convert.ToString(result), null);
+            }
+        }
+
+        public static void ExecutedImplicitHandlerMethod(this ILogger logger, IActionResult result)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                _implicitHandlerMethodExecuted(logger, Convert.ToString(result), null);
             }
         }
 

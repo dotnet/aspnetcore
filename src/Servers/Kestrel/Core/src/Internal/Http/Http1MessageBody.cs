@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Task _pumpTask;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context)
+            : base(context, context.MinRequestBodyDataRate)
         {
             _context = context;
         }
@@ -38,8 +38,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     TryProduceContinue();
                 }
 
-                TryStartTimingReads();
-
                 while (true)
                 {
                     var result = await awaitable;
@@ -51,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     var readableBuffer = result.Buffer;
                     var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.End;
+                    var examined = readableBuffer.Start;
 
                     try
                     {
@@ -65,22 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             bool done;
                             done = Read(readableBuffer, _context.RequestBodyPipe.Writer, out consumed, out examined);
 
-                            var writeAwaitable = _context.RequestBodyPipe.Writer.FlushAsync();
-                            var backpressure = false;
-
-                            if (!writeAwaitable.IsCompleted)
-                            {
-                                // Backpressure, stop controlling incoming data rate until data is read.
-                                backpressure = true;
-                                TryPauseTimingReads();
-                            }
-
-                            await writeAwaitable;
-
-                            if (backpressure)
-                            {
-                                TryResumeTimingReads();
-                            }
+                            await _context.RequestBodyPipe.Writer.FlushAsync();
 
                             if (done)
                             {
@@ -91,8 +74,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Read() will have already have greedily consumed the entire request body if able.
                         if (result.IsCompleted)
                         {
+                            // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
+                            // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
+                            // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
+                            // response is written after observing the unexpected end of request content instead of just
+                            // closing the connection without a response as expected.
+                            _context.OnInputOrOutputCompleted();
+
                             // Treat any FIN from an upgraded request as expected.
-                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine 
+                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine
                             // if the end is actually expected based on higher-level framing.
                             if (RequestUpgrade)
                             {
@@ -101,7 +91,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                             BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
                         }
-
                     }
                     finally
                     {
@@ -118,20 +107,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 _context.RequestBodyPipe.Writer.Complete(error);
-                TryStopTimingReads();
             }
         }
 
-        public override Task StopAsync()
+        protected override Task OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
                 return Task.CompletedTask;
             }
 
+            // PumpTask catches all Exceptions internally.
+            if (_pumpTask.IsCompleted)
+            {
+                // At this point both the request body pipe reader and writer should be completed.
+                _context.RequestBodyPipe.Reset();
+                return Task.CompletedTask;
+            }
+
+            return StopAsyncAwaited();
+        }
+
+        private async Task StopAsyncAwaited()
+        {
             _canceled = true;
             _context.Input.CancelPendingRead();
-            return _pumpTask;
+            await _pumpTask;
+
+            // At this point both the request body pipe reader and writer should be completed.
+            _context.RequestBodyPipe.Reset();
         }
 
         protected override Task OnConsumeAsync()
@@ -151,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             catch (OperationCanceledException)
             {
                 // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
-                // beacuse of buggy logic, this works around that for now
+                // because of buggy logic, this works around that for now
             }
             catch (BadHttpRequestException ex)
             {
@@ -168,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
 
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.AbortConnection);
+            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
 
             try
             {
@@ -195,8 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
-            _context.TimeoutControl.BytesRead(readableBuffer.Length);
-
             if (readableBuffer.IsSingleSegment)
             {
                 writableBuffer.Write(readableBuffer.First.Span);
@@ -218,40 +220,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             throw new NotImplementedException();
-        }
-
-        private void TryStartTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
-                _context.TimeoutControl.StartTimingReads();
-            }
-        }
-
-        private void TryPauseTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                _context.TimeoutControl.PauseTimingReads();
-            }
-        }
-
-        private void TryResumeTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                _context.TimeoutControl.ResumeTimingReads();
-            }
-        }
-
-        private void TryStopTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
-                _context.TimeoutControl.StopTimingReads();
-            }
         }
 
         public static MessageBody For(
@@ -397,7 +365,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             private const int MaxChunkPrefixBytes = 10;
 
             private long _inputLength;
-            private long _consumedBytes;
 
             private Mode _mode = Mode.Prefix;
 
@@ -488,16 +455,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return _mode == Mode.Complete;
             }
 
-            private void AddAndCheckConsumedBytes(long consumedBytes)
-            {
-                _consumedBytes += consumedBytes;
-
-                if (_consumedBytes > _context.MaxRequestBodySize)
-                {
-                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-                }
-            }
-
             private void ParseChunkedPrefix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
             {
                 consumed = buffer.Start;
@@ -576,8 +533,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var extensionCursor = extensionCursorPosition.Value;
                     var charsToByteCRExclusive = buffer.Slice(0, extensionCursor).Length;
 
-                    var sufixBuffer = buffer.Slice(extensionCursor);
-                    if (sufixBuffer.Length < 2)
+                    var suffixBuffer = buffer.Slice(extensionCursor);
+                    if (suffixBuffer.Length < 2)
                     {
                         consumed = extensionCursor;
                         examined = buffer.End;
@@ -585,16 +542,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }
 
-                    sufixBuffer = sufixBuffer.Slice(0, 2);
-                    var sufixSpan = sufixBuffer.ToSpan();
+                    suffixBuffer = suffixBuffer.Slice(0, 2);
+                    var suffixSpan = suffixBuffer.ToSpan();
 
-                    if (sufixSpan[1] == '\n')
+                    if (suffixSpan[1] == '\n')
                     {
                         // We consumed the \r\n at the end of the extension, so switch modes.
                         _mode = _inputLength > 0 ? Mode.Data : Mode.Trailer;
 
-                        consumed = sufixBuffer.End;
-                        examined = sufixBuffer.End;
+                        consumed = suffixBuffer.End;
+                        examined = suffixBuffer.End;
                         AddAndCheckConsumedBytes(charsToByteCRExclusive + 2);
                     }
                     else

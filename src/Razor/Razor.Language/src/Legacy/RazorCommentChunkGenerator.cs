@@ -9,5 +9,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             visitor.VisitCommentBlock(this, block);
         }
+
+        public override string ToString()
+        {
+            return "RazorComment";
+        }
     }
 }

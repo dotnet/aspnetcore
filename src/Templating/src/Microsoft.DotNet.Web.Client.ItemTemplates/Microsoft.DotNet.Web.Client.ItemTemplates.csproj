@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Description>Web Client-Side File Templates for Microsoft Template Engine</Description>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Description>Web Client-Side File Templates for Microsoft Template Engine
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.
+    </Description>
   </PropertyGroup>
 
 </Project>

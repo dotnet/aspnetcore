@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void CorrectIPEndpointsAreCreated(string address, string expectedAddress, int expectedPort)
         {
             Assert.True(AddressBinder.TryCreateIPEndPoint(
-                ServerAddress.FromUrl(address), out var endpoint));
+                BindingAddress.Parse(address), out var endpoint));
             Assert.NotNull(endpoint);
             Assert.Equal(IPAddress.Parse(expectedAddress), endpoint.Address);
             Assert.Equal(expectedPort, endpoint.Port);
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void DoesNotCreateIPEndPointOnInvalidIPAddress(string address)
         {
             Assert.False(AddressBinder.TryCreateIPEndPoint(
-                ServerAddress.FromUrl(address), out var endpoint));
+                BindingAddress.Parse(address), out var endpoint));
         }
 
         [Theory]

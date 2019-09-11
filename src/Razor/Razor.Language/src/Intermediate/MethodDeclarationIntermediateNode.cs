@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -28,5 +30,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             visitor.VisitMethodDeclaration(this);
         }
 
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(MethodName);
+
+            formatter.WriteProperty(nameof(MethodName), MethodName);
+            formatter.WriteProperty(nameof(Modifiers), string.Join(", ", Modifiers));
+            formatter.WriteProperty(nameof(Parameters), string.Join(", ", Parameters.Select(FormatMethodParameter)));
+            formatter.WriteProperty(nameof(ReturnType), ReturnType);
+        }
+
+        private static string FormatMethodParameter(MethodParameter parameter)
+        {
+            var builder = new StringBuilder();
+            for (var i = 0; i <parameter.Modifiers.Count; i++)
+            {
+                builder.Append(parameter.Modifiers[i]);
+                builder.Append(" ");
+            }
+
+            builder.Append(parameter.TypeName);
+            builder.Append(" ");
+
+            builder.Append(parameter.ParameterName);
+
+            return builder.ToString();
+        }
     }
 }

@@ -30,7 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public DefaultValidationHtmlAttributeProvider(
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
-            ClientValidatorCache clientValidatorCache)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            ClientValidatorCache clientValidatorCache
+#pragma warning restore PUB0001
+            )
         {
             if (optionsAccessor == null)
             {

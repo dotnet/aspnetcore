@@ -11,7 +11,6 @@ using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Moq;
 using Xunit;
 
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [Fact]
-        public void HasProperSuppportedMediaTypes()
+        public void HasProperSupportedMediaTypes()
         {
             // Arrange & Act
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
@@ -124,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [Fact]
-        public void HasProperSuppportedEncodings()
+        public void HasProperSupportedEncodings()
         {
             // Arrange & Act
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());

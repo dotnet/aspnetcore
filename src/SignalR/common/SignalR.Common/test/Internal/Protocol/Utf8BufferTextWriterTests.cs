@@ -292,11 +292,59 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(testString, Encoding.UTF8.GetString(bufferWriter.ToArray()));
         }
 
+        public static IEnumerable<object[]> CharAndSegmentSizes
+        {
+            get
+            {
+                foreach (var singleChar in new [] { '"', 'い' })
+                {
+                    for (int i = 4; i <= 16; i++)
+                    {
+                        yield return new object[] { singleChar, i };
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CharAndSegmentSizes))]
+        public void WriteUnicodeStringAndCharsWithVaryingSegmentSizes(char singleChar, int segmentSize)
+        {
+            const string testString = "aいbろ";
+            const int iterations = 10;
+
+            var testBufferWriter = new TestMemoryBufferWriter(segmentSize);
+            var sb = new StringBuilder();
+
+            using (var textWriter = new Utf8BufferTextWriter())
+            {
+                textWriter.SetWriter(testBufferWriter);
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    textWriter.Write(singleChar);
+                    textWriter.Write(testString);
+                    textWriter.Write(singleChar);
+
+                    sb.Append(singleChar);
+                    sb.Append(testString);
+                    sb.Append(singleChar);
+                }
+            }
+
+            var expected = sb.ToString();
+
+            var data = testBufferWriter.ToArray();
+            var result = Encoding.UTF8.GetString(data);
+
+            Assert.Equal(expected, result);
+        }
+
         private sealed class TestMemoryBufferWriter : IBufferWriter<byte>
         {
             private readonly int _segmentSize;
 
-            private List<Memory<byte>> _completedSegments = new List<Memory<byte>>();
+            private readonly List<Memory<byte>> _completedSegments = new List<Memory<byte>>();
             private int _totalLength;
 
             public Memory<byte> CurrentSegment { get; private set; }

@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <VsTestConsole>$(VCIDEInstallDir)..\CommonExtensions\Microsoft\TestWindow\vstest.console.exe</VsTestConsole>
+  </PropertyGroup>
+  <Target Name="Test" DependsOnTargets="Build">
+    <Exec Command="&quot;$(TargetPath)&quot;" />
+  </Target>
+</Project>

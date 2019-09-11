@@ -151,5 +151,30 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
             return builder;
         }
+
+        /// <summary>
+        /// Configures <see cref="ApiBehaviorOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="setupAction">The configure action.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
+        public static IMvcBuilder ConfigureApiBehaviorOptions(
+            this IMvcBuilder builder,
+            Action<ApiBehaviorOptions> setupAction)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
+            builder.Services.Configure(setupAction);
+
+            return builder;
+        }
     }
 }

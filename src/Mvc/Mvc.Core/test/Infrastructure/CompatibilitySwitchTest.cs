@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
-        public void Constructor_WithNameAndInitalValue_IsValueSetIsFalse()
+        public void Constructor_WithNameAndInitialValue_IsValueSetIsFalse()
         {
             // Arrange & Act
             var @switch = new CompatibilitySwitch<bool>("TestProperty", initialValue: true);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var @switch = new CompatibilitySwitch<bool>("TestProperty");
 
             // Act
-            @switch.Value = false; // You don't need to actually change the value, just caling the setting works
+            @switch.Value = false; // You don't need to actually change the value, just calling the setting works
 
             // Assert
             Assert.False(@switch.Value);

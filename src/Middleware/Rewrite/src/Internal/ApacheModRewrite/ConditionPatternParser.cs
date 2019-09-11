@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 {
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
             {
                 // If the type is an integer, verify operand is actually an int
                 int res;
-                if (!int.TryParse(results.Operand, out res))
+                if (!int.TryParse(results.Operand, NumberStyles.None, CultureInfo.InvariantCulture, out res))
                 {
                     return false;
                 }

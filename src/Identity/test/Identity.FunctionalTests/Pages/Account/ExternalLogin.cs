@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
+using AngleSharp.Extensions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 {
@@ -19,7 +22,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             : base(client, externalLogin, context)
         {
             _emailForm = HtmlAssert.HasForm(Document);
+            Title = HtmlAssert.HasElement("#external-login-title", Document);
+            Description = HtmlAssert.HasElement("#external-login-description",Document);
         }
+
+        public IHtmlElement Title { get; }
+        public IHtmlElement Description { get; }
 
         public async Task<Index> SendEmailAsync(string email)
         {

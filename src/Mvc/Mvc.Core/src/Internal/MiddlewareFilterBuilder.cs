@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public RequestDelegate GetPipeline(Type configurationType)
         {
-            // Build the pipeline only once. This is similar to how middlewares registered in Startup are constructed.
+            // Build the pipeline only once. This is similar to how middleware registered in Startup are constructed.
 
             var requestDelegate = _pipelinesCache.GetOrAdd(
                 configurationType,
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
 
                 // Ideally we want the experience of a middleware pipeline to behave the same as if it was registered
-                // in Startup. In this scenario, an Exception thrown in a middelware later in the pipeline gets
+                // in Startup. In this scenario, an Exception thrown in a middleware later in the pipeline gets
                 // propagated back to earlier middleware. So, check if a later resource filter threw an Exception and
                 // propagate that back to the middleware pipeline.
                 resourceExecutedContext.ExceptionDispatchInfo?.Throw();

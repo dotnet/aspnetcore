@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void EnumerateElements_TwoEnumerableImplemenations()
+        public void EnumerateElements_TwoEnumerableImplementations()
         {
             // Arrange
             var model = new TwiceEnumerable(new int[] { 2, 3, 5 });

@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
+        private static readonly Action<ILogger, string, string, Exception> _pageExecuting;
+        private static readonly Action<ILogger, string, double, Exception> _pageExecuted;
+
         private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
 
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
@@ -107,6 +110,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, Type, string, Type, Exception> _foundNoValueForPropertyInRequest;
         private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueForParameterInRequest;
         private static readonly Action<ILogger, string, Type, Exception> _foundNoValueInRequest;
+        private static readonly Action<ILogger, Type, string, Exception> _parameterBinderRequestPredicateShortCircuitOfProperty;
+        private static readonly Action<ILogger, string, Exception> _parameterBinderRequestPredicateShortCircuitOfParameter;
         private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties;
         private static readonly Action<ILogger, Type, Exception> _cannotBindToComplexType;
         private static readonly Action<ILogger, string, Type, Exception> _cannotBindToFilesCollectionDueToUnsupportedContentType;
@@ -147,6 +152,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, Type, Type, Type, Exception> _notMostEffectiveFilter;
         private static readonly Action<ILogger, IEnumerable<IOutputFormatter>, Exception> _registeredOutputFormatters;
 
+        private static readonly Action<ILogger, Type, int?, Type, Exception> _transformingClientError;
+
         static MvcCoreLoggerExtensions()
         {
             _actionExecuting = LoggerMessage.Define<string, string>(
@@ -163,6 +170,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 2,
                 "Executed action {ActionName} in {ElapsedMilliseconds}ms");
+
+            _pageExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Information,
+                3,
+                "Route matched with {RouteData}. Executing page {PageName}");
+
+            _pageExecuted = LoggerMessage.Define<string, double>(
+                LogLevel.Information,
+                4,
+                "Executed page {PageName} in {ElapsedMilliseconds}ms");
 
             _challengeResultExecuting = LoggerMessage.Define<string[]>(
                 LogLevel.Information,
@@ -629,6 +646,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                LogLevel.Debug,
                46,
                "Could not find a value in the request with name '{ModelName}' of type '{ModelType}'.");
+
+            _parameterBinderRequestPredicateShortCircuitOfProperty = LoggerMessage.Define<Type, string>(
+               LogLevel.Debug,
+               47,
+               "Skipped binding property '{PropertyContainerType}.{PropertyName}' since its binding information disallowed it for the current request.");
+
+            _parameterBinderRequestPredicateShortCircuitOfParameter = LoggerMessage.Define<string>(
+               LogLevel.Debug,
+               48,
+               "Skipped binding parameter '{ParameterName}' since its binding information disallowed it for the current request.");
+
+            _transformingClientError = LoggerMessage.Define<Type, int?, Type>(
+                LogLevel.Trace,
+                new EventId(49, nameof(Infrastructure.ClientErrorResultFilter)),
+                "Replacing {InitialActionResultType} with status code {StatusCode} with {ReplacedActionResultType}.");
         }
 
         public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
@@ -689,21 +721,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                 }
 
-                if (action is ControllerActionDescriptor controllerActionDescriptor)
+                if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
-                    var controllerType = controllerActionDescriptor.ControllerTypeInfo.AsType();
-                    var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
-                    _controllerActionExecuting(
-                        logger,
-                        stringBuilder.ToString(),
-                        controllerActionDescriptor.MethodInfo,
-                        controllerName,
-                        controllerType.Assembly.GetName().Name,
-                        null);
+                    _pageExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
                 }
                 else
                 {
-                    _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                    if (action is ControllerActionDescriptor controllerActionDescriptor)
+                    {
+                        var controllerType = controllerActionDescriptor.ControllerTypeInfo.AsType();
+                        var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+                        _controllerActionExecuting(
+                            logger,
+                            stringBuilder.ToString(),
+                            controllerActionDescriptor.MethodInfo,
+                            controllerName,
+                            controllerType.Assembly.GetName().Name,
+                            null);
+                    }
+                    else
+                    {
+                        _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                    }
                 }
             }
         }
@@ -786,7 +825,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _actionExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                if (action.RouteValues.TryGetValue("page", out var page) && page != null)
+                {
+                    _pageExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                }
+                else
+                {
+                    _actionExecuted(logger, action.DisplayName, timeSpan.TotalMilliseconds, null);
+                }
             }
         }
 
@@ -1303,14 +1349,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void AttemptingToBindParameterOrProperty(
             this ILogger logger,
             ParameterDescriptor parameter,
-            ModelBindingContext bindingContext)
+            ModelMetadata modelMetadata)
         {
             if (!logger.IsEnabled(LogLevel.Debug))
             {
                 return;
             }
 
-            var modelMetadata = bindingContext.ModelMetadata;
             switch (modelMetadata.MetadataKind)
             {
                 case ModelMetadataKind.Parameter:
@@ -1346,14 +1391,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void DoneAttemptingToBindParameterOrProperty(
             this ILogger logger,
             ParameterDescriptor parameter,
-            ModelBindingContext bindingContext)
+            ModelMetadata modelMetadata)
         {
             if (!logger.IsEnabled(LogLevel.Debug))
             {
                 return;
             }
 
-            var modelMetadata = bindingContext.ModelMetadata;
             switch (modelMetadata.MetadataKind)
             {
                 case ModelMetadataKind.Parameter:
@@ -1389,14 +1433,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void AttemptingToValidateParameterOrProperty(
             this ILogger logger,
             ParameterDescriptor parameter,
-            ModelBindingContext bindingContext)
+            ModelMetadata modelMetadata)
         {
             if (!logger.IsEnabled(LogLevel.Debug))
             {
                 return;
             }
 
-            var modelMetadata = bindingContext.ModelMetadata;
             switch (modelMetadata.MetadataKind)
             {
                 case ModelMetadataKind.Parameter:
@@ -1433,14 +1476,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void DoneAttemptingToValidateParameterOrProperty(
             this ILogger logger,
             ParameterDescriptor parameter,
-            ModelBindingContext bindingContext)
+            ModelMetadata modelMetadata)
         {
             if (!logger.IsEnabled(LogLevel.Debug))
             {
                 return;
             }
 
-            var modelMetadata = bindingContext.ModelMetadata;
             switch (modelMetadata.MetadataKind)
             {
                 case ModelMetadataKind.Parameter:
@@ -1515,6 +1557,55 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 bindingContext.ModelName,
                 bindingContext.ModelName,
                 null);
+        }
+
+        public static void ParameterBinderRequestPredicateShortCircuit(
+            this ILogger logger,
+            ParameterDescriptor parameter,
+            ModelMetadata modelMetadata)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            switch (modelMetadata.MetadataKind)
+            {
+                case ModelMetadataKind.Parameter:
+                    _parameterBinderRequestPredicateShortCircuitOfParameter(
+                        logger,
+                        modelMetadata.ParameterName,
+                        null);
+                    break;
+                case ModelMetadataKind.Property:
+                    _parameterBinderRequestPredicateShortCircuitOfProperty(
+                        logger,
+                        modelMetadata.ContainerType,
+                        modelMetadata.PropertyName,
+                        null);
+                    break;
+                case ModelMetadataKind.Type:
+                    if (parameter is ControllerParameterDescriptor controllerParameterDescriptor)
+                    {
+                        _parameterBinderRequestPredicateShortCircuitOfParameter(
+                            logger,
+                            controllerParameterDescriptor.ParameterInfo.Name,
+                            null);
+                    }
+                    else
+                    {
+                        // Likely binding a page handler parameter. Due to various special cases, parameter.Name may
+                        // be empty. No way to determine actual name. This case is less likely than for binding logging
+                        // (above). Should occur only with a legacy IModelMetadataProvider implementation.
+                        _parameterBinderRequestPredicateShortCircuitOfParameter(logger, parameter.Name, null);
+                    }
+                    break;
+            }
+        }
+
+        public static void TransformingClientError(this ILogger logger, Type initialType, Type replacedType, int? statusCode)
+        {
+            _transformingClientError(logger, initialType, statusCode, replacedType, null);
         }
 
         private static void LogFilterExecutionPlan(

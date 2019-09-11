@@ -11,28 +11,26 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void HtmlWithDataDashAttribute()
         {
             // Arrange
-            var projectEngine = CreateProjectEngine();
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
-            var codeDocument = projectEngine.Process(projectItem);
+            var compiled = CompileToCSharp(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
         }
 
         [Fact]
         public void HtmlWithConditionalAttribute()
         {
             // Arrange
-            var projectEngine = CreateProjectEngine();
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
-            var codeDocument = projectEngine.Process(projectItem);
+            var compiled = CompileToCSharp(projectItem);
 
             // Assert
-            AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
         }
     }
 }

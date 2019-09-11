@@ -146,31 +146,31 @@
   <data name="CodeWriter_InvalidNewLine" xml:space="preserve">
     <value>Invalid newline sequence '{0}'. Support newline sequences are '\r\n' and '\n'.</value>
   </data>
-  <data name="CSharpSymbol_CharacterLiteral" xml:space="preserve">
+  <data name="CSharpToken_CharacterLiteral" xml:space="preserve">
     <value>&lt;&lt;character literal&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_Comment" xml:space="preserve">
+  <data name="CSharpToken_Comment" xml:space="preserve">
     <value>&lt;&lt;comment&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_Identifier" xml:space="preserve">
+  <data name="CSharpToken_Identifier" xml:space="preserve">
     <value>&lt;&lt;identifier&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_IntegerLiteral" xml:space="preserve">
+  <data name="CSharpToken_IntegerLiteral" xml:space="preserve">
     <value>&lt;&lt;integer literal&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_Keyword" xml:space="preserve">
+  <data name="CSharpToken_Keyword" xml:space="preserve">
     <value>&lt;&lt;keyword&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_Newline" xml:space="preserve">
+  <data name="CSharpToken_Newline" xml:space="preserve">
     <value>&lt;&lt;newline sequence&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_RealLiteral" xml:space="preserve">
+  <data name="CSharpToken_RealLiteral" xml:space="preserve">
     <value>&lt;&lt;real literal&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_StringLiteral" xml:space="preserve">
+  <data name="CSharpToken_StringLiteral" xml:space="preserve">
     <value>&lt;&lt;string literal&gt;&gt;</value>
   </data>
-  <data name="CSharpSymbol_Whitespace" xml:space="preserve">
+  <data name="CSharpToken_Whitespace" xml:space="preserve">
     <value>&lt;&lt;white space&gt;&gt;</value>
   </data>
   <data name="Diagnostic_CodeTarget_UnsupportedExtension" xml:space="preserve">
@@ -221,16 +221,16 @@
   <data name="FunctionsDirective_Description" xml:space="preserve">
     <value>Specify a C# code block.</value>
   </data>
-  <data name="HtmlSymbol_NewLine" xml:space="preserve">
+  <data name="HtmlToken_NewLine" xml:space="preserve">
     <value>&lt;&lt;newline sequence&gt;&gt;</value>
   </data>
-  <data name="HtmlSymbol_RazorComment" xml:space="preserve">
+  <data name="HtmlToken_RazorComment" xml:space="preserve">
     <value>&lt;&lt;razor comment&gt;&gt;</value>
   </data>
-  <data name="HtmlSymbol_Text" xml:space="preserve">
+  <data name="HtmlToken_Text" xml:space="preserve">
     <value>&lt;&lt;text&gt;&gt;</value>
   </data>
-  <data name="HtmlSymbol_WhiteSpace" xml:space="preserve">
+  <data name="HtmlToken_WhiteSpace" xml:space="preserve">
     <value>&lt;&lt;white space&gt;&gt;</value>
   </data>
   <data name="InheritsDirective_Description" xml:space="preserve">
@@ -270,7 +270,7 @@
     <value>The key must not be null.</value>
   </data>
   <data name="Language_Does_Not_Support_RazorComment" xml:space="preserve">
-    <value>Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment</value>
+    <value>Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known token types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment</value>
   </data>
   <data name="MismatchedContentEncoding" xml:space="preserve">
     <value>The specified encoding '{0}' does not match the content's encoding '{1}'.</value>
@@ -423,7 +423,7 @@ Instead, wrap the contents of the block in "{{}}":
     <value>@section Header { ... }</value>
     <comment>In CSHTML, the @section keyword is case-sensitive and lowercase (as with all C# keywords)</comment>
   </data>
-  <data name="Symbol_Unknown" xml:space="preserve">
+  <data name="Token_Unknown" xml:space="preserve">
     <value>&lt;&lt;unknown&gt;&gt;</value>
   </data>
   <data name="TagHelper_InvalidBoundAttributeName" xml:space="preserve">

@@ -57,8 +57,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             catch (AggregateException ex) when (ex.InnerException != null)
             {
-                Error.WriteLine(ex.InnerException.Message);
-                Error.WriteLine(ex.InnerException.StackTrace);
+                foreach (var innerException in ex.Flatten().InnerExceptions)
+                {
+                    Error.WriteLine(innerException.Message);
+                    Error.WriteLine(innerException.StackTrace);
+                }
                 return 1;
             }
             catch (CommandParsingException ex)

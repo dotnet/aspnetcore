@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -121,6 +122,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             throw new InvalidOperationException("BOOM!");
         }
 
+        public void ThrowHubException()
+        {
+            throw new HubException("This is a hub exception");
+        }
+
         public Task MethodThatYieldsFailedTask()
         {
             return Task.FromException(new InvalidOperationException("BOOM!"));
@@ -153,6 +159,25 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public Task SendToCaller(string message)
         {
             return Clients.Caller.SendAsync("Send", message);
+        }
+
+        public Task ProtocolError()
+        {
+            return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+        }
+
+        public void InvalidArgument(CancellationToken token)
+        {
+        }
+
+        private class SelfRef
+        {
+            public SelfRef()
+            {
+                Self = this;
+            }
+
+            public SelfRef Self;
         }
     }
 
@@ -527,6 +552,51 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
+        public ChannelReader<int> CancelableStream(CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStream2(int ignore, int ignore2, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamMiddle(int ignore, CancellationToken token, int ignore2)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
         public int SimpleMethod()
         {
             return 21;
@@ -547,6 +617,28 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public interface IVoidReturningTypedHubClient
     {
         void Send(string message);
+    }
+
+    public class ErrorInAbortedTokenHub : Hub
+    {
+        public override Task OnConnectedAsync()
+        {
+            Context.Items[nameof(OnConnectedAsync)] = true;
+
+            Context.ConnectionAborted.Register(() =>
+            {
+                throw new InvalidOperationException("BOOM");
+            });
+
+            return base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            Context.Items[nameof(OnDisconnectedAsync)] = true;
+
+            return base.OnDisconnectedAsync(exception);
+        }
     }
 
     public class ConnectionLifetimeHub : Hub

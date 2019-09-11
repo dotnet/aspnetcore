@@ -57,51 +57,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void LookaheadUntil_PassesThePreviousSymbolsInTheSameOrder()
+        public void LookaheadUntil_PassesThePreviousTokensInTheSameOrder()
         {
             // Arrange
             var tokenizer = CreateContentTokenizer("asdf--fvd--<");
 
             // Act
             var i = 3;
-            IEnumerable<HtmlSymbol> previousSymbols = null;
-            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            IEnumerable<HtmlToken> previousTokens = null;
+            var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
-                previousSymbols = p;
+                previousTokens = p;
                 return --i == 0;
             });
 
             // Assert
-            Assert.Equal(4, previousSymbols.Count());
+            Assert.Equal(4, previousTokens.Count());
 
             // For the very first element, there will be no previous items, so null is expected
             var orderIndex = 0;
-            Assert.Null(previousSymbols.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), previousSymbols.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), previousSymbols.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), previousSymbols.ElementAt(orderIndex++));
+            Assert.Null(previousTokens.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), previousTokens.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), previousTokens.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlToken("fvd", HtmlTokenType.Text), previousTokens.ElementAt(orderIndex++));
         }
 
         [Fact]
-        public void LookaheadUntil_ReturnsFalseAfterIteratingOverAllSymbolsIfConditionIsNotMet()
+        public void LookaheadUntil_ReturnsFalseAfterIteratingOverAllTokensIfConditionIsNotMet()
         {
             // Arrange
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            var symbols = new Stack<HtmlSymbol>();
-            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            var tokens = new Stack<HtmlToken>();
+            var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
-                symbols.Push(s);
+                tokens.Push(s);
                 return false;
             });
 
             // Assert
-            Assert.False(symbolFound);
-            Assert.Equal(3, symbols.Count);
-            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), symbols.Pop());
-            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
-            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+            Assert.False(tokenFound);
+            Assert.Equal(3, tokens.Count);
+            Assert.Equal(new HtmlToken("fvd", HtmlTokenType.Text), tokens.Pop());
+            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), tokens.Pop());
+            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), tokens.Pop());
         }
 
         [Fact]
@@ -111,18 +111,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            var symbols = new Stack<HtmlSymbol>();
-            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            var tokens = new Stack<HtmlToken>();
+            var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
-                symbols.Push(s);
-                return s.Type == HtmlSymbolType.DoubleHyphen;
+                tokens.Push(s);
+                return s.Type == HtmlTokenType.DoubleHyphen;
             });
 
             // Assert
-            Assert.True(symbolFound);
-            Assert.Equal(2, symbols.Count);
-            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
-            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+            Assert.True(tokenFound);
+            Assert.Equal(2, tokens.Count);
+            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), tokens.Pop());
+            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), tokens.Pop());
         }
 
         private static TestTokenizerBackedParser CreateContentTokenizer(string content)
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return tokenizer;
         }
 
-        private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
+        private class ExposedTokenizer : Tokenizer<CSharpToken, CSharpTokenType>
         {
             public ExposedTokenizer(string input)
                 : base(new SeekableTextReader(input, filePath: null))
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpSymbolType RazorCommentStarType
+            public override CSharpTokenType RazorCommentStarType
             {
                 get
                 {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpSymbolType RazorCommentTransitionType
+            public override CSharpTokenType RazorCommentTransitionType
             {
                 get
                 {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpSymbolType RazorCommentType
+            public override CSharpTokenType RazorCommentType
             {
                 get
                 {
@@ -182,9 +182,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            protected override CSharpSymbol CreateSymbol(
+            protected override CSharpToken CreateToken(
                 string content,
-                CSharpSymbolType type,
+                CSharpTokenType type,
                 IReadOnlyList<RazorDiagnostic> errors)
             {
                 throw new NotImplementedException();
@@ -196,9 +196,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private class TestTokenizerBackedParser : TokenizerBackedParser<HtmlTokenizer, HtmlSymbol, HtmlSymbolType>
+        private class TestTokenizerBackedParser : TokenizerBackedParser<HtmlTokenizer, HtmlToken, HtmlTokenType>
         {
-            internal TestTokenizerBackedParser(LanguageCharacteristics<HtmlTokenizer, HtmlSymbol, HtmlSymbolType> language, ParserContext context) : base(language, context)
+            internal TestTokenizerBackedParser(LanguageCharacteristics<HtmlTokenizer, HtmlToken, HtmlTokenType> language, ParserContext context) : base(language, context)
             {
             }
 
@@ -207,12 +207,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new NotImplementedException();
             }
 
-            protected override bool SymbolTypeEquals(HtmlSymbolType x, HtmlSymbolType y)
+            protected override bool TokenTypeEquals(HtmlTokenType x, HtmlTokenType y)
             {
                 throw new NotImplementedException();
             }
 
-            internal new bool LookaheadUntil(Func<HtmlSymbol, IEnumerable<HtmlSymbol>, bool> condition)
+            internal new bool LookaheadUntil(Func<HtmlToken, IEnumerable<HtmlToken>, bool> condition)
             {
                 return base.LookaheadUntil(condition);
             }

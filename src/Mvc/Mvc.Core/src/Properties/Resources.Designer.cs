@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => GetString("ModelBinderUtil_ModelMetadataCannotBeNull");
 
         /// <summary>
-        /// A value for the '{0}' property was not provided.
+        /// A value for the '{0}' parameter or property was not provided.
         /// </summary>
         internal static string ModelBinding_MissingBindRequiredMember
         {
@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// A value for the '{0}' property was not provided.
+        /// A value for the '{0}' parameter or property was not provided.
         /// </summary>
         internal static string FormatModelBinding_MissingBindRequiredMember(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_MissingBindRequiredMember"), p0);
@@ -1313,7 +1313,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("NoRoutesMatchedForPage"), p0);
 
         /// <summary>
-        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. If you are using {1} then you must provide the current {2} to use relative pages.
         /// </summary>
         internal static string UrlHelper_RelativePagePathIsNotSupported
         {
@@ -1321,10 +1321,10 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.
+        /// The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page. If you are using {1} then you must provide the current {2} to use relative pages.
         /// </summary>
-        internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0);
+        internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0, p1, p2);
 
         /// <summary>
         /// One or more validation errors occurred.
@@ -1453,7 +1453,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ComplexTypeModelBinder_NoParameterlessConstructor_ForParameter"), p0, p1);
 
         /// <summary>
-        /// Action '{0}' has more than one parameter that were specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify query string bound, '{2}' to specify route bound, and '{3}' for parameters to be bound from body:
+        /// Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:
         /// </summary>
         internal static string ApiController_MultipleBodyParametersFound
         {
@@ -1461,10 +1461,234 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Action '{0}' has more than one parameter that were specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify query string bound, '{2}' to specify route bound, and '{3}' for parameters to be bound from body:
+        /// Action '{0}' has more than one parameter that was specified or inferred as bound from request body. Only one parameter per action may be bound from body. Inspect the following parameters, and use '{1}' to specify bound from query, '{2}' to specify bound from route, and '{3}' for parameters to be bound from body:
         /// </summary>
         internal static string FormatApiController_MultipleBodyParametersFound(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiController_MultipleBodyParametersFound"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// API convention type '{0}' must be a static type.
+        /// </summary>
+        internal static string ApiConventionMustBeStatic
+        {
+            get => GetString("ApiConventionMustBeStatic");
+        }
+
+        /// <summary>
+        /// API convention type '{0}' must be a static type.
+        /// </summary>
+        internal static string FormatApiConventionMustBeStatic(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMustBeStatic"), p0);
+
+        /// <summary>
+        /// Invalid type parameter '{0}' specified for '{1}'.
+        /// </summary>
+        internal static string InvalidTypeTForActionResultOfT
+        {
+            get => GetString("InvalidTypeTForActionResultOfT");
+        }
+
+        /// <summary>
+        /// Invalid type parameter '{0}' specified for '{1}'.
+        /// </summary>
+        internal static string FormatInvalidTypeTForActionResultOfT(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTypeTForActionResultOfT"), p0, p1);
+
+        /// <summary>
+        /// Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.
+        /// </summary>
+        internal static string ApiConvention_UnsupportedAttributesOnConvention
+        {
+            get => GetString("ApiConvention_UnsupportedAttributesOnConvention");
+        }
+
+        /// <summary>
+        /// Method {0} is decorated with the following attributes that are not allowed on an API convention method:{1}The following attributes are allowed on API convention methods: {2}.
+        /// </summary>
+        internal static string FormatApiConvention_UnsupportedAttributesOnConvention(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConvention_UnsupportedAttributesOnConvention"), p0, p1, p2);
+
+        /// <summary>
+        /// Method name '{0}' is ambiguous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// </summary>
+        internal static string ApiConventionMethod_AmbiguousMethodName
+        {
+            get => GetString("ApiConventionMethod_AmbiguousMethodName");
+        }
+
+        /// <summary>
+        /// Method name '{0}' is ambiguous for convention type '{1}'. More than one method found with the name '{0}'.
+        /// </summary>
+        internal static string FormatApiConventionMethod_AmbiguousMethodName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_AmbiguousMethodName"), p0, p1);
+
+        /// <summary>
+        /// A method named '{0}' was not found on convention type '{1}'.
+        /// </summary>
+        internal static string ApiConventionMethod_NoMethodFound
+        {
+            get => GetString("ApiConventionMethod_NoMethodFound");
+        }
+
+        /// <summary>
+        /// A method named '{0}' was not found on convention type '{1}'.
+        /// </summary>
+        internal static string FormatApiConventionMethod_NoMethodFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiConventionMethod_NoMethodFound"), p0, p1);
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating type '{2}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepth(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepth"), p0, p1, p2);
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxDepthFix
+        {
+            get => GetString("ValidationVisitor_ExceededMaxDepthFix");
+        }
+
+        /// <summary>
+        /// This may indicate a very deep or infinitely recursive object graph. Consider modifying '{0}.{1}' or suppressing validation on the model type.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxDepthFix(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxDepthFix"), p0, p1);
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string ValidationVisitor_ExceededMaxPropertyDepth
+        {
+            get => GetString("ValidationVisitor_ExceededMaxPropertyDepth");
+        }
+
+        /// <summary>
+        /// {0} exceeded the maximum configured validation depth '{1}' when validating property '{2}' on type '{3}'.
+        /// </summary>
+        internal static string FormatValidationVisitor_ExceededMaxPropertyDepth(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidationVisitor_ExceededMaxPropertyDepth"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Bad Request
+        /// </summary>
+        internal static string ApiConventions_Title_400
+        {
+            get => GetString("ApiConventions_Title_400");
+        }
+
+        /// <summary>
+        /// Bad Request
+        /// </summary>
+        internal static string FormatApiConventions_Title_400()
+            => GetString("ApiConventions_Title_400");
+
+        /// <summary>
+        /// Unauthorized
+        /// </summary>
+        internal static string ApiConventions_Title_401
+        {
+            get => GetString("ApiConventions_Title_401");
+        }
+
+        /// <summary>
+        /// Unauthorized
+        /// </summary>
+        internal static string FormatApiConventions_Title_401()
+            => GetString("ApiConventions_Title_401");
+
+        /// <summary>
+        /// Forbidden
+        /// </summary>
+        internal static string ApiConventions_Title_403
+        {
+            get => GetString("ApiConventions_Title_403");
+        }
+
+        /// <summary>
+        /// Forbidden
+        /// </summary>
+        internal static string FormatApiConventions_Title_403()
+            => GetString("ApiConventions_Title_403");
+
+        /// <summary>
+        /// Not Found
+        /// </summary>
+        internal static string ApiConventions_Title_404
+        {
+            get => GetString("ApiConventions_Title_404");
+        }
+
+        /// <summary>
+        /// Not Found
+        /// </summary>
+        internal static string FormatApiConventions_Title_404()
+            => GetString("ApiConventions_Title_404");
+
+        /// <summary>
+        /// Not Acceptable
+        /// </summary>
+        internal static string ApiConventions_Title_406
+        {
+            get => GetString("ApiConventions_Title_406");
+        }
+
+        /// <summary>
+        /// Not Acceptable
+        /// </summary>
+        internal static string FormatApiConventions_Title_406()
+            => GetString("ApiConventions_Title_406");
+
+        /// <summary>
+        /// Conflict
+        /// </summary>
+        internal static string ApiConventions_Title_409
+        {
+            get => GetString("ApiConventions_Title_409");
+        }
+
+        /// <summary>
+        /// Conflict
+        /// </summary>
+        internal static string FormatApiConventions_Title_409()
+            => GetString("ApiConventions_Title_409");
+
+        /// <summary>
+        /// Unsupported Media Type
+        /// </summary>
+        internal static string ApiConventions_Title_415
+        {
+            get => GetString("ApiConventions_Title_415");
+        }
+
+        /// <summary>
+        /// Unsupported Media Type
+        /// </summary>
+        internal static string FormatApiConventions_Title_415()
+            => GetString("ApiConventions_Title_415");
+
+        /// <summary>
+        /// Unprocessable Entity
+        /// </summary>
+        internal static string ApiConventions_Title_422
+        {
+            get => GetString("ApiConventions_Title_422");
+        }
+
+        /// <summary>
+        /// Unprocessable Entity
+        /// </summary>
+        internal static string FormatApiConventions_Title_422()
+            => GetString("ApiConventions_Title_422");
 
         private static string GetString(string name, params string[] formatterNames)
         {

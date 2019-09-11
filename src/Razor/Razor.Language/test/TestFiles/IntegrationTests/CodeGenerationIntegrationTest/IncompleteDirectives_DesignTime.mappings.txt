@@ -63,3 +63,8 @@ Source Location: (326:21,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrat
 Generated Location: (1463:55,0 [0] )
 ||
 
+Source Location: (354:24,12 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
+||
+Generated Location: (1879:66,12 [0] )
+||
+

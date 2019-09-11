@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -63,10 +64,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, nameof(RequestBodyDone)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
 
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
+            LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
@@ -85,6 +86,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, string, Exception> _applicationAbortedConnection =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(34, nameof(RequestBodyDrainTimedOut)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application aborted the connection.");
+
+        private static readonly Action<ILogger, string, Http2ErrorCode, Exception> _http2StreamResetError =
+            LoggerMessage.Define<string, Http2ErrorCode>(LogLevel.Debug, new EventId(35, nameof(Http2StreamResetAbort)),
+                @"Trace id ""{TraceIdentifier}"": HTTP/2 stream error ""{error}"". A Reset is being sent to the stream.");
+
+        private static readonly Action<ILogger, string, Exception> _http2ConnectionClosing =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosing)),
+                @"Connection id ""{ConnectionId}"" is closing.");
+
+        private static readonly Action<ILogger, string, int, Exception> _http2ConnectionClosed =
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(36, nameof(Http2ConnectionClosed)),
+                @"Connection id ""{ConnectionId}"" is closed. The last processed stream ID was {HighestOpenedStreamId}.");
+
+        private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameReceived =
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+                @"Connection id ""{ConnectionId}"" received {type} frame for stream ID {id} with length {length} and flags {flags}");
+
+        private static readonly Action<ILogger, string, Http2FrameType, int, int, object, Exception> _http2FrameSending =
+            LoggerMessage.Define<string, Http2FrameType, int, int, object>(LogLevel.Trace, new EventId(37, nameof(Http2FrameReceived)),
+                @"Connection id ""{ConnectionId}"" sending {type} frame for stream ID {id} with length {length} and flags {flags}");
+
+        private static readonly Action<ILogger, string, int, Exception> _hpackEncodingError =
+            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, nameof(HPackEncodingError)),
+                @"Connection id ""{ConnectionId}"": HPACK encoding error while encoding headers for stream ID {StreamId}.");
 
         protected readonly ILogger _logger;
 
@@ -178,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _requestBodyDone(_logger, connectionId, traceIdentifier, null);
         }
 
-        public virtual void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
+        public virtual void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
         {
             _requestBodyMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, rate, null);
         }
@@ -193,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _requestBodyDrainTimedOut(_logger, connectionId, traceIdentifier, null);
         }
 
-        public virtual void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
+        public virtual void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier)
         {
             _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
         }
@@ -208,14 +233,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _http2ConnectionError(_logger, connectionId, ex);
         }
 
+        public virtual void Http2ConnectionClosing(string connectionId)
+        {
+            _http2ConnectionClosing(_logger, connectionId, null);
+        }
+
+        public virtual void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId)
+        {
+            _http2ConnectionClosed(_logger, connectionId, highestOpenedStreamId, null);
+        }
+
         public virtual void Http2StreamError(string connectionId, Http2StreamErrorException ex)
         {
             _http2StreamError(_logger, connectionId, ex);
         }
 
+        public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason)
+        {
+            _http2StreamResetError(_logger, traceIdentifier, error, abortReason);
+        }
+
         public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
         {
             _hpackDecodingError(_logger, connectionId, streamId, ex);
+        }
+
+        public virtual void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex)
+        {
+            _hpackEncodingError(_logger, connectionId, streamId, ex);
+        }
+
+        public void Http2FrameReceived(string connectionId, Http2Frame frame)
+        {
+            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+        }
+
+        public void Http2FrameSending(string connectionId, Http2Frame frame)
+        {
+            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

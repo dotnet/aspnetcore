@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerActionInvokerCacheTest
     {
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public void GetControllerActionMethodExecutor_CachesFilters()
         {
             // Arrange
@@ -43,8 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(cacheEntry1.filters, cacheEntry2.filters);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Fact]
         public void GetControllerActionMethodExecutor_CachesEntry()
         {
             // Arrange
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var descriptorProvider = new CustomActionDescriptorCollectionProvider(
                 new[] { controllerContext.ActionDescriptor });
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
             var mvcOptions = Options.Create(new MvcOptions
             {

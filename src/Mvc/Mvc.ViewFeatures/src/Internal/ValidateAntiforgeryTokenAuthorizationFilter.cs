@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 catch (AntiforgeryValidationException exception)
                 {
                     _logger.AntiforgeryTokenInvalid(exception.Message, exception);
-                    context.Result = new BadRequestResult();
+                    context.Result = new AntiforgeryValidationFailedResult();
                 }
             }
         }

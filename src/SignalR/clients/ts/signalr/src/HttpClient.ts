@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortSignal } from "./AbortController";
-import { HttpError, TimeoutError } from "./Errors";
-import { ILogger, LogLevel } from "./ILogger";
 
 /** Represents an HTTP request. */
 export interface HttpRequest {
@@ -143,71 +141,14 @@ export abstract class HttpClient {
      * @returns {Promise<HttpResponse>} A Promise that resolves with an HttpResponse describing the response, or rejects with an Error indicating a failure.
      */
     public abstract send(request: HttpRequest): Promise<HttpResponse>;
-}
 
-/** Default implementation of {@link @aspnet/signalr.HttpClient}. */
-export class DefaultHttpClient extends HttpClient {
-    private readonly logger: ILogger;
-
-    /** Creates a new instance of the {@link @aspnet/signalr.DefaultHttpClient}, using the provided {@link @aspnet/signalr.ILogger} to log messages. */
-    public constructor(logger: ILogger) {
-        super();
-        this.logger = logger;
-    }
-
-    /** @inheritDoc */
-    public send(request: HttpRequest): Promise<HttpResponse> {
-        return new Promise<HttpResponse>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-
-            xhr.open(request.method, request.url, true);
-            xhr.withCredentials = true;
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            // Explicitly setting the Content-Type header for React Native on Android platform.
-            xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-
-            if (request.headers) {
-                Object.keys(request.headers)
-                    .forEach((header) => xhr.setRequestHeader(header, request.headers[header]));
-            }
-
-            if (request.responseType) {
-                xhr.responseType = request.responseType;
-            }
-
-            if (request.abortSignal) {
-                request.abortSignal.onabort = () => {
-                    xhr.abort();
-                };
-            }
-
-            if (request.timeout) {
-                xhr.timeout = request.timeout;
-            }
-
-            xhr.onload = () => {
-                if (request.abortSignal) {
-                    request.abortSignal.onabort = null;
-                }
-
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText));
-                } else {
-                    reject(new HttpError(xhr.statusText, xhr.status));
-                }
-            };
-
-            xhr.onerror = () => {
-                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}`);
-                reject(new HttpError(xhr.statusText, xhr.status));
-            };
-
-            xhr.ontimeout = () => {
-                this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
-                reject(new TimeoutError());
-            };
-
-            xhr.send(request.content || "");
-        });
+    /** Gets all cookies that apply to the specified URL.
+     *
+     * @param url The URL that the cookies are valid for.
+     * @returns {string} A string containing all the key-value cookie pairs for the specified URL.
+     */
+    // @ts-ignore
+    public getCookieString(url: string): string {
+        return "";
     }
 }

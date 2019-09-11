@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void EmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
@@ -99,6 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
+        [ReplaceCulture]
         public void NonEmptyDefaultValue_WithOptionalParameter_Throws()
         {
             // Arrange
@@ -129,6 +132,8 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var services = new ServiceCollection();
             services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
             services.AddSingleton<RoutingMarkerService>();
+            services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.Configure<RouteOptions>(options => { });
 
             var applicationBuilder = Mock.Of<IApplicationBuilder>();
             applicationBuilder.ApplicationServices = services.BuildServiceProvider();
@@ -143,7 +148,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor);
+            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
     }
 }

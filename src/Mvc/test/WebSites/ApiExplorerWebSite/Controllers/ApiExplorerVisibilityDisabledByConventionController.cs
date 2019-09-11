@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiExplorerWebSite
 {
-    [Route("ApiExplorerVisbilityDisabledByConvention")]
-    public class ApiExplorerVisbilityDisabledByConventionController : Controller
+    [Route("ApiExplorerVisibilityDisabledByConvention")]
+    public class ApiExplorerVisibilityDisabledByConventionController : Controller
     {
         [HttpGet]
         public void Get()

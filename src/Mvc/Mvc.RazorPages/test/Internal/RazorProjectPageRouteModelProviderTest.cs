@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/Manage/Categories.cshtml", "@page"));
             fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/Index.cshtml", "@page"));
             fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/List.cshtml", "@page \"{sortOrder?}\""));
-            fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/_ViewStart.cshtml", "@page"));
+            fileSystem.Add(new TestRazorProjectItem("/Areas/Products/Pages/_Test.cshtml", "@page"));
 
             var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
@@ -100,6 +100,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                           Assert.Equal("page", kvp.Key);
                           Assert.Equal("/List", kvp.Value);
                       });
+                },
+                model =>
+                {
+                    Assert.Equal("/Areas/Products/Pages/_Test.cshtml", model.RelativePath);
+                    Assert.Equal("/_Test", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Products/_Test", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("area", kvp.Key);
+                           Assert.Equal("Products", kvp.Value);
+                       },
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/_Test", kvp.Value);
+                       });
                 },
                 model =>
                 {
@@ -273,36 +291,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void OnProvidersExecuting_SkipsPagesStartingWithUnderscore()
-        {
-            // Arrange
-            var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Pages/Home.cshtml", "@page"));
-            fileSystem.Add(new TestRazorProjectItem("/Pages/_Layout.cshtml", "@page"));
-
-            var optionsManager = Options.Create(new RazorPagesOptions());
-            optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
-            var context = new PageRouteModelProviderContext();
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            Assert.Collection(context.RouteModels,
-                model =>
-                {
-                    Assert.Equal("/Pages/Home.cshtml", model.RelativePath);
-                });
-        }
-
-        [Fact]
         public void OnProvidersExecuting_DiscoversFilesUnderBasePath()
         {
             // Arrange
             var fileSystem = new VirtualRazorProjectFileSystem();
             fileSystem.Add(new TestRazorProjectItem("/Pages/Index.cshtml", "@page"));
-            fileSystem.Add(new TestRazorProjectItem("/Pages/_Layout.cshtml", "@page"));
+            fileSystem.Add(new TestRazorProjectItem("/Pages/_Layout.cshtml", ""));
             fileSystem.Add(new TestRazorProjectItem("/NotPages/Index.cshtml", "@page"));
             fileSystem.Add(new TestRazorProjectItem("/NotPages/_Layout.cshtml", "@page"));
             fileSystem.Add(new TestRazorProjectItem("/Index.cshtml", "@page"));

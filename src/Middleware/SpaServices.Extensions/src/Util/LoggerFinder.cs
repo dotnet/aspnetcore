@@ -18,7 +18,9 @@ namespace Microsoft.AspNetCore.SpaServices.Util
             var loggerFactory = appBuilder.ApplicationServices.GetService<ILoggerFactory>();
             var logger = loggerFactory != null
                 ? loggerFactory.CreateLogger(logCategoryName)
+#pragma warning disable CS0618 // Type or member is obsolete
                 : new ConsoleLogger(logCategoryName, null, false);
+#pragma warning restore CS0618
             return logger;
         }
     }

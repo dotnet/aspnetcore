@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Act
             var input = "Test";
-            var response = await Client.PostAsJsonAsync("PolymorhpicPropertyBinding/Action", input);
+            var response = await Client.PostAsJsonAsync("PolymorphicPropertyBinding/Action", input);
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ValidationUsesModelMetadataFromActualModelType_ForInputFormattedProperties()
         {
             // Act
-            var response = await Client.PostAsJsonAsync("PolymorhpicPropertyBinding/Action", string.Empty);
+            var response = await Client.PostAsJsonAsync("PolymorphicPropertyBinding/Action", string.Empty);
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);

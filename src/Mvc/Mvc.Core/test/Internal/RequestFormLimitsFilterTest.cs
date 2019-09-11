@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var requestFormLimitsFilter = new RequestFormLimitsFilter(NullLoggerFactory.Instance);
             requestFormLimitsFilter.FormOptions = new FormOptions();
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestFormLimitsFilter });
             // Set to null explicitly as we want to make sure the filter adds one
             authorizationFilterContext.HttpContext.Features.Set<IFormFeature>(null);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var requestFormLimitsFilter = new RequestFormLimitsFilter(NullLoggerFactory.Instance);
             requestFormLimitsFilter.FormOptions = new FormOptions();
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestFormLimitsFilter });
             var oldFormFeature = new FormFeature(authorizationFilterContext.HttpContext.Request);
             // Set to null explicitly as we want to make sure the filter adds one
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestFormLimitsFilter = new RequestFormLimitsFilter(loggerFactory);
             requestFormLimitsFilter.FormOptions = new FormOptions();
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestFormLimitsFilter });
             authorizationFilterContext.HttpContext.Request.Form = new FormCollection(null);
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestFormLimitsFilter = new RequestFormLimitsFilter(loggerFactory);
             requestFormLimitsFilter.FormOptions = new FormOptions();
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestFormLimitsFilter });
             // Set to null explicitly as we want to make sure the filter adds one
             authorizationFilterContext.HttpContext.Features.Set<IFormFeature>(null);
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestFormLimitsFilter = new RequestFormLimitsFilter(loggerFactory);
             requestFormLimitsFilter.FormOptions = new FormOptions();
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestFormLimitsFilter });
             // Set to null explicitly as we want to make sure the filter adds one
             authorizationFilterContext.HttpContext.Features.Set<IFormFeature>(
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 write.State.ToString());
         }
 
-        private static AuthorizationFilterContext CreateauthorizationFilterContext(IFilterMetadata[] filters)
+        private static AuthorizationFilterContext CreateAuthorizationFilterContext(IFilterMetadata[] filters)
         {
             return new AuthorizationFilterContext(CreateActionContext(), filters);
         }

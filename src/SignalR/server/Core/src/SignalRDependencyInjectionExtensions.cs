@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
         public static ISignalRServerBuilder AddSignalRCore(this IServiceCollection services)
         {
-            services.AddSingleton<SignalRCoreMarkerService>();
+            services.TryAddSingleton<SignalRCoreMarkerService>();
             services.TryAddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.TryAddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
             services.TryAddSingleton(typeof(IHubContext<>), typeof(HubContext<>));

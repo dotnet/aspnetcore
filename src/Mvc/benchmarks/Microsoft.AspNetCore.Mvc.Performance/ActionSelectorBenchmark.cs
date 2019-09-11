@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
                 var state = routeContext.RouteData.PushState(MockRouter.Instance, routeValues, null);
 
-                var actual = NaiveSelectCandiates(_actions, routeContext.RouteData.Values);
+                var actual = NaiveSelectCandidates(_actions, routeContext.RouteData.Values);
                 Verify(expected, actual);
 
                 state.Restore();
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         }
 
         // A naive implementation we can use to generate match data for inputs, and for a baseline.
-        private static IReadOnlyList<ActionDescriptor> NaiveSelectCandiates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
+        private static IReadOnlyList<ActionDescriptor> NaiveSelectCandidates(ActionDescriptor[] actions, RouteValueDictionary routeValues)
         {
             var results = new List<ActionDescriptor>();
             for (var i = 0; i < actions.Length; i++)
@@ -123,8 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 var isMatch = true;
                 foreach (var kvp in action.RouteValues)
                 {
-                    var routeValue = Convert.ToString(routeValues[kvp.Key]) ?? string.Empty;
-
+                    var routeValue = Convert.ToString(routeValues[kvp.Key], CultureInfo.InvariantCulture) ??
+                        string.Empty;
                     if (string.IsNullOrEmpty(kvp.Value) && string.IsNullOrEmpty(routeValue))
                     {
                         // Match
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in new RouteValueDictionary(obj))
             {
-                routeValues.Add(kvp.Key, Convert.ToString(kvp.Value) ?? string.Empty);
+                routeValues.Add(kvp.Key, Convert.ToString(kvp.Value, CultureInfo.InvariantCulture) ?? string.Empty);
             }
 
             return new ActionDescriptor()
@@ -175,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             {
                 var action = actions[i];
                 var routeValues = new RouteValueDictionary(action.RouteValues);
-                var matches = NaiveSelectCandiates(actions, routeValues);
+                var matches = NaiveSelectCandidates(actions, routeValues);
                 if (matches.Count == 0)
                 {
                     throw new InvalidOperationException("This should have at least one match.");
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 // Make one of the route values not match.
                 routeValues[routeValues.First().Key] = ((string)routeValues.First().Value) + "fkdkfdkkf";
 
-                var matches = NaiveSelectCandiates(actions, routeValues);
+                var matches = NaiveSelectCandidates(actions, routeValues);
                 if (matches.Count != 0)
                 {
                     throw new InvalidOperationException("This should have 0 matches.");

@@ -19,15 +19,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             '\u2029' // Paragraph separator
         };
 
-        public static bool IsNewLine(char value)
-        {
-            return NewLineCharacters.Contains(value);
-        }
+        public static bool IsNewLine(char value) => Array.IndexOf<char>(NewLineCharacters, value) != -1;
 
         public static bool IsNewLine(string value)
         {
+            // We want to handle both LF and CRLF regardless of the platform.
+            // We explicitly check for CRLF and IsNewLine() should return true for LF.
             return (value.Length == 1 && (IsNewLine(value[0]))) ||
-                   (string.Equals(value, Environment.NewLine, StringComparison.Ordinal));
+                   (string.Equals(value, "\r\n", StringComparison.Ordinal));
         }
 
         public static bool IsIdentifier(string value)

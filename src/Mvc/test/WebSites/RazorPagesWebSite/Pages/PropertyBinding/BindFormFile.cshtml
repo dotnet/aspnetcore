@@ -1,0 +1,10 @@
+﻿@page
+@model BindFormFile
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
+
+<form method="post" enctype="multipart/form-data">
+    <input id="property1" asp-for="Property1" />
+    <input id="file1" asp-for="Forms.Form1" />
+    <input id="file2" asp-for="Forms.Form2" />
+    <input id="file3" asp-for="Form3" />
+</form>

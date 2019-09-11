@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public SelectorModel()
         {
             ActionConstraints = new List<IActionConstraintMetadata>();
+            EndpointMetadata = new List<object>();
         }
 
         public SelectorModel(SelectorModel other)
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             ActionConstraints = new List<IActionConstraintMetadata>(other.ActionConstraints);
+            EndpointMetadata = new List<object>(other.EndpointMetadata);
 
             if (other.AttributeRouteModel != null)
             {
@@ -32,5 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public AttributeRouteModel AttributeRouteModel { get; set; }
 
         public IList<IActionConstraintMetadata> ActionConstraints { get; }
+
+        public IList<object> EndpointMetadata { get; }
     }
 }

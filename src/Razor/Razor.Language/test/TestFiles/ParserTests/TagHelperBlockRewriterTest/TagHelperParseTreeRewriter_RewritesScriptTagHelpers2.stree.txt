@@ -1,0 +1,15 @@
+Markup block - Gen<None> - 40 - (0:0,0)
+    Tag block - Gen<TagHelper> - 40 - (0:0,0) - script - scripttaghelper
+        StartTagAndEndTag - <script> ... </script>
+        Markup span - Gen<Markup> - [Hello World <div></div>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:11
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[div];
+            HtmlTokenType.CloseAngle;[>];

@@ -74,6 +74,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         {
             return ReadAsyncInternal(destination);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -97,6 +100,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             _output.Write(source.Span);
             await _output.FlushAsync(cancellationToken);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override void Flush()
@@ -120,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     if (!readableBuffer.IsEmpty)
                     {
                         // buffer.Count is int
-                        var count = (int) Math.Min(readableBuffer.Length, destination.Length);
+                        var count = (int)Math.Min(readableBuffer.Length, destination.Length);
                         readableBuffer = readableBuffer.Slice(0, count);
                         readableBuffer.CopyTo(destination.Span);
                         return count;

@@ -29,7 +29,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// </param>
         public DefaultControllerFactory(
             IControllerActivator controllerActivator,
-            IEnumerable<IControllerPropertyActivator> propertyActivators)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            IEnumerable<IControllerPropertyActivator> propertyActivators
+#pragma warning restore PUB0001
+            )
         {
             if (controllerActivator == null)
             {

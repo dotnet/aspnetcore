@@ -1,6 +1,0 @@
-microsoft.netcore.targets\1.1.0\.signature.p7s
-runtime.native.system.security.cryptography\4.0.0\.signature.p7s
-system.composition.convention\1.0.31\.signature.p7s
-system.composition.typedparts\1.0.31\.signature.p7s
-system.globalization.extensions\4.0.1\.signature.p7s
-system.threading.tasks.parallel\4.3.0\.signature.p7s

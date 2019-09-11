@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class DynamicObjectAdapter : IAdapter
     {
-        public bool TryAdd(
+        public virtual bool TryAdd(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryGet(
+        public virtual bool TryGet(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryRemove(
+        public virtual bool TryRemove(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         }
 
-        public bool TryReplace(
+        public virtual bool TryReplace(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTest(
+        public virtual bool TryTest(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public bool TryTraverse(
+        public virtual bool TryTraverse(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryGetDynamicObjectProperty(
+        protected virtual bool TryGetDynamicObjectProperty(
             object target,
             IContractResolver contractResolver,
             string segment,
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TrySetDynamicObjectProperty(
+        protected virtual bool TrySetDynamicObjectProperty(
             object target,
             IContractResolver contractResolver,
             string segment,
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryConvertValue(object value, Type propertyType, out object convertedValue)
+        protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType);
             if (!conversionResult.CanBeConverted)

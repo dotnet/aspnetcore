@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>

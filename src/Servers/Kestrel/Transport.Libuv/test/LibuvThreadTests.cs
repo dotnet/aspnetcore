@@ -5,10 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
@@ -20,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext() { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
             var ranOne = false;

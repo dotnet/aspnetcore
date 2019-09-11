@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             catch
             {
-                // In the case an exception occured trying to open the Mutex then
+                // In the case an exception occurred trying to open the Mutex then
                 // the assumption is that it's not open.
             }
 

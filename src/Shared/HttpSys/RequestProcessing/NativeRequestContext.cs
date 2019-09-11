@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
+        internal bool IsHttp2 => NativeRequest->Flags.HasFlag(HttpApiTypes.HTTP_REQUEST_FLAGS.Http2);
+
         internal uint Size
         {
             get { return (uint)_backingBuffer.Length - AlignmentPadding; }
@@ -156,6 +158,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal Version GetVersion()
         {
+            if (IsHttp2)
+            {
+                return Constants.V2;
+            }
             var major = NativeRequest->Version.MajorVersion;
             var minor = NativeRequest->Version.MinorVersion;
             if (major == 1 && minor == 1)

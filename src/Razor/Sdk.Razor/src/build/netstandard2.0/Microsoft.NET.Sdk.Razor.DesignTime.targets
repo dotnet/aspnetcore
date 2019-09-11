@@ -45,4 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyPageSchema>
   </ItemGroup>
 
+  <Target Name="RazorGenerateDesignTime" DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths" Returns="@(RazorGenerateWithTargetPath)">
+  </Target>
+
 </Project>

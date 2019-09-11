@@ -1,282 +1,379 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class CSharpImplicitExpressionTest : CsHtmlCodeParserTestBase
     {
-        private const string TestExtraKeyword = "model";
-
-        public static TheoryData NullConditionalOperatorData_Bracket
-        {
-            get
-            {
-                var noErrors = new RazorDiagnostic[0];
-                Func<int, RazorDiagnostic[]> missingEndBracketError = (index) =>
-                    new RazorDiagnostic[1]
-                    {
-                        RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                            new SourceSpan(new SourceLocation(index, 0, index), contentLength: 1), "[", "]"),
-                    };
-
-                // implicitExpression, expectedImplicitExpression, acceptedCharacters, expectedErrors
-                return new TheoryData<string, string, AcceptedCharactersInternal, RazorDiagnostic[]>
-                {
-                    { "val??[", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val??[0", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[", "val?[", AcceptedCharactersInternal.Any, missingEndBracketError(5) },
-                    { "val?(", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[more", "val?[more", AcceptedCharactersInternal.Any, missingEndBracketError(5) },
-                    { "val?[0]", "val?[0]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[<p>", "val?[", AcceptedCharactersInternal.Any, missingEndBracketError(5) },
-                    { "val?[more.<p>", "val?[more.", AcceptedCharactersInternal.Any, missingEndBracketError(5) },
-                    { "val??[more<p>", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[-1]?", "val?[-1]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[abc]?[def", "val?[abc]?[def", AcceptedCharactersInternal.Any, missingEndBracketError(11) },
-                    { "val?[abc]?[2]", "val?[abc]?[2]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[abc]?.more?[def]", "val?[abc]?.more?[def]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[abc]?.more?.abc", "val?[abc]?.more?.abc", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[null ?? true]", "val?[null ?? true]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                    { "val?[abc?.gef?[-1]]", "val?[abc?.gef?[-1]]", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(NullConditionalOperatorData_Bracket))]
-        public void ParseBlockMethodParsesNullConditionalOperatorImplicitExpression_Bracket(
-            string implicitExpresison,
-            string expectedImplicitExpression,
-            object acceptedCharacters,
-            object expectedErrors)
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket1()
         {
             // Act & Assert
-            ImplicitExpressionTest(
-                implicitExpresison,
-                expectedImplicitExpression,
-                (AcceptedCharactersInternal)acceptedCharacters,
-                (RazorDiagnostic[])expectedErrors);
+            ImplicitExpressionTest("val??[");
         }
 
-        public static TheoryData NullConditionalOperatorData_Dot
-        {
-            get
-            {
-                // implicitExpression, expectedImplicitExpression
-                return new TheoryData<string, string>
-                {
-                    { "val?", "val" },
-                    { "val??", "val" },
-                    { "val??more", "val" },
-                    { "val?!", "val" },
-                    { "val?.", "val?." },
-                    { "val??.", "val" },
-                    { "val?.(abc)", "val?." },
-                    { "val?.<p>", "val?." },
-                    { "val?.more", "val?.more" },
-                    { "val?.more<p>", "val?.more" },
-                    { "val??.more<p>", "val" },
-                    { "val?.more(false)?.<p>", "val?.more(false)?." },
-                    { "val?.more(false)?.abc", "val?.more(false)?.abc" },
-                    { "val?.more(null ?? true)?.abc", "val?.more(null ?? true)?.abc" },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(NullConditionalOperatorData_Dot))]
-        public void ParseBlockMethodParsesNullConditionalOperatorImplicitExpression_Dot(
-            string implicitExpresison,
-            string expectedImplicitExpression)
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket2()
         {
             // Act & Assert
-            ImplicitExpressionTest(implicitExpresison, expectedImplicitExpression);
+            ImplicitExpressionTest("val??[0");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket3()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket4()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?(");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket5()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[more");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket6()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[0]");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket7()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket8()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[more.<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket9()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val??[more<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket10()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[-1]?");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket11()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[abc]?[def");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket12()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[abc]?[2]");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket13()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[abc]?.more?[def]");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket14()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[abc]?.more?.abc");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket15()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[null ?? true]");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Bracket16()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?[abc?.gef?[-1]]");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot1()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot2()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val??");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot3()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val??more");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot4()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?!");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot5()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot6()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val??.");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot7()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.(abc)");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot8()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot9()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.more");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot10()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.more<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot11()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val??.more<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot12()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.more(false)?.<p>");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot13()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.more(false)?.abc");
+        }
+
+        [Fact]
+        public void ParsesNullConditionalOperatorImplicitExpression_Dot14()
+        {
+            // Act & Assert
+            ImplicitExpressionTest("val?.more(null ?? true)?.abc");
         }
 
         [Fact]
         public void NestedImplicitExpression()
         {
-            ParseBlockTest("if (true) { @foo }",
-                           new StatementBlock(
-                               Factory.Code("if (true) { ").AsStatement(),
-                               new ExpressionBlock(
-                                   Factory.CodeTransition(),
-                                   Factory.Code("foo")
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                               Factory.Code(" }").AsStatement()));
+            ParseBlockTest("if (true) { @foo }");
         }
 
         [Fact]
-        public void ParseBlockAcceptsNonEnglishCharactersThatAreValidIdentifiers()
+        public void AcceptsNonEnglishCharactersThatAreValidIdentifiers()
         {
-            ImplicitExpressionTest("हळूँजद॔.", "हळूँजद॔");
+            ImplicitExpressionTest("हळूँजद॔.");
         }
 
         [Fact]
-        public void ParseBlockOutputsZeroLengthCodeSpanIfInvalidCharacterFollowsTransition()
+        public void OutputsZeroLengthCodeSpanIfInvalidCharacterFollowsTransition()
         {
-            ParseBlockTest("@/",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.EmptyCSharp()
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
-                                "/"));
+            ParseBlockTest("@/");
         }
 
         [Fact]
-        public void ParseBlockOutputsZeroLengthCodeSpanIfEOFOccursAfterTransition()
+        public void OutputsZeroLengthCodeSpanIfEOFOccursAfterTransition()
         {
-            ParseBlockTest("@",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.EmptyCSharp()
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1)));
+            ParseBlockTest("@");
         }
 
         [Fact]
-        public void ParseBlockSupportsSlashesWithinComplexImplicitExpressions()
+        public void SupportsSlashesWithinComplexImplicitExpressions()
         {
             ImplicitExpressionTest("DataGridColumn.Template(\"Years of Service\", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))");
         }
 
         [Fact]
-        public void ParseBlockMethodParsesSingleIdentifierAsImplicitExpression()
+        public void ParsesSingleIdentifierAsImplicitExpression()
         {
             ImplicitExpressionTest("foo");
         }
 
         [Fact]
-        public void ParseBlockMethodDoesNotAcceptSemicolonIfExpressionTerminatedByWhitespace()
+        public void DoesNotAcceptSemicolonIfExpressionTerminatedByWhitespace()
         {
-            ImplicitExpressionTest("foo ;", "foo");
+            ImplicitExpressionTest("foo ;");
         }
 
         [Fact]
-        public void ParseBlockMethodIgnoresSemicolonAtEndOfSimpleImplicitExpression()
+        public void IgnoresSemicolonAtEndOfSimpleImplicitExpression()
         {
             RunTrailingSemicolonTest("foo");
         }
 
         [Fact]
-        public void ParseBlockMethodParsesDottedIdentifiersAsImplicitExpression()
+        public void ParsesDottedIdentifiersAsImplicitExpression()
         {
             ImplicitExpressionTest("foo.bar.baz");
         }
 
         [Fact]
-        public void ParseBlockMethodIgnoresSemicolonAtEndOfDottedIdentifiers()
+        public void IgnoresSemicolonAtEndOfDottedIdentifiers()
         {
             RunTrailingSemicolonTest("foo.bar.baz");
         }
 
         [Fact]
-        public void ParseBlockMethodDoesNotIncludeDotAtEOFInImplicitExpression()
+        public void DoesNotIncludeDotAtEOFInImplicitExpression()
         {
-            ImplicitExpressionTest("foo.bar.", "foo.bar");
+            ImplicitExpressionTest("foo.bar.");
         }
 
         [Fact]
-        public void ParseBlockMethodDoesNotIncludeDotFollowedByInvalidIdentifierCharacterInImplicitExpression()
+        public void DoesNotIncludeDotFollowedByInvalidIdentifierCharInImplicitExpr1()
         {
-            ImplicitExpressionTest("foo.bar.0", "foo.bar");
-            ImplicitExpressionTest("foo.bar.</p>", "foo.bar");
+            // ParseBlockMethodDoesNotIncludeDotFollowedByInvalidIdentifierCharacterInImplicitExpression1
+            ImplicitExpressionTest("foo.bar.0");
         }
 
         [Fact]
-        public void ParseBlockMethodDoesNotIncludeSemicolonAfterDot()
+        public void DoesNotIncludeDotFollowedByInvalidIdentifierCharInImplicitExpr2()
         {
-            ImplicitExpressionTest("foo.bar.;", "foo.bar");
+            // ParseBlockMethodDoesNotIncludeDotFollowedByInvalidIdentifierCharacterInImplicitExpression2
+            ImplicitExpressionTest("foo.bar.</p>");
         }
 
         [Fact]
-        public void ParseBlockMethodTerminatesAfterIdentifierUnlessFollowedByDotOrParenInImplicitExpression()
+        public void DoesNotIncludeSemicolonAfterDot()
         {
-            ImplicitExpressionTest("foo.bar</p>", "foo.bar");
+            ImplicitExpressionTest("foo.bar.;");
         }
 
         [Fact]
-        public void ParseBlockProperlyParsesParenthesesAndBalancesThemInImplicitExpression()
+        public void TerminatesAfterIdentifierUnlessFollowedByDotOrParenInImplicitExpr()
+        {
+            // ParseBlockMethodTerminatesAfterIdentifierUnlessFollowedByDotOrParenInImplicitExpression
+            ImplicitExpressionTest("foo.bar</p>");
+        }
+
+        [Fact]
+        public void ProperlyParsesParenthesesAndBalancesThemInImplicitExpression()
         {
             ImplicitExpressionTest(@"foo().bar(""bi\""z"", 4)(""chained method; call"").baz(@""bo""""z"", '\'', () => { return 4; }, (4+5+new { foo = bar[4] }))");
         }
 
         [Fact]
-        public void ParseBlockProperlyParsesBracketsAndBalancesThemInImplicitExpression()
+        public void ProperlyParsesBracketsAndBalancesThemInImplicitExpression()
         {
             ImplicitExpressionTest(@"foo.bar[4 * (8 + 7)][""fo\""o""].baz");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionAtHtmlEndTag()
+        public void TerminatesImplicitExpressionAtHtmlEndTag()
         {
-            ImplicitExpressionTest("foo().bar.baz</p>zoop", "foo().bar.baz");
+            ImplicitExpressionTest("foo().bar.baz</p>zoop");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionAtHtmlStartTag()
+        public void TerminatesImplicitExpressionAtHtmlStartTag()
         {
-            ImplicitExpressionTest("foo().bar.baz<p>zoop", "foo().bar.baz");
+            ImplicitExpressionTest("foo().bar.baz<p>zoop");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionBeforeDotIfDotNotFollowedByIdentifierStartCharacter()
+        public void TerminatesImplicitExprBeforeDotIfDotNotFollowedByIdentifierStartChar()
         {
-            ImplicitExpressionTest("foo().bar.baz.42", "foo().bar.baz");
+            // ParseBlockTerminatesImplicitExpressionBeforeDotIfDotNotFollowedByIdentifierStartCharacter
+            ImplicitExpressionTest("foo().bar.baz.42");
         }
 
         [Fact]
-        public void ParseBlockStopsBalancingParenthesesAtEOF()
+        public void StopsBalancingParenthesesAtEOF()
         {
-            ImplicitExpressionTest(
-                "foo(()", "foo(()",
-                acceptedCharacters: AcceptedCharactersInternal.Any,
-                errors: RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
+            ImplicitExpressionTest("foo(()");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionIfCloseParenFollowedByAnyWhiteSpace()
+        public void TerminatesImplicitExpressionIfCloseParenFollowedByAnyWhiteSpace()
         {
-            ImplicitExpressionTest("foo.bar() (baz)", "foo.bar()");
+            ImplicitExpressionTest("foo.bar() (baz)");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionIfIdentifierFollowedByAnyWhiteSpace()
+        public void TerminatesImplicitExpressionIfIdentifierFollowedByAnyWhiteSpace()
         {
-            ImplicitExpressionTest("foo .bar() (baz)", "foo");
+            ImplicitExpressionTest("foo .bar() (baz)");
         }
 
         [Fact]
-        public void ParseBlockTerminatesImplicitExpressionAtLastValidPointIfDotFollowedByWhitespace()
+        public void TerminatesImplicitExpressionAtLastValidPointIfDotFollowedByWhitespace()
         {
-            ImplicitExpressionTest("foo. bar() (baz)", "foo");
+            ImplicitExpressionTest("foo. bar() (baz)");
         }
 
         [Fact]
-        public void ParseBlockOutputExpressionIfModuleTokenNotFollowedByBrace()
+        public void OutputExpressionIfModuleTokenNotFollowedByBrace()
         {
             ImplicitExpressionTest("module.foo()");
         }
 
         private void RunTrailingSemicolonTest(string expr)
         {
-            ParseBlockTest(SyntaxConstants.TransitionString + expr + ";",
-                           new ExpressionBlock(
-                               Factory.CodeTransition(),
-                               Factory.Code(expr)
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
-                               ));
+            ParseBlockTest(SyntaxConstants.TransitionString + expr + ";");
         }
     }
 }

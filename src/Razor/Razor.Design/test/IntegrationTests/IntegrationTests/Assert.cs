@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static void FileExists(MSBuildResult result, params string[] paths)
+        public static string FileExists(MSBuildResult result, params string[] paths)
         {
             if (result == null)
             {
@@ -233,6 +233,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 throw new FileMissingException(result, filePath);
             }
+
+            return filePath;
         }
 
         public static void FileCountEquals(MSBuildResult result, int expected, string directoryPath, string searchPattern)

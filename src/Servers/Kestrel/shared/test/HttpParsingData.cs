@@ -428,6 +428,9 @@ namespace Microsoft.AspNetCore.Testing
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r\r", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF  },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
+
+            // Empty header name
+            new[] { ": value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@": value\x0D\x0A") },
         };
 
         public static TheoryData<string, string> HostHeaderData

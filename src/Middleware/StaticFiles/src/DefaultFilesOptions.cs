@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
             : base(sharedOptions)
         {
             // Prioritized list
-            DefaultFileNames = new List<string>()
+            DefaultFileNames = new List<string>
             {
                 "default.htm",
                 "default.html",

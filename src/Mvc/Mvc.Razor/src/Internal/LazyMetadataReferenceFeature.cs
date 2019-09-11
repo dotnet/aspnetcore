@@ -11,9 +11,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class LazyMetadataReferenceFeature : IMetadataReferenceFeature
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly RazorReferenceManager _referenceManager;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public LazyMetadataReferenceFeature(RazorReferenceManager referenceManager)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             _referenceManager = referenceManager;
         }

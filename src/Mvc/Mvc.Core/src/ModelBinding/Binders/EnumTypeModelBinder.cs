@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // enum FlagsEnum { Value1 = 1, Value2 = 2, Value4 = 4 }
                 //
                 // Valid Scenarios:
-                // 1. valueproviderresult="Value2,Value4", model=Value2 | Value4, underlying=6, converted=Value2, Value4
-                // 2. valueproviderresult="2,4", model=Value2 | Value4, underlying=6, converted=Value2, Value4
+                // 1. valueProviderResult="Value2,Value4", model=Value2 | Value4, underlying=6, converted=Value2, Value4
+                // 2. valueProviderResult="2,4", model=Value2 | Value4, underlying=6, converted=Value2, Value4
                 //
                 // Invalid Scenarios:
-                // 1. valueproviderresult="2,10", model=12, underlying=12, converted=12
+                // 1. valueProviderResult="2,10", model=12, underlying=12, converted=12
                 // 
                 var underlying = Convert.ChangeType(
                     model,

@@ -88,31 +88,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
-            var isWhitespaceStatement = true;
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var token = node.Children[i] as IntermediateToken;
-                if (token == null || !string.IsNullOrWhiteSpace(token.Content))
-                {
-                    isWhitespaceStatement = false;
-                    break;
-                }
-            }
-
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                if (!isWhitespaceStatement)
-                {
-                    linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
-                }
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
 
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
-            }
-            else if (isWhitespaceStatement)
-            {
-                // Don't write whitespace if there is no line mapping for it.
-                return;
             }
 
             for (var i = 0; i < node.Children.Count; i++)

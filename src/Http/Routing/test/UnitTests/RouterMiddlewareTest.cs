@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Routing
     public class RouterMiddlewareTest
     {
         [Fact]
-        public async void Invoke_LogsCorrectValues_WhenNotHandled()
+        public async Task Invoke_LogsCorrectValues_WhenNotHandled()
         {
             // Arrange
-            var expectedMessage = "Request did not match any routes.";
+            var expectedMessage = "Request did not match any routes";
             var isHandled = false;
 
             var sink = new TestSink(
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public async void Invoke_DoesNotLog_WhenHandled()
+        public async Task Invoke_DoesNotLog_WhenHandled()
         {
             // Arrange
             var isHandled = true;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Routing
 
             public Task RouteAsync(RouteContext context)
             {
-                context.Handler = _isHandled ? (RequestDelegate)((c) => Task.FromResult(0)) : null;
+                context.Handler = _isHandled ? (RequestDelegate)((c) => Task.CompletedTask) : null;
                 return Task.FromResult<object>(null);
             }
         }

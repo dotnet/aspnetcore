@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -107,14 +105,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var defaultContentType = "text/default; p1=p1-value; charset=utf-8";
 
             // Act
-            string resolvedContentType = null;
-            Encoding resolvedContentTypeEncoding = null;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 contentType?.ToString(),
                 responseContentType,
                 defaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             // Assert
             Assert.Equal(expectedContentType, resolvedContentType);
@@ -128,14 +124,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var defaultContentType = "text/plain; charset=utf-8";
 
             // Act
-            string resolvedContentType = null;
-            Encoding resolvedContentTypeEncoding = null;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 null,
                 expectedContentType,
                 defaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             // Assert
             Assert.Equal(expectedContentType, resolvedContentType);

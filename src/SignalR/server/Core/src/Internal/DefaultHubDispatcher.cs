@@ -73,23 +73,23 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public override async Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
+        public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
+            // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
+            // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
+
             switch (hubMessage)
             {
                 case InvocationBindingFailureMessage bindingFailureMessage:
-                    await ProcessBindingFailure(connection, bindingFailureMessage);
-                    break;
+                    return ProcessBindingFailure(connection, bindingFailureMessage);
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    await ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
-                    break;
+                    return ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    await ProcessInvocation(connection, streamInvocationMessage, isStreamedInvocation: true);
-                    break;
+                    return ProcessInvocation(connection, streamInvocationMessage, isStreamedInvocation: true);
 
                 case CancelInvocationMessage cancelInvocationMessage:
                     // Check if there is an associated active stream and cancel it if it exists.
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     break;
 
                 case PingMessage _:
-                    // We don't care about pings
+                    connection.StartClientTimeout();
                     break;
 
                 // Other kind of message we weren't expecting
@@ -115,6 +115,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     Log.UnsupportedMessageReceived(_logger, hubMessage.GetType().FullName);
                     throw new NotSupportedException($"Received unsupported message: {hubMessage}");
             }
+
+            return Task.CompletedTask;
         }
 
         private Task ProcessBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)
@@ -134,34 +136,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (!_methods.TryGetValue(methodName, out var descriptor))
             {
-                return Type.EmptyTypes;
+                throw new HubException("Method does not exist.");
             }
             return descriptor.ParameterTypes;
         }
 
-        private async Task ProcessInvocation(HubConnectionContext connection,
+        private Task ProcessInvocation(HubConnectionContext connection,
             HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamedInvocation)
         {
-            try
+            if (!_methods.TryGetValue(hubMethodInvocationMessage.Target, out var descriptor))
             {
-                // If an unexpected exception occurs then we want to kill the entire connection
-                // by ending the processing loop
-                if (!_methods.TryGetValue(hubMethodInvocationMessage.Target, out var descriptor))
-                {
-                    // Send an error to the client. Then let the normal completion process occur
-                    Log.UnknownHubMethod(_logger, hubMethodInvocationMessage.Target);
-                    await connection.WriteAsync(CompletionMessage.WithError(
-                        hubMethodInvocationMessage.InvocationId, $"Unknown hub method '{hubMethodInvocationMessage.Target}'"));
-                }
-                else
-                {
-                    await Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamedInvocation);
-                }
+                // Send an error to the client. Then let the normal completion process occur
+                Log.UnknownHubMethod(_logger, hubMethodInvocationMessage.Target);
+                return connection.WriteAsync(CompletionMessage.WithError(
+                    hubMethodInvocationMessage.InvocationId, $"Unknown hub method '{hubMethodInvocationMessage.Target}'")).AsTask();
             }
-            catch (Exception ex)
+            else
             {
-                // Abort the entire connection if the invocation fails in an unexpected way
-                connection.Abort(ex);
+                return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamedInvocation);
             }
         }
 
@@ -196,11 +188,45 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     InitializeHub(hub, connection);
 
-                    var result = await ExecuteHubMethod(methodExecutor, hub, hubMethodInvocationMessage.Arguments);
+                    CancellationTokenSource cts = null;
+                    var arguments = hubMethodInvocationMessage.Arguments;
+                    if (descriptor.HasSyntheticArguments)
+                    {
+                        // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
+                        arguments = new object[descriptor.OriginalParameterTypes.Count];
+
+                        var hubInvocationArgumentPointer = 0;
+                        for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
+                        {
+                            if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
+                                hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType() == descriptor.OriginalParameterTypes[parameterPointer])
+                            {
+                                // The types match so it isn't a synthetic argument, just copy it into the arguments array
+                                arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
+                                hubInvocationArgumentPointer++;
+                            }
+                            else
+                            {
+                                // This is the only synthetic argument type we currently support
+                                if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
+                                {
+                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                                    arguments[parameterPointer] = cts.Token;
+                                }
+                                else
+                                {
+                                    // This should never happen
+                                    Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{methodExecutor.MethodInfo.Name}'.");
+                                }
+                            }
+                        }
+                    }
+
+                    var result = await ExecuteHubMethod(methodExecutor, hub, arguments);
 
                     if (isStreamedInvocation)
                     {
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, out var streamCts))
+                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, ref cts))
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
@@ -212,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         disposeScope = false;
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         // Fire-and-forget stream invocations, otherwise they would block other hub invocations from being able to run
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, streamCts);
+                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, cts);
                     }
                     // Non-empty/null InvocationId ==> Blocking invocation that needs a response
                     else if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -330,14 +356,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private async Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
         {
             // If there are no policies we don't need to run auth
             if (!policies.Any())
             {
-                return true;
+                return TaskCache.True;
             }
 
+            return IsHubMethodAuthorizedSlow(provider, principal, policies);
+        }
+
+        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        {
             var authService = provider.GetRequiredService<IAuthorizationService>();
             var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
 
@@ -378,29 +409,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, out CancellationTokenSource streamCts)
+        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, ref CancellationTokenSource streamCts)
         {
             if (result != null)
             {
                 if (hubMethodDescriptor.IsChannel)
                 {
-                    streamCts = CreateCancellation();
+                    if (streamCts == null)
+                    {
+                        streamCts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                    }
+                    connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
                     enumerator = hubMethodDescriptor.FromChannel(result, streamCts.Token);
                     return true;
                 }
             }
 
-            streamCts = null;
             enumerator = null;
             return false;
-
-            CancellationTokenSource CreateCancellation()
-            {
-                var userCts = new CancellationTokenSource();
-                connection.ActiveRequestCancellationSources.TryAdd(invocationId, userCts);
-
-                return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, userCts.Token);
-            }
         }
 
         private void DiscoverHubMethods()

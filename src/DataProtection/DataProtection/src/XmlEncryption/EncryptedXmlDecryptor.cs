@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
@@ -63,8 +62,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var elementToDecrypt = (XmlElement)xmlDocument.DocumentElement.FirstChild;
 
             // Perform the decryption and update the document in-place.
-            var decryptionCerts = _options?.KeyDecryptionCertificates;
-            var encryptedXml = new EncryptedXmlWithCertificateKeys(decryptionCerts, xmlDocument);
+            var encryptedXml = new EncryptedXmlWithCertificateKeys(_options, xmlDocument);
             _decryptor.PerformPreDecryptionSetup(encryptedXml);
 
             encryptedXml.DecryptDocument();
@@ -83,48 +81,40 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         /// </summary>
         private class EncryptedXmlWithCertificateKeys : EncryptedXml
         {
-            private readonly IReadOnlyDictionary<string, X509Certificate2> _certificates;
+            private readonly XmlKeyDecryptionOptions _options;
 
-            public EncryptedXmlWithCertificateKeys(IReadOnlyDictionary<string, X509Certificate2> certificates, XmlDocument document)
+            public EncryptedXmlWithCertificateKeys(XmlKeyDecryptionOptions options, XmlDocument document)
                 : base(document)
             {
-                _certificates = certificates;
+                _options = options;
             }
 
             public override byte[] DecryptEncryptedKey(EncryptedKey encryptedKey)
             {
-                byte[] key = base.DecryptEncryptedKey(encryptedKey);
-                if (key != null)
+                if (_options != null && _options.KeyDecryptionCertificateCount > 0)
                 {
-                    return key;
-                }
-
-                if (_certificates == null || _certificates.Count == 0)
-                {
-                    return null;
-                }
-
-                var keyInfoEnum = encryptedKey.KeyInfo?.GetEnumerator();
-                if (keyInfoEnum == null)
-                {
-                    return null;
-                }
-
-                while (keyInfoEnum.MoveNext())
-                {
-                    if (!(keyInfoEnum.Current is KeyInfoX509Data kiX509Data))
+                    var keyInfoEnum = encryptedKey.KeyInfo?.GetEnumerator();
+                    if (keyInfoEnum == null)
                     {
-                        continue;
+                        return null;
                     }
 
-                    key = GetKeyFromCert(encryptedKey, kiX509Data);
-                    if (key != null)
+                    while (keyInfoEnum.MoveNext())
                     {
-                        return key;
+                        if (!(keyInfoEnum.Current is KeyInfoX509Data kiX509Data))
+                        {
+                            continue;
+                        }
+
+                        byte[] key = GetKeyFromCert(encryptedKey, kiX509Data);
+                        if (key != null)
+                        {
+                            return key;
+                        }
                     }
                 }
 
-                return null;
+                return base.DecryptEncryptedKey(encryptedKey);
             }
 
             private byte[] GetKeyFromCert(EncryptedKey encryptedKey, KeyInfoX509Data keyInfo)
@@ -142,17 +132,25 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                         continue;
                     }
 
-                    if (!_certificates.TryGetValue(certInfo.Thumbprint, out var certificate))
+                    if (!_options.TryGetKeyDecryptionCertificates(certInfo, out var keyDecryptionCerts))
                     {
                         continue;
                     }
 
-                    using (RSA privateKey = certificate.GetRSAPrivateKey())
+                    foreach (var keyDecryptionCert in keyDecryptionCerts)
                     {
-                        if (privateKey != null)
+                        if (!keyDecryptionCert.HasPrivateKey)
                         {
-                            var useOAEP = encryptedKey.EncryptionMethod?.KeyAlgorithm == XmlEncRSAOAEPUrl;
-                            return DecryptKey(encryptedKey.CipherData.CipherValue, privateKey, useOAEP);
+                            continue;
+                        }
+
+                        using (RSA privateKey = keyDecryptionCert.GetRSAPrivateKey())
+                        {
+                            if (privateKey != null)
+                            {
+                                var useOAEP = encryptedKey.EncryptionMethod?.KeyAlgorithm == XmlEncRSAOAEPUrl;
+                                return DecryptKey(encryptedKey.CipherData.CipherValue, privateKey, useOAEP);
+                            }
                         }
                     }
                 }

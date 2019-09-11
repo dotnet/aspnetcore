@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 10 - (0:0,0)
+    Tag block - Gen<TagHelper> - 10 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p class='
+        class - SingleQuotes
+            Markup span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:0

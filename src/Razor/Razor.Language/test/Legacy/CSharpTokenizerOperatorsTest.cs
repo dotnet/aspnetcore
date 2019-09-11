@@ -10,287 +10,287 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void LeftBrace_Is_Recognized()
         {
-            TestSingleToken("{", CSharpSymbolType.LeftBrace);
+            TestSingleToken("{", CSharpTokenType.LeftBrace);
         }
 
         [Fact]
         public void Plus_Is_Recognized()
         {
-            TestSingleToken("+", CSharpSymbolType.Plus);
+            TestSingleToken("+", CSharpTokenType.Plus);
         }
 
         [Fact]
         public void Assign_Is_Recognized()
         {
-            TestSingleToken("=", CSharpSymbolType.Assign);
+            TestSingleToken("=", CSharpTokenType.Assign);
         }
 
         [Fact]
         public void Arrow_Is_Recognized()
         {
-            TestSingleToken("->", CSharpSymbolType.Arrow);
+            TestSingleToken("->", CSharpTokenType.Arrow);
         }
 
         [Fact]
         public void AndAssign_Is_Recognized()
         {
-            TestSingleToken("&=", CSharpSymbolType.AndAssign);
+            TestSingleToken("&=", CSharpTokenType.AndAssign);
         }
 
         [Fact]
         public void RightBrace_Is_Recognized()
         {
-            TestSingleToken("}", CSharpSymbolType.RightBrace);
+            TestSingleToken("}", CSharpTokenType.RightBrace);
         }
 
         [Fact]
         public void Minus_Is_Recognized()
         {
-            TestSingleToken("-", CSharpSymbolType.Minus);
+            TestSingleToken("-", CSharpTokenType.Minus);
         }
 
         [Fact]
         public void LessThan_Is_Recognized()
         {
-            TestSingleToken("<", CSharpSymbolType.LessThan);
+            TestSingleToken("<", CSharpTokenType.LessThan);
         }
 
         [Fact]
         public void Equals_Is_Recognized()
         {
-            TestSingleToken("==", CSharpSymbolType.Equals);
+            TestSingleToken("==", CSharpTokenType.Equals);
         }
 
         [Fact]
         public void OrAssign_Is_Recognized()
         {
-            TestSingleToken("|=", CSharpSymbolType.OrAssign);
+            TestSingleToken("|=", CSharpTokenType.OrAssign);
         }
 
         [Fact]
         public void LeftBracket_Is_Recognized()
         {
-            TestSingleToken("[", CSharpSymbolType.LeftBracket);
+            TestSingleToken("[", CSharpTokenType.LeftBracket);
         }
 
         [Fact]
         public void Star_Is_Recognized()
         {
-            TestSingleToken("*", CSharpSymbolType.Star);
+            TestSingleToken("*", CSharpTokenType.Star);
         }
 
         [Fact]
         public void GreaterThan_Is_Recognized()
         {
-            TestSingleToken(">", CSharpSymbolType.GreaterThan);
+            TestSingleToken(">", CSharpTokenType.GreaterThan);
         }
 
         [Fact]
         public void NotEqual_Is_Recognized()
         {
-            TestSingleToken("!=", CSharpSymbolType.NotEqual);
+            TestSingleToken("!=", CSharpTokenType.NotEqual);
         }
 
         [Fact]
         public void XorAssign_Is_Recognized()
         {
-            TestSingleToken("^=", CSharpSymbolType.XorAssign);
+            TestSingleToken("^=", CSharpTokenType.XorAssign);
         }
 
         [Fact]
         public void RightBracket_Is_Recognized()
         {
-            TestSingleToken("]", CSharpSymbolType.RightBracket);
+            TestSingleToken("]", CSharpTokenType.RightBracket);
         }
 
         [Fact]
         public void Slash_Is_Recognized()
         {
-            TestSingleToken("/", CSharpSymbolType.Slash);
+            TestSingleToken("/", CSharpTokenType.Slash);
         }
 
         [Fact]
         public void QuestionMark_Is_Recognized()
         {
-            TestSingleToken("?", CSharpSymbolType.QuestionMark);
+            TestSingleToken("?", CSharpTokenType.QuestionMark);
         }
 
         [Fact]
         public void LessThanEqual_Is_Recognized()
         {
-            TestSingleToken("<=", CSharpSymbolType.LessThanEqual);
+            TestSingleToken("<=", CSharpTokenType.LessThanEqual);
         }
 
         [Fact]
         public void LeftShift_Is_Not_Specially_Recognized()
         {
             TestTokenizer("<<",
-                new CSharpSymbol("<", CSharpSymbolType.LessThan),
-                new CSharpSymbol("<", CSharpSymbolType.LessThan));
+                new CSharpToken("<", CSharpTokenType.LessThan),
+                new CSharpToken("<", CSharpTokenType.LessThan));
         }
 
         [Fact]
         public void LeftParen_Is_Recognized()
         {
-            TestSingleToken("(", CSharpSymbolType.LeftParenthesis);
+            TestSingleToken("(", CSharpTokenType.LeftParenthesis);
         }
 
         [Fact]
         public void Modulo_Is_Recognized()
         {
-            TestSingleToken("%", CSharpSymbolType.Modulo);
+            TestSingleToken("%", CSharpTokenType.Modulo);
         }
 
         [Fact]
         public void NullCoalesce_Is_Recognized()
         {
-            TestSingleToken("??", CSharpSymbolType.NullCoalesce);
+            TestSingleToken("??", CSharpTokenType.NullCoalesce);
         }
 
         [Fact]
         public void GreaterThanEqual_Is_Recognized()
         {
-            TestSingleToken(">=", CSharpSymbolType.GreaterThanEqual);
+            TestSingleToken(">=", CSharpTokenType.GreaterThanEqual);
         }
 
         [Fact]
         public void EqualGreaterThan_Is_Recognized()
         {
-            TestSingleToken("=>", CSharpSymbolType.GreaterThanEqual);
+            TestSingleToken("=>", CSharpTokenType.GreaterThanEqual);
         }
 
         [Fact]
         public void RightParen_Is_Recognized()
         {
-            TestSingleToken(")", CSharpSymbolType.RightParenthesis);
+            TestSingleToken(")", CSharpTokenType.RightParenthesis);
         }
 
         [Fact]
         public void And_Is_Recognized()
         {
-            TestSingleToken("&", CSharpSymbolType.And);
+            TestSingleToken("&", CSharpTokenType.And);
         }
 
         [Fact]
         public void DoubleColon_Is_Recognized()
         {
-            TestSingleToken("::", CSharpSymbolType.DoubleColon);
+            TestSingleToken("::", CSharpTokenType.DoubleColon);
         }
 
         [Fact]
         public void PlusAssign_Is_Recognized()
         {
-            TestSingleToken("+=", CSharpSymbolType.PlusAssign);
+            TestSingleToken("+=", CSharpTokenType.PlusAssign);
         }
 
         [Fact]
         public void Semicolon_Is_Recognized()
         {
-            TestSingleToken(";", CSharpSymbolType.Semicolon);
+            TestSingleToken(";", CSharpTokenType.Semicolon);
         }
 
         [Fact]
         public void Tilde_Is_Recognized()
         {
-            TestSingleToken("~", CSharpSymbolType.Tilde);
+            TestSingleToken("~", CSharpTokenType.Tilde);
         }
 
         [Fact]
         public void DoubleOr_Is_Recognized()
         {
-            TestSingleToken("||", CSharpSymbolType.DoubleOr);
+            TestSingleToken("||", CSharpTokenType.DoubleOr);
         }
 
         [Fact]
         public void ModuloAssign_Is_Recognized()
         {
-            TestSingleToken("%=", CSharpSymbolType.ModuloAssign);
+            TestSingleToken("%=", CSharpTokenType.ModuloAssign);
         }
 
         [Fact]
         public void Colon_Is_Recognized()
         {
-            TestSingleToken(":", CSharpSymbolType.Colon);
+            TestSingleToken(":", CSharpTokenType.Colon);
         }
 
         [Fact]
         public void Not_Is_Recognized()
         {
-            TestSingleToken("!", CSharpSymbolType.Not);
+            TestSingleToken("!", CSharpTokenType.Not);
         }
 
         [Fact]
         public void DoubleAnd_Is_Recognized()
         {
-            TestSingleToken("&&", CSharpSymbolType.DoubleAnd);
+            TestSingleToken("&&", CSharpTokenType.DoubleAnd);
         }
 
         [Fact]
         public void DivideAssign_Is_Recognized()
         {
-            TestSingleToken("/=", CSharpSymbolType.DivideAssign);
+            TestSingleToken("/=", CSharpTokenType.DivideAssign);
         }
 
         [Fact]
         public void Comma_Is_Recognized()
         {
-            TestSingleToken(",", CSharpSymbolType.Comma);
+            TestSingleToken(",", CSharpTokenType.Comma);
         }
 
         [Fact]
         public void Xor_Is_Recognized()
         {
-            TestSingleToken("^", CSharpSymbolType.Xor);
+            TestSingleToken("^", CSharpTokenType.Xor);
         }
 
         [Fact]
         public void Decrement_Is_Recognized()
         {
-            TestSingleToken("--", CSharpSymbolType.Decrement);
+            TestSingleToken("--", CSharpTokenType.Decrement);
         }
 
         [Fact]
         public void MultiplyAssign_Is_Recognized()
         {
-            TestSingleToken("*=", CSharpSymbolType.MultiplyAssign);
+            TestSingleToken("*=", CSharpTokenType.MultiplyAssign);
         }
 
         [Fact]
         public void Dot_Is_Recognized()
         {
-            TestSingleToken(".", CSharpSymbolType.Dot);
+            TestSingleToken(".", CSharpTokenType.Dot);
         }
 
         [Fact]
         public void Or_Is_Recognized()
         {
-            TestSingleToken("|", CSharpSymbolType.Or);
+            TestSingleToken("|", CSharpTokenType.Or);
         }
 
         [Fact]
         public void Increment_Is_Recognized()
         {
-            TestSingleToken("++", CSharpSymbolType.Increment);
+            TestSingleToken("++", CSharpTokenType.Increment);
         }
 
         [Fact]
         public void MinusAssign_Is_Recognized()
         {
-            TestSingleToken("-=", CSharpSymbolType.MinusAssign);
+            TestSingleToken("-=", CSharpTokenType.MinusAssign);
         }
 
         [Fact]
         public void RightShift_Is_Not_Specially_Recognized()
         {
             TestTokenizer(">>",
-                new CSharpSymbol(">", CSharpSymbolType.GreaterThan),
-                new CSharpSymbol(">", CSharpSymbolType.GreaterThan));
+                new CSharpToken(">", CSharpTokenType.GreaterThan),
+                new CSharpToken(">", CSharpTokenType.GreaterThan));
         }
 
         [Fact]
         public void Hash_Is_Recognized()
         {
-            TestSingleToken("#", CSharpSymbolType.Hash);
+            TestSingleToken("#", CSharpTokenType.Hash);
         }
     }
 }

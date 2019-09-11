@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -1028,10 +1027,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var controller = new TestableController();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = controller.RedirectToPage(pageName, routeVaues);
+            var result = controller.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);
@@ -2327,7 +2326,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         public async Task TryUpdateModel_FallsBackOnEmptyPrefix_IfNotSpecified()
         {
             // Arrange
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2356,7 +2355,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2578,7 +2577,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2606,7 +2605,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var valueProvider = Mock.Of<IValueProvider>();
             var binder = new StubModelBinder(context =>
             {
@@ -2712,7 +2711,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { Mock.Of<IModelValidatorProvider>() });
+                new[] { Mock.Of<IModelValidatorProvider>() },
+                new MvcOptions());
 
             var model = new TryValidateModelModel();
 
@@ -2748,7 +2748,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
@@ -2784,7 +2785,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
                 controller.MetadataProvider,
-                new[] { provider.Object });
+                new[] { provider.Object },
+                new MvcOptions());
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -2834,7 +2836,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
         private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
         {
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadataProvider = new EmptyModelMetadataProvider();
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
@@ -2868,7 +2870,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
                 ModelBinderFactory = binderFactory.Object,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions()),
             };
 
             return controller;

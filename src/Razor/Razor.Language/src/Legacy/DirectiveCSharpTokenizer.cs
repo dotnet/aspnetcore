@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 _visitedFirstTokenStart = true;
             }
-            else if (result.Result != null && _visitedFirstTokenStart && result.Result.Type == CSharpSymbolType.NewLine)
+            else if (result.Result != null && _visitedFirstTokenStart && result.Result.Type == CSharpTokenType.NewLine)
             {
                 _visitedFirstTokenLineEnd = true;
             }
@@ -29,34 +29,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        public override CSharpSymbol NextSymbol()
+        public override CSharpToken NextToken()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
             Debug.Assert(Buffer.Length == 0);
-            StartSymbol();
+            StartToken();
 
             if (EndOfFile || (_visitedFirstTokenStart && _visitedFirstTokenLineEnd))
             {
                 return null;
             }
 
-            var symbol = Turn();
+            var token = Turn();
 
             // Post-Condition: Buffer should be empty at the end of Next()
             Debug.Assert(Buffer.Length == 0);
 
-            return symbol;
+            return token;
         }
 
-        private bool IsValidTokenType(CSharpSymbolType type)
+        private bool IsValidTokenType(CSharpTokenType type)
         {
-            return type != CSharpSymbolType.WhiteSpace &&
-                type != CSharpSymbolType.NewLine &&
-                type != CSharpSymbolType.Comment &&
-                type != CSharpSymbolType.RazorComment &&
-                type != CSharpSymbolType.RazorCommentStar &&
-                type != CSharpSymbolType.RazorCommentTransition &&
-                type != CSharpSymbolType.Transition;
+            return type != CSharpTokenType.WhiteSpace &&
+                type != CSharpTokenType.NewLine &&
+                type != CSharpTokenType.Comment &&
+                type != CSharpTokenType.RazorComment &&
+                type != CSharpTokenType.RazorCommentStar &&
+                type != CSharpTokenType.RazorCommentTransition &&
+                type != CSharpTokenType.Transition;
         }
     }
 }

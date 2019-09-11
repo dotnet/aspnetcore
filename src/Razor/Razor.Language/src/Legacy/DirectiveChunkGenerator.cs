@@ -60,14 +60,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // This is used primarily at test time to show an identifiable representation of the chunk generator.
 
-            var builder = new StringBuilder("Directive {");
+            var builder = new StringBuilder("Directive:{");
             builder.Append(Descriptor.Directive);
+            builder.Append(";");
+            builder.Append(Descriptor.Kind);
+            builder.Append(";");
+            builder.Append(Descriptor.Usage);
             builder.Append("}");
 
             if (Diagnostics.Count > 0)
             {
                 builder.Append(" [");
-                var ids = string.Join(", ", Diagnostics.Select(diagnostic => diagnostic.Id));
+                var ids = string.Join(", ", Diagnostics.Select(diagnostic => $"{diagnostic.Id}{diagnostic.Span}"));
                 builder.Append(ids);
                 builder.Append("]");
             }

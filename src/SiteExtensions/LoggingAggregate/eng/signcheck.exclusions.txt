@@ -1,0 +1,1 @@
+content/store/*/apphost.exe;Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.

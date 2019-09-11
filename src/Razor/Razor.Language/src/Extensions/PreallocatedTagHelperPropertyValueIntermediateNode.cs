@@ -50,5 +50,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             extension.WriteTagHelperPropertyValue(context, this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(AttributeName);
+
+            formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(AttributeStructure), AttributeStructure.ToString());
+            formatter.WriteProperty(nameof(Value), Value);
+            formatter.WriteProperty(nameof(VariableName), VariableName);
+        }
     }
 }

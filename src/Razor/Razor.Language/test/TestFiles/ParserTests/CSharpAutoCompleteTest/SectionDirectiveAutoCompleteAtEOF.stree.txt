@@ -1,0 +1,16 @@
+Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,16 [1] )]> - 17 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+        CSharpTokenType.Identifier;[section];
+    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:WhiteSpace - (8:0,8) - Tokens:1
+        CSharpTokenType.WhiteSpace;[ ];
+    Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [Header] - DirectiveTokenEditHandler;Accepts:NonWhiteSpace - (9:0,9) - Tokens:1
+        CSharpTokenType.Identifier;[Header];
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhiteSpace - (15:0,15) - Tokens:1
+        CSharpTokenType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (16:0,16) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Markup block - Gen<None> - 0 - (17:0,17)
+        Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
+            HtmlTokenType.Unknown;[];

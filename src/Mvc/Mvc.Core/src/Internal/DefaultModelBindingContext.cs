@@ -237,6 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // Because this is the top-level context, FieldName and ModelName should be the same.
                 FieldName = binderModelName ?? modelName,
                 ModelName = binderModelName ?? modelName,
+                OriginalModelName = binderModelName ?? modelName,
 
                 IsTopLevelObject = true,
                 ModelMetadata = metadata,

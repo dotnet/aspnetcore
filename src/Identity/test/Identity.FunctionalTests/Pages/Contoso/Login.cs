@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Contoso
         {
             var externalLogin = await SendLoginForm(userName);
 
-            return new ExternalLogin(Client, externalLogin, Context);
+            return new ExternalLogin(Client, externalLogin, Context.WithSocialLoginProvider());
         }
 
         public async Task<Index> SendExistingUserNameAsync(string userName)

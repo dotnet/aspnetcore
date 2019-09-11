@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
-    /// A base class for infrastructure that implements ASP.NET Core MVC's support for 
+    /// A base class for infrastructure that implements ASP.NET Core MVC's support for
     /// <see cref="CompatibilityVersion"/>. This is framework infrastructure and should not be used
     /// by application code.
     /// </summary>
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(options));
             }
 
-            // Evaluate DefaultValues onces so subclasses don't have to cache.
+            // Evaluate DefaultValues once so subclasses don't have to cache.
             var defaultValues = DefaultValues;
 
             foreach (var @switch in options)

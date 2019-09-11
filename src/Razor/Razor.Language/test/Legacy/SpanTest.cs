@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var builder = new SpanBuilder(SourceLocation.Zero);
-            builder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            builder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
             var span = builder.Build();
             var newBuilder = new SpanBuilder(SourceLocation.Zero);
-            newBuilder.Accept(new HtmlSymbol("hi", HtmlSymbolType.Text));
+            newBuilder.Accept(new HtmlToken("hi", HtmlTokenType.Text));
             var originalLength = span.Length;
 
             // Act
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var spanBuilder = new SpanBuilder(SourceLocation.Zero);
-            spanBuilder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            spanBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
             var span = spanBuilder.Build();
             var blockBuilder = new BlockBuilder()
             {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             span.Parent = block;
             var originalBlockLength = block.Length;
             var newSpanBuilder = new SpanBuilder(SourceLocation.Zero);
-            newSpanBuilder.Accept(new HtmlSymbol("hi", HtmlSymbolType.Text));
+            newSpanBuilder.Accept(new HtmlToken("hi", HtmlTokenType.Text));
 
             // Act
             span.ReplaceWith(newSpanBuilder);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Kind = SpanKindInternal.Transition,
                 ChunkGenerator = new ExpressionChunkGenerator(),
             };
-            spanBuilder.Accept(new CSharpSymbol("@", CSharpSymbolType.Transition));
+            spanBuilder.Accept(new CSharpToken("@", CSharpTokenType.Transition));
             var span = spanBuilder.Build();
 
             // Act

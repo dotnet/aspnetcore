@@ -21,15 +21,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServer : IServer
     {
         private readonly List<ITransport> _transports = new List<ITransport>();
-        private readonly Heartbeat _heartbeat;
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly ITransportFactory _transportFactory;
 
         private bool _hasStarted;
         private int _stopping;
-        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
+#pragma warning disable PUB0001 // Pubternal type in public API
         public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
+#pragma warning restore PUB0001
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
         {
         }
@@ -45,16 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             _transportFactory = transportFactory;
             ServiceContext = serviceContext;
 
-            var httpHeartbeatManager = new HttpHeartbeatManager(serviceContext.ConnectionManager);
-            _heartbeat = new Heartbeat(
-                new IHeartbeatHandler[] { serviceContext.DateHeaderValueManager, httpHeartbeatManager },
-                serviceContext.SystemClock,
-                DebuggerWrapper.Singleton,
-                Trace);
-
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set(_serverAddresses);
+
+            HttpCharacters.Initialize();
         }
 
         private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory)
@@ -71,12 +67,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var serverOptions = options.Value ?? new KestrelServerOptions();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             var trace = new KestrelTrace(logger);
-            var connectionManager = new HttpConnectionManager(
+            var connectionManager = new ConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-            var systemClock = new SystemClock();
-            var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
+            var heartbeatManager = new HeartbeatManager(connectionManager);
+            var dateHeaderValueManager = new DateHeaderValueManager();
+            var heartbeat = new Heartbeat(
+                new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
+                new SystemClock(),
+                DebuggerWrapper.Singleton,
+                trace);
 
             // TODO: This logic will eventually move into the IConnectionHandler<T> and off
             // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
@@ -99,10 +100,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Log = trace,
                 HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
                 Scheduler = scheduler,
-                SystemClock = systemClock,
+                SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
-                ServerOptions = serverOptions
+                Heartbeat = heartbeat,
+                ServerOptions = serverOptions,
             };
         }
 
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IKestrelTrace Trace => ServiceContext.Log;
 
-        private HttpConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
+        private ConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -133,7 +135,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     throw new InvalidOperationException(CoreStrings.ServerAlreadyStarted);
                 }
                 _hasStarted = true;
-                _heartbeat.Start();
+
+                ServiceContext.Heartbeat?.Start();
 
                 async Task OnBind(ListenOptions endpoint)
                 {
@@ -199,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 }
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                _heartbeat.Dispose();
+                ServiceContext.Heartbeat?.Dispose();
             }
             catch (Exception ex)
             {
