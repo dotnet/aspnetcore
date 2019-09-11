@@ -122,6 +122,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static MessagePump CreatePump()
             => new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
+        internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions)
+        {
+            var options = new HttpSysOptions();
+            configureOptions(options);
+            return new MessagePump(Options.Create(options), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        }
+
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             lock (PortLock)
@@ -134,9 +141,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
 
-                    var server = CreatePump();
+                    var server = CreatePump(configureOptions);
                     server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
-                    configureOptions(server.Listener.Options);
                     try
                     {
                         server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
