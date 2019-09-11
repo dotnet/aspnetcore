@@ -2044,6 +2044,79 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(CoreStrings.HPackErrorNotEnoughBuffer, message.Exception.Message);
         }
 
+        //
+
+        [Fact]
+        public async Task ResponseTrailers_WithLargeUnflushedData_DataSentWithTrailers()
+        {
+            const int FlowControlAvailable = 65535;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+
+                var s = context.Response.BodyWriter.GetMemory(FlowControlAvailable + 1);
+                s.Span[0] = byte.MaxValue;
+                context.Response.BodyWriter.Advance(FlowControlAvailable + 1);
+
+                context.Response.AppendTrailer("CustomName", "Custom Value");
+            }).DefaultTimeout();
+
+            await StartStreamAsync(1, headers, endStream: true).DefaultTimeout();
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16383,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1).DefaultTimeout();
+
+            // Freezes here. 1 byte remains in data
+
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1).DefaultTimeout();
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            _decodedHeaders.Clear();
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
         [Fact]
         public async Task ResponseTrailers_WithUnflushedData_DataSentWithTrailers()
         {
