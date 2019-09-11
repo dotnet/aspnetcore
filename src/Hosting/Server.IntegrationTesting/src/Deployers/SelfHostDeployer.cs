@@ -66,10 +66,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         DeploymentParameters.StatusMessagesEnabled);
                     var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
-                    if (DeploymentParameters.ServerType == ServerType.HttpSys)
+                    if (DeploymentParameters.ServerType == ServerType.HttpSys && hostExitToken.IsCancellationRequested)
                     {
                         // Retry HttpSys deployments due to port conflicts.
-                        // TODO consider implementing port 0 for HttpSys
                         continue;
                     }
 
