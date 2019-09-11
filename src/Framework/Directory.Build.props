@@ -11,7 +11,7 @@
   <ItemGroup>
     <FrameworkListRootAttributes Include="Name" Value="$(AspNetCoreAppFrameworkBrandName)" />
     <FrameworkListRootAttributes Include="TargetFrameworkIdentifier" Value="$(NETCoreAppFrameworkIdentifier)" />
-    <FrameworkListRootAttributes Include="TargetFrameworkVersion" Value="$(AspNetCoreMajorMinorVersion)" />
+    <FrameworkListRootAttributes Include="TargetFrameworkVersion" Value="$(DefaultNetCoreTargetFramework)" />
     <FrameworkListRootAttributes Include="FrameworkName" Value="$(SharedFxName)" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
