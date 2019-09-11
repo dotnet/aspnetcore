@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var id = MakeNewConnectionId();
             if (negotiateVersion > 0)
             {
-                connectionKey= MakeNewConnectionId();
+                connectionKey = MakeNewConnectionId();
             }
             else
             {

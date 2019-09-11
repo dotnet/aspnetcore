@@ -38,30 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         [Fact]
-        public async Task NegotiateReservesConnectionIdAndReturnsIt()
-        {
-            using (StartVerifiableLog())
-            {
-                var manager = CreateConnectionManager(LoggerFactory);
-                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddSingleton<TestConnectionHandler>();
-                services.AddOptions();
-                var ms = new MemoryStream();
-                context.Request.Path = "/foo";
-                context.Request.Method = "POST";
-                context.Response.Body = ms;
-                await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
-                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-                var connectionToken = negotiateResponse.Value<string>("connectionToken");
-                Assert.True(manager.TryGetConnection(connectionToken, out var connectionContext));
-                Assert.Equal(connectionToken, connectionContext.ConnectionToken);
-            }
-        }
-
-        [Fact]
-        public async Task NegotiateReservesConnectionTokenAndReturnsIt()
+        public async Task NegotiateVersionZeroReservesConnectionIdAndReturnsIt()
         {
             using (StartVerifiableLog())
             {
@@ -80,7 +57,34 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connectionId = negotiateResponse.Value<string>("connectionId");
                 var connectionToken = negotiateResponse.Value<string>("connectionToken");
                 Assert.True(manager.TryGetConnection(connectionToken, out var connectionContext));
+                Assert.Equal(connectionToken, connectionContext.ConnectionToken);
+                Assert.Equal(connectionId, connectionToken);
+            }
+        }
+
+        [Fact]
+        public async Task NegotiateReservesConnectionTokenAndConnectionIdAndReturnsIt()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=1");
+                await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                var connectionToken = negotiateResponse.Value<string>("connectionToken");
+                Assert.True(manager.TryGetConnection(connectionToken, out var connectionContext));
                 Assert.Equal(connectionId, connectionContext.ConnectionId);
+                Assert.NotEqual(connectionId, connectionToken);
             }
         }
 

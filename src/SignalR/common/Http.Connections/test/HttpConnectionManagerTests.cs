@@ -178,6 +178,48 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
+        public void ConnectionIdAndConnectionTokenAreTheSameForNegotiateVersionZero()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionManager = CreateConnectionManager(LoggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 0);
+
+                var transport = connection.Transport;
+
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
+
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
+                Assert.Equal(connection.ConnectionId, connection.ConnectionToken);
+
+            }
+        }
+
+        [Fact]
+        public void ConnectionIdAndConnectionTokenAreDifferentForNegotiateVersionOne()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionManager = CreateConnectionManager(LoggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 1);
+
+                var transport = connection.Transport;
+
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
+
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
+                Assert.NotEqual(connection.ConnectionId, connection.ConnectionToken);
+
+            }
+        }
+
+        [Fact]
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
             using (StartVerifiableLog())
