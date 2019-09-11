@@ -16,6 +16,7 @@ class NegotiateResponse {
     private String accessToken;
     private String error;
     private String finalUrl;
+    private int version;
 
     public NegotiateResponse(JsonReader reader) {
         try {
@@ -30,6 +31,9 @@ class NegotiateResponse {
                     case "ProtocolVersion":
                         this.error = "Detected an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.";
                         return;
+                    case "negotiateVersion":
+                        this.version = reader.nextInt();
+                        break;
                     case "url":
                         this.redirectUrl = reader.nextString();
                         break;
@@ -104,6 +108,10 @@ class NegotiateResponse {
 
     public String getFinalUrl() {
         return finalUrl;
+    }
+
+    public int getVersion() {
+        return version;
     }
 
     public void setFinalUrl(String url) {

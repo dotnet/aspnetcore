@@ -57,6 +57,7 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
+    private int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -340,11 +341,17 @@ public class HubConnection {
         });
 
         stopError = null;
+        String urlWithQS;
+        if (baseUrl.contains("?")) {
+            urlWithQS = baseUrl + "&negotiateVersion=" + negotiateVersion;
+        } else {
+            urlWithQS = baseUrl + "?negotiateVersion=" + negotiateVersion;
+        }
         Single<NegotiateResponse> negotiate = null;
         if (!skipNegotiate) {
-            negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
+            negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(urlWithQS, 0)));
         } else {
-            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(baseUrl))));
+            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(urlWithQS))));
         }
 
         CompletableSubject start = CompletableSubject.create();
@@ -458,8 +465,13 @@ public class HubConnection {
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }
-
-            return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
+            String redirecturl = "";
+            if (response.getRedirectUrl().contains("?")) {
+                redirecturl = response.getRedirectUrl() + "&negotiateVersion=" + negotiateVersion;
+            } else {
+                redirecturl = response.getRedirectUrl() + "?negotiateVersion=" + negotiateVersion;
+            }
+            return startNegotiate(redirecturl, negotiateAttempts + 1);
         });
     }
 

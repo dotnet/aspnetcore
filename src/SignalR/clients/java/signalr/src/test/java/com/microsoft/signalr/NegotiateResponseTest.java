@@ -56,4 +56,13 @@ class NegotiateResponseTest {
         NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
     }
+
+    @Test
+    public void NegotiateResponseWithNegotiateVersion() {
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"negotiateVersion\": 99}";
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+        assertEquals(99, negotiateResponse.getVersion());
+    }
 }
