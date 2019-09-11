@@ -2044,12 +2044,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(CoreStrings.HPackErrorNotEnoughBuffer, message.Exception.Message);
         }
 
-        //
-
         [Fact]
         public async Task ResponseTrailers_WithLargeUnflushedData_DataExceedsFlowControlAvailableAndNotSentWithTrailers()
         {
-            const int FlowControlAvailable = 65535;
+            const int windowSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
+            _clientSettings.InitialWindowSize = windowSize;
 
             var headers = new[]
             {
@@ -2061,9 +2060,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 await context.Response.StartAsync();
 
-                var s = context.Response.BodyWriter.GetMemory(FlowControlAvailable + 1);
-                s.Span[0] = byte.MaxValue;
-                context.Response.BodyWriter.Advance(FlowControlAvailable + 1);
+                // Body exceeds flow control available and requires the client to allow more
+                // data via updating the window
+                context.Response.BodyWriter.GetMemory(windowSize + 1);
+                context.Response.BodyWriter.Advance(windowSize + 1);
 
                 context.Response.AppendTrailer("CustomName", "Custom Value");
             }).DefaultTimeout();
@@ -2080,22 +2080,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1).DefaultTimeout();
 
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 16384,
+            var dataTask = ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1).DefaultTimeout();
 
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 16384,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1).DefaultTimeout();
+            // Reading final frame of data requires window update
+            // Verify this data task is waiting on window update
+            Assert.False(dataTask.IsCompletedSuccessfully);
 
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 16383,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1).DefaultTimeout();
+            await SendWindowUpdateAsync(1, 1);
 
-            // Freezes here. 1 byte remains in data
+            await dataTask;
 
             var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 25,
