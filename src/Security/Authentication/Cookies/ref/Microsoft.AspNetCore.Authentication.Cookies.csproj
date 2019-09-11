@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Authentication.Cookies.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Authentication.Cookies.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Authentication"  />
   </ItemGroup>
 </Project>

@@ -9,7 +9,7 @@
     <Reference Include="System.ComponentModel.Annotations"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.Forms.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Components.Forms.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Components"  />
   </ItemGroup>
 </Project>

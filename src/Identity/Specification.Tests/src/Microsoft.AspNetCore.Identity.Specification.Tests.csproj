@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Shared test suite for Asp.Net Identity Core store implementations.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsTestProject>false</IsTestProject>
