@@ -46,7 +46,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
   The payload returned from this endpoint provides the following data:
 
   * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
-  * The `connectionId` which the id by which other clients can refer to it.
+  * The `connectionId` which is the id by which other clients can refer to it.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
 
