@@ -33,6 +33,8 @@
     </RestoreSources>
   </PropertyGroup>
 
+  <Import Project="$(SolutionRoot)..\..\eng\Versions.props" />
+
   <PropertyGroup>
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>

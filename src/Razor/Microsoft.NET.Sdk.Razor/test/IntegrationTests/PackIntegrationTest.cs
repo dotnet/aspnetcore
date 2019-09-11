@@ -230,10 +230,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
         public async Task Pack_NoBuild_IncludesStaticWebAssets()
         {
-            var result = await DotnetMSBuild("Build", runRestoreBeforeBuildOrPublish: false);
+            var result = await DotnetMSBuild("Build");
             Assert.BuildPassed(result, allowWarnings: true);
 
-            var pack = await DotnetMSBuild("Pack", "/p:NoBuild=true", runRestoreBeforeBuildOrPublish: false);
+            var pack = await DotnetMSBuild("Pack", "/p:NoBuild=true");
             Assert.BuildPassed(pack, allowWarnings: true);
 
             Assert.FileExists(pack, OutputPath, "PackageLibraryDirectDependency.dll");
