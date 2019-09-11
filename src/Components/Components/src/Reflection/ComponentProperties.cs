@@ -238,9 +238,15 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         continue;
                     }
 
+                    var propertyName = propertyInfo.Name;
+                    if (parameterAttribute != null && (propertyInfo.SetMethod == null || !propertyInfo.SetMethod.IsPublic))
+                    {
+                        throw new InvalidOperationException(
+                            $"The type '{targetType.FullName}' declares a parameter matching the name '{propertyName}' that is not public. Parameters must be public.");
+                    }
+
                     var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: cascadingParameterAttribute != null);
 
-                    var propertyName = propertyInfo.Name;
                     if (WritersByName.ContainsKey(propertyName))
                     {
                         throw new InvalidOperationException(

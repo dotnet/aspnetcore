@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     public static partial class WebAssemblyEventDispatcher
     {
         [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
-        public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.Web.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
+        public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder

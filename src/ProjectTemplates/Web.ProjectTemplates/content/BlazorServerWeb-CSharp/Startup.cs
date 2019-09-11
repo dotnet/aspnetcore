@@ -67,7 +67,7 @@ namespace BlazorServerWeb_CSharp
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -170,7 +170,7 @@ namespace BlazorServerWeb_CSharp
 #if (OrganizationalAuth || IndividualAuth)
                 endpoints.MapControllers();
 #endif
-                endpoints.MapBlazorHub<App>(selector: "app");
+                endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

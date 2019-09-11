@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -99,6 +98,11 @@ namespace Templates.Test.SpaTemplateTest
                 }
             }
 
+            if (template == "react" || template == "reactredux")
+            {
+                await CleanupReactClientAppBuildFolder(clientAppSubdirPath);
+            }
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -145,6 +149,35 @@ namespace Templates.Test.SpaTemplateTest
                     BrowserFixture.EnforceSupportedConfigurations();
                 }
             }
+        }
+
+        private async Task CleanupReactClientAppBuildFolder(string clientAppSubdirPath)
+        {
+            ProcessEx testResult = null;
+            int? testResultExitCode = null;
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResultExitCode = testResult.ExitCode;
+                    if (testResultExitCode == 0)
+                    {
+                        return;
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    testResult.Dispose();
+                }
+
+                await Task.Delay(3000);
+            }
+
+            Assert.True(testResultExitCode == 0, ErrorMessages.GetFailedProcessMessage("npx rimraf ./build", Project, testResult));
         }
 
         private void ValidatePackageJson(string clientAppSubdirPath)
@@ -240,6 +273,23 @@ namespace Templates.Test.SpaTemplateTest
                     browser.FindElement(By.Name("Input.Password")).SendKeys(password);
                     browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
                     browser.FindElement(By.Id("registerSubmit")).Click();
+
+                    // We will be redirected to the RegisterConfirmation
+                    browser.Contains("/Identity/Account/RegisterConfirmation", () => browser.Url);
+                    browser.FindElement(By.PartialLinkText("Click here to confirm your account")).Click();
+
+                    // We will be redirected to the ConfirmEmail
+                    browser.Contains("/Identity/Account/ConfirmEmail", () => browser.Url);
+
+                    // Now we can login
+                    browser.FindElement(By.PartialLinkText("Login")).Click();
+                    browser.Exists(By.Name("Input.Email"));
+                    browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
+                    browser.FindElement(By.Name("Input.Password")).SendKeys(password);
+                    browser.FindElement(By.Id("login-submit")).Click();
+
+                    // Need to navigate to fetch page
+                    browser.FindElement(By.PartialLinkText("Fetch data")).Click();
                 }
 
                 // Can navigate to the 'fetch data' page

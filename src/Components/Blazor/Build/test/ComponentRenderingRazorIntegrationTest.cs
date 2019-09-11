@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.Components.Web;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -202,23 +203,25 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIMouseEventArgs> OnClick { get; set; }
+        public Action<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             var component = CompileToComponent($@"
+@using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""{expression}""/>
 
 @code {{
     private int counter;
-    private void Increment(UIMouseEventArgs e) {{
+    private void Increment(MouseEventArgs e) {{
         counter++;
     }}
 }}");
@@ -235,7 +238,7 @@ namespace Test
                     AssertFrame.Attribute(frame, "OnClick", 1);
 
                     // The handler will have been assigned to a lambda
-                    var handler = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
+                    var handler = Assert.IsType<Action<MouseEventArgs>>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
                 });
         }
@@ -445,11 +448,12 @@ namespace Test
 
             // Act
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
-    public void OnComponentHover(UIMouseEventArgs e)
+    public void OnComponentHover(MouseEventArgs e)
     {
     }
 }

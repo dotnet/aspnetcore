@@ -3,7 +3,7 @@
 
 using System.IO;
 using Microsoft.AspNetCore.DataProtection.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Test

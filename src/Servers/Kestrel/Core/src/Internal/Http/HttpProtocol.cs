@@ -1009,6 +1009,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
+            _isLeasedMemoryInvalid = true;
+
             if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
@@ -1339,8 +1341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_isLeasedMemoryInvalid)
             {
-                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. " +
-                    "Call StartAsync before calling GetMemory/GetSpan and Advance.");
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync or CompleteAsync and Advance.");
             }
 
             if (_canWriteResponseBody)

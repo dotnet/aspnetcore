@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public bool IsMet =>
         #if DEBUG
             false;
-        #else 
+        #else
             true;
         #endif
 

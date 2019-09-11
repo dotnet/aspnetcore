@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using XmlFormattersWebSite;
 using Xunit;
 
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
                 var content = await response.Content.ReadAsStringAsync();
                 var root = XDocument.Parse(content).Root;
-                
+
                 Assert.Equal("400", root.Element(root.Name.Namespace.GetName("status"))?.Value);
                 Assert.Equal("One or more validation errors occurred.", root.Element(root.Name.Namespace.GetName("title"))?.Value);
                 var mvcErrors = root.Element(root.Name.Namespace.GetName("MVC-Errors"));

@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <summary>
         /// Gets the identifier for the <see cref="Circuit"/>.
         /// </summary>
-        public string Id => _circuitHost.CircuitId;
+        public string Id => _circuitHost.CircuitId.Id;
     }
 }

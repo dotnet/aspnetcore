@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                 }
         }
-        
+
         [ConditionalFact]
         public void EnsureDefaultSchema()
         {

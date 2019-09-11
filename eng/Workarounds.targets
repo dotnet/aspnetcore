@@ -25,8 +25,8 @@
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
   <Import Condition="'$(DotNetBuildFromSource)' == 'true'" Project="WorkaroundsImported.targets" />
 
-  <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
-  <ItemGroup>
+  <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 

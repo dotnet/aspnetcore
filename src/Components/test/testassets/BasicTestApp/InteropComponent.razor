@@ -72,11 +72,11 @@
         var instanceMethodsTarget = new JavaScriptInterop();
 
         Console.WriteLine("Starting interop invocations.");
-        await JSRuntime.InvokeAsync<object>(
+        await JSRuntime.InvokeVoidAsync(
             "jsInteropTests.invokeDotNetInteropMethodsAsync",
             shouldSupportSyncInterop,
-            DotNetObjectRef.Create(testDTOTOPassByRef),
-            DotNetObjectRef.Create(instanceMethodsTarget));
+            DotNetObjectReference.Create(testDTOTOPassByRef),
+            DotNetObjectReference.Create(instanceMethodsTarget));
 
         if (shouldSupportSyncInterop)
         {
@@ -117,7 +117,7 @@
         var passDotNetObjectByRefArg = new PassDotNetObjectByRefArgs
         {
             StringValue = "My string",
-            TestDto = DotNetObjectRef.Create(passDotNetObjectByRef),
+            TestDto = DotNetObjectReference.Create(passDotNetObjectByRef),
         };
         var result = await JSRuntime.InvokeAsync<ReceiveDotNetObjectByRefArgs>("receiveDotNetObjectByRefAsync", passDotNetObjectByRefArg);
         ReceiveDotNetObjectByRefAsyncResult["stringValueUpper"] = result.StringValueUpper;
@@ -153,7 +153,7 @@
         var passDotNetObjectByRefArg = new PassDotNetObjectByRefArgs
         {
             StringValue = "My string",
-            TestDto = DotNetObjectRef.Create(passDotNetObjectByRef),
+            TestDto = DotNetObjectReference.Create(passDotNetObjectByRef),
         };
         var result = inProcRuntime.Invoke<ReceiveDotNetObjectByRefArgs>("receiveDotNetObjectByRef", passDotNetObjectByRefArg);
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
@@ -165,7 +165,7 @@
     {
         public string StringValue { get; set; }
 
-        public DotNetObjectRef<TestDTO> TestDto { get; set; }
+        public DotNetObjectReference<TestDTO> TestDto { get; set; }
     }
 
     public class ReceiveDotNetObjectByRefArgs
@@ -174,6 +174,6 @@
 
         public int TestDtoNonSerializedValue { get; set; }
 
-        public DotNetObjectRef<TestDTO> TestDto { get; set; }
+        public DotNetObjectReference<TestDTO> TestDto { get; set; }
     }
 }

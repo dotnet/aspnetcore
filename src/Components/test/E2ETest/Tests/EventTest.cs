@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -14,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class EventTest : BasicTestAppTestBase
+    public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public EventTest(
             BrowserFixture browserFixture,
@@ -27,13 +26,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
-            MountTestComponent<EventBubblingComponent>();
+            Browser.MountTestComponent<EventBubblingComponent>();
         }
 
         [Fact]
         public void FocusEvents_CanTrigger()
         {
-            MountTestComponent<FocusEventComponent>();
+            Browser.MountTestComponent<FocusEventComponent>();
 
             var input = Browser.FindElement(By.Id("input"));
 
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MouseOverAndMouseOut_CanTrigger()
         {
-            MountTestComponent<MouseEventComponent>();
+            Browser.MountTestComponent<MouseEventComponent>();
 
             var input = Browser.FindElement(By.Id("mouseover_input"));
 
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MouseMove_CanTrigger()
         {
-            MountTestComponent<MouseEventComponent>();
+            Browser.MountTestComponent<MouseEventComponent>();
 
             var input = Browser.FindElement(By.Id("mousemove_input"));
 
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MouseDownAndMouseUp_CanTrigger()
         {
-            MountTestComponent<MouseEventComponent>();
+            Browser.MountTestComponent<MouseEventComponent>();
 
             var input = Browser.FindElement(By.Id("mousedown_input"));
 
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void PointerDown_CanTrigger()
         {
-            MountTestComponent<MouseEventComponent>();
+            Browser.MountTestComponent<MouseEventComponent>();
 
             var input = Browser.FindElement(By.Id("pointerdown_input"));
 
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void DragDrop_CanTrigger()
         {
-            MountTestComponent<MouseEventComponent>();
+            Browser.MountTestComponent<MouseEventComponent>();
 
             var input = Browser.FindElement(By.Id("drag_input"));
             var target = Browser.FindElement(By.Id("drop"));
@@ -153,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void PreventDefault_AppliesToFormOnSubmitHandlers()
         {
-            var appElement = MountTestComponent<EventPreventDefaultComponent>();
+            var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
 
             appElement.FindElement(By.Id("form-1-button")).Click();
             Browser.Equal("Event was handled", () => appElement.FindElement(By.Id("event-handled")).Text);
@@ -162,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void PreventDefault_DotNotApplyByDefault()
         {
-            var appElement = MountTestComponent<EventPreventDefaultComponent>();
+            var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
             appElement.FindElement(By.Id("form-2-button")).Click();
             Assert.Contains("about:blank", Browser.Url);
         }
@@ -171,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987", FlakyOn.AzP.Windows)]
         public void InputEvent_RespondsOnKeystrokes()
         {
-            MountTestComponent<InputEventComponent>();
+            Browser.MountTestComponent<InputEventComponent>();
 
             var input = Browser.FindElement(By.TagName("input"));
             var output = Browser.FindElement(By.Id("test-result"));
@@ -194,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // [1] By the time a keystroke event arrives, the event handler ID has since changed
             // [2] We have the situation described under "the problem" at https://github.com/aspnet/AspNetCore/issues/8204#issuecomment-493986702
 
-            MountTestComponent<LaggyTypingComponent>();
+            Browser.MountTestComponent<LaggyTypingComponent>();
 
             var input = Browser.FindElement(By.TagName("input"));
             var output = Browser.FindElement(By.Id("test-result"));

@@ -1,11 +1,20 @@
 parameters:
-  enableSourceLinkValidation: true
+  enableSourceLinkValidation: false
   enableSigningValidation: true
-  enableSymbolValidation: true
+  enableSymbolValidation: false
   enableNugetValidation: true
+  publishInstallersAndChecksums: false
+  enableAzDONuGetFeeds: true
   SDLValidationParameters:
     enable: false
+    continueOnError: false
     params: ''
+
+  # These parameters let the user customize the call to sdk-task.ps1 for publishing
+  # symbols & general artifacts as well as for signing validation
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
+  signingValidationAdditionalParameters: ''
 
   # Which stages should finish execution before post-build stages start
   dependsOn: [build]
@@ -53,7 +62,8 @@ stages:
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
               /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-              /p:Configuration=Release
+              /p:Configuration=Release 
+              ${{ parameters.signingValidationAdditionalParameters }}
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
     - job:
@@ -78,26 +88,60 @@ stages:
               -GHRepoName $(Build.Repository.Name) 
               -GHCommit $(Build.SourceVersion)
               -SourcelinkCliVersion $(SourceLinkCLIVersion)
+          continueOnError: true
 
   - ${{ if eq(parameters.SDLValidationParameters.enable, 'true') }}:
     - template: /eng/common/templates/job/execute-sdl.yml
       parameters:
         additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
 
 - template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
 
-- template: \eng\common\templates\post-build\channels\public-dev-release.yml
+- template: \eng\common\templates\post-build\channels\netcore-dev-30.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-dev-31.yml
+  parameters:
+    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
 
 - template: \eng\common\templates\post-build\channels\netcore-tools-latest.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    enableAzDONuGetFeeds: ${{ parameters.enableAzDONuGetFeeds }}
 
 - template: \eng\common\templates\post-build\channels\public-validation-release.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+    enableAzDONuGetFeeds: ${{ parameters.enableAzDONuGetFeeds }}
 
-- template: \eng\common\templates\post-build\channels\public-release.yml
+- template: \eng\common\templates\post-build\channels\netcore-release-30.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-- template: \eng\common\templates\post-build\channels\internal-servicing.yml
+- template: \eng\common\templates\post-build\channels\netcore-release-31.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+
+- template: \eng\common\templates\post-build\channels\netcore-internal-30.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}

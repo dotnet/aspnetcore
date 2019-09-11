@@ -6,8 +6,10 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#if COMPONENTS_SERVER
-namespace Microsoft.AspNetCore.Components.Web.Rendering
+#if IGNITOR
+namespace Ignitor
+#elif COMPONENTS_SERVER
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 #else
 namespace Microsoft.AspNetCore.Components.RenderTree
 #endif

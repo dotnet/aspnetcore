@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2577")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2577", FlakyOn.All)]
