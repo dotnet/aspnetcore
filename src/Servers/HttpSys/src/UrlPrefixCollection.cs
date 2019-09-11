@@ -18,10 +18,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private UrlGroup _urlGroup;
         private int _nextId = 1;
-        private const int BasePortIndex = 0;
-        private const int MaxPortIndex = 3000;
+
+        // Valid port range of 5000 - 48000.
         private const int BasePort = 5000;
-        private static int NextPortIndex = BasePortIndex;
+        private const int MaxPortIndex = 43000;
+        private const int MaxRetries = 1000;
+        private static int NextPortIndex;
+
+        private const int ErrorAccessDenied = 5;
+        private const int ErrorSharingViolation = 32;
+        private const int ErrorAlreadyRegistered = 183;
 
         internal UrlPrefixCollection()
         {
@@ -157,10 +163,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             throw new InvalidOperationException("Cannot bind to port 0 with https.");
                         }
 
-                        if (!FindHttpPortUnsynchronized(pair.Key, urlPrefix))
-                        {
-                            throw new HttpSysException(Marshal.GetLastWin32Error(), "Could not bind to port 0.");
-                        }
+                        FindHttpPortUnsynchronized(pair.Key, urlPrefix);
                     }
                     else
                     {
@@ -171,9 +174,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private bool FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
+        private void FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
         {
-            for (var index = BasePortIndex; index < MaxPortIndex; index++)
+            for (var index = 0; index < MaxRetries; index++)
             {
                 try
                 {
@@ -187,15 +190,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _urlGroup.RegisterPrefix(newPrefix.FullPrefix, key);
                     _prefixes[key] = newPrefix;
 
-                    NextPortIndex = BasePortIndex + 1;
-                    return true;
+                    NextPortIndex = NextPortIndex++;
+                    return;
                 }
-                catch (HttpSysException)
+                catch (HttpSysException ex)
                 {
+                    if ((ex.ErrorCode != ErrorSharingViolation
+                        && ex.ErrorCode != ErrorAlreadyRegistered
+                        && ex.ErrorCode != ErrorAccessDenied) || index == MaxRetries - 1)
+                    {
+                        throw;
+                    }
                 }
             }
-
-            return false;
         }
 
         internal void UnregisterAllPrefixes()
