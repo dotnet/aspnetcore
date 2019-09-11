@@ -2047,7 +2047,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         //
 
         [Fact]
-        public async Task ResponseTrailers_WithLargeUnflushedData_DataSentWithTrailers()
+        public async Task ResponseTrailers_WithLargeUnflushedData_DataExceedsFlowControlAvailableAndNotSentWithTrailers()
         {
             const int FlowControlAvailable = 65535;
 
