@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                 }
                 else if (serverType == ServerType.HttpSys)
                 {
+                    Debug.Assert(scheme == "http", "Https not supported");
                     return new UriBuilder(scheme, "localhost", 0).Uri;
                 }
                 else

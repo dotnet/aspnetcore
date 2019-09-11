@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.HttpSys.Internal;
-using System.Linq;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -123,20 +122,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Listener.Start();
 
-            UpdateServerAddresses();
+            // Update server addresses after we start listening as port 0
+            // needs to be selected at the point of binding.
+            foreach (var prefix in _options.UrlPrefixes)
+            {
+                _serverAddresses.Addresses.Add(prefix.FullPrefix);
+            }
 
             ActivateRequestProcessingLimits();
 
             return Task.CompletedTask;
         }
 
-        private void UpdateServerAddresses()
+        private void ActivateRequestProcessingLimits()
         {
-            // Update server addresses after we start listening as port 0
-            // needs to be selected at the point of binding.
-            foreach (var prefix in _options.UrlPrefixes)
+            for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
-                _serverAddresses.Addresses.Add(prefix.FullPrefix);
+                ProcessRequestsWorker();
             }
         }
 
@@ -145,14 +147,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             foreach (var value in serverAddressCopy)
             {
                 Listener.Options.UrlPrefixes.Add(value);
-            }
-        }
-
-        private void ActivateRequestProcessingLimits()
-        {
-            for (int i = _acceptorCounts; i < _maxAccepts; i++)
-            {
-                ProcessRequestsWorker();
             }
         }
 

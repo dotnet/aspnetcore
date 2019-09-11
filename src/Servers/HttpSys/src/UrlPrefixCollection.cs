@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             throw new InvalidOperationException("Cannot bind to port 0 with https.");
                         }
 
-                        if (!FindHttpPortUnsynchronized(pair, urlPrefix))
+                        if (!FindHttpPortUnsynchronized(pair.Key, urlPrefix))
                         {
                             throw new HttpSysException(Marshal.GetLastWin32Error(), "Could not bind to port 0.");
                         }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private bool FindHttpPortUnsynchronized(KeyValuePair<int, UrlPrefix> pair, UrlPrefix urlPrefix)
+        private bool FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
         {
             for (var index = BasePortIndex; index < MaxPortIndex; index++)
             {
@@ -183,9 +183,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                     Debug.Assert(port >= 5000 || port < 8000);
 
-                    var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, index, urlPrefix.Path);
-                    _urlGroup.RegisterPrefix(newPrefix.FullPrefix, pair.Key);
-                    _prefixes[pair.Key] = newPrefix;
+                    var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, port, urlPrefix.Path);
+                    _urlGroup.RegisterPrefix(newPrefix.FullPrefix, key);
+                    _prefixes[key] = newPrefix;
 
                     NextPortIndex = BasePortIndex + 1;
                     return true;
