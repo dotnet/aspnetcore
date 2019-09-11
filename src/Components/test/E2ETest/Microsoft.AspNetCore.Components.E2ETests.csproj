@@ -42,8 +42,6 @@
     <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>

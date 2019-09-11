@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,8 +16,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ServerAuthTest : AuthTest
     {
-        public ServerAuthTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+        public ServerAuthTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<BasicTestApp.Program> serverFixture, ITestOutputHelper output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output, ExecutionMode.Server)
         {
         }
 
@@ -52,6 +53,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 }
             }
         }
+
+        private void SignInAs(string usernName, string roles, bool useSeparateTab = false) =>
+            Browser.SignInAs(new Uri(_serverFixture.RootUri, "/subdir"), usernName, roles, useSeparateTab);
 
         private void PerformReconnection()
         {
