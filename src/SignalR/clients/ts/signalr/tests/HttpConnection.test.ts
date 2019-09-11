@@ -192,9 +192,9 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unexpected status code returned from negotiate 999");
+                .toThrow("Unexpected status code returned from negotiate '999'");
         },
-        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
     });
 
     it("all transport failure errors get aggregated", async () => {
