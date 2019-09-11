@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     RedirectStandardOutput = true
                 };
-                var process = Process.Start(psi);
+                using var process = Process.Start(psi);
                 process.Start();
                 var netshOutput = await process.StandardOutput.ReadToEndAsync();
                 Assert.Contains(queueName, netshOutput);
