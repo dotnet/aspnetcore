@@ -48,13 +48,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="privateId"></param>
+        /// <param name="connectionId"></param>
+        /// <param name="connectionToken"></param>
         /// <param name="logger"></param>
-        public HttpConnectionContext(string id, string privateId, ILogger logger)
+        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger)
         {
-            ConnectionId = id;
-            PrivateId = privateId;
+            ConnectionId = connectionId;
+            ConnectionToken = connectionToken;
             LastSeenUtc = DateTime.UtcNow;
 
             // The default behavior is that both formats are supported.
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public override string ConnectionId { get; set; }
 
-        internal string PrivateId { get; set; }
+        internal string ConnectionToken { get; set; }
 
         public override IFeatureCollection Features { get; }
 

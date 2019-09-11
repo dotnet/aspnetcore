@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                 if (!string.IsNullOrEmpty(response.ConnectionToken))
                 {
-                    writer.WriteString(ConnectionTokenPropertyName, response.ConnectionToken);
+                    writer.WriteString(ConnectionTokenPropertyNameBytes, response.ConnectionToken);
                 }
 
                 writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     {
                         if (connectionToken == null)
                         {
-                            throw new InvalidDataException($"Missing required property '{ConnectionTokenPropertyNameBytes}'.");
+                            throw new InvalidDataException($"Missing required property '{ConnectionTokenPropertyName}'.");
                         }
                     }
 

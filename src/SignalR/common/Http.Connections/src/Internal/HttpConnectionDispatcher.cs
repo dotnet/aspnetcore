@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             try
             {
                 // Get the bytes for the connection id
-                WriteNegotiatePayload(writer, connection.ConnectionId, connection.PrivateId, context, options);
+                WriteNegotiatePayload(writer, connection.ConnectionId, connection.ConnectionToken, context, options);
 
                 Log.NegotiationRequest(_logger);
 

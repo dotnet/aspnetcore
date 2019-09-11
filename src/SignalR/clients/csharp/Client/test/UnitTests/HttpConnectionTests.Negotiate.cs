@@ -212,7 +212,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     JsonConvert.SerializeObject(new
                     {
                         connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
-                        negotiateVersion = 0,
                         connectionToken = "different-id",
                         availableTransports = new object[]
                         {

@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // This should only need to happen once
-                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                var connectUrl = CreateConnectUrl(uri, _connectionToken);
 
                 // We're going to search for the transfer format as a string because we don't want to parse
                 // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             if (negotiationResponse == null)
                             {
                                 negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
-                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                                connectUrl = CreateConnectUrl(uri, _connectionToken);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);

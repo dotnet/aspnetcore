@@ -90,7 +90,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
 
-            _connections.TryAdd(id, (connection, connectionTimer));
             _connections.TryAdd(privateId, (connection, connectionTimer));
 
             return connection;
@@ -208,7 +207,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 // Remove it from the list after disposal so that's it's easy to see
                 // connections that might be in a hung state via the connections list
-                RemoveConnection(connection.ConnectionId);
+                RemoveConnection(connection.ConnectionToken);
             }
         }
     }
