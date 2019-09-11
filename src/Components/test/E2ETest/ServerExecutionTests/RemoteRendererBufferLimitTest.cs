@@ -7,21 +7,17 @@ using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.Extensions.Logging;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class RemoteRendererBufferLimitTest : IgnitorTest<AspNetSiteServerFixture>
+    public class RemoteRendererBufferLimitTest : IgnitorTest<ServerStartup>
     {
-        public RemoteRendererBufferLimitTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+        public RemoteRendererBufferLimitTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
-        }
-
-        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
-        {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
         [Fact]

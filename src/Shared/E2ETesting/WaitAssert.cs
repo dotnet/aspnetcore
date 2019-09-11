@@ -44,13 +44,24 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static void Single(this IWebDriver driver, Func<IEnumerable> actualValues)
             => WaitAssertCore(driver, () => Assert.Single(actualValues()));
 
-        public static void Exists(this IWebDriver driver, By finder)
+        public static IWebElement Exists(this IWebDriver driver, By finder)
             => Exists(driver, finder, default);
 
-        public static void Exists(this IWebDriver driver, By finder, TimeSpan timeout)
-            => WaitAssertCore(driver, () => Assert.NotEmpty(driver.FindElements(finder)), timeout);
+        public static IWebElement Exists(this IWebDriver driver, By finder, TimeSpan timeout)
+            => WaitAssertCore(driver, () =>
+            {
+                var elements = driver.FindElements(finder);
+                Assert.NotEmpty(elements);
+                var result = elements[0];
+                return result;
+            }, timeout);
 
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
+        {
+            WaitAssertCore<object>(driver, () => { assertion(); return null; }, timeout);
+        }
+
+        private static TResult WaitAssertCore<TResult>(IWebDriver driver, Func<TResult> assertion, TimeSpan timeout = default)
         {
             if (timeout == default)
             {
@@ -58,13 +69,14 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             Exception lastException = null;
+            TResult result = default;
             try
             {
                 new WebDriverWait(driver, timeout).Until(_ =>
                 {
                     try
                     {
-                        assertion();
+                        result = assertion();
                         return true;
                     }
                     catch (Exception e)
@@ -84,16 +96,18 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
-                var errors = driver.GetBrowserLogs(LogLevel.Severe);
+                var errors = driver.GetBrowserLogs(LogLevel.All);
 
                 TakeScreenShot(driver, screenShotPath);
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
-                    CaptureException(assertion);
+                    CaptureException(() => assertion());
 
                 throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath);
-
             }
+
+            return result;
         }
+
         private static ExceptionDispatchInfo CaptureException(Action assertion)
         {
             try

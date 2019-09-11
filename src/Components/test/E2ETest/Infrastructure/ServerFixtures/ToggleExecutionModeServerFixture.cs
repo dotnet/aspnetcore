@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             {
                 // Use Blazor's dev host server
                 var underlying = new DevHostServerFixture<TClientProgram>();
-                underlying.PathBase = PathBase;
+                underlying.PathBase = "/subdir";
                 _serverToDispose = underlying;
                 var uri = underlying.RootUri.AbsoluteUri; // As a side-effect, this starts the server
 
