@@ -375,7 +375,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         // Write any remaining content then write trailers
                         if (readResult.Buffer.Length > 0)
                         {
-                            flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
+                            // Write data without flushing
+                            // This allows trailers and data to be sent together
+                            _frameWriter.WriteData(_streamId, _flowControl, readResult.Buffer, endStream: false);
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();

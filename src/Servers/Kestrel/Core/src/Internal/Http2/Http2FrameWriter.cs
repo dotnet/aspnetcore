@@ -265,6 +265,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public void WriteData(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream)
+        {
+            // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
+            var dataLength = data.Length;
+
+            lock (_writeLock)
+            {
+                if (_completed || flowControl.IsAborted)
+                {
+                    return;
+                }
+
+                flowControl.Advance((int)dataLength);
+                WriteDataUnsynchronized(streamId, data, dataLength, endStream);
+            }
+        }
+
         /*  Padding is not implemented
             +---------------+
             |Pad Length? (8)|
