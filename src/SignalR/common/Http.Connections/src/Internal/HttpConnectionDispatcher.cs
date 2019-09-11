@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             context.Response.ContentType = "application/json";
 
             // Establish the connection
-            var connection = CreateConnection(options);
+            var connection = CreateConnection(options, context);
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionId))
             {
-                connection = CreateConnection(options);
+                connection = CreateConnection(options, context);
             }
             else if (!_manager.TryGetConnection(connectionId, out connection))
             {
@@ -694,12 +694,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return connection;
         }
 
-        private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options)
+        private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, HttpContext context)
         {
             var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
 
-            return _manager.CreateConnection(transportPipeOptions, appPipeOptions);
+            if (context.Request.Query.TryGetValue("NegotiateVersion", out var qsVersion))
+            {
+                // Set the negotiate response to the protocol we use.
+                var queryStringVersionValue = qsVersion.ToString();
+                int.TryParse(queryStringVersionValue, out var clientProtocolVersion);
+                return _manager.CreateConnection(transportPipeOptions, appPipeOptions, clientProtocolVersion);
+
+            }
+
+            return _manager.CreateConnection(transportPipeOptions, appPipeOptions, negotiateVersion: 0);
         }
 
         private class EmptyServiceProvider : IServiceProvider

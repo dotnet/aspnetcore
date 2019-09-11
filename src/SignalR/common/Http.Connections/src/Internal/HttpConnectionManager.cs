@@ -78,19 +78,27 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions, int negotiateVersion = 0)
         {
+            string connectionKey;
             var id = MakeNewConnectionId();
-            var privateId = MakeNewConnectionId();
+            if (negotiateVersion > 0)
+            {
+                connectionKey= MakeNewConnectionId();
+            }
+            else
+            {
+                connectionKey = id;
+            }
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, privateId, _connectionLogger);
+            var connection = new HttpConnectionContext(id, connectionKey, _connectionLogger);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
 
-            _connections.TryAdd(privateId, (connection, connectionTimer));
+            _connections.TryAdd(connectionKey, (connection, connectionTimer));
 
             return connection;
         }
