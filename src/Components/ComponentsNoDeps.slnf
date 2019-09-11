@@ -21,23 +21,22 @@
       "Blazor\\testassets\\MonoSanityClient\\MonoSanityClient.csproj",
       "Blazor\\testassets\\MonoSanity\\MonoSanity.csproj",
       "Blazor\\testassets\\StandaloneApp\\StandaloneApp.csproj",
-      "Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
-      "Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
-      "Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
-      "Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
       "Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",
       "Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
+      "Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
+      "Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
+      "Samples\\BlazorServer.Sample\\BlazorServer.Sample.csproj",
       "Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
+      "Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
+      "Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
       "test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
+      "test\\Ignitor.Test\\Ignitor.Test.csproj",
       "test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
-      "test\\testassets\\ComponentsApp.App\\ComponentsApp.App.csproj",
-      "test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
+      "test\\testassets\\Ignitor\\Ignitor.csproj",
       "test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "test\\testassets\\TestServer\\Components.TestServer.csproj",
-      "Ignitor\\src\\Ignitor.csproj",
-      "Ignitor\\test\\Ignitor.Test.csproj"
+      "test\\testassets\\TestServer\\Components.TestServer.csproj"
     ]
   }
 }
