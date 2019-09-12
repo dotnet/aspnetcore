@@ -1467,7 +1467,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 values["id"] = connection.ConnectionToken;
                 values["negotiationVersion"] = "1";
                 var qs = new QueryCollection(values);
-                context.Request.Query = qs;                
+                context.Request.Query = qs;
                 var builder = new ConnectionBuilder(sp);
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
