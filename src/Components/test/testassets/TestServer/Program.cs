@@ -22,7 +22,7 @@ namespace TestServer
     {
         public static void Main(string[] args)
         {
-            var createIndividualHosts = new Dictionary<string, (IWebHost host, string basePath)>
+            var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
             {
                 ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
@@ -41,13 +41,13 @@ namespace TestServer
             var testAppInfo = mainHost.Services.GetRequiredService<TestAppInfo>();
             testAppInfo.Scenarios = createIndividualHosts
                 .ToDictionary(kvp => kvp.Key,
-                kvp => kvp.Value.host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.FirstOrDefault()
+                kvp => kvp.Value.host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.FirstOrDefault()
                     .Replace("127.0.0.1", "localhost") + kvp.Value.basePath);
 
             mainHost.Run();
         }
 
-        private static (IWebHost host, string basePath) CreateDevServerHost(string[] args)
+        private static (IHost host, string basePath) CreateDevServerHost(string[] args)
         {
             var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "Microsoft.AspNetCore.Testing.BasicTestApp.ContentRoot")
@@ -60,46 +60,30 @@ namespace TestServer
                 "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
             }).ToArray();
             var host = DevServerProgram.BuildWebHost(finalArgs);
-            return (new WebHostShim(host), "/subdir");
-        }
-
-        private class WebHostShim : IWebHost
-        {
-            private readonly IHost _host;
-
-            public WebHostShim(IHost host) => _host = host;
-
-            public IFeatureCollection ServerFeatures => _host.Services.GetRequiredService<IServer>().Features;
-
-            public IServiceProvider Services => _host.Services;
-
-            public void Dispose() => _host.Dispose();
-
-            public void Start() => _host.Start();
-
-            public Task StartAsync(CancellationToken cancellationToken = default) => _host.StartAsync(cancellationToken);
-
-            public Task StopAsync(CancellationToken cancellationToken = default) => _host.StopAsync(cancellationToken);
+            return (host, "/subdir");
         }
 
         private static string[] CreateAdditionalArgs(string[] args) =>
             args.Concat(new[] { "--urls", "http://127.0.0.1:0" }).ToArray();
 
-        public static IWebHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
+        public static IHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
 
-        public static IWebHost BuildWebHost<TStartup>(string[] args) where TStartup : class =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IHost BuildWebHost<TStartup>(string[] args) where TStartup : class =>
+            Host.CreateDefaultBuilder(args)
                 .ConfigureLogging((ctx, lb) =>
                 {
                     TestSink sink = new TestSink();
                     lb.AddProvider(new TestLoggerProvider(sink));
                     lb.Services.Add(ServiceDescriptor.Singleton(sink));
                 })
-                .UseConfiguration(new ConfigurationBuilder()
-                        .AddCommandLine(args)
-                        .Build())
-                .UseStartup<TStartup>()
-                .UseStaticWebAssets()
+                .ConfigureWebHostDefaults(webHostBuilder =>
+                {
+                    webHostBuilder.UseStartup<TStartup>();
+
+                    // We require this line because we run in Production environment
+                    // and static web assets are only on by default during development.
+                    webHostBuilder.UseStaticWebAssets();
+                })
                 .Build();
     }
 }
