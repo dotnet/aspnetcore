@@ -630,6 +630,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
             var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
+            // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
+            // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
+            // connectionToken on the client to the same value.
             if (negotiationResponse.Version > 0)
             {
                 _connectionId = negotiationResponse.ConnectionId;
