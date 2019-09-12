@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         // following the change to the dynamic table size.
                         if (_headersObserved)
                         {
-                            throw new HPackDecodingException(/*SR.net_http_hpack_late_dynamic_table_size_update*/);
+                            throw new HPackDecodingException(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock);
                         }
 
                         if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out intResult))
@@ -272,6 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     {
                         if (intResult == 0)
                         {
+                            // TODO synchronize Http2 resource strings.
                             throw new HPackDecodingException(/*SR.Format(SR.net_http_invalid_response_header_name, "")*/);
                         }
 
@@ -392,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             {
                 if (length > _maxResponseHeadersLength)
                 {
-                    throw new HPackDecodingException(/*SR.Format(SR.net_http_response_headers_exceeded_length, _maxResponseHeadersLength)*/);
+                    throw new HPackDecodingException(CoreStrings.FormatHPackStringLengthTooLarge(length, _stringOctets.Length));
                 }
 
                 _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];
@@ -462,8 +463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             if (size > _maxDynamicTableSize)
             {
-                throw new HPackDecodingException( /* TODO CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(size, _maxDynamicTableSize) */);
-
+                throw new HPackDecodingException(CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(size, _maxDynamicTableSize));
             }
 
             _dynamicTable.Resize(size);
