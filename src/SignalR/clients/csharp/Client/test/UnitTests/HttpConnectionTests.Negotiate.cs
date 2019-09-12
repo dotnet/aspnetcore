@@ -37,11 +37,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public Task Test()
+            public Task NegotiateResponseWithNegotiateVersionRequiresConnectionToken()
             {
                 return RunInvalidNegotiateResponseTest<InvalidDataException>(ResponseUtils.CreateNegotiationContent(negotiateVersion: 1, connectionToken: null), "Invalid negotiation response received.");
             }
-
 
             [Fact]
             public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer()
@@ -200,6 +199,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?negotiateVersion=1&id=different-id", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
             }
 
             [Fact]
@@ -238,6 +239,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
             }
 
             [Fact]
