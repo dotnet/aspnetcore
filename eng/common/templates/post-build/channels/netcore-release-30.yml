@@ -1,6 +1,7 @@
 parameters:
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  publishInstallersAndChecksums: false
 
 stages:
 - stage: NetCore_Release30_Publish
@@ -91,6 +92,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
+            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -110,7 +112,12 @@ stages:
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
-            /p:Configuration=Release 
+            /p:Configuration=Release
+            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
+            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
+            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
+            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
+            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml

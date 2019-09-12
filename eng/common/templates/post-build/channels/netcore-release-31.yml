@@ -1,6 +1,7 @@
 parameters:
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  publishInstallersAndChecksums: false
 
 stages:
 - stage: NetCore_Release31_Publish
