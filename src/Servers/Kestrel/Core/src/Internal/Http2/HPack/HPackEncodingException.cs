@@ -7,10 +7,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal sealed class HPackEncodingException : Exception
     {
+        public HPackEncodingException()
+            : base()
+        {
+        }
+
         public HPackEncodingException(string message)
             : base(message)
         {
         }
+
         public HPackEncodingException(string message, Exception innerException)
             : base(message, innerException)
         {

@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             }
             catch (HuffmanDecodingException ex)
             {
-                throw new HPackDecodingException("", ex);
+                throw new HPackDecodingException(CoreStrings.HPackHuffmanError, ex);
             }
 
             _state = nextState;
@@ -452,10 +452,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     ? StaticTable.Get(index - 1)
                     : _dynamicTable[index - StaticTable.Count - 1];
             }
-            catch (IndexOutOfRangeException)
+            catch (IndexOutOfRangeException ex)
             {
                 // Header index out of range.
-                throw new HPackDecodingException();
+                throw new HPackDecodingException(CoreStrings.FormatHPackErrorIndexOutOfRange(index), ex);
             }
         }
 

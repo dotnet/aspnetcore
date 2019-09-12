@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     char c = value[i];
                     if ((c & 0xFF80) != 0)
                     {
-                        throw new HttpRequestException(SR.net_http_request_invalid_char_encoding);
+                        throw new HPackEncodingException();
                     }
 
                     destination[i] = (byte)c;
