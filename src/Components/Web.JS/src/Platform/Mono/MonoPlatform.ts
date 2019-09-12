@@ -26,9 +26,11 @@ export const monoPlatform: Platform = {
         init: () => { },
       };
       // Emscripten works by expecting the module config to be a global
-      window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
-
-      addScriptTagsToDocument();
+      // MacOSX Catalina initializes Module differently so needa workaround for now.
+      addGlobalModuleScriptTagsToDocument(() => {
+        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
+        addScriptTagsToDocument();
+      });
     });
   },
 
@@ -202,6 +204,24 @@ function addScriptTagsToDocument() {
   const scriptElem = document.createElement('script');
   scriptElem.src = '_framework/wasm/mono.js';
   scriptElem.defer = true;
+  document.body.appendChild(scriptElem);
+}
+
+// Make sure we have the Module setup from the page due to a difference in MacOSX Catalina Beta.
+// This may not be necassary in the Catalina release.
+function addGlobalModuleScriptTagsToDocument(callback: () => void) {
+  const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
+  if (!browserSupportsNativeWebAssembly) {
+    throw new Error('This browser does not support WebAssembly.');
+  }
+
+  const scriptElem = document.createElement('script');
+
+  // This polutes global but is needed so it can be called from the script.
+  window["__wasmmodulecallback__"] = callback;
+  scriptElem.type="text/javascript"
+  scriptElem.text = 'var Module = { onRuntimeInitialized: function () {  console.log("Initialized"); }}; window["__wasmmodulecallback__"](); window["__wasmmodulecallback__"] = null;';
+
   document.body.appendChild(scriptElem);
 }
 
