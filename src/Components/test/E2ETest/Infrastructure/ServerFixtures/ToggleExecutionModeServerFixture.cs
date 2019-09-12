@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
     {
         public string PathBase { get; set; }
 
-        public IWebHost Host { get; set; }
+        public IHost Host { get; set; }
 
         public ExecutionMode ExecutionMode { get; set; } = ExecutionMode.Client;
 
