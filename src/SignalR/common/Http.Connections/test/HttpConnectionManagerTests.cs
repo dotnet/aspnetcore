@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.NotNull(transport);
 
                 Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
+                Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out var _));
                 Assert.Same(newConnection, connection);
                 Assert.Same(transport, newConnection.Transport);
                 Assert.NotEqual(connection.ConnectionId, connection.ConnectionToken);
