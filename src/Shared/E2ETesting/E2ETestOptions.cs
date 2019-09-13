@@ -56,5 +56,11 @@ namespace Microsoft.AspNetCore.E2ETesting
         public string ScreenShotsPath { get; set; }
 
         public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+
+        public bool CaptureProcessDumpOnAssertionFailure { get; set; } = false;
+
+        public string ProcDumpPath { get; set; }
+
+        public string ProcessDumpsFolder { get; set; }
     }
 }

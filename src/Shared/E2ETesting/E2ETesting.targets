@@ -127,4 +127,8 @@
     <MakeDir Directories="$(SeleniumScreenShotsFolderPath)" />
   </Target>
 
+  <Target Name="_EnsureProcDumpFolderPath" BeforeTargets="Build">
+    <MakeDir Directories="$(ProcDumpFolderPath)" />
+  </Target>
+
 </Project>

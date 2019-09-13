@@ -9,3 +9,4 @@ using Xunit;
 
 [assembly: AssemblyFixture(typeof(ProjectFactoryFixture))]
 [assembly: AssemblyFixture(typeof(SeleniumStandaloneServer))]
+[assembly: AssemblyFixture(typeof(ExceptionDumpCollector))]
