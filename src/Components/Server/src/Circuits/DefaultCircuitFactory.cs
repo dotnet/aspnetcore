@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string uri,
             ClaimsPrincipal user)
         {
-            // We do as much intialization as possible eagerly in this method, which makes the error handling
+            // We do as much initialization as possible eagerly in this method, which makes the error handling
             // story much simpler. If we throw from here, it's handled inside the initial hub method.
             var components = ResolveComponentMetadata(httpContext);
 

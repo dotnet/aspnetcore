@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // remaining work.
             // During the synchronous rendering process we don't wait for the pending asynchronous
             // work to finish as it will simply trigger new renders that will be handled afterwards.
-            // During the asynchronous rendering process we want to wait up untill al components have
+            // During the asynchronous rendering process we want to wait up until al components have
             // finished rendering so that we can produce the complete output.
             var componentState = GetRequiredComponentState(componentId);
             componentState.SetDirectParameters(initialParameters);
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 : null;
 
         /// <summary>
-        /// Processses pending renders requests from components if there are any.
+        /// Processes pending renders requests from components if there are any.
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
