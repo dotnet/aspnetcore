@@ -8,7 +8,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
   </ItemGroup>
 </Project>

@@ -9,7 +9,7 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.netcoreapp.cs" />
     <Reference Include="Microsoft.Extensions.Identity.Stores"  />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
   </ItemGroup>

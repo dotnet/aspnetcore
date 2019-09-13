@@ -7,16 +7,13 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
-    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
+    <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>2</PreReleasePreviewNumber>
+    <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsStableBuild)' == 'true' ">false</IncludePreReleaseLabelInPackageVersion>
-    <PreReleaseVersionLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">rc$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">Release Candidate $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
-    <!-- Blazor Client packages will not RTM with 3.0 -->
-    <BlazorClientPreReleasePreviewNumber>9</BlazorClientPreReleasePreviewNumber>
-    <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">preview$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
     <!-- Additional assembly attributes are already configured to include the source revision ID. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

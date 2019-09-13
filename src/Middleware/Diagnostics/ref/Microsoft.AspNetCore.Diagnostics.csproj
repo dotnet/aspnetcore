@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Diagnostics.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Diagnostics.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />

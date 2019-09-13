@@ -11,7 +11,7 @@
     <Reference Include="System.Buffers"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Components.netcoreapp.cs" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources"  />
