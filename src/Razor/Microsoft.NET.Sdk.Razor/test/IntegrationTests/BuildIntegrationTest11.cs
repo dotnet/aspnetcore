@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputDoesNotContainLine(result, "ProjectCapability: DotNetCoreRazorConfiguration");
         }
 
-        [Fact]
+        [Fact (Skip = "https://github.com/aspnet/AspNetCore-Tooling/pull/1122#issuecomment-530976125")]
         [InitializeTestProject("SimpleMvc11")]
         public async Task RazorSdk_DoesNotBuildViewsForNetCoreApp11Projects()
         {

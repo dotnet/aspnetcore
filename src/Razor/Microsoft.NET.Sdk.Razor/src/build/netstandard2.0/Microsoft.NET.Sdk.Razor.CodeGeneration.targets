@@ -39,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
 
-    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(RazorSdkDirectoryRoot)tools\netcoreapp3.0\rzc.dll</_RazorToolAssembly>
+    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(RazorSdkDirectoryRoot)tools\$(DefaultNetCoreTargetFramework)\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
   <!--
@@ -174,8 +174,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ResolveGeneratedRazorCompileInputs">
     <ItemGroup>
-      <RazorCompile 
-        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)" 
+      <RazorCompile
+        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)"
         Condition="'%(RazorGenerateWithTargetPath.DocumentKind)'=='mvc'" />
     </ItemGroup>
   </Target>
