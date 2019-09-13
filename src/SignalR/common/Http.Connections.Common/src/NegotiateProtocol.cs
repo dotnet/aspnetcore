@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                     writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
                 }
 
-                if (!string.IsNullOrEmpty(response.ConnectionToken))
+                if (response.Version > 0 & !string.IsNullOrEmpty(response.ConnectionToken))
                 {
                     writer.WriteString(ConnectionTokenPropertyNameBytes, response.ConnectionToken);
                 }

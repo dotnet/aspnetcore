@@ -56,9 +56,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
                 var connectionId = negotiateResponse.Value<string>("connectionId");
                 var connectionToken = negotiateResponse.Value<string>("connectionToken");
-                Assert.True(manager.TryGetConnection(connectionToken, out var connectionContext));
-                Assert.Equal(connectionToken, connectionContext.ConnectionToken);
-                Assert.Equal(connectionId, connectionToken);
+                Assert.Null(connectionToken);
+                Assert.NotNull(connectionId);
             }
         }
 
@@ -212,7 +211,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = "unknown";
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     SetTransport(context, transportType);
@@ -329,7 +328,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = "unknown";
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -367,7 +366,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -406,7 +405,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionId;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -447,7 +446,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -509,7 +508,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -576,7 +575,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -639,7 +638,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionId;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -710,7 +709,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     values["another"] = "value";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
@@ -846,7 +845,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -1465,7 +1464,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.RequestServices = sp;
                 var values = new Dictionary<string, StringValues>();
                 values["id"] = connection.ConnectionToken;
-                values["negotiationVersion"] = "1";
+                values["negotiateVersion"] = "1";
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
                 var builder = new ConnectionBuilder(sp);
@@ -1739,7 +1738,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1796,7 +1795,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1850,7 +1849,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionToken;
-                    values["negotiationVersion"] = "1";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1936,7 +1935,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Method = "GET";
                 var values = new Dictionary<string, StringValues>();
                 values["id"] = connection.ConnectionToken;
-                values["negotiationVersion"] = "1";
+                values["negotiateVersion"] = "1";
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
@@ -1966,7 +1965,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             context.Request.Method = "GET";
             var values = new Dictionary<string, StringValues>();
             values["id"] = connection.ConnectionToken;
-            values["negotiationVersion"] = "1";
+            values["negotiateVersion"] = "1";
             if (format != null)
             {
                 values["format"] = format;
