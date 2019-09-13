@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // EndInvokeJSFromDotNet is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
+        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeeded, string arguments)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId EndInvokeJSSucceeded = new EventId(206, "EndInvokeJSSucceeded");
                 public static readonly EventId DispatchEventThroughJSInterop = new EventId(207, "DispatchEventThroughJSInterop");
                 public static readonly EventId LocationChange = new EventId(208, "LocationChange");
-                public static readonly EventId LocationChangeSucceded = new EventId(209, "LocationChangeSucceeded");
+                public static readonly EventId LocationChangeSucceeded = new EventId(209, "LocationChangeSucceeded");
                 public static readonly EventId LocationChangeFailed = new EventId(210, "LocationChangeFailed");
                 public static readonly EventId LocationChangeFailedInCircuit = new EventId(211, "LocationChangeFailedInCircuit");
                 public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
@@ -647,17 +647,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             static Log()
             {
-                _intializationStarted = LoggerMessage.Define(
+                _initializationStarted = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationStarted,
                     "Circuit initialization started.");
 
-                _intializationSucceded = LoggerMessage.Define(
+                _initializationSucceeded = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationSucceeded,
                     "Circuit initialization succeeded.");
 
-                _intializationFailed = LoggerMessage.Define(
+                _initializationFailed = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationFailed,
                     "Circuit initialization failed.");
@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _disposeSucceded = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
                     EventIds.DisposeSucceeded,
-                    "Disposing circuit '{CircuitId}' succeded.");
+                    "Disposing circuit '{CircuitId}' succeeded.");
 
                 _disposeFailed = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
@@ -725,7 +725,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _unhandledExceptionClientDisconnected = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
                     EventIds.UnhandledExceptionClientDisconnected,
-                    "An exception ocurred on the circuit host '{CircuitId}' while the client is disconnected.");
+                    "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.");
 
                 _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
@@ -779,8 +779,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 _locationChangeSucceeded = LoggerMessage.Define<string, CircuitId>(
                     LogLevel.Debug,
-                    EventIds.LocationChangeSucceded,
-                    "Location change to '{URI}' in circuit '{CircuitId}' succeded.");
+                    EventIds.LocationChangeSucceeded,
+                    "Location change to '{URI}' in circuit '{CircuitId}' succeeded.");
 
                 _locationChangeFailed = LoggerMessage.Define<string, CircuitId>(
                     LogLevel.Debug,

@@ -191,7 +191,7 @@ Captured output lines:
 
         private static Process StartSentinelProcess(Process process, string sentinelFile, int timeout)
         {
-            // This sentinel process will start and will kill any roge selenium server that want' torn down
+            // This sentinel process will start and will kill any rouge selenium server that want' torn down
             // via normal means.
             var psi = new ProcessStartInfo
             {
