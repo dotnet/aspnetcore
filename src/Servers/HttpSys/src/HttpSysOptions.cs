@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     public class HttpSysOptions
     {
+        private const uint MaximumRequestQueueNameLength = 260;
         private const Http503VerbosityLevel DefaultRejectionVerbosityLevel = Http503VerbosityLevel.Basic; // Http.sys default.
         private const long DefaultRequestQueueLength = 1000; // Http.sys default.
         internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
@@ -23,9 +24,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private RequestQueue _requestQueue;
         private UrlGroup _urlGroup;
         private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
+        private string _requestQueueName;
 
         public HttpSysOptions()
         {
+        }
+
+        /// <summary>
+        /// The name of the Http.Sys request queue
+        /// </summary>
+        public string RequestQueueName
+        {
+            get => _requestQueueName;
+            set
+            {
+                if (value.Length > MaximumRequestQueueNameLength)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value),
+                                                          value,
+                                                          $"The request queue name should be fewer than {MaximumRequestQueueNameLength} characters in length");
+                }
+                _requestQueueName = value;
+            }
         }
 
         /// <summary>

@@ -64,6 +64,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             InitializeAsyncCore();
         }
 
+        protected virtual void InitializeAsyncCore()
+        {
+        }
+
         protected async Task InitializeBrowser(string isolationContext)
         {
             await _semaphore.WaitAsync(TimeSpan.FromMinutes(30));
@@ -74,69 +78,6 @@ namespace Microsoft.AspNetCore.E2ETesting
             _logs.Value = logs;
 
             Browser = browser;
-        }
-
-        protected virtual void InitializeAsyncCore()
-        {
-            // Clear logs - we check these during tests in some cases.
-            // Make sure each test starts clean.
-            ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
-        }
-
-        protected IWebElement WaitUntilExists(By findBy, int timeoutSeconds = 10, bool throwOnError = false)
-        {
-            IReadOnlyList<LogEntry> errors = null;
-            IWebElement result = null;
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(timeoutSeconds)).Until(driver =>
-            {
-                if (throwOnError && Browser.Manage().Logs.AvailableLogTypes.Contains(LogType.Browser))
-                {
-                    // Fail-fast if any errors were logged to the console.
-                    errors = Browser.GetBrowserLogs(LogLevel.Severe);
-                    if (errors.Count > 0)
-                    {
-                        return true;
-                    }
-                }
-
-                return (result = driver.FindElement(findBy)) != null;
-            });
-
-            if (errors?.Count > 0)
-            {
-                var message =
-                    $"Encountered errors while looking for '{findBy}'." + Environment.NewLine +
-                    string.Join(Environment.NewLine, errors);
-                throw new XunitException(message);
-            }
-
-            return result;
-        }
-
-        private static bool IsError(LogEntry entry)
-        {
-            if (entry.Level < LogLevel.Severe)
-            {
-                return false;
-            }
-
-            // Don't fail if we're missing the favicon, that's not super important.
-            if (entry.Message.Contains("favicon.ico"))
-            {
-                return false;
-            }
-
-            // These two messages appear sometimes, but it doesn't actually block the tests.
-            if (entry.Message.Contains("WASM: wasm streaming compile failed: TypeError: Could not download wasm module"))
-            {
-                return false;
-            }
-            if (entry.Message.Contains("WASM: falling back to ArrayBuffer instantiation"))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }

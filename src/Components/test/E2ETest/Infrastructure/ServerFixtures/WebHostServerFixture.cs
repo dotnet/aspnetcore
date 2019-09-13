@@ -3,7 +3,10 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
@@ -13,12 +16,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             Host = CreateWebHost();
             RunInBackgroundThread(Host.Start);
-            return Host.ServerFeatures
+            return Host.Services.GetRequiredService<IServer>().Features
                 .Get<IServerAddressesFeature>()
                 .Addresses.Single();
         }
 
-        public IWebHost Host { get; set; }
+        public IHost Host { get; set; }
 
         public override void Dispose()
         {
@@ -28,6 +31,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             Host?.StopAsync();
         }
 
-        protected abstract IWebHost CreateWebHost();
+        protected abstract IHost CreateWebHost();
     }
 }
