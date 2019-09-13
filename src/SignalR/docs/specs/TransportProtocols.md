@@ -12,13 +12,13 @@ A transport is required to have the following attributes:
 
 The only transport which fully implements the duplex requirement is WebSockets, the others are "half-transports" which implement one end of the duplex connection. They are used in combination to achieve a duplex connection.
 
-Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The term `[connection-id]` is used to refer to the connection ID provided by the `POST [endpoint-base]/negotiate` request.
+Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The terms `connection-id` and `connectionToken` are used to refer to the connection ID and connection token provided by the `POST [endpoint-base]/negotiate` request.
 
 **NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets non-`1000 Normal Closure` close frames; in these cases the connection should be considered to be terminated.
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. There is an optional `negotiateVersion` querystring parameter that can be added to the negotiate post request. This determines the protocol versional between the server and the client. If ommited, the version is defaulted to zero The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. There is an optional `negotiateVersion` query string parameter that can be added to the negotiate post request. This determines the protocol version between the server and the client. If omited, the version is defaulted to zero. The absence of the `negotiateVersion` parameter indicates to the server that an old client is attempting to connect to the server. Servers can configure their minimum supported protocol version which will determine how they respond to old clients. If configured to be greater than zero, an out of date client will receive an en error response indicating that the requested version is not supported by the server. If a server is configured to accept clients using protocol version 0, then both the `connectionToken` and the `connectionId` are set to the same value to ensure compatibility between the older client and the server. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
 
 1. A response that contains the `connectionToken` which will be used to identify the connection on the server and the list of the transports supported by the server. The `connectionToken` should be kept secret. It also contains the `connectionId` which is a public id  
 
@@ -26,6 +26,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
   {
     "connectionToken":"05265228-1e2c-46c5-82a1-6a5bcc3f0143",
     "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "negotiateVersion":1,
     "availableTransports":[
       {
         "transport": "WebSockets",
@@ -47,6 +48,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
   * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
   * The `connectionId` which is the id by which other clients can refer to it.
+  * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
 
@@ -138,10 +140,10 @@ Long Polling requires that the client poll the server for new messages. Unlike t
 
 A Poll is established by sending an HTTP GET request to `[endpoint-base]` with the following query string parameters
 
-* `id` (Required) - The Connection ID of the destination connection.
+* `id` (Required) - The Connection Token of the destination connection.
 
 When data is available, the server responds with a body in one of the two formats below (depending upon the value of the `Accept` header). The response may be chunked, as per the chunked encoding part of the HTTP spec.
 
 If the `id` parameter is missing, a `400 Bad Request` response is returned. If there is no connection with the ID specified in `id`, a `404 Not Found` response is returned.
 
-When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the querystring) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.
+When the client has finished with the connection, it can issue a `DELETE` request to `[endpoint-base]` (with the `id` in the query string) to gracefully terminate the connection. The server will complete the latest poll with `204` to indicate that it has shut down.
