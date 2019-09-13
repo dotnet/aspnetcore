@@ -46,7 +46,7 @@ stages:
             /p:Configuration=Release
             ${{ parameters.symbolPublishingAdditionalParameters }}
 
-  - job:
+  - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
@@ -97,14 +97,8 @@ stages:
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
-            /p:StaticInternalFeed=$(StaticInternalFeed)
-            /p:InternalChecksumsTargetStaticFeed=$(InternalChecksumsBlobFeedUrl)
-            /p:InternalChecksumsTargetStaticFeedKey=$(InternalChecksumsBlobFeedKey)
-            /p:InternalInstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
-            /p:InternalInstallersTargetStaticFeedKey=$(InternalInstallersBlobFeedKey)
             /p:NugetPath=$(NuGetExeToolPath)
             /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)'
-            /p:TargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)'
             /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)'
             /p:BARBuildId=$(BARBuildId)
             /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
@@ -118,6 +112,13 @@ stages:
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:PublishToAzureDevOpsNuGetFeeds=true
+            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+            /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+            /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+            /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml
