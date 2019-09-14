@@ -24,15 +24,13 @@
 
   <PropertyGroup Label="Versioning settings">
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
-    <BrandingVersionSuffix />
-    <BrandingVersionSuffix Condition="$(IncludePreReleaseLabelInPackageVersion)">$(PreReleaseBrandingLabel) Build $(VersionSuffix)</BrandingVersionSuffix>
+    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(VersionSuffix)</BrandingVersionSuffix>
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
-    <SiteExtensionSuffix>$(VersionSuffix.Replace('.','-'))</SiteExtensionSuffix>
-    <SiteExtensionPackageVersion>$(VersionPrefix)-$(SiteExtensionSuffix)</SiteExtensionPackageVersion>
+    <SiteExtensionSuffix>$(VersionPrefix)</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
 
-    <OriginalPackageVersion>$(Version)</OriginalPackageVersion>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
     <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
