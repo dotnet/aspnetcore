@@ -29,7 +29,7 @@
       up $(IsStableBuild) automatically; property is also used to control prerelease branding.
     -->
     <IsStableBuild>false</IsStableBuild>
-    <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
+    <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
