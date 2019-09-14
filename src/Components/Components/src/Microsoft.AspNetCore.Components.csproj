@@ -38,7 +38,7 @@
   <!-- Pack settings -->
   <PropertyGroup>
     <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
-    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp3.0.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp.nuspec</NuspecFile>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
   </PropertyGroup>
 
