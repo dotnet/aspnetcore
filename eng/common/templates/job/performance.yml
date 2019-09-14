@@ -7,7 +7,7 @@ parameters:
   container: ''                   # required -- name of the container
   osGroup: ''                     # required -- operating system for the job
   extraSetupParameters: ''        # optional -- extra arguments to pass to the setup script
-  frameworks: ['netcoreapp3.0']   # optional -- list of frameworks to run against
+  frameworks: ['netcoreapp3.1']   # optional -- list of frameworks to run against
   continueOnError: 'false'        # optional -- determines whether to continue the build if the step errors
   dependsOn: ''                   # optional -- dependencies of the job
   timeoutInMinutes: 320           # optional -- timeout for the job
@@ -20,7 +20,7 @@ jobs:
     enableTelemetry: ${{ parameters.enableTelemetry }}
     enablePublishBuildArtifacts: true
     continueOnError: ${{ parameters.continueOnError }}
-    
+
     jobs:
       - job: '${{ parameters.jobName }}'
 
@@ -51,7 +51,7 @@ jobs:
           - ${{ if ne(parameters.osGroup, 'Windows_NT') }}:
             - HelixPreCommand: 'export PERFLAB_UPLOAD_TOKEN="$(PerfCommandUploadTokenLinux)"'
             - IsInternal: --internal
-            
+
           - group: DotNet-HelixApi-Access
           - group: dotnet-benchview
 
