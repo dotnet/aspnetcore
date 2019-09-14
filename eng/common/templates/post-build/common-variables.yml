@@ -55,10 +55,6 @@ variables:
   # Feed Configurations
   # These should include the suffix "/index.json"
 
-  # Configuration for the feed where packages from internal non-stable builds will be published to
-  - name: StaticInternalFeed
-    value: 'https://dnceng.pkgs.visualstudio.com/_packaging/dotnet-core-internal/nuget/v3/index.json'
-
   # Default locations for Installers and checksums
   # Public Locations
   - name: ChecksumsBlobFeedUrl

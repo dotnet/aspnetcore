@@ -10,6 +10,7 @@
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

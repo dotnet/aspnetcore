@@ -2,7 +2,6 @@ parameters:
   symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
   publishInstallersAndChecksums: false
-  publishToAzureDevOpsFeeds: true
 
 stages:
 - stage: NetCore_Dev5_Publish
@@ -92,48 +91,36 @@ stages:
           AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-universal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
-          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
+          arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
             /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
-            /p:StaticInternalFeed=$(StaticInternalFeed)
-            /p:InternalChecksumsTargetStaticFeed=$(InternalChecksumsBlobFeedUrl)
-            /p:InternalChecksumsTargetStaticFeedKey=$(InternalChecksumsBlobFeedKey)
-            /p:InternalInstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
-            /p:InternalInstallersTargetStaticFeedKey=$(InternalInstallersBlobFeedKey)
             /p:NugetPath=$(NuGetExeToolPath)
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
-            /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
-            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
-            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
+            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-universal-packages-rw)'
+            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)'
+            /p:BARBuildId=$(BARBuildId)
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)'
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)'
+            /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/'
             /p:Configuration=Release
             /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
             /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
-            /p:PublishToAzureDevOpsNuGetFeeds=${{ parameters.publishToAzureDevOpsFeeds }}
+            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json'
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-symbols/nuget/v3/index.json'
+            /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-
-- stage: NetCore_Dev5_Publish_Validation
-  displayName: .NET Core 5 Dev Publish Validation
-  variables:
-    - template: ../common-variables.yml
-  jobs:
-  - template: ../setup-maestro-vars.yml
-
-  - template: ../promote-build.yml
-    parameters:
-      ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}
+      - template: ../../steps/promote-build.yml
+        parameters:
+          ChannelId: ${{ variables.NetCore_5_Dev_Channel_Id }}

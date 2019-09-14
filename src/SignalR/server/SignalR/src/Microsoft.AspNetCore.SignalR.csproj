@@ -3,6 +3,7 @@
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
