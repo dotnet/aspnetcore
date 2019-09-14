@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">

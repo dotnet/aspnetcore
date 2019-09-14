@@ -6,6 +6,7 @@
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
