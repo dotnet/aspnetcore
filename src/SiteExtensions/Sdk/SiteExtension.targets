@@ -5,7 +5,7 @@
 
 <Project>
 
-  <Target Name="GenerateHostingStartupDeps" Condition="'@(HostingStartupPackageReference->Count())' != '0'" BeforeTargets="_GetPackageFiles" >
+  <Target Name="GenerateHostingStartupDeps" BeforeTargets="_GetPackageFiles" >
 
     <PropertyGroup>
       <_TemplatesDirectory>$(MSBuildThisFileDirectory)..\content\</_TemplatesDirectory>
