@@ -11,7 +11,7 @@
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
-    <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsStableBuild)' == 'true' ">false</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
     <PreReleaseVersionLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">preview$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
     <PreReleaseBrandingLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
