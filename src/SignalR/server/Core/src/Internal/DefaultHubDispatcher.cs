@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
                             if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
-                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType()))
+                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer]?.GetType()))
                             {
                                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
