@@ -14,16 +14,6 @@
 
   <!-- Ensuring that everything is ready before build -->
 
-  <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-
-    <Message Condition="'$(EnforceE2ETestPrerequisites)' != 'true'"
-      Importance="High"
-      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
-
-    <Yarn Command="install --mutex network" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'"/>
-  </Target>
-
   <Target
     Name="WarnSeleniumNotSupported"
     BeforeTargets="Build"
@@ -41,7 +31,7 @@
     <!-- JAVA -->
     <!-- https://github.com/aspnet/AspNetCore-Internal/issues/2555 -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
-    <Exec Command="java -version" />
+    <!--<Exec Command="java -version" />-->
     <Message Importance="High" Text="JAVA is available on the PATH" />
 
     <!-- package.json -->
