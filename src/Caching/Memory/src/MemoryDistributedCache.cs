@@ -13,8 +13,6 @@ namespace Microsoft.Extensions.Caching.Distributed
 {
     public class MemoryDistributedCache : IDistributedCache
     {
-        private static readonly Task CompletedTask = Task.FromResult<object>(null);
-
         private readonly IMemoryCache _memCache;
 
         public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor)
@@ -99,7 +97,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Set(key, value, options);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Refresh(string key)
@@ -120,7 +118,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Refresh(key);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Remove(string key)
@@ -141,7 +139,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Remove(key);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }
