@@ -12,5 +12,9 @@
     <DebianPackageArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</DebianPackageArch>
 
     <DebianBuildScript>$(MSBuildThisFileDirectory)tools/build.sh</DebianBuildScript>
+
+    <!-- All installers are shipping assets. -->
+    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 </Project>
