@@ -18,9 +18,9 @@
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
-      TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
