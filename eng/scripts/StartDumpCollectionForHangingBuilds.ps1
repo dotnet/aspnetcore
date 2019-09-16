@@ -61,7 +61,7 @@ $JobName = "CaptureDumps" + (New-Guid).ToString("N");
 
 # Ensure that the dumps output path exists.
 if ((-not (Test-Path $ProcDumpOutputPath))) {
-  New-Item -ItemType Directory $ProcDumpOutputPath;
+  New-Item -ItemType Directory $ProcDumpOutputPath | Out-Null;
 }
 
 # We write a sentinel file that we use at the end of the build to
