@@ -59,9 +59,17 @@ namespace Microsoft.AspNetCore.Testing
 
         protected override Task<RunSummary> RunTestClassAsync(ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
         {
-            var caste = testCases.ToArray();
-            var type = caste.First().GetType();
-            return base.RunTestClassAsync(testClass, @class, testCases);
+            var runner = new AspNetTestClassRunner(
+                testClass,
+                @class,
+                testCases,
+                DiagnosticMessageSink,
+                MessageBus,
+                TestCaseOrderer,
+                new ExceptionAggregator(Aggregator),
+                CancellationTokenSource,
+                CollectionFixtureMappings);
+            return runner.RunAsync();
         }
     }
 }
