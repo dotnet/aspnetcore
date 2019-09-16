@@ -622,17 +622,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
         }
 
-        protected override async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
+        protected override async ValueTask ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
         {
             await application.ProcessRequestAsync(context);
         }
 
-        protected override async Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
+        protected override async ValueTask FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
         {
             await base.FireOnStartingMayAwait(onStarting);
         }
 
-        protected override async Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        protected override async ValueTask FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             await base.FireOnCompletedMayAwait(onCompleted);
         }

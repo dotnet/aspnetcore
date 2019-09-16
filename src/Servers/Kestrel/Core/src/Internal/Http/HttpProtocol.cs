@@ -707,9 +707,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected virtual Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
+        protected virtual ValueTask ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
         {
-            return application.ProcessRequestAsync(context);
+            return new ValueTask(application.ProcessRequestAsync(context));
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
@@ -735,13 +735,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
-        protected Task FireOnStarting()
+        protected ValueTask FireOnStarting()
         {
             var onStarting = _onStarting;
 
             if (onStarting == null || onStarting.Count == 0)
             {
-                return Task.CompletedTask;
+                return default;
             }
             else
             {
@@ -749,7 +749,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected virtual Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
+        protected virtual ValueTask FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
         {
             try
             {
@@ -767,10 +767,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ReportApplicationError(ex);
             }
 
-            return Task.CompletedTask;
+            return default;
         }
 
-        private async Task FireOnStartingAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
+        private async ValueTask FireOnStartingAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
         {
             try
             {
@@ -787,19 +787,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected Task FireOnCompleted()
+        protected ValueTask FireOnCompleted()
         {
             var onCompleted = _onCompleted;
 
             if (onCompleted == null || onCompleted.Count == 0)
             {
-                return Task.CompletedTask;
+                return default;
             }
 
             return FireOnCompletedMayAwait(onCompleted);
         }
 
-        protected virtual Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        protected virtual ValueTask FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             while (onCompleted.TryPop(out var entry))
             {
@@ -817,10 +817,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            return Task.CompletedTask;
+            return default;
         }
 
-        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private async ValueTask FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             try
             {
@@ -949,7 +949,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public async Task InitializeResponseAwaited(Task startingTask, int firstWriteByteCount)
+        public async Task InitializeResponseAwaited(ValueTask startingTask, int firstWriteByteCount)
         {
             await startingTask;
 
@@ -1434,7 +1434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Task.CompletedTask;
         }
 
-        private async Task CompleteAsyncAwaited(Task onStartingTask)
+        private async Task CompleteAsyncAwaited(ValueTask onStartingTask)
         {
             await onStartingTask;
 
@@ -1504,7 +1504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FirstWriteAsyncInternal(data, cancellationToken);
         }
 
-        private async ValueTask<FlushResult> FirstWriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> FirstWriteAsyncAwaited(ValueTask initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             await initializeTask;
 
