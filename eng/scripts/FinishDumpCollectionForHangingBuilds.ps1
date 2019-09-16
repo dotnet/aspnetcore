@@ -48,7 +48,7 @@ if ($null -eq $dumpCollectionJob) {
 }
 
 Write-Output "Listing existing jobs";
-Get-Job
+Get-Job -Name CaptureDumps*
 
 Write-Output "Listing existing scheduled jobs";
 Get-ScheduledJob -Name CaptureDumps*
