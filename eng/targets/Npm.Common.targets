@@ -20,16 +20,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
-    <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
-    <TSFiles Include="$(MSBuildProjectDirectory)\*.npmproj" />
+    <TSFiles Include="src\**\*.ts" />
+    <TSFiles Include="test\**\*.ts" />
+    <TSFiles Include="package.json" />
+    <TSFiles Include="*.npmproj" />
   </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
 
-    <Exec ContinueOnError="true" Command="node -v">
-       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    <Exec ContinueOnError="true" Command="node -v" StandardOutputImportance="Low">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
 
     <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with /p:BuildNodeJs=false. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
@@ -56,7 +57,7 @@
   <Target Name="_Build"
     Condition="'$(IsBuildable)' != 'false'"
     Inputs="@(TSFiles)"
-    Outputs="$(BaseIntermediateOutputPath)\build-sentinel" >
+    Outputs="$(BaseIntermediateOutputPath)\build-sentinel;@(BuildOutputFiles)">
     <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
   </Target>
@@ -73,7 +74,10 @@
     </PackDependsOn>
   </PropertyGroup>
 
-  <Target Name="_Pack" Condition="'$(IsPackable)' == 'true'" >
+  <Target Name="_Pack" Condition="'$(IsPackable)' == 'true'"
+      Inputs="@(TSFiles)"
+      Outputs="$(PackageOutputPath)\$(PackageFileName)">
+
     <PropertyGroup>
       <_PackageTargetPath>$(MSBuildProjectDirectory)\$(PackageFileName)</_PackageTargetPath>
     </PropertyGroup>
