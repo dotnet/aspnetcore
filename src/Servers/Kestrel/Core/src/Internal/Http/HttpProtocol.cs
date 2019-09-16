@@ -615,7 +615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     KestrelEventSource.Log.RequestStart(this);
 
                     // Run the application code for this request
-                    await application.ProcessRequestAsync(context);
+                    await ProcessRequestAsync(application, context);
 
                     // Trigger OnStarting if it hasn't been called yet and the app hasn't
                     // already failed. If an OnStarting callback throws we can go through
@@ -707,6 +707,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        protected virtual Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
+        {
+            return application.ProcessRequestAsync(context);
+        }
+
         public void OnStarting(Func<object, Task> callback, object state)
         {
             if (HasResponseStarted)
@@ -744,7 +749,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
+        protected virtual Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
         {
             try
             {
@@ -794,7 +799,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FireOnCompletedMayAwait(onCompleted);
         }
 
-        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        protected virtual Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             while (onCompleted.TryPop(out var entry))
             {

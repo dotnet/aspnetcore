@@ -3,12 +3,14 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -618,6 +620,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Reset the features and timeout.
             Reset();
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
+        }
+
+        protected override async Task ProcessRequestAsync<TContext>(IHttpApplication<TContext> application, TContext context)
+        {
+            await application.ProcessRequestAsync(context);
+        }
+
+        protected override async Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
+        {
+            await base.FireOnStartingMayAwait(onStarting);
+        }
+
+        protected override async Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            await base.FireOnCompletedMayAwait(onCompleted);
         }
 
         protected override bool BeginRead(out ValueTask<ReadResult> awaitable)

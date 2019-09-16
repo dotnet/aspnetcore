@@ -254,6 +254,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ExecutionContextDoesNotLeakAcrossRequestsOnSameConnection()
+        {
+            var local = new AsyncLocal<int>();
+
+            // It's important this method isn't async as that will revert the ExecutionContext
+            Task ExecuteApplication(HttpContext context)
+            {
+                var value = local.Value;
+                Assert.Equal(0, value);
+                local.Value++;
+
+                context.Response.ContentLength = 1;
+                return context.Response.WriteAsync(value.ToString());
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+            await using (var server = new TestServer(ExecuteApplication, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 1",
+                        "",
+                        "0");
+
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 1",
+                        "",
+                        "0");
+                }
+            }
+        }
+
+        [Fact]
         public async Task AppCanSetTraceIdentifier()
         {
             const string knownId = "xyz123";
