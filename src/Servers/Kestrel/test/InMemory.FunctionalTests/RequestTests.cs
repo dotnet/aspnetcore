@@ -265,6 +265,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(0, value);
                 local.Value++;
 
+                context.Response.OnStarting(() =>
+                {
+                    local.Value++;
+                    return Task.CompletedTask;
+                });
+
+                context.Response.OnCompleted(() =>
+                {
+                    local.Value++;
+                    return Task.CompletedTask;
+                });
+
                 context.Response.ContentLength = 1;
                 return context.Response.WriteAsync(value.ToString());
             }
