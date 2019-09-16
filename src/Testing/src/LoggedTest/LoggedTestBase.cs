@@ -6,12 +6,16 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
-    public class LoggedTestBase : ILoggedTest
+    public class LoggedTestBase : ILoggedTest, ITestMethodLifecycle
     {
         private ExceptionDispatchInfo _initializationException;
 
@@ -23,10 +27,10 @@ namespace Microsoft.Extensions.Logging.Testing
             TestOutputHelper = output;
         }
 
+        protected TestContext Context { get; private set; }
+
         // Internal for testing
         internal string ResolvedTestClassName { get; set; }
-
-        internal RepeatContext RepeatContext { get; set; }
 
         public string ResolvedLogOutputDirectory { get; set; }
 
@@ -49,7 +53,7 @@ namespace Microsoft.Extensions.Logging.Testing
             return AssemblyTestLog.ForAssembly(GetType().GetTypeInfo().Assembly).StartTestLog(TestOutputHelper, GetType().FullName, out loggerFactory, minLogLevel, testName);
         }
 
-        public virtual void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public virtual void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             try
             {
@@ -59,25 +63,22 @@ namespace Microsoft.Extensions.Logging.Testing
                 var logLevelAttribute = methodInfo.GetCustomAttribute<LogLevelAttribute>()
                                         ?? methodInfo.DeclaringType.GetCustomAttribute<LogLevelAttribute>()
                                         ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<LogLevelAttribute>();
-                var testName = testMethodArguments.Aggregate(methodInfo.Name, (a, b) => $"{a}-{(b ?? "null")}");
 
-                var useShortClassName = methodInfo.DeclaringType.GetCustomAttribute<ShortClassNameAttribute>()
-                                        ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<ShortClassNameAttribute>();
                 // internal for testing
-                ResolvedTestClassName = useShortClassName == null ? classType.FullName : classType.Name;
+                ResolvedTestClassName = context.FileOutput.TestClassName;
 
                 _testLog = AssemblyTestLog
                     .ForAssembly(classType.GetTypeInfo().Assembly)
                     .StartTestLog(
                         TestOutputHelper,
-                        ResolvedTestClassName,
+                        context.FileOutput.TestClassName,
                         out var loggerFactory,
                         logLevelAttribute?.LogLevel ?? LogLevel.Debug,
                         out var resolvedTestName,
-                        out var logOutputDirectory,
-                        testName);
+                        out var logDirectory,
+                        context.FileOutput.TestName);
 
-                ResolvedLogOutputDirectory = logOutputDirectory;
+                ResolvedLogOutputDirectory = logDirectory;
                 ResolvedTestMethodName = resolvedTestName;
 
                 LoggerFactory = loggerFactory;
@@ -91,7 +92,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public virtual void Dispose()
         {
-            if(_testLog == null)
+            if (_testLog == null)
             {
                 // It seems like sometimes the MSBuild goop that adds the test framework can end up in a bad state and not actually add it
                 // Not sure yet why that happens but the exception isn't clear so I'm adding this error so we can detect it better.
@@ -101,6 +102,20 @@ namespace Microsoft.Extensions.Logging.Testing
 
             _initializationException?.Throw();
             _testLog.Dispose();
+        }
+
+        Task ITestMethodLifecycle.OnTestStartAsync(TestContext context, CancellationToken cancellationToken)
+        {
+
+            Context = context;
+
+            Initialize(context, context.TestMethod, context.MethodArguments, context.Output);
+            return Task.CompletedTask;
+        }
+
+        Task ITestMethodLifecycle.OnTestEndAsync(TestContext context, Exception exception, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

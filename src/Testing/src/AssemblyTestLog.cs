@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Core;
@@ -23,14 +24,6 @@ namespace Microsoft.Extensions.Logging.Testing
         private static readonly string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
         private static readonly string LogFileExtension = ".log";
         private static readonly int MaxPathLength = GetMaxPathLength();
-        private static char[] InvalidFileChars = new char[]
-        {
-            '\"', '<', '>', '|', '\0',
-            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
-            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
-            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
-            (char)31, ':', '*', '?', '\\', '/', ' ', (char)127
-        };
 
         private static readonly object _lock = new object();
         private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new Dictionary<Assembly, AssemblyTestLog>();
@@ -113,8 +106,8 @@ namespace Microsoft.Extensions.Logging.Testing
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                logOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_baseDirectory, _assembly), className);
-                testName = RemoveIllegalFileChars(testName);
+                logOutputDirectory = Path.Combine(_baseDirectory, className);
+                testName = TestFileOutputContext.RemoveIllegalFileChars(testName);
 
                 if (logOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
                 {
@@ -184,10 +177,10 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             var logStart = DateTimeOffset.UtcNow;
             SerilogLoggerProvider serilogLoggerProvider = null;
-            var globalLogDirectory = GetAssemblyBaseDirectory(baseDirectory, assembly);
-            if (!string.IsNullOrEmpty(globalLogDirectory))
+            if (!string.IsNullOrEmpty(baseDirectory))
             {
-                var globalLogFileName = Path.Combine(globalLogDirectory, "global.log");
+                baseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly, baseDirectory);
+                var globalLogFileName = Path.Combine(baseDirectory, "global.log");
                 serilogLoggerProvider = ConfigureFileLogging(globalLogFileName, logStart);
             }
 
@@ -222,30 +215,25 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
-                    var baseDirectory = GetFileLoggerAttribute(assembly).BaseDirectory;
+                    var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
 
                     log = Create(assembly, baseDirectory);
                     _logs[assembly] = log;
 
-                    // Try to clear previous logs
-                    var assemblyBaseDirectory = GetAssemblyBaseDirectory(baseDirectory, assembly);
-                    if (Directory.Exists(assemblyBaseDirectory))
+                    // Try to clear previous logs, continue if it fails.
+                    var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
+                    if (!string.IsNullOrEmpty(assemblyBaseDirectory))
                     {
                         try
                         {
                             Directory.Delete(assemblyBaseDirectory, recursive: true);
                         }
-                        catch {}
+                        catch { }
                     }
                 }
                 return log;
             }
         }
-
-        private static string GetAssemblyBaseDirectory(string baseDirectory, Assembly assembly)
-            => string.IsNullOrEmpty(baseDirectory)
-                ? string.Empty
-                : Path.Combine(baseDirectory, assembly.GetName().Name, GetFileLoggerAttribute(assembly).TFM);
 
         private static TestFrameworkFileLoggerAttribute GetFileLoggerAttribute(Assembly assembly)
             => assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()
@@ -273,27 +261,6 @@ namespace Microsoft.Extensions.Logging.Testing
                 .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
             return new SerilogLoggerProvider(serilogger, dispose: true);
-        }
-
-        private static string RemoveIllegalFileChars(string s)
-        {
-            var sb = new StringBuilder();
-
-            foreach (var c in s)
-            {
-                if (InvalidFileChars.Contains(c))
-                {
-                    if (sb.Length > 0 && sb[sb.Length - 1] != '_')
-                    {
-                        sb.Append('_');
-                    }
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            return sb.ToString();
         }
 
         public void Dispose()
