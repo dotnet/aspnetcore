@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <!-- Ensuring that everything is ready before build -->
-
   <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
 
