@@ -24,6 +24,9 @@
     <TSFiles Include="test\**\*.ts" />
     <TSFiles Include="package.json" />
     <TSFiles Include="*.npmproj" />
+
+    <BuildOutputFiles Include="$(BaseIntermediateOutputPath)\build-sentinel" />
+    <BuildOutputFiles Include="dist\**\*.js" />
   </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
@@ -54,12 +57,25 @@
     <CallTarget Targets="_Pack" Condition="'$(PackOnBuild)' == 'true'" />
   </Target>
 
+  <Target Name="GetBuildInputCacheFile">
+    <Hash ItemsToHash="@(TSFiles)">
+      <Output TaskParameter="HashResult" PropertyName="_TSFileHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_TSFileHash)"
+      File="$(BaseIntermediateOutputPath)tsfiles.cache"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+  </Target>
+
   <Target Name="_Build"
     Condition="'$(IsBuildable)' != 'false'"
-    Inputs="@(TSFiles)"
-    Outputs="$(BaseIntermediateOutputPath)\build-sentinel;@(BuildOutputFiles)">
+    DependsOnTargets="GetBuildInputCacheFile"
+    Inputs="@(TSFiles);$(BaseIntermediateOutputPath)tsfiles.cache"
+    Outputs="@(BuildOutputFiles)">
     <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
-    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 
   <PropertyGroup>
