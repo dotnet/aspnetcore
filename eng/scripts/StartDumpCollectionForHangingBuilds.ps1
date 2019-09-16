@@ -6,7 +6,7 @@ param(
   [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $ProcDumpDumpFolderPath,
+  $ProcDumpOutputPath,
   [Parameter(Mandatory = $true)]
   [datetime]
   $WakeTime,
@@ -26,8 +26,19 @@ else {
 }
 
 try {
-  Get-Job -Name CaptureDumps* | Stop-Job -PassThru | Remove-Job;
-  Get-ScheduledJob CaptureDumps* | Unregister-ScheduledJob;
+  $previousJobs = Get-Job -Name CaptureDumps* -ErrorAction SilentlyContinue;
+  $previousScheduledJobs = Get-ScheduledJob CaptureDumps* -ErrorAction SilentlyContinue;
+
+  if ($previousJobs.Count -ne 0) {
+    Write-Output "Found existing dump jobs.";
+  }
+
+  if ($previousScheduledJobs.Count -ne 0) {
+    Write-Output "Found existing dump jobs.";
+  }
+
+  $previousJobs | Stop-Job -PassThru | Remove-Job;
+  $previousScheduledJobs | Unregister-ScheduledJob;
 }
 catch {
   Write-Output "There was an error cleaning up previous jobs.";
@@ -35,34 +46,34 @@ catch {
 }
 
 $repoRoot = Resolve-Path "$PSScriptRoot\..\..";
-$ProcDumpDumpFolderPath = Join-Path $repoRoot $ProcDumpDumpFolderPath;
+$ProcDumpOutputPath = Join-Path $repoRoot $ProcDumpOutputPath;
 
-Write-Output "Dumps will be placed at '$ProcDumpDumpFolderPath'.";
+Write-Output "Dumps will be placed at '$ProcDumpOutputPath'.";
 Write-Output "Watching processes $($CandidateProcessNames -join ', ')";
 
-# This script registers as a scheduled job. This scheduled job executes after two hours.
+# This script registers as a scheduled job. This scheduled job executes after $WakeTime.
 # When the scheduled job executes, it runs procdump on all alive processes whose name matches $CandidateProcessNames.
-# The dumps are placed in $ProcDumpDumpFolderPath
-# If the build completes sucessfully in less than two hours, a final step unregisters the job.
+# The dumps are placed in $ProcDumpOutputPath
+# If the build completes sucessfully in less than $WakeTime, a final step unregisters the job.
 
 # Create a unique identifier for the job name
 $JobName = "CaptureDumps" + (New-Guid).ToString("N");
 
-# Ensure that all the folders we need exist, by default the layout will be something like
-# <<root>>/dumps
-
-if ((-not (Test-Path $ProcDumpDumpFolderPath))) {
-  New-Item -ItemType Directory $ProcDumpDumpFolderPath;
+# Ensure that the dumps output path exists.
+if ((-not (Test-Path $ProcDumpOutputPath))) {
+  New-Item -ItemType Directory $ProcDumpOutputPath;
 }
 
-# We write a sentinel file that we use at the end of the build to determine if there were build errors or the build hanged.
-$sentinelFile = Join-Path $ProcDumpDumpFolderPath "dump-sentinel.txt";
+# We write a sentinel file that we use at the end of the build to
+# find the job we started and to determine the results from the sheduled
+# job (Whether it ran or not and to display the outputs form the job)
+$sentinelFile = Join-Path $ProcDumpOutputPath "dump-sentinel.txt";
 Out-File -FilePath $sentinelFile -InputObject $JobName | Out-Null;
 
 [scriptblock] $ScriptCode = {
   param(
     $ProcDumpPath,
-    $ProcDumpDumpFolderPath,
+    $ProcDumpOutputPath,
     $CandidateProcessNames)
 
   Write-Output "Waking up to capture process dumps. Determining hanging processes.";
@@ -81,13 +92,13 @@ Out-File -FilePath $sentinelFile -InputObject $JobName | Out-Null;
 
   Write-Output "Starting process dump capture.";
 
-  $dumpFullPath = [System.IO.Path]::Combine($ProcDumpDumpFolderPath, "HUNG_PROCESSNAME_PID_YYMMDD_HHMMSS.DMP");
+  $dumpFullPath = [System.IO.Path]::Combine($ProcDumpOutputPath, "hung_PROCESSNAME_PID_YYMMDD_HHMMSS.dmp");
 
   Write-Output "Capturing output for $($AliveProcesses.Length) processes.";
 
   foreach ($process in $AliveProcesses) {
 
-    $procDumpArgs = @("-accepteula","-ma", $process.Id, $dumpFullPath);
+    $procDumpArgs = @("-accepteula", "-ma", $process.Id, $dumpFullPath);
     try {
       Write-Output "Capturing dump for dump for '$($process.Name)' with PID '$($process.Id)'.";
       Start-Process -FilePath $ProcDumpPath -ArgumentList $procDumpArgs -NoNewWindow -Wait;
@@ -104,7 +115,7 @@ Out-File -FilePath $sentinelFile -InputObject $JobName | Out-Null;
 $ScriptTrigger = New-JobTrigger -Once -At $WakeTime;
 
 try {
-  Register-ScheduledJob -Name $JobName -ScriptBlock $ScriptCode -Trigger $ScriptTrigger -ArgumentList $ProcDumpPath, $ProcDumpDumpFolderPath, $CandidateProcessNames;
+  Register-ScheduledJob -Name $JobName -ScriptBlock $ScriptCode -Trigger $ScriptTrigger -ArgumentList $ProcDumpPath, $ProcDumpOutputPath, $CandidateProcessNames;
 }
 catch {
   Write-Warning "Failed to register scheduled job '$JobName'. Dumps will not be captured for build hangs.";

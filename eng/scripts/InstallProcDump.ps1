@@ -2,7 +2,7 @@
 .SYNOPSIS
     Installs ProcDump into a folder in this repo.
 .DESCRIPTION
-    This script downloads an extracts the ProcDump.
+    This script downloads and extracts the ProcDump.
 .PARAMETER Force
     Overwrite the existing installation
 #>

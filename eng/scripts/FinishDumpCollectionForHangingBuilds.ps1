@@ -2,23 +2,24 @@ param(
   [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
   [string]
-  $ProcDumpDumpFolderPath
+  $ProcDumpOutputPath
 )
 
 Write-Output "Finishing dump collection for hanging builds.";
 
 $repoRoot = Resolve-Path "$PSScriptRoot\..\..";
-$ProcDumpDumpFolderPath = Join-Path $repoRoot $ProcDumpDumpFolderPath;
+$ProcDumpOutputPath = Join-Path $repoRoot $ProcDumpOutputPath;
 
-$sentinelFile = Join-Path $ProcDumpDumpFolderPath "dump-sentinel.txt";
+$sentinelFile = Join-Path $ProcDumpOutputPath "dump-sentinel.txt";
 if ((-not (Test-Path $sentinelFile))) {
-  Write-Output "No sentinel file available in '$sentinelFile'.";
+  Write-Output "No sentinel file available in '$sentinelFile'. " +
+    "StartDumpCollectionForHangingBuilds.ps1 has not been executed, is not correctly configured or failed before creating the sentinel file.";
   return;
 }
 
 Get-Process "procdump" -ErrorAction SilentlyContinue | ForEach-Object { Write-Output "ProcDump with PID $($_.Id) is still running."; };
 
-$capturedDumps = Get-ChildItem $ProcDumpDumpFolderPath -Filter *.dmp;
+$capturedDumps = Get-ChildItem $ProcDumpOutputPath -Filter *.dmp;
 $capturedDumps | ForEach-Object { Write-Output "Found captured dump $_"; };
 
 $JobName = (Get-Content $sentinelFile);
@@ -46,12 +47,13 @@ if ($null -eq $dumpCollectionJob) {
   return;
 }
 
-Write-Host "Listing existing jobs";
+Write-Output "Listing existing jobs";
 Get-Job
-Write-Host "Listing existing scheduled jobs";
+
+Write-Output "Listing existing scheduled jobs";
 Get-ScheduledJob
 
-Write-Host "Displaying job output";
+Write-Output "Displaying job output";
 Receive-Job $dumpCollectionJob;
 
 Write-Output "Waiting for current job to finish";
