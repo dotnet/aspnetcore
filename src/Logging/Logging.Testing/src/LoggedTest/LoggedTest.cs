@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
@@ -13,9 +14,9 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public ITestSink TestSink { get; set; }
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             TestSink = new TestSink();
             LoggerFactory.AddProvider(new TestLoggerProvider(TestSink));

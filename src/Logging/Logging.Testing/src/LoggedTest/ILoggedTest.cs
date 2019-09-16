@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
@@ -18,6 +19,6 @@ namespace Microsoft.Extensions.Logging.Testing
         // For back compat
         IDisposable StartLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, string testName);
 
-        void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper);
+        void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper);
     }
 }

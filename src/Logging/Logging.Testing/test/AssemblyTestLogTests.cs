@@ -19,12 +19,6 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         private static readonly string TFM = new DirectoryInfo(AppContext.BaseDirectory).Name;
 
         [Fact]
-        public void FullClassNameUsedWhenShortClassNameAttributeNotSpecified()
-        {
-            Assert.Equal(GetType().FullName, ResolvedTestClassName);
-        }
-
-        [Fact]
         public void ForAssembly_ReturnsSameInstanceForSameAssembly()
         {
             Assert.Same(
@@ -57,7 +51,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         }
 
         [Fact]
-        private Task TestLogEscapesIllegalFileNames() =>
+        public Task TestLogEscapesIllegalFileNames() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
                 var illegalTestName = "T:e/s//t";
