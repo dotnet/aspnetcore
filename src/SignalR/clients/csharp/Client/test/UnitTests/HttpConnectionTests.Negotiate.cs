@@ -37,6 +37,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public Task NegotiateResponseWithNegotiateVersionRequiresConnectionToken()
+            {
+                return RunInvalidNegotiateResponseTest<InvalidDataException>(ResponseUtils.CreateNegotiationContent(negotiateVersion: 1, connectionToken: null), "Invalid negotiation response received.");
+            }
+
+            [Fact]
             public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer()
             {
                 return RunInvalidNegotiateResponseTest<AggregateException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.ServerSentEvents),
@@ -154,6 +160,87 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+            }
+
+            [Fact]
+            public async Task ConnectionIdGetsSetWithNegotiateProtocolGreaterThanZero()
+            {
+                string connectionId = null;
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    JsonConvert.SerializeObject(new
+                    {
+                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        negotiateVersion = 1,
+                        connectionToken = "different-id",
+                        availableTransports = new object[]
+                        {
+                            new
+                            {
+                                transport = "LongPolling",
+                                transferFormats = new[] { "Text" }
+                            },
+                        },
+                        newField = "ignore this",
+                    })));
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                            connectionId = connection.ConnectionId;
+                        });
+                }
+
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?negotiateVersion=1&id=different-id", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+            }
+
+            [Fact]
+            public async Task ConnectionTokenFieldIsIgnoredForNegotiateIdLessThanOne()
+            {
+                string connectionId = null;
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    JsonConvert.SerializeObject(new
+                    {
+                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        connectionToken = "different-id",
+                        availableTransports = new object[]
+                        {
+                            new
+                            {
+                                transport = "LongPolling",
+                                transferFormats = new[] { "Text" }
+                            },
+                        },
+                        newField = "ignore this",
+                    })));
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                            connectionId = connection.ConnectionId;
+                        });
+                }
+
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
             }
 
             [Fact]
