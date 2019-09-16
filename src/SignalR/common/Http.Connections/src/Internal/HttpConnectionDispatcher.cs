@@ -59,7 +59,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
             // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
             // be set a little later.
-            var logScope = new ConnectionLogScope(GetConnectionToken(context));
+
+            HttpConnectionContext connectionContext = null;
+            var connectionToken = GetConnectionToken(context);
+            if (connectionToken != null)
+            {
+                _manager.TryGetConnection(GetConnectionToken(context), out connectionContext);
+            }
+
+            var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
             using (_logger.BeginScope(logScope))
             {
                 if (HttpMethods.IsPost(context.Request.Method))
@@ -293,7 +301,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
 
             // Establish the connection
-            var connection = CreateConnection(options, context, clientProtocolVersion, error);
+            HttpConnectionContext connection = null;
+            if (error == null)
+            {
+                connection = CreateConnection(options, clientProtocolVersion);
+            }
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -689,7 +701,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionToken))
             {
-                connection = CreateConnection(options, context);
+                connection = CreateConnection(options);
             }
             else if (!_manager.TryGetConnection(connectionToken, out connection))
             {
@@ -702,12 +714,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return connection;
         }
 
-        private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, HttpContext context, int clientProtocolVersion = 0, string error = null)
+        private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0)
         {
-            if (error != null)
-            {
-                return null;
-            }
             var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             return _manager.CreateConnection(transportPipeOptions, appPipeOptions, clientProtocolVersion);

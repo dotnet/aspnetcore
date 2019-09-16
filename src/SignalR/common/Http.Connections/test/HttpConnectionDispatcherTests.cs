@@ -933,7 +933,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-         public async Task CompletedEndPointEndsConnection()
+        public async Task CompletedEndPointEndsConnection()
         {
             using (StartVerifiableLog())
             {
