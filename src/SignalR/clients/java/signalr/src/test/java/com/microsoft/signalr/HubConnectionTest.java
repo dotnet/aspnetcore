@@ -1776,6 +1776,32 @@ class HubConnectionTest {
     }
 
     @Test
+    public void connectionTokenApearsInQSConnectionIdIsOnConnectionInstance() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                                "\"connectionToken\":\"connection-token-value\"," +
+                                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
+        assertEquals("http://example.com?negotiateVersion=1&id=connection-token-value", transport.getUrl());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+    }
+
+    @Test
     public void afterSuccessfulNegotiateConnectsWithWebsocketsTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
@@ -2046,8 +2072,9 @@ class HubConnectionTest {
             .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")))
             .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                 token.set(req.getHeaders().get("Authorization"));
-                return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                        + "\"connectionToken\":\"connection-token-value\","
+                        + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
             });
 
         MockTransport transport = new MockTransport(true);
@@ -2060,7 +2087,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        assertEquals("http://testexample.com/?negotiateVersion=1&id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
+        assertEquals("http://testexample.com/?negotiateVersion=1&id=connection-token-value", transport.getUrl());
         hubConnection.stop();
         assertEquals("Bearer newToken", token.get());
     }
@@ -2077,8 +2104,8 @@ class HubConnectionTest {
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                            + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
                 });
 
         MockTransport transport = new MockTransport(true);

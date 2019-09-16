@@ -57,6 +57,7 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
+    private String connectionToken; // Use this!
     private int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
@@ -385,6 +386,7 @@ public class HubConnection {
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
                             this.connectionId = negotiateResponse.getConnectionId();
+                            this.connectionToken = negotiateResponse.getConnectionToken();
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
@@ -455,23 +457,23 @@ public class HubConnection {
                 }
 
                 String finalUrl = url;
-                if (response.getConnectionId() != null) {
+                if (response.getConnectionToken() != null) {
                     if (url.contains("?")) {
-                        finalUrl = url + "&id=" + response.getConnectionId();
+                        finalUrl = url + "&id=" + response.getConnectionToken();
                     } else {
-                        finalUrl = url + "?id=" + response.getConnectionId();
+                        finalUrl = url + "?id=" + response.getConnectionToken();
                     }
                 }
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }
-            String redirecturl = "";
+            String redirectUrl = "";
             if (response.getRedirectUrl().contains("?")) {
-                redirecturl = response.getRedirectUrl() + "&negotiateVersion=" + negotiateVersion;
+                redirectUrl = response.getRedirectUrl() + "&negotiateVersion=" + negotiateVersion;
             } else {
-                redirecturl = response.getRedirectUrl() + "?negotiateVersion=" + negotiateVersion;
+                redirectUrl = response.getRedirectUrl() + "?negotiateVersion=" + negotiateVersion;
             }
-            return startNegotiate(redirecturl, negotiateAttempts + 1);
+            return startNegotiate(redirectUrl, negotiateAttempts + 1);
         });
     }
 
@@ -533,6 +535,7 @@ public class HubConnection {
             handshakeResponseSubject.onComplete();
             redirectAccessTokenProvider = null;
             connectionId = null;
+            connectionToken = null;
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
             this.streamMap.clear();

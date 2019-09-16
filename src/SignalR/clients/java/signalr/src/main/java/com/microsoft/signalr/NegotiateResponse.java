@@ -11,6 +11,7 @@ import com.google.gson.stream.JsonReader;
 
 class NegotiateResponse {
     private String connectionId;
+    private String connectionToken;
     private Set<String> availableTransports = new HashSet<>();
     private String redirectUrl;
     private String accessToken;
@@ -33,6 +34,9 @@ class NegotiateResponse {
                         return;
                     case "negotiateVersion":
                         this.version = reader.nextInt();
+                        break;
+                    case "connectionToken":
+                        this.connectionToken = reader.nextString();
                         break;
                     case "url":
                         this.redirectUrl = reader.nextString();
@@ -112,6 +116,10 @@ class NegotiateResponse {
 
     public int getVersion() {
         return version;
+    }
+
+    public String getConnectionToken() {
+        return connectionToken;
     }
 
     public void setFinalUrl(String url) {
