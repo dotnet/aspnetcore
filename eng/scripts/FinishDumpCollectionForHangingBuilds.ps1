@@ -51,7 +51,7 @@ Write-Output "Listing existing jobs";
 Get-Job
 
 Write-Output "Listing existing scheduled jobs";
-Get-ScheduledJob
+Get-ScheduledJob -Name CaptureDumps*
 
 Write-Output "Displaying job output";
 Receive-Job $dumpCollectionJob;
