@@ -10,10 +10,17 @@
     <AspNetCoreMinorVersion>1</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
+
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
-    <PreReleaseVersionLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">preview$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel Condition="$(IncludePreReleaseLabelInPackageVersion)">Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
+    <PreReleaseVersionLabel>preview$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel>Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
     <!-- Additional assembly attributes are already configured to include the source revision ID. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

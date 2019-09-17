@@ -46,8 +46,8 @@
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT'" />
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
-        <IsShipping>false</IsShipping>
-        <ManifestArtifactData>NonShipping=true;ShipInstaller=dotnetcli</ManifestArtifactData>
+        <IsShipping>true</IsShipping>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/%(_InstallersToPublish.UploadPathSegment)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
