@@ -2,7 +2,7 @@
   <PropertyGroup>
     <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
-    <ProcDumpFolderPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)','dumps'))</ProcDumpFolderPath>
+    <ProcDumpFolderPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)','log'))</ProcDumpFolderPath>
     <SeleniumScreenShotsFolderPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)','$(MSBuildProjectName)'))</SeleniumScreenShotsFolderPath>
     <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\selenium\</SeleniumProcessTrackingFolder>
     <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
@@ -40,12 +40,12 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.CI</_Parameter1>
-      <_Parameter2>$(ContinuousIntegrationBuild)</_Parameter2>      
+      <_Parameter2>$(ContinuousIntegrationBuild)</_Parameter2>
     </AssemblyAttribute>
-    
+
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Microsoft.AspNetCore.E2ETesting.ScreenshotsPath</_Parameter1>
-      <_Parameter2>$(SeleniumScreenShotsFolderPath)</_Parameter2>      
+      <_Parameter2>$(SeleniumScreenShotsFolderPath)</_Parameter2>
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
