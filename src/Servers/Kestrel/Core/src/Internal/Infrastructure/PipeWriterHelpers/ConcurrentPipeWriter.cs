@@ -341,8 +341,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             else
             {
-                // We can't use the pool so allocate an array
-                newSegment.SetUnownedMemory(new byte[sizeHint]);
+                // We can't use the recommended pool so use the ArrayPool
+                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(sizeHint));
             }
 
             _tailMemory = newSegment.AvailableMemory;

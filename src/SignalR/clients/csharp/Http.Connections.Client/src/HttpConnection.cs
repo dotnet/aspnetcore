@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         // Not configurable on purpose, high enough that if we reach here, it's likely
         // a buggy server
         private static readonly int _maxRedirects = 100;
+        private static readonly int _protocolVersionNumber = 1;
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private readonly HttpConnectionOptions _httpConnectionOptions;
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
+        private string _connectionToken;
         private string _connectionId;
         private readonly ConnectionLogScope _logScope;
         private readonly ILoggerFactory _loggerFactory;
@@ -341,7 +343,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // This should only need to happen once
-                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                var connectUrl = CreateConnectUrl(uri, _connectionToken);
 
                 // We're going to search for the transfer format as a string because we don't want to parse
                 // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -382,7 +384,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             if (negotiationResponse == null)
                             {
                                 negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
-                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
+                                connectUrl = CreateConnectUrl(uri, _connectionToken);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
@@ -428,8 +430,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     urlBuilder.Path += "/";
                 }
                 urlBuilder.Path += "negotiate";
+                var uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
 
-                using (var request = new HttpRequestMessage(HttpMethod.Post, urlBuilder.Uri))
+                using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
                 {
                     // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
                     request.Version = new Version(1, 1);
@@ -466,7 +469,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 throw new FormatException("Invalid connection id.");
             }
 
-            return Utils.AppendQueryString(url, "id=" + connectionId);
+            return Utils.AppendQueryString(url, $"negotiateVersion={_protocolVersionNumber}&id=" + connectionId);
         }
 
         private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
@@ -627,7 +630,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
             var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
-            _connectionId = negotiationResponse.ConnectionId;
+            // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
+            // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
+            // connectionToken on the client to the same value.
+            if (negotiationResponse.Version > 0)
+            {
+                _connectionId = negotiationResponse.ConnectionId;
+                _connectionToken = negotiationResponse.ConnectionToken;
+            }
+            else
+            {
+                _connectionToken = _connectionId = negotiationResponse.ConnectionId;
+            }
+
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;
         }

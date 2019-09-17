@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-0ce56475-d1db-490f-8af1-a881ea4fcd2d</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
