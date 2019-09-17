@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\..\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
