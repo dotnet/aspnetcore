@@ -84,7 +84,6 @@
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
-      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
 
       <!-- Everything built in this project _except_ the final package are shipping assets. -->
       <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
