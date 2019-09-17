@@ -30,17 +30,17 @@ public class UserAgentTest {
     }
 
     @Test
-    public void verifyJavaVendor(){
+    public void verifyJavaVendor() {
         assertEquals(System.getProperty("java.vendor"), UserAgentHelper.getJavaVendor());
     }
 
     @Test
-    public void verifyJavaVersion(){
+    public void verifyJavaVersion() {
         assertEquals(System.getProperty("java.version"), UserAgentHelper.getJavaVersion());
     }
 
     @Test
-    public void checkUserAgentString(){
+    public void checkUserAgentString() {
         String userAgent = UserAgentHelper.createUserAgentString();
         assertNotNull(userAgent);
 
