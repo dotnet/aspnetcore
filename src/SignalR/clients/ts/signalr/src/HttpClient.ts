@@ -57,6 +57,14 @@ export class HttpResponse {
      * @param {ArrayBuffer} content The content of the response.
      */
     constructor(statusCode: number, statusText: string, content: ArrayBuffer);
+
+    /** Constructs a new instance of {@link @microsoft/signalr.HttpResponse} with the specified status code, message and binary content.
+     *
+     * @param {number} statusCode The status code of the response.
+     * @param {string} statusText The status message of the response.
+     * @param {string | ArrayBuffer} content The content of the response.
+     */
+    constructor(statusCode: number, statusText: string, content: string | ArrayBuffer);
     constructor(
         public readonly statusCode: number,
         public readonly statusText?: string,

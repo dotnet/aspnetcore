@@ -1,8 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -14,6 +19,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private UrlGroup _urlGroup;
         private int _nextId = 1;
+
+        // Valid port range of 5000 - 48000.
+        private const int BasePort = 5000;
+        private const int MaxPortIndex = 43000;
+        private const int MaxRetries = 1000;
+        private static int NextPortIndex;
 
         internal UrlPrefixCollection()
         {
@@ -138,10 +149,55 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 _urlGroup = urlGroup;
                 // go through the uri list and register for each one of them
-                foreach (var pair in _prefixes)
+                // Call ToList to avoid modification when enumerating.
+                foreach (var pair in _prefixes.ToList())
                 {
-                    // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    var urlPrefix = pair.Value;
+                    if (urlPrefix.PortValue == 0)
+                    {
+                        if (urlPrefix.IsHttps)
+                        {
+                            throw new InvalidOperationException("Cannot bind to port 0 with https.");
+                        }
+
+                        FindHttpPortUnsynchronized(pair.Key, urlPrefix);
+                    }
+                    else
+                    {
+                        // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
+                        _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    }
+                }
+            }
+        }
+
+        private void FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
+        {
+            for (var index = 0; index < MaxRetries; index++)
+            {
+                try
+                {
+                    // Bit of complicated math to always try 3000 ports, starting from NextPortIndex + 5000,
+                    // circling back around if we go above 8000 back to 5000, and so on.
+                    var port = ((index + NextPortIndex) % MaxPortIndex) + BasePort;
+
+                    Debug.Assert(port >= 5000 || port < 8000);
+
+                    var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, port, urlPrefix.Path);
+                    _urlGroup.RegisterPrefix(newPrefix.FullPrefix, key);
+                    _prefixes[key] = newPrefix;
+
+                    NextPortIndex += index + 1;
+                    return;
+                }
+                catch (HttpSysException ex)
+                {
+                    if ((ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS) || index == MaxRetries - 1)
+                    {
+                        throw;
+                    }
                 }
             }
         }
