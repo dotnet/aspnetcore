@@ -385,8 +385,7 @@ public class HubConnection {
                         hubConnectionStateLock.lock();
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
-                            this.connectionId = negotiateResponse.getConnectionId();
-                            this.connectionToken = negotiateResponse.getConnectionToken();
+
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
@@ -456,14 +455,20 @@ public class HubConnection {
                     throw new RuntimeException("There were no compatible transports on the server.");
                 }
 
-                String finalUrl = url;
-                if (response.getConnectionToken() != null) {
-                    if (url.contains("?")) {
-                        finalUrl = url + "&id=" + response.getConnectionToken();
-                    } else {
-                        finalUrl = url + "?id=" + response.getConnectionToken();
-                    }
+                if (response.getVersion() > 0) {
+                    this.connectionId = response.getConnectionId();
+                    this.connectionToken = response.getConnectionToken();
+                } else {
+                    this.connectionToken = this.connectionId = response.getConnectionId();
                 }
+
+                String finalUrl = url;
+                if (url.contains("?")) {
+                    finalUrl = url + "&id=" + this.connectionToken;
+                } else {
+                    finalUrl = url + "?id=" + this.connectionToken;
+                }
+
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }

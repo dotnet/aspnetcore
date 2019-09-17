@@ -1776,12 +1776,13 @@ class HubConnectionTest {
     }
 
     @Test
-    public void connectionTokenApearsInQSConnectionIdIsOnConnectionInstance() {
+    public void connectionTokenAppearsInQSConnectionIdIsOnConnectionInstance() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                                "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                                "\"negotiateVersion\": 1," +
                                 "\"connectionToken\":\"connection-token-value\"," +
-                                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                                 "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -1799,6 +1800,31 @@ class HubConnectionTest {
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
+    }
+
+        @Test
+        public void connectionTokenIsIgnoredIsNegotiateVersionIsNotPresentInNegotiateResponse() {
+            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> Single.just(new HttpResponse(200, "",
+                            "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                                    "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+            MockTransport transport = new MockTransport(true);
+            HubConnection hubConnection = HubConnectionBuilder
+                    .create("http://example.com")
+                    .withTransportImplementation(transport)
+                    .withHttpClient(client)
+                    .build();
+
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertNull(hubConnection.getConnectionId());
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+            assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
+            assertEquals("http://example.com?negotiateVersion=1&id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
+            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertNull(hubConnection.getConnectionId());
     }
 
     @Test
@@ -2074,6 +2100,7 @@ class HubConnectionTest {
                 token.set(req.getHeaders().get("Authorization"));
                 return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
                         + "\"connectionToken\":\"connection-token-value\","
+                        + "\"negotiateVersion\":1,"
                         + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
             });
 
