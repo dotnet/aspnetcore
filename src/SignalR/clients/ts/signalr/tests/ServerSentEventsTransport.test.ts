@@ -45,6 +45,28 @@ describe("ServerSentEventsTransport", () => {
         });
     });
 
+    it("connect failure does not call onclose handler", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource);
+            let closeCalled = false;
+            sse.onclose = () => closeCalled = true;
+
+            const connectPromise = (async () => {
+                await sse.connect("http://example.com", TransferFormat.Text);
+            })();
+
+            await TestEventSource.eventSource.openSet;
+
+            TestEventSource.eventSource.onerror(new TestMessageEvent());
+
+            try {
+                await connectPromise;
+                expect(false).toBe(true);
+            } catch { }
+            expect(closeCalled).toBe(false);
+        });
+    });
+
     [["http://example.com", "http://example.com?access_token=secretToken"],
     ["http://example.com?value=null", "http://example.com?value=null&access_token=secretToken"]]
         .forEach(([input, expected]) => {
