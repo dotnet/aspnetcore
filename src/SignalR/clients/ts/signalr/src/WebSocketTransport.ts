@@ -97,6 +97,8 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onclose = (event: CloseEvent) => {
+                // Don't call close handler if connection was never established
+                // We'll reject the connect call instead
                 if (opened) {
                     this.close(event);
                 } else {
