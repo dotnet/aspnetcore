@@ -10,9 +10,9 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 ECHO Building LoggingBranch
-REM Remove /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true which workarounds dotnet store and publish behaviour changes in preview 6
-CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x64 -projects %~dp0LoggingBranch\LB.csproj /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x64.binlog %*
-CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x86 -projects %~dp0LoggingBranch\LB.csproj /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x86.binlog %*
+REM /p:DisableTransitiveFrameworkReferences=true is needed to prevent SDK from picking up transitive references to Microsoft.AspNetCore.App as framework references https://github.com/dotnet/sdk/pull/3221
+CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x64 -projects %~dp0LoggingBranch\LB.csproj /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x64.binlog %*
+CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x86 -projects %~dp0LoggingBranch\LB.csproj /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x86.binlog %*
 
 IF %ERRORLEVEL% NEQ 0 (
    EXIT /b %ErrorLevel%

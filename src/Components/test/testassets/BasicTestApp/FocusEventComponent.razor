@@ -20,25 +20,25 @@
 
     string message;
 
-    void OnFocus(UIFocusEventArgs e)
+    void OnFocus(FocusEventArgs e)
     {
         message += "onfocus,";
         StateHasChanged();
     }
 
-    void OnBlur(UIFocusEventArgs e)
+    void OnBlur(FocusEventArgs e)
     {
         message += "onblur,";
         StateHasChanged();
     }
 
-    void OnFocusIn(UIFocusEventArgs e)
+    void OnFocusIn(FocusEventArgs e)
     {
         message += "onfocusin,";
         StateHasChanged();
     }
 
-    void OnFocusOut(UIFocusEventArgs e)
+    void OnFocusOut(FocusEventArgs e)
     {
         message += "onfocusout,";
         StateHasChanged();

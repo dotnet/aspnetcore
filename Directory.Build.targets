@@ -16,7 +16,8 @@
     <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
 
     <!-- Only build assemblies in Microsoft.AspNetCore.App in source build -->
-    <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true'">true</ExcludeFromSourceBuild>
+    <!-- Analyzer package are needed in source build for WebSDK -->
+    <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">

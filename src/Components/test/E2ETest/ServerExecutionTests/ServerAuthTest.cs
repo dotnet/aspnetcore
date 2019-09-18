@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
+        [Theory]
         [InlineData(null, null)]
         [InlineData(null, "Someone")]
         [InlineData("Someone", null)]

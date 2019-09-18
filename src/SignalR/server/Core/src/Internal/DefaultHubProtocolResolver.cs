@@ -23,13 +23,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _logger = logger ?? NullLogger<DefaultHubProtocolResolver>.Instance;
             _availableProtocols = new Dictionary<string, IHubProtocol>(StringComparer.OrdinalIgnoreCase);
 
-            // We might get duplicates in _hubProtocols, but we're going to check it and overwrite in just a sec.
-            _hubProtocols = availableProtocols.ToList();
-            foreach (var protocol in _hubProtocols)
+            foreach (var protocol in availableProtocols)
             {
                 Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
                 _availableProtocols[protocol.Name] = protocol;
             }
+            _hubProtocols = _availableProtocols.Values.ToList();
         }
 
         public virtual IHubProtocol GetProtocol(string protocolName, IReadOnlyList<string> supportedProtocols)

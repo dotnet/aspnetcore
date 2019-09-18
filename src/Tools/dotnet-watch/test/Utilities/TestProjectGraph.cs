@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
@@ -10,7 +11,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
     {
         private readonly TemporaryDirectory _directory;
         private Action<TemporaryCSharpProject> _onCreate;
-        private Dictionary<string, TemporaryCSharpProject> _projects = new Dictionary<string, TemporaryCSharpProject>();
+        private readonly Dictionary<string, TemporaryCSharpProject> _projects = new Dictionary<string, TemporaryCSharpProject>();
         public TestProjectGraph(TemporaryDirectory directory)
         {
             _directory = directory;
@@ -28,8 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         public TemporaryCSharpProject GetOrCreate(string projectName)
         {
-            TemporaryCSharpProject sourceProj;
-            if (!_projects.TryGetValue(projectName, out sourceProj))
+            if (!_projects.TryGetValue(projectName, out TemporaryCSharpProject sourceProj))
             {
                 sourceProj = _directory.SubDir(projectName).WithCSharpProject(projectName);
                 _onCreate?.Invoke(sourceProj);

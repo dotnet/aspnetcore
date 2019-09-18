@@ -98,6 +98,7 @@ namespace TestSite
 
             // Upgrade the connection
             Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
+            Assert.Null(context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize);
 
             // Get the WebSocket object
             var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));

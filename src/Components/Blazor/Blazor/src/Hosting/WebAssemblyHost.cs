@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             // this happens in the browser it will be a direct call from Mono. We effectively needs to set the
             // JSRuntime in the 'root' execution context which implies that we want to do as part of a direct
             // call from Program.Main, and before any 'awaits'.
-            JSRuntime.SetCurrentJSRuntime(_runtime);
             SetBrowserHttpMessageHandlerAsDefault();
 
             return StartAsyncAwaited();

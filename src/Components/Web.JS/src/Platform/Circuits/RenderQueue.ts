@@ -4,6 +4,8 @@ import { Logger, LogLevel } from '../Logging/Logger';
 import { HubConnection } from '@aspnet/signalr';
 
 export class RenderQueue {
+  private static instance: RenderQueue;
+
   private nextBatchId = 2;
 
   private fatalError?: string;
@@ -15,6 +17,14 @@ export class RenderQueue {
   public constructor(browserRendererId: number, logger: Logger) {
     this.browserRendererId = browserRendererId;
     this.logger = logger;
+  }
+
+  public static getOrCreate(logger: Logger): RenderQueue {
+    if (!RenderQueue.instance) {
+      RenderQueue.instance = new RenderQueue(0, logger);
+    }
+
+    return this.instance;
   }
 
   public async processBatch(receivedBatchId: number, batchData: Uint8Array, connection: HubConnection): Promise<void> {

@@ -171,9 +171,6 @@ const configFile = sauce ?
     path.resolve(__dirname, "karma.local.conf.js");
 debug(`Loading Karma config file: ${configFile}`);
 
-// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
-exec("node ../node_modules/wd/scripts/build-browser-scripts.js");
-
 // Gross but it works
 process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS = allBrowsers ? "true" : null;
 const config = (karma as any).config.parseConfig(configFile);
@@ -195,6 +192,19 @@ if (sauce) {
     if (failed) {
         process.exit(1);
     }
+}
+
+// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
+function ensureWdInstalled() {
+    return new Promise((resolve, reject) => {
+        exec(`node ${__dirname}/../node_modules/wd/scripts/build-browser-scripts.js`, { timeout: 30000 }, (error: any, stdout, stderr) => {
+            if (error) {
+                console.log(error.message);
+                reject(error);
+            }
+            resolve();
+        });
+    });
 }
 
 function runKarma(karmaConfig) {
@@ -288,6 +298,8 @@ function runJest(httpsUrl: string, httpUrl: string) {
         }
 
         debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
+
+        await ensureWdInstalled();
 
         // Start karma server
         const conf = {

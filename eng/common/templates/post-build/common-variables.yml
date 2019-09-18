@@ -1,5 +1,6 @@
 variables:
   - group: Publish-Build-Assets
+  - group: DotNet-DotNetCli-Storage
 
   # .NET Core 3 Dev
   - name: PublicDevRelease_30_Channel_Id
@@ -45,3 +46,9 @@ variables:
     value: 3.0.0
   - name: SymbolToolVersion
     value: 1.0.1
+
+  # Default locations for Installers and checksums
+  - name: ChecksumsBlobFeedUrl
+    value: https://dotnetclichecksums.blob.core.windows.net/dotnet/index.json
+  - name: InstallersBlobFeedUrl
+    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json

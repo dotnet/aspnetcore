@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.Components.Web;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -308,11 +309,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public async Task SupportsTwoWayBindingForTextboxes()
         {
             // Arrange/Act
-            var component = CompileToComponent(
-                @"<input @bind=""MyValue"" />
-                @code {
-                    public string MyValue { get; set; } = ""Initial value"";
-                }");
+            var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @bind=""MyValue"" />
+@code {
+    public string MyValue { get; set; } = ""Initial value"";
+}");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
             var renderer = new TestRenderer();
@@ -343,11 +345,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public async Task SupportsTwoWayBindingForTextareas()
         {
             // Arrange/Act
-            var component = CompileToComponent(
-                @"<textarea @bind=""MyValue"" ></textarea>
-                @code {
-                    public string MyValue { get; set; } = ""Initial value"";
-                }");
+            var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
+<textarea @bind=""MyValue"" ></textarea>
+@code {
+    public string MyValue { get; set; } = ""Initial value"";
+}");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
             var renderer = new TestRenderer();
@@ -378,11 +381,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public async Task SupportsTwoWayBindingForDateValues()
         {
             // Arrange/Act
-            var component = CompileToComponent(
-                @"<input @bind=""MyDate"" />
-                @code {
-                    public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4, 1, 2, 3);
-                }");
+            var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @bind=""MyDate"" />
+@code {
+    public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4, 1, 2, 3);
+}");
             var myDateProperty = component.GetType().GetProperty("MyDate");
 
             var renderer = new TestRenderer();
@@ -416,11 +420,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var testDateFormat = "ddd yyyy-MM-dd";
-            var component = CompileToComponent(
-                $@"<input @bind=""@MyDate"" @bind:format=""{testDateFormat}"" />
-                @code {{
-                    public DateTime MyDate {{ get; set; }} = new DateTime(2018, 3, 4);
-                }}");
+            var component = CompileToComponent($@"
+@using Microsoft.AspNetCore.Components.Web
+<input @bind=""@MyDate"" @bind:format=""{testDateFormat}"" />
+@code {{
+    public DateTime MyDate {{ get; set; }} = new DateTime(2018, 3, 4);
+}}");
             var myDateProperty = component.GetType().GetProperty("MyDate");
 
             var renderer = new TestRenderer();
@@ -467,6 +472,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <button @onclick=""x => Clicked = true"" />
 @code {
     public bool Clicked { get; set; }
@@ -486,10 +492,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 {
                     AssertFrame.Attribute(frame, "onclick", 1);
 
-                    var func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
+                    var func = Assert.IsType<Action<MouseEventArgs>>(frame.AttributeValue);
                     Assert.False((bool)clicked.GetValue(component));
 
-                    func(new UIMouseEventArgs());
+                    func(new MouseEventArgs());
                     Assert.True((bool)clicked.GetValue(component));
                 });
         }
@@ -499,9 +505,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <button @onclick=""OnClick"" />
 @code {
-    public void OnClick(UIMouseEventArgs e) { Clicked = true; }
+    public void OnClick(MouseEventArgs e) { Clicked = true; }
     public bool Clicked { get; set; }
 }");
 
@@ -513,7 +520,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var frames = GetRenderTree(renderer, component);
 
             // Assert
-            Action<UIMouseEventArgs> func = default; // Since this is a method group, we don't need to create an EventCallback
+            Action<MouseEventArgs> func = default; // Since this is a method group, we don't need to create an EventCallback
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Element(frame, "button", 2, 0),
@@ -521,13 +528,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 {
                     AssertFrame.Attribute(frame, "onclick", 1);
 
-                    func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
+                    func = Assert.IsType<Action<MouseEventArgs>>(frame.AttributeValue);
                     Assert.False((bool)clicked.GetValue(component));
 
 
                 });
 
-            func.Invoke(new UIMouseEventArgs());
+            func.Invoke(new MouseEventArgs());
             Assert.True((bool)clicked.GetValue(component));
         }
 
@@ -535,11 +542,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public async Task SupportsTwoWayBindingForBoolValues()
         {
             // Arrange/Act
-            var component = CompileToComponent(
-                @"<input @bind=""MyValue"" />
-                @code {
-                    public bool MyValue { get; set; } = true;
-                }");
+            var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @bind=""MyValue"" />
+@code {
+    public bool MyValue { get; set; } = true;
+}");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
             var renderer = new TestRenderer();
@@ -571,11 +579,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var myEnumType = FullTypeName<MyEnum>();
-            var component = CompileToComponent(
-                $@"<input @bind=""MyValue"" />
-                @code {{
-                    public {myEnumType} MyValue {{ get; set; }} = {myEnumType}.{nameof(MyEnum.FirstValue)};
-                }}");
+            var component = CompileToComponent($@"
+@using Microsoft.AspNetCore.Components.Web
+<input @bind=""MyValue"" />
+@code {{
+    public {myEnumType} MyValue {{ get; set; }} = {myEnumType}.{nameof(MyEnum.FirstValue)};
+}}");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
             var renderer = new TestRenderer();
