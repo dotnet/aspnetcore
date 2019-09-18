@@ -205,9 +205,9 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development",
-                ["ASPNETCORE_Logging__LogLevel__Default"] = "Debug",
-                ["ASPNETCORE_Logging__LogLevel__System"] = "Debug",
-                ["ASPNETCORE_Logging__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
                 ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
@@ -220,9 +220,9 @@ namespace Templates.Test.Helpers
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_Logging__LogLevel__Default"] = "Debug",
-                ["ASPNETCORE_Logging__LogLevel__System"] = "Debug",
-                ["ASPNETCORE_Logging__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
                 ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
