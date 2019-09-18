@@ -204,7 +204,10 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development",
-                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
@@ -216,7 +219,10 @@ namespace Templates.Test.Helpers
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = $"{ProjectName}.dll";

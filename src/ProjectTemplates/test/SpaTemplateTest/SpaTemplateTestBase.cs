@@ -297,7 +297,7 @@ namespace Templates.Test.SpaTemplateTest
                 browser.Equal("Weather forecast", () => browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                browser.Exists(By.CssSelector("table>tbody>tr"), TimeSpan.FromSeconds(10));
+                browser.Exists(By.CssSelector("table>tbody>tr"));
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
 
