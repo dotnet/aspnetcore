@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-    <TargetFrameworks>netcoreapp5.0;net46</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
 
     <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
@@ -11,6 +11,8 @@
 
     <!-- Allow assemblies outside of lib in the package -->
     <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- It is intentional to not include build/netstandard2.0/Microsoft.NET.Sdk.Razor.targets -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +21,8 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" Condition="'$(TargetFramework)'=='net46'" />
 
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp5.0'" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp5.0'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +46,7 @@
     <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
     <MSBuild
       Projects="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj"
-      Properties="PublishDir=$(SdkOutputPath)tools\netcoreapp5.0;TargetFramework=netcoreapp5.0"
+      Properties="PublishDir=$(SdkOutputPath)tools\$(DefaultNetCoreTargetFramework);TargetFramework=$(DefaultNetCoreTargetFramework)"
       Targets="Publish" />
 
     <ItemGroup>
@@ -57,7 +59,7 @@
 
     <ItemGroup>
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
-      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\netcoreapp5.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\$(DefaultNetCoreTargetFramework)*\Microsoft.NET.Sdk.Razor.Tasks.*" />
 
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\System.Collections.Immutable.dll" />
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\System.Reflection.Metadata.dll" />

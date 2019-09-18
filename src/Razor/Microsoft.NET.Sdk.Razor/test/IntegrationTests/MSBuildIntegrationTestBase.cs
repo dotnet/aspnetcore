@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
                 {
-                    // The local cache folder needs to exist so that nuget 
+                    // The local cache folder needs to exist so that nuget
                     Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
                 }
             }

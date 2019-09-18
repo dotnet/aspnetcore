@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "Default C# version is 7.3 for netcoreapp3.1 and later https://github.com/aspnet/AspNetCore/issues/13930")]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ImplicitCSharp8_NullableEnforcement_WarningsDuringBuild_NoBuildServer()
         {

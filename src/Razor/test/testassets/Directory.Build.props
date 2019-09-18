@@ -18,19 +18,6 @@
 
     <RazorSdkCurrentVersionProps>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
     <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
-  
-    <!-- Necessary while testing with unreleased packages. -->
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
-      https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
-      https://api.nuget.org/v3/index.json;
-    </RestoreSources>
-
-    <RestoreSources Condition="$(BuildingTestAppsIndependently) == false">
-      $(RestoreSources);
-      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
-    </RestoreSources>
   </PropertyGroup>
 
   <Import Project="$(SolutionRoot)..\..\eng\Versions.props" />
@@ -38,6 +25,9 @@
   <PropertyGroup>
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+
+    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->

@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + extension);
                 File.Move(oldProjectFilePath, newProjectFilePath);
 
-                CopyGlobalJson(repositoryRoot, destinationPath);
+                CopyRepositoryAssets(repositoryRoot, destinationPath);
 
                 return new ProjectDirectory(
                     destinationPath,
@@ -140,16 +140,16 @@ $@"<Project>
                     });
             }
 
-            void CopyGlobalJson(string repositoryRoot, string projectRoot)
+            void CopyRepositoryAssets(string repositoryRoot, string projectRoot)
             {
-                var srcGlobalJson = Path.Combine(repositoryRoot, "global.json");
-                if (!File.Exists(srcGlobalJson))
-                {
-                    throw new InvalidOperationException("global.json at the root of the repository could not be found. Run './build /t:Noop' at the repository root and re-run these tests.");
-                }
+                var files = new[] { "global.json", "NuGet.config" };
 
-                var destinationGlobalJson = Path.Combine(projectRoot, "global.json");
-                File.Copy(srcGlobalJson, destinationGlobalJson);
+                foreach (var file in files)
+                {
+                    var srcFile = Path.Combine(repositoryRoot, file);
+                    var destinationFile = Path.Combine(projectRoot, file);
+                    File.Copy(srcFile, destinationFile);
+                }
             }
         }
 
