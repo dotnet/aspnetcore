@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -477,6 +478,43 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 dataChunkIndex = -1;
             }
             return dataRead;
+        }
+
+        internal IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> GetRequestInfo()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetRequestInfo(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        private IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            if (nativeRequest->RequestInfoCount == 0)
+            {
+                return Array.Empty<KeyValuePair<int, ReadOnlyMemory<byte>>>();
+            }
+
+            var list = new List<KeyValuePair<int, ReadOnlyMemory<byte>>>(nativeRequest->RequestInfoCount);
+
+            for (var i = 0; i < nativeRequest->RequestInfoCount; i++)
+            {
+                var requestInfo = nativeRequest->pRequestInfo[i];
+                var offset = (long)requestInfo.pInfo - (long)baseAddress;
+                list.Add(new KeyValuePair<int, ReadOnlyMemory<byte>>(
+                    (int)requestInfo.InfoType,
+                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength)));
+            }
+
+            return list.AsReadOnly();
         }
     }
 }

@@ -15,6 +15,10 @@
     <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
