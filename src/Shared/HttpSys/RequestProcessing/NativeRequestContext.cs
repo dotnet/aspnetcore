@@ -498,14 +498,15 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         private IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
         {
-            if (nativeRequest->RequestInfoCount == 0)
+            var count = nativeRequest->RequestInfoCount;
+            if (count == 0)
             {
                 return Array.Empty<KeyValuePair<int, ReadOnlyMemory<byte>>>();
             }
 
-            var list = new List<KeyValuePair<int, ReadOnlyMemory<byte>>>(nativeRequest->RequestInfoCount);
+            var list = new List<KeyValuePair<int, ReadOnlyMemory<byte>>>(count);
 
-            for (var i = 0; i < nativeRequest->RequestInfoCount; i++)
+            for (var i = 0; i < count; i++)
             {
                 var requestInfo = nativeRequest->pRequestInfo[i];
                 var offset = (long)requestInfo.pInfo - (long)baseAddress;
