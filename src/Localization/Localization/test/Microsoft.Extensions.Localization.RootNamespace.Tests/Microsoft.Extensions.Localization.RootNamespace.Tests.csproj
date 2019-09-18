@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <RootNamespace>LocalizationTest.Abc</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
