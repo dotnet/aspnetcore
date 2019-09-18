@@ -1807,7 +1807,8 @@ class HubConnectionTest {
             TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                     (req) -> Single.just(new HttpResponse(200, "",
                             "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
-                                    "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                            "\"connectionToken\":\"connection-token-value\"," +
+                            "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
             MockTransport transport = new MockTransport(true);
             HubConnection hubConnection = HubConnectionBuilder
