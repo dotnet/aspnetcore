@@ -32,6 +32,8 @@ namespace BenchmarkDotNet.Attributes
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
 #elif NETCOREAPP3_0
                 .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
+#elif NETCOREAPP3_1
+                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.1", null, ".NET Core 3.1")))
 #elif NETCOREAPP5_0
                 .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp5.0", null, ".NET Core 5.0")))
 #else
