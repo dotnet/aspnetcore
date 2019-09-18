@@ -876,6 +876,164 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("missing negotiate version ignores connectionToken", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiate version 0 ignores connectionToken", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", negotiateVersion: 0, availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiate version 1 uses connectionToken for url and connectionId for property", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            let connectUrl = "";
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    connectUrl = url;
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", negotiateVersion: 1, availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+                expect(connectUrl).toBe("http://tempuri.org?id=token");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiateVersion query string not added if already present", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connectUrl = new PromiseSource<string>();
+            const fakeTransport: ITransport = {
+                connect(url: string): Promise<void> {
+                    connectUrl.resolve(url);
+                    return Promise.resolve();
+                },
+                send(): Promise<void> {
+                    return Promise.resolve();
+                },
+                stop(): Promise<void> {
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=2", () => "{ \"connectionId\": \"42\" }")
+                    .on("GET", () => ""),
+                logger,
+                transport: fakeTransport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?negotiateVersion=2", options);
+            try {
+                const startPromise = connection.start(TransferFormat.Text);
+
+                expect(await connectUrl).toBe("http://tempuri.org?negotiateVersion=2&id=42");
+
+                await startPromise;
+            } finally {
+                (options.transport as ITransport).onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)

@@ -536,8 +536,11 @@ export class HttpConnection implements IConnection {
         }
         negotiateUrl += "negotiate";
         negotiateUrl += index === -1 ? "" : url.substring(index);
-        negotiateUrl += index === -1 ? "?" : "&";
-        negotiateUrl += "negotiateVersion=" + this.negotiateVersion;
+
+        if (negotiateUrl.indexOf("negotiateVersion") === -1) {
+            negotiateUrl += index === -1 ? "?" : "&";
+            negotiateUrl += "negotiateVersion=" + this.negotiateVersion;
+        }
         return negotiateUrl;
     }
 }
