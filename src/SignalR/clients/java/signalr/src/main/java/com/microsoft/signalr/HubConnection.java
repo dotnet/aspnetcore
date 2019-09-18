@@ -456,14 +456,13 @@ public class HubConnection {
                     this.connectionToken = this.connectionId = response.getConnectionId();
                 }
 
-                String finalUrl = url;
-                finalUrl = Utils.appendQueryString(url, "id=" + this.connectionToken);
+                String finalUrl = Utils.appendQueryString(url, "id=" + this.connectionToken);
 
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }
-            String redirectUrl = "";
-            redirectUrl = Utils.appendQueryString(response.getRedirectUrl(), "negotiateVersion=" + negotiateVersion);
+
+            String redirectUrl = redirectUrl = Utils.appendQueryString(response.getRedirectUrl(), "negotiateVersion=" + negotiateVersion);
             return startNegotiate(redirectUrl, negotiateAttempts + 1);
         });
     }
