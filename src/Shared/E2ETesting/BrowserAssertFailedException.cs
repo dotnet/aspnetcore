@@ -14,13 +14,14 @@ namespace OpenQA.Selenium
     public class BrowserAssertFailedException : XunitException
     {
         public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException, string screenShotPath)
-            : base(BuildMessage(logs, screenShotPath), innerException)
+            : base(BuildMessage(innerException, logs, screenShotPath), innerException)
         {
         }
 
-        private static string BuildMessage(IReadOnlyList<LogEntry> logs, string screenShotPath) =>
+        private static string BuildMessage(Exception innerException, IReadOnlyList<LogEntry> logs, string screenShotPath) =>
+            innerException.ToString() + Environment.NewLine +
             (File.Exists(screenShotPath) ? $"Screen shot captured at '{screenShotPath}'" + Environment.NewLine : "") +
-            (logs.Count > 0 ? "Encountered browser errors" : "No browser errors found") + " while running the assertion." + Environment.NewLine +
+            (logs.Count > 0 ? "Encountered browser logs" : "No browser logs found") + " while running the assertion." + Environment.NewLine +
             string.Join(Environment.NewLine, logs);
     }
 }
