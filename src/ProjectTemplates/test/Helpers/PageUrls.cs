@@ -12,6 +12,7 @@ namespace Templates.Test.Helpers
         public const string LoginUrl = "/Identity/Account/Login";
         public const string RegisterUrl = "/Identity/Account/Register";
         public const string ForgotPassword = "/Identity/Account/ForgotPassword";
+        public const string ResendEmailConfirmation = "/Identity/Account/ResendEmailConfirmation";
         public const string ExternalArticle = "https://go.microsoft.com/fwlink/?LinkID=532715";
     }
 }
