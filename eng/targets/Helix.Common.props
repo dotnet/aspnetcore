@@ -30,8 +30,9 @@
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
     <HelixAvailablePlatform Include="Windows" />
 
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" />
-    <!--HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
+    <!--HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" /-->
 
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
