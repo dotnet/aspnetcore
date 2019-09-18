@@ -1700,7 +1700,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void    negotiateSentOnStart() {
+    public void negotiateSentOnStart() {
         TestHttpClient client = new TestHttpClient()
         .on("POST", (req) -> Single.just(new HttpResponse(404, "", "")));
 
@@ -1782,7 +1782,7 @@ class HubConnectionTest {
                                 "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                                 "\"negotiateVersion\": 1," +
                                 "\"connectionToken\":\"connection-token-value\"," +
-                                 "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -1803,7 +1803,7 @@ class HubConnectionTest {
     }
 
         @Test
-        public void connectionTokenIsIgnoredIsNegotiateVersionIsNotPresentInNegotiateResponse() {
+        public void connectionTokenIsIgnoredIfNegotiateVersionIsNotPresentInNegotiateResponse() {
             TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                     (req) -> Single.just(new HttpResponse(200, "",
                             "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +

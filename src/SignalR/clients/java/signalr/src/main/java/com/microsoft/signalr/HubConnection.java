@@ -58,7 +58,7 @@ public class HubConnection {
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
     private String connectionToken;
-    private int negotiateVersion = 1;
+    private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -342,12 +342,7 @@ public class HubConnection {
         });
 
         stopError = null;
-        String urlWithQS;
-        if (baseUrl.contains("?")) {
-            urlWithQS = baseUrl + "&negotiateVersion=" + negotiateVersion;
-        } else {
-            urlWithQS = baseUrl + "?negotiateVersion=" + negotiateVersion;
-        }
+        String urlWithQS = Utils.appendQueryString(baseUrl, "negotiateVersion=" + negotiateVersion);
         Single<NegotiateResponse> negotiate = null;
         if (!skipNegotiate) {
             negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(urlWithQS, 0)));
@@ -462,21 +457,13 @@ public class HubConnection {
                 }
 
                 String finalUrl = url;
-                if (url.contains("?")) {
-                    finalUrl = url + "&id=" + this.connectionToken;
-                } else {
-                    finalUrl = url + "?id=" + this.connectionToken;
-                }
+                finalUrl = Utils.appendQueryString(url, "id=" + this.connectionToken);
 
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }
             String redirectUrl = "";
-            if (response.getRedirectUrl().contains("?")) {
-                redirectUrl = response.getRedirectUrl() + "&negotiateVersion=" + negotiateVersion;
-            } else {
-                redirectUrl = response.getRedirectUrl() + "?negotiateVersion=" + negotiateVersion;
-            }
+            redirectUrl = Utils.appendQueryString(response.getRedirectUrl(), "negotiateVersion=" + negotiateVersion);
             return startNegotiate(redirectUrl, negotiateAttempts + 1);
         });
     }
