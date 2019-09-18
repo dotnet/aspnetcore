@@ -462,7 +462,7 @@ public class HubConnection {
                 return Single.just(response);
             }
 
-            String redirectUrl = redirectUrl = Utils.appendQueryString(response.getRedirectUrl(), "negotiateVersion=" + negotiateVersion);
+            String redirectUrl = Utils.appendQueryString(response.getRedirectUrl(), "negotiateVersion=" + negotiateVersion);
             return startNegotiate(redirectUrl, negotiateAttempts + 1);
         });
     }
