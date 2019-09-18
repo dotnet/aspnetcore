@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("link", Attributes = FallbackHrefIncludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackHrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackTestClassAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("link", Attributes = FallbackTestHtmlAttributeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackTestPropertyAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = FallbackTestValueAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
@@ -46,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string FallbackHrefIncludeAttributeName = "asp-fallback-href-include";
         private const string FallbackHrefExcludeAttributeName = "asp-fallback-href-exclude";
         private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
+        private const string FallbackTestHtmlAttributeAttributeName = "asp-fallback-test-attribute";
         private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
         private const string AppendVersionAttributeName = "asp-append-version";
@@ -195,8 +197,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public string FallbackTestClass { get; set; }
 
         /// <summary>
+        /// The HTML attribute name defined in the stylesheet to use for the fallback test.
+        /// Must be used in conjunction with <see cref="FallbackTestProperty"/> and <see cref="FallbackTestValue"/>,
+        /// and either <see cref="FallbackHref"/> or <see cref="FallbackHrefInclude"/>.
+        /// </summary>
+        [HtmlAttributeName(FallbackTestHtmlAttributeAttributeName)]
+        public string FallbackTestHtmlAttribute { get; set; }
+
+        /// <summary>
         /// The CSS property name to use for the fallback test.
-        /// Must be used in conjunction with <see cref="FallbackTestClass"/> and <see cref="FallbackTestValue"/>,
+        /// Must be used in conjunction with <see cref="FallbackTestClass"/> or <see cref="FallbackTestHtmlAttribute" and <see cref="FallbackTestValue"/>,
         /// and either <see cref="FallbackHref"/> or <see cref="FallbackHrefInclude"/>.
         /// </summary>
         [HtmlAttributeName(FallbackTestPropertyAttributeName)]
@@ -204,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         /// <summary>
         /// The CSS property value to use for the fallback test.
-        /// Must be used in conjunction with <see cref="FallbackTestClass"/> and <see cref="FallbackTestProperty"/>,
+        /// Must be used in conjunction with <see cref="FallbackTestClass"/> or <see cref="FallbackTestHtmlAttribute" and <see cref="FallbackTestProperty"/>,
         /// and either <see cref="FallbackHref"/> or <see cref="FallbackHrefInclude"/>.
         /// </summary>
         [HtmlAttributeName(FallbackTestValueAttributeName)]
@@ -362,7 +372,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             builder
                 .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"")
                 .Append(FallbackTestClass)
-                .AppendHtml("\" />");
+                .AppendHtml("\" ")
+                .Append(FallbackTestHtmlAttribute)
+                .AppendHtml("/>");
 
             // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
             // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
