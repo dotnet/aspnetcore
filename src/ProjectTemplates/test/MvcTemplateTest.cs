@@ -175,6 +175,7 @@ namespace Templates.Test
                         PageUrls.PrivacyUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
+                        PageUrls.ResendEmailConfirmation,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl }
                 },
