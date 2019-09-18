@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// HTTP_REQUEST_INFO_TYPE enum value. The Memory is opaque bytes that need to be interperted in the format
         /// specified by the enum value.
         /// </summary>
-        public IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> RequestInfo { get; }
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo { get; }
     }
 }

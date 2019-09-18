@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
 
-        private IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> _requestInfo;
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public int KeyExchangeStrength { get; private set; }
 
-        public IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> RequestInfo
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
         {
             get
             {

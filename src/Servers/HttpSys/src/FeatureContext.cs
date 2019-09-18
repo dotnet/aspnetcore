@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
-        IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+        IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
         internal async Task OnResponseStart()
         {

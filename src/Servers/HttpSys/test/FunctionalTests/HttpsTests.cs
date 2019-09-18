@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.NotNull(tlsFeature);
                     Assert.NotNull(requestInfoFeature);
                     Assert.True(requestInfoFeature.RequestInfo.Count > 0);
-                    var tlsInfo = requestInfoFeature.RequestInfo.Where(info => info.Key == (int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol).Single().Value;
+                    var tlsInfo = requestInfoFeature.RequestInfo[(int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
                     HttpApiTypes.HTTP_SSL_PROTOCOL_INFO tlsCopy;
                     unsafe
                     {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         tlsCopy = Marshal.PtrToStructure<HttpApiTypes.HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
                     }
 
-                    // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because there's some value mapping that needs to happen.
+                    // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
                     Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                     Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
                     Assert.Equal(tlsFeature.HashAlgorithm, tlsCopy.HashType);

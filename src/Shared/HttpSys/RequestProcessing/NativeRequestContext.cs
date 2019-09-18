@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -480,7 +481,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return dataRead;
         }
 
-        internal IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> GetRequestInfo()
+        internal IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo()
         {
             if (_permanentlyPinned)
             {
@@ -496,26 +497,26 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private IReadOnlyCollection<KeyValuePair<int, ReadOnlyMemory<byte>>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
         {
             var count = nativeRequest->RequestInfoCount;
             if (count == 0)
             {
-                return Array.Empty<KeyValuePair<int, ReadOnlyMemory<byte>>>();
+                return ImmutableDictionary<int, ReadOnlyMemory<byte>>.Empty;
             }
 
-            var list = new List<KeyValuePair<int, ReadOnlyMemory<byte>>>(count);
+            var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
 
             for (var i = 0; i < count; i++)
             {
                 var requestInfo = nativeRequest->pRequestInfo[i];
                 var offset = (long)requestInfo.pInfo - (long)baseAddress;
-                list.Add(new KeyValuePair<int, ReadOnlyMemory<byte>>(
+                info.Add(
                     (int)requestInfo.InfoType,
-                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength)));
+                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength));
             }
 
-            return list.AsReadOnly();
+            return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
         }
     }
 }
