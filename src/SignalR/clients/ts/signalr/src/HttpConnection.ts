@@ -23,6 +23,8 @@ const enum ConnectionState {
 /** @private */
 export interface INegotiateResponse {
     connectionId?: string;
+    connectionToken?: string;
+    negotiateVersion?: number;
     availableTransports?: IAvailableTransport[];
     url?: string;
     accessToken?: string;
@@ -69,6 +71,8 @@ export class HttpConnection implements IConnection {
     public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
+
+    private readonly negotiateVersion: number = 1;
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");
@@ -322,22 +326,29 @@ export class HttpConnection implements IConnection {
                 return Promise.reject(new Error(`Unexpected status code returned from negotiate ${response.statusCode}`));
             }
 
-            return JSON.parse(response.content as string) as INegotiateResponse;
+            const negotiateResponse = JSON.parse(response.content as string) as INegotiateResponse;
+            if (!negotiateResponse.negotiateVersion || negotiateResponse.negotiateVersion < 1) {
+                // Negotiate version 0 doesn't use connectionToken
+                // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
+                negotiateResponse.connectionToken = negotiateResponse.connectionId;
+            }
+            return negotiateResponse;
         } catch (e) {
             this.logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
             return Promise.reject(e);
         }
     }
 
-    private createConnectUrl(url: string, connectionId: string | null | undefined) {
-        if (!connectionId) {
+    private createConnectUrl(url: string, connectionToken: string | null | undefined) {
+        if (!connectionToken) {
             return url;
         }
-        return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionId}`;
+
+        return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionToken}`;
     }
 
     private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
-        let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+        let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionToken);
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
@@ -355,20 +366,23 @@ export class HttpConnection implements IConnection {
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
             } else if (this.isITransport(transportOrError)) {
                 this.transport = transportOrError;
-                if (!negotiateResponse.connectionId) {
+                if (!negotiateResponse.connectionToken) {
                     try {
                         negotiateResponse = await this.getNegotiationResponse(url);
+                        this.connectionId = negotiateResponse.connectionId;
                     } catch (ex) {
                         return Promise.reject(ex);
                     }
-                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionToken);
                 }
                 try {
                     await this.startTransport(connectUrl, requestedTransferFormat);
                     return;
                 } catch (ex) {
                     this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
+                    negotiateResponse.connectionToken = undefined;
                     negotiateResponse.connectionId = undefined;
+                    this.connectionId = undefined;
                     transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
 
                     if (this.connectionState !== ConnectionState.Connecting) {
@@ -504,7 +518,7 @@ export class HttpConnection implements IConnection {
 
         // Setting the url to the href propery of an anchor tag handles normalization
         // for us. There are 3 main cases.
-        // 1. Relative  path normalization e.g "b" -> "http://localhost:5000/a/b"
+        // 1. Relative path normalization e.g "b" -> "http://localhost:5000/a/b"
         // 2. Absolute path normalization e.g "/a/b" -> "http://localhost:5000/a/b"
         // 3. Networkpath reference normalization e.g "//localhost:5000/a/b" -> "http://localhost:5000/a/b"
         const aTag = window.document.createElement("a");
@@ -522,6 +536,8 @@ export class HttpConnection implements IConnection {
         }
         negotiateUrl += "negotiate";
         negotiateUrl += index === -1 ? "" : url.substring(index);
+        negotiateUrl += index === -1 ? "?" : "&";
+        negotiateUrl += "negotiateVersion=" + this.negotiateVersion;
         return negotiateUrl;
     }
 }

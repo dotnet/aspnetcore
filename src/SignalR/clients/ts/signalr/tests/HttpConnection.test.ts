@@ -20,6 +20,7 @@ const commonOptions: IHttpConnectionOptions = {
 };
 
 const defaultConnectionId = "abc123";
+const defaultConnectionToken = "123abc";
 const defaultNegotiateResponse: INegotiateResponse = {
     availableTransports: [
         { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
@@ -27,6 +28,8 @@ const defaultNegotiateResponse: INegotiateResponse = {
         { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
     ],
     connectionId: defaultConnectionId,
+    connectionToken: defaultConnectionToken,
+    negotiateVersion: 1,
 };
 
 registerUnhandledRejectionHandler();
@@ -571,7 +574,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => {
+                .on("POST", /negotiate/, () => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
                         return { url: "https://another.domain.url/chat" };
@@ -602,8 +605,8 @@ describe("HttpConnection", () => {
                 await connection.start(TransferFormat.Text);
 
                 expect(httpClient.sentRequests.length).toBe(4);
-                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
+                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
                 expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
             } finally {
@@ -615,7 +618,7 @@ describe("HttpConnection", () => {
     it("fails to start if negotiate redirects more than 100 times", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => ({ url: "https://another.domain.url/chat" }));
+                .on("POST", /negotiate/, () => ({ url: "https://another.domain.url/chat" }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -637,7 +640,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, (r) => {
+                .on("POST", /negotiate/, (r) => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
 
@@ -683,8 +686,8 @@ describe("HttpConnection", () => {
                 await connection.start(TransferFormat.Text);
 
                 expect(httpClient.sentRequests.length).toBe(4);
-                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
+                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
                 expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
             } finally {
@@ -696,7 +699,7 @@ describe("HttpConnection", () => {
     it("throws error if negotiate response has error", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => ({ error: "Negotiate error." }));
+                .on("POST", /negotiate/, () => ({ error: "Negotiate error." }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
