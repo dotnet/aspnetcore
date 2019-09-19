@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
 
             // Can become invalid
-            renewalDateInput.ReplaceText("0/0/0");
+            ApplyInvalidInputDateValue(".renewal-date input", "11111-11-11");
             Browser.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
 
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
             // Can become invalid
-            expiryDateInput.ReplaceText("111111111");
+            ApplyInvalidInputDateValue(".expiry-date input", "11111-11-11");
             Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
@@ -382,6 +382,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .Select(x => x.Text)
                 .OrderBy(x => x)
                 .ToArray();
+        }
+
+        private void ApplyInvalidInputDateValue(string cssSelector, string invalidValue)
+        {
+            // It's very difficult to enter an invalid value into an <input type=date>, because
+            // most combinations of keystrokes get normalized to something valid. Additionally,
+            // using Selenium's SendKeys interacts unpredictably with this normalization logic,
+            // most likely based on timings. As a workaround, use JS to apply the values. This
+            // should only be used when strictly necessary, as it doesn't represent actual user
+            // interaction as authentically as SendKeys in other cases.
+            var javascript = (IJavaScriptExecutor)Browser;
+            javascript.ExecuteScript(
+                $"var elem = document.querySelector('{cssSelector}');"
+                + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
+                + "elem.dispatchEvent(new KeyboardEvent('change'));");
         }
     }
 }
