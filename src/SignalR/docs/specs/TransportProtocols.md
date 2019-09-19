@@ -18,7 +18,11 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 ## `POST [endpoint-base]/negotiate` request
 
-The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server. There is an optional `negotiateVersion` query string parameter that can be added to the negotiate post request. This determines the protocol version between the server and the client. If omitted, the version is defaulted to zero. Servers can configure their minimum supported protocol version which will determine how they respond to old clients. If configured to be greater than the clients requested version, the server will send an error response indicating that the requested version is not supported by the server. If the server supports the requested protocol version it will set the "negotiateVersion" on the response to the clients version. If a server is configured to accept clients using protocol version 0, then the `connectionToken` is omitted and only the `connectionId` is used internally. The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
+The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server.
+
+[3.1] There is an optional `negotiateVersion` query string parameter that can be added to the negotiate POST request. This is used to determine the protocol version between the server and the client. If omitted, the server treats the version as zero. Servers can configure their minimum supported protocol version which will determine how they respond to old clients. If configured to be greater than the clients requested version, the server will send an error response indicating that the requested version is not supported by the server. The server will set the "negotiateVersion" on the response to the smaller of either the servers maximum supported version or the clients requested version. The client is free to close the connection if the returned version is not supported by it. If the negotiated version is 0, then the `connectionToken` is omitted from the response and only the `connectionId` is used.
+
+The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
 
 1. A response that contains the `connectionToken` which will be used to identify the connection on the server and the list of the transports supported by the server. The `connectionToken` should be kept secret. It also contains the `connectionId` which is a public id.
 
@@ -46,7 +50,7 @@ The `POST [endpoint-base]/negotiate` request is used to establish a connection b
 
   The payload returned from this endpoint provides the following data:
 
-  * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * [3.1] The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
   * The `connectionId` which is the id by which other clients can refer to it.
   * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
@@ -140,7 +144,7 @@ Long Polling requires that the client poll the server for new messages. Unlike t
 
 A Poll is established by sending an HTTP GET request to `[endpoint-base]` with the following query string parameters
 
-* `id` (Required) - The Connection Token of the destination connection.
+* `id` (Required) - The Connection ID ([3.1] Token) of the destination connection.
 
 When data is available, the server responds with a body in one of the two formats below (depending upon the value of the `Accept` header). The response may be chunked, as per the chunked encoding part of the HTTP spec.
 
