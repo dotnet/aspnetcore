@@ -276,8 +276,6 @@ export class HttpConnection implements IConnection {
                     throw new Error("Negotiate redirection limit exceeded.");
                 }
 
-                this.connectionId = negotiateResponse.connectionId;
-
                 await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
             }
 
@@ -354,11 +352,13 @@ export class HttpConnection implements IConnection {
             this.transport = requestedTransport;
             await this.startTransport(connectUrl, requestedTransferFormat);
 
+            this.connectionId = negotiateResponse.connectionId;
             return;
         }
 
         const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
+        let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
             const transportOrError = this.resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
             if (transportOrError instanceof Error) {
@@ -366,23 +366,21 @@ export class HttpConnection implements IConnection {
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
             } else if (this.isITransport(transportOrError)) {
                 this.transport = transportOrError;
-                if (!negotiateResponse.connectionToken) {
+                if (!negotiate) {
                     try {
-                        negotiateResponse = await this.getNegotiationResponse(url);
-                        this.connectionId = negotiateResponse.connectionId;
+                        negotiate = await this.getNegotiationResponse(url);
                     } catch (ex) {
                         return Promise.reject(ex);
                     }
-                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionToken);
+                    connectUrl = this.createConnectUrl(url, negotiate.connectionToken);
                 }
                 try {
                     await this.startTransport(connectUrl, requestedTransferFormat);
+                    this.connectionId = negotiate.connectionId;
                     return;
                 } catch (ex) {
                     this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
-                    negotiateResponse.connectionToken = undefined;
-                    negotiateResponse.connectionId = undefined;
-                    this.connectionId = undefined;
+                    negotiate = undefined;
                     transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
 
                     if (this.connectionState !== ConnectionState.Connecting) {
