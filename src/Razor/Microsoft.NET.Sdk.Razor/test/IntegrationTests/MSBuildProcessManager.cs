@@ -83,22 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var timeoutTask = Task.Delay(timeout.Value).ContinueWith<ProcessResult>((t) =>
-            {
-                // Don't timeout during debug sessions
-                while (Debugger.IsAttached)
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
-                }
-
-                if (!process.HasExited)
-                {
-                    // This is a timeout.
-                    process.Kill();
-                }
-
-                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
-            });
+            var timeoutTask = GetTimeoutForProcess(process, timeout);
 
             var waitTask = Task.Run(() =>
             {
@@ -141,6 +126,87 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     output.AppendLine(e.Data);
                 }
+            }
+
+            async Task<ProcessResult> GetTimeoutForProcess(Process process, TimeSpan? timeout)
+            {
+                await Task.Delay(timeout.Value);
+
+                // Don't timeout during debug sessions
+                while (Debugger.IsAttached)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
+                if (!process.HasExited)
+                {
+                    var procDumpProcess = await CaptureDump(process);
+                    if (procDumpProcess != null && procDumpProcess.HasExited)
+                    {
+                        Console.WriteLine("ProcDump failed to run.");
+                        procDumpProcess.Kill();
+                    }
+
+                    // This is a timeout.
+                    process.Kill();
+                }
+
+                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
+            }
+
+            async Task<Process> CaptureDump(Process process)
+            {
+                var metadataAttributes = Assembly.GetExecutingAssembly()
+                    .GetCustomAttributes<AssemblyMetadataAttribute>();
+
+                var procDumpPath = metadataAttributes
+                    .SingleOrDefault(ama => ama.Key == "ProcDumpPath")?.Value;
+
+                if (string.IsNullOrEmpty(procDumpPath))
+                {
+                    Console.WriteLine("ProcDumpPath not defined.");
+                    return null;
+                }
+                var procDumpExePath = Path.Combine(procDumpPath, "procdump.exe");
+                if (!File.Exists(procDumpExePath))
+                {
+                    Console.WriteLine($"Can't find procdump.exe in '{procDumpPath}'.");
+                    return null;
+                }
+
+                var dumpDirectory = metadataAttributes
+                    .SingleOrDefault(ama => ama.Key == "ArtifactsLogDir")?.Value;
+
+                if (string.IsNullOrEmpty(dumpDirectory))
+                {
+                    Console.WriteLine("ArtifactsLogDir not defined.");
+                    return null;
+                }
+
+                if (!Directory.Exists(dumpDirectory))
+                {
+                    Console.WriteLine($"'{dumpDirectory}' does not exist.");
+                    return null;
+                }
+
+                var procDumpPattern = Path.Combine(dumpDirectory, "HangingProcess_PROCESSNAME_PID_YYMMDD_HHMMSS.dmp");
+                var procDumpStartInfo = new ProcessStartInfo(
+                    procDumpExePath,
+                    $"-accepteula -ma {process.Id} {procDumpPattern}")
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                var procDumpProcess = Process.Start(procDumpStartInfo);
+                var tcs = new TaskCompletionSource<object>();
+
+                procDumpProcess.Exited += (s, a) => tcs.TrySetResult(null);
+                procDumpProcess.EnableRaisingEvents = true;
+
+                await Task.WhenAny(tcs.Task, Task.Delay(timeout ?? TimeSpan.FromSeconds(30)));
+                return procDumpProcess;
             }
         }
 

@@ -43,6 +43,16 @@
       <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\TestPackageRestoreSource</_Parameter2>
     </AssemblyAttribute>
 
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsLogDir</_Parameter1>
+      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfiguration)'))</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ProcDumpToolPath</_Parameter1>
+      <_Parameter2>$(ProcDumpPath)</_Parameter2>
+    </AssemblyAttribute>
+
   </ItemGroup>
 
   <!-- The test projects rely on these binaries being available -->
@@ -110,6 +120,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
+  </Target>
+
+  <Target Name="EnsureLogFolder" AfterTargets="Build">
+    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfiguration)'))" />
   </Target>
 
 </Project>
