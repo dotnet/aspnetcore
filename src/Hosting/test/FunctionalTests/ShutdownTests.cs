@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2577")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2577", FlakyOn.All)]
