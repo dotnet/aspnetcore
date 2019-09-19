@@ -575,7 +575,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate/, () => {
+                .on("POST", /\/negotiate/, () => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
                         return { url: "https://another.domain.url/chat" };
@@ -619,7 +619,7 @@ describe("HttpConnection", () => {
     it("fails to start if negotiate redirects more than 100 times", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate/, () => ({ url: "https://another.domain.url/chat" }));
+                .on("POST", /\/negotiate/, () => ({ url: "https://another.domain.url/chat" }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -641,7 +641,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate/, (r) => {
+                .on("POST", /\/negotiate/, (r) => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
 
@@ -700,7 +700,7 @@ describe("HttpConnection", () => {
     it("throws error if negotiate response has error", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate/, () => ({ error: "Negotiate error." }));
+                .on("POST", /\/negotiate/, () => ({ error: "Negotiate error." }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
