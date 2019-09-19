@@ -28,7 +28,7 @@ The client may close the connection if the "negotiateVersion" in the response is
 
 The content type of the response is `application/json` and is a json payload containing properties to assist the client in establishing a persistent connection.
 
-#### Version 1
+### Version 1
 
 When the server and client agree on version 1 the server response will include a "connectionToken" property in addition to the "connectionId" property. The value of the "connectionToken" property will be used in the "id" query string for the HTTP requests described below, this value should be kept secret.
 
@@ -62,7 +62,7 @@ A successful negotiate response will look similar to the following payload:
   * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
-#### Version 0
+### Version 0
 
 When the server and client agree on version 0 the server response will include a "connectionId" property that is used in the "id" query string for the HTTP requests described below.
 
@@ -94,7 +94,7 @@ A successful negotiate response will look similar to the following payload:
   * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
-#### All versions
+### All versions
 
 There are two other possible negotiation responses:
 
