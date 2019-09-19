@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var connectionToken = GetConnectionToken(context);
             if (connectionToken != null)
             {
-                _manager.TryGetConnection(GetConnectionToken(context), out connectionContext);
+                _manager.TryGetConnection(connectionToken, out connectionContext);
             }
 
             var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
