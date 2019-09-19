@@ -20,12 +20,19 @@ Throughout this document, the term `[endpoint-base]` is used to refer to the rou
 
 The `POST [endpoint-base]/negotiate` request is used to establish a connection between the client and the server.
 
-[3.1] There is an optional `negotiateVersion` query string parameter that can be added to the negotiate POST request. This is used to determine the protocol version between the server and the client. If omitted, the server treats the version as zero. Servers can configure their minimum supported protocol version which will determine how they respond to old clients. If configured to be greater than the clients requested version, the server will send an error response indicating that the requested version is not supported by the server. The server will set the "negotiateVersion" on the response to the smaller of either the servers maximum supported version or the clients requested version. The client is free to close the connection if the returned version is not supported by it. If the negotiated version is 0, then the `connectionToken` is omitted from the response and only the `connectionId` is used.
+In the POST request the client sends a query string parameter with the key "negotiateVersion" and the value as the negotiate protocol version it would like to use. If the query string is omitted, the server treats the version as zero. The server will include a "negotiateVersion" property in the json response that says which version it will be using. The version is chosen as described below:
+* If the servers minimum supported protocol version is greater than the version requested by the client it will send an error response and close the connection
+* If the server supports the request version it will respond with the requested version
+* If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
+The client may close the connection if the "negotiateVersion" in the response is not acceptable.
 
-The content type of the response is `application/json`. The response to the `POST [endpoint-base]/negotiate` request contains one of three types of responses:
+The content type of the response is `application/json` and is a json payload containing properties to assist the client in establishing a persistent connection.
 
-1. A response that contains the `connectionToken` which will be used to identify the connection on the server and the list of the transports supported by the server. The `connectionToken` should be kept secret. It also contains the `connectionId` which is a public id.
+#### Version 1
 
+When the server and client agree on version 1 the server response will include a "connectionToken" property in addition to the "connectionId" property. The value of the "connectionToken" property will be used in the "id" query string for the HTTP requests described below, this value should be kept secret.
+
+A successful negotiate response will look similar to the following payload:
   ```json
   {
     "connectionToken":"05265228-1e2c-46c5-82a1-6a5bcc3f0143",
@@ -50,13 +57,48 @@ The content type of the response is `application/json`. The response to the `POS
 
   The payload returned from this endpoint provides the following data:
 
-  * [3.1] The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `connectionToken` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
   * The `connectionId` which is the id by which other clients can refer to it.
   * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
   * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
 
+#### Version 0
 
-2. A redirect response which tells the client which URL and optionally access token to use as a result.
+When the server and client agree on version 0 the server response will include a "connectionId" property that is used in the "id" query string for the HTTP requests described below.
+
+A successful negotiate response will look similar to the following payload:
+  ```json
+  {
+    "connectionId":"807809a5-31bf-470d-9e23-afaee35d8a0d",
+    "negotiateVersion":0,
+    "availableTransports":[
+      {
+        "transport": "WebSockets",
+        "transferFormats": [ "Text", "Binary" ]
+      },
+      {
+        "transport": "ServerSentEvents",
+        "transferFormats": [ "Text" ]
+      },
+      {
+        "transport": "LongPolling",
+        "transferFormats": [ "Text", "Binary" ]
+      }
+    ]
+  }
+  ```
+
+  The payload returned from this endpoint provides the following data:
+
+  * The `connectionId` which is **required** by the Long Polling and Server-Sent Events transports (in order to correlate sends and receives).
+  * The `negotiateVersion` which is the negotiation protocol version being used between the server and client.
+  * The `availableTransports` list which describes the transports the server supports. For each transport, the name of the transport (`transport`) is listed, as is a list of "transfer formats" supported by the transport (`transferFormats`)
+
+#### All versions
+
+There are two other possible negotiation responses:
+
+1. A redirect response which tells the client which URL and optionally access token to use as a result.
 
   ```json
   {
@@ -71,7 +113,7 @@ The content type of the response is `application/json`. The response to the `POS
   * The `accessToken` which is an optional bearer token for accessing the specified url.
 
 
-3. A response that contains an `error` which should stop the connection attempt.
+1. A response that contains an `error` which should stop the connection attempt.
 
   ```json
   {
