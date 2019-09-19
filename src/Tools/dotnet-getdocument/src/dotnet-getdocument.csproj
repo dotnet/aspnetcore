@@ -8,7 +8,7 @@
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UseAppHost>false</UseAppHost>
-    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
