@@ -1848,7 +1848,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="NotAcceptableObjectResult"/> that produces a <see cref="StatusCodes.Status406NotAcceptable"/> response.
         /// </summary>
-        /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
+        /// <param name="error">Contains errors to be returned to the client.</param>
         /// <returns>The created <see cref="NotAcceptableObjectResult"/> for the response.</returns>
         [NonAction]
         public NotAcceptableObjectResult NotAcceptable([ActionResultObjectValue] object error) => new NotAcceptableObjectResult(error);
