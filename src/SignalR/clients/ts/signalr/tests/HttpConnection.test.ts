@@ -13,6 +13,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
+import { TestEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -876,7 +877,7 @@ describe("HttpConnection", () => {
         });
     });
 
-    it("missing negotiate version ignores connectionToken", async () => {
+    it("missing negotiateVersion ignores connectionToken", async () => {
         await VerifyLogger.run(async (logger) => {
             const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
             const transport = {
@@ -1014,17 +1015,17 @@ describe("HttpConnection", () => {
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=2", () => "{ \"connectionId\": \"42\" }")
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=42", () => "{ \"connectionId\": \"42\" }")
                     .on("GET", () => ""),
                 logger,
                 transport: fakeTransport,
             } as IHttpConnectionOptions;
 
-            const connection = new HttpConnection("http://tempuri.org?negotiateVersion=2", options);
+            const connection = new HttpConnection("http://tempuri.org?negotiateVersion=42", options);
             try {
                 const startPromise = connection.start(TransferFormat.Text);
 
-                expect(await connectUrl).toBe("http://tempuri.org?negotiateVersion=2&id=42");
+                expect(await connectUrl).toBe("http://tempuri.org?negotiateVersion=42&id=42");
 
                 await startPromise;
             } finally {
@@ -1032,6 +1033,95 @@ describe("HttpConnection", () => {
                 await connection.stop();
             }
         });
+    });
+
+    it("negotiateVersion query string not added if already present after redirect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connectUrl = new PromiseSource<string>();
+            const fakeTransport: ITransport = {
+                connect(url: string): Promise<void> {
+                    connectUrl.resolve(url);
+                    return Promise.resolve();
+                },
+                send(): Promise<void> {
+                    return Promise.resolve();
+                },
+                stop(): Promise<void> {
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1", () => "{ \"url\": \"http://redirect.org\" }")
+                    .on("POST", "http://redirect.org/negotiate?negotiateVersion=1", () => "{ \"connectionId\": \"42\"}")
+                    .on("GET", () => ""),
+                logger,
+                transport: fakeTransport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                const startPromise = connection.start(TransferFormat.Text);
+
+                expect(await connectUrl).toBe("http://redirect.org?id=42");
+
+                await startPromise;
+            } finally {
+                (options.transport as ITransport).onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("fallback changes connectionId property", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransports = [{ transport: "WebSockets", transferFormats: ["Text"] }, { transport: "LongPolling", transferFormats: ["Text"] }];
+            let negotiateCount: number = 0;
+            let getCount: number = 0;
+            let connection: HttpConnection;
+            let connectionId: string | undefined;
+            const options: IHttpConnectionOptions = {
+                WebSocket: TestWebSocket,
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return ({ connectionId: negotiateCount.toString(), connectionToken: "token", negotiateVersion: 1, availableTransports });
+                    })
+                    .on("GET", () => {
+                        getCount++;
+                        if (getCount === 1) {
+                            return new HttpResponse(200);
+                        }
+                        connectionId = connection.connectionId;
+                        return new HttpResponse(204);
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger,
+            } as IHttpConnectionOptions;
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            connection = new HttpConnection("http://tempuri.org", options);
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.closeSet;
+            TestWebSocket.webSocket.onerror(new TestEvent());
+
+            try {
+                await startPromise;
+            } catch { }
+
+            expect(negotiateCount).toEqual(2);
+            expect(connectionId).toEqual("2");
+        },
+        "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
     });
 
     describe(".constructor", () => {
@@ -1082,7 +1172,7 @@ describe("HttpConnection", () => {
 
         it("uses WebSocket constructor from options if provided", async () => {
             await VerifyLogger.run(async (logger) => {
-                class TestWebSocket {
+                class BadConstructorWebSocket {
                     // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
                     // tslint:disable-next-line:variable-name
                     constructor(_url: string, _protocols?: string | string[]) {
@@ -1092,7 +1182,7 @@ describe("HttpConnection", () => {
 
                 const options: IHttpConnectionOptions = {
                     ...commonOptions,
-                    WebSocket: TestWebSocket as WebSocketConstructor,
+                    WebSocket: BadConstructorWebSocket as WebSocketConstructor,
                     logger,
                     skipNegotiation: true,
                     transport: HttpTransportType.WebSockets,
