@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var nswagJsonFile = "openapi.json";
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp3.0")
+                .WithTargetFrameworks(TestTFM)
                 .Dir()
                 .WithContentFile(nswagJsonFile)
                 .WithContentFile("Startup.cs")
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp3.0")
+                .WithTargetFrameworks(TestTFM)
                 .Dir()
                 .WithContentFile("Startup.cs")
                 .Create();
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
         {
             _tempDir
                .WithCSharpProject("testproj")
-               .WithTargetFrameworks("netcoreapp3.0")
+               .WithTargetFrameworks(TestTFM)
                .Dir()
                .WithContentFile("Startup.cs")
                .Create();
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var refProjName = "refProj";
             refProj
                 .WithCSharpProject(refProjName)
-                .WithTargetFrameworks("netcoreapp3.0")
+                .WithTargetFrameworks(TestTFM)
                 .Dir()
                 .Create();
 
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             var swagFile2 = "swag2.json";
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp3.0")
+                .WithTargetFrameworks(TestTFM)
                 .Dir()
                 .WithContentFile(nswagJsonFile)
                 .WithFile(swagFile2)
