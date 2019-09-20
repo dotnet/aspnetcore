@@ -132,14 +132,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             // This analyzer should not apply to simple types. In MVC, a simple type is any type that has a type converter that returns true for TypeConverter.CanConvertFrom(typeof(string)).
             // Unfortunately there isn't a Roslyn way of determining if a TypeConverter exists for a given symbol or if the converter allows string conversions.
             // https://github.com/dotnet/corefx/blob/v3.0.0-preview8.19405.3/src/System.ComponentModel.TypeConverter/src/System/ComponentModel/ReflectTypeDescriptionProvider.cs#L103-L141
-            // provides a list of types that have built-in converters. Of the types that can convert from string, everything with the exception of three reference types is a value type.
+            // provides a list of types that have built-in converters.
             // We'll use a simpler heuristic in the analyzer: A type is simple if it's a value type or if it's in the "System.*" namespace hierarchy.
-            // Using value types as parameters to be bound is fairly rare, so it's fairly limited 
-
-            if (type.TypeKind == TypeKind.Struct || type.TypeKind == TypeKind.Enum)
-            {
-                return false;
-            }
 
             var @namespace = type.ContainingNamespace?.ToString();
             if (@namespace != null)
@@ -147,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 // Things in the System.* namespace hierarchy don't count as complex types. This workarounds
                 // the problem of discovering type converters on types in mscorlib.
                 return @namespace != "System" &&
-                    !@namespace.ToString().StartsWith("System.", StringComparison.Ordinal);
+                    !@namespace.StartsWith("System.", StringComparison.Ordinal);
             }
 
             return true;
