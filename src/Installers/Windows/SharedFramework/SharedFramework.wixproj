@@ -8,7 +8,7 @@
     <Name>AspNetCoreSharedFramework</Name>
     <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
-    <EmbedCab>yes</EmbedCab>
+    <EmbedCab>no</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
     <ProjectGuid>C681D730-4505-42C6-9E6C-87F757C4FB32</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
@@ -84,6 +84,7 @@
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
     </PropertyGroup>
       <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
