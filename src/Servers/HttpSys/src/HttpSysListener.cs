@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 _urlGroup = new UrlGroup(_serverSession, Logger);
 
-                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, Logger);
+                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.Mode, Logger);
 
                 _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             }
@@ -147,20 +147,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Options.Apply(UrlGroup, RequestQueue);
-
-                    _requestQueue.AttachToUrlGroup();
-
-                    // All resources are set up correctly. Now add all prefixes.
-                    try
+                    // if we created the Q then set up the URL behaviors
+                    if (_requestQueue.Created)
                     {
-                        Options.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
-                    }
-                    catch (HttpSysException)
-                    {
-                        // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
-                        throw;
+                        Options.Apply(UrlGroup, RequestQueue);
+
+                        _requestQueue.AttachToUrlGroup();
+
+                        // All resources are set up correctly. Now add all prefixes.
+                        try
+                        {
+                            Options.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
+                        }
+                        catch (HttpSysException)
+                        {
+                            // If an error occurred while adding prefixes, free all resources allocated by previous steps.
+                            _requestQueue.DetachFromUrlGroup();
+                            throw;
+                        }
                     }
 
                     _state = State.Started;
@@ -188,7 +192,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Options.UrlPrefixes.UnregisterAllPrefixes();
+                    // if we created the Q delete the URL prefixes
+                    if (_requestQueue.Created)
+                    {
+                        Options.UrlPrefixes.UnregisterAllPrefixes();
+                    }
 
                     _state = State.Stopped;
 

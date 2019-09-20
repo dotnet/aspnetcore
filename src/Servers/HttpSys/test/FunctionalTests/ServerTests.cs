@@ -12,7 +12,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -30,6 +32,44 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_ConnectExistingQueueName_Success()
+        {
+            string address;
+            var queueName = Guid.NewGuid().ToString();
+
+            // First create the queue.
+            HttpRequestQueueV2Handle requestQueueHandle = null;
+            var statusCode = HttpApi.HttpCreateRequestQueue(
+                    HttpApi.Version,
+                    queueName,
+                    null,
+                    0,
+                    out requestQueueHandle);
+
+            Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+
+            // Now attach to the existing one
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                return Task.FromResult(0);
+            }, options =>
+            {
+                options.RequestQueueName = queueName;
+                options.Mode = RequestQueueMode.AttachToExisting;
+            }))
+            {
+                var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
+                {
+                    RedirectStandardOutput = true
+                };
+                using var process = Process.Start(psi);
+                process.Start();
+                var netshOutput = await process.StandardOutput.ReadToEndAsync();
+                Assert.Contains(queueName, netshOutput);
             }
         }
 

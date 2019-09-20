@@ -136,6 +136,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private void ActivateRequestProcessingLimits()
         {
+            if (_options.Mode == RequestQueueMode.Controller)
+            {
+                return;
+            }
+
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
                 ProcessRequestsWorker();

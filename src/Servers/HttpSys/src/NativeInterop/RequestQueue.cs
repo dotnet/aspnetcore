@@ -14,26 +14,66 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly int BindingInfoSize =
             Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
+        private readonly RequestQueueMode _mode;
         private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, ILogger logger)
+        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
         {
+            _mode = mode;
             _urlGroup = urlGroup;
             _logger = logger;
 
-            HttpRequestQueueV2Handle requestQueueHandle = null;
-            var statusCode = HttpApi.HttpCreateRequestQueue(
-                    HttpApi.Version, requestQueueName, null, 0, out requestQueueHandle);
+            var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+            Created = true;
+            if (_mode == RequestQueueMode.AttachToExisting || _mode == RequestQueueMode.AttachOrCreate)
+            {
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+                Created = false;
+            }
+            else if (_mode == RequestQueueMode.Controller)
+            {
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Controller;
+            }
 
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            HttpRequestQueueV2Handle requestQueueHandle = null;
+
+            var statusCode = HttpApi.HttpCreateRequestQueue(
+                    HttpApi.Version,
+                    requestQueueName,
+                    null,
+                    (uint) flags,
+                    out requestQueueHandle);
+
+            if (_mode == RequestQueueMode.AttachOrCreate && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            {
+                // Tried to attach, but it didn't exist so create it.
+                Created = true;
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+                statusCode = HttpApi.HttpCreateRequestQueue(
+                        HttpApi.Version,
+                        requestQueueName,
+                        null, (uint) flags,
+                        out requestQueueHandle);
+            }
+
+            if (flags == HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            {
+                throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
+            }
+            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_NAME)
+            {
+                throw new HttpSysException((int)statusCode, $"The given request queue name '{requestQueueName}' is invalid.");
+            }
+            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 throw new HttpSysException((int)statusCode);
             }
 
             // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
-            if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
+            if (_mode != RequestQueueMode.Controller &&
+                HttpSysListener.SkipIOCPCallbackOnSuccess &&
                 !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
                     requestQueueHandle,
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
@@ -46,6 +86,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             BoundHandle = ThreadPoolBoundHandle.BindHandle(Handle);
         }
 
+        /// <summary>
+        /// Set true if we created queue instead of attaching to existing
+        /// </summary>
+        internal bool Created { get; }
+
         internal SafeHandle Handle { get; }
         internal ThreadPoolBoundHandle BoundHandle { get; }
 
@@ -54,6 +99,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             CheckDisposed();
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
+
+            // If we did not create then we skip this step
+            if (!Created)
+            {
+                return;
+            }
 
             var info = new HttpApiTypes.HTTP_BINDING_INFO();
             info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
@@ -73,6 +124,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Note that this method may be called multiple times (Stop() and then Abort()). This
             // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid 
             // Url groups.
+
+            // If we did not create then we skip this step
+            if (!Created)
+            {
+                return;
+            }
 
             var info = new HttpApiTypes.HTTP_BINDING_INFO();
             info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;

@@ -49,6 +49,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
+        /// Options for the creations of a HTTP.SYS Request Queue.
+        /// </summary>
+        public RequestQueueMode Mode { get; set; }
+
+        /// <summary>
         /// The maximum number of concurrent accepts.
         /// </summary>
         public int MaxAccepts { get; set; } = DefaultMaxAccepts;
