@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="GenerateReferenceSource" AfterTargets="AfterBuild" Condition="'$(HasReferenceAssembly)' == 'true'">
+  <Target Name="GenerateReferenceSource" AfterTargets="DispatchToInnerBuilds" Condition="'$(HasReferenceAssembly)' == 'true'">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefProjectFileOutputPath>$(_RefSourceOutputPath)$(AssemblyName).csproj</_RefProjectFileOutputPath>
