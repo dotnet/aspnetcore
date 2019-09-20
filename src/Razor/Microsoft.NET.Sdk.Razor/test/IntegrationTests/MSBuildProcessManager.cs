@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     .GetCustomAttributes<AssemblyMetadataAttribute>();
 
                 var procDumpPath = metadataAttributes
-                    .SingleOrDefault(ama => ama.Key == "ProcDumpPath")?.Value;
+                    .SingleOrDefault(ama => ama.Key == "ProcDumpToolPath")?.Value;
 
                 if (string.IsNullOrEmpty(procDumpPath))
                 {

@@ -45,7 +45,7 @@
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>ArtifactsLogDir</_Parameter1>
-      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfiguration)'))</_Parameter2>
+      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))</_Parameter2>
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">
-    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfiguration)'))" />
+    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))" />
   </Target>
 
 </Project>
