@@ -15,25 +15,27 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private object _totalRequestsLock = new object();
 
-        private readonly static ValueTask<bool> _falseValueTask = new ValueTask<bool>(false);
-
         public int TotalRequests { get; private set; }
 
         public QueuePolicy(IOptions<QueuePolicyOptions> options)
         {
-            if (options.Value.MaxConcurrentRequests <= 0)
+            QueuePolicyOptions queuePolicyOptions = options.Value;
+
+            int maxConcurrentRequests = queuePolicyOptions.MaxConcurrentRequests;
+            if (maxConcurrentRequests <= 0)
             {
-                throw new ArgumentException(nameof(options.Value.MaxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
+                throw new ArgumentException(nameof(maxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
             }
 
-            if (options.Value.RequestQueueLimit < 0)
+            int requestQueueLimit = queuePolicyOptions.RequestQueueLimit;
+            if (requestQueueLimit < 0)
             {
-                throw new ArgumentException(nameof(options.Value.RequestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
+                throw new ArgumentException(nameof(requestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
             }
 
-            _serverSemaphore = new SemaphoreSlim(options.Value.MaxConcurrentRequests);
+            _serverSemaphore = new SemaphoreSlim(maxConcurrentRequests);
 
-            _maxTotalRequest = options.Value.MaxConcurrentRequests + options.Value.RequestQueueLimit;
+            _maxTotalRequest = maxConcurrentRequests + requestQueueLimit;
         }
 
         public ValueTask<bool> TryEnterAsync()
@@ -46,13 +48,19 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             {
                 if (TotalRequests >= _maxTotalRequest)
                 {
-                    return _falseValueTask;
+                    return new ValueTask<bool>(false);
                 }
 
                 TotalRequests++;
             }
 
-            return AwaitSemaphore();
+            Task task = _serverSemaphore.WaitAsync();
+            if (task.IsCompletedSuccessfully)
+            {
+                return new ValueTask<bool>(true);
+            }
+
+            return AwaitSemaphore(task);
         }
 
         public void OnExit()
@@ -70,9 +78,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _serverSemaphore.Dispose();
         }
 
-        private async ValueTask<bool> AwaitSemaphore()
+        private async ValueTask<bool> AwaitSemaphore(Task task)
         {
-            await _serverSemaphore.WaitAsync();
+            await task;
 
             return true;
         }
