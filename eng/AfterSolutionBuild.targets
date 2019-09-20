@@ -17,15 +17,4 @@
       SharedFrameworkTargetFramework="netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
   </Target>
 
-  <Target Name="GenerateBuildAssetManifest" AfterTargets="Pack" Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(DotNetBuildFromSource)' != 'true'">
-    <!-- Generate build manifests. These manifests are used by Maestro and the Build Asset Registry to flow dependencies to other repos. -->
-    <MSBuild Projects="$(MSBuildThisFileDirectory)tools\Maestro\Maestro.csproj"
-          Targets="Restore"
-          Properties="__DummyTarget=Restore" />
-
-    <MSBuild Projects="$(MSBuildThisFileDirectory)tools\Maestro\Maestro.csproj"
-             Targets="GenerateBuildAssetManifest"
-             Properties="__DummyTarget=GenerateBuildAssetManifest" />
-  </Target>
-
 </Project>

@@ -21,6 +21,7 @@
     -->
     <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJARSHA2" />
     <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".dll;.exe" CertificateName="Microsoft400" />
     <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />

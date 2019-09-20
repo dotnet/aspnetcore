@@ -10,25 +10,26 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ServerInteropTestDefaultExceptionsBehavior : BasicTestAppTestBase
+    public class ServerInteropTestDefaultExceptionsBehavior : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
     {
         public ServerInteropTestDefaultExceptionsBehavior(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+            : base(browserFixture, serverFixture, output)
         {
         }
 
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
-            MountTestComponent<InteropComponent>();
+            Browser.MountTestComponent<InteropComponent>();
         }
 
         [Fact]

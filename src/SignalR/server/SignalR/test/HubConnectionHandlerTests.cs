@@ -3403,6 +3403,46 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task UploadStreamFromSendReleasesHubActivatorOnceComplete()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<MethodHub>>() as CustomHubActivator<MethodHub>;
+                    var createTask = hubActivator.CreateTask.Task;
+
+                    // null ID means we're doing a Send and not an Invoke
+                    await client.BeginUploadStreamAsync(invocationId: null, nameof(MethodHub.StreamingConcat), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", "hello")).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", " world")).OrTimeout();
+
+                    await createTask.OrTimeout();
+                    var tcs = hubActivator.ReleaseTask;
+                    await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
+
+                    await tcs.Task.OrTimeout();
+
+                    // OnConnectedAsync and StreamingConcat hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task UploadStreamClosesStreamsOnServerWhenMethodCompletes()
         {
             using (StartVerifiableLog())
@@ -3740,6 +3780,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public int ReleaseCount;
             private IServiceProvider _serviceProvider;
+            public TaskCompletionSource<object> ReleaseTask = new TaskCompletionSource<object>();
+            public TaskCompletionSource<object> CreateTask = new TaskCompletionSource<object>();
 
             public CustomHubActivator(IServiceProvider serviceProvider)
             {
@@ -3748,13 +3790,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public THub Create()
             {
-                return new DefaultHubActivator<THub>(_serviceProvider).Create();
+                ReleaseTask = new TaskCompletionSource<object>();
+                var hub = new DefaultHubActivator<THub>(_serviceProvider).Create();
+                CreateTask.TrySetResult(null);
+                return hub;
             }
 
             public void Release(THub hub)
             {
                 ReleaseCount++;
                 hub.Dispose();
+                ReleaseTask.TrySetResult(null);
+                CreateTask = new TaskCompletionSource<object>();
             }
         }
 

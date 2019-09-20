@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,14 +18,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, ILogger logger)
+        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, ILogger logger)
         {
             _urlGroup = urlGroup;
             _logger = logger;
 
             HttpRequestQueueV2Handle requestQueueHandle = null;
             var statusCode = HttpApi.HttpCreateRequestQueue(
-                    HttpApi.Version, null, null, 0, out requestQueueHandle);
+                    HttpApi.Version, requestQueueName, null, 0, out requestQueueHandle);
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {

@@ -65,7 +65,9 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.7' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.DataProtection.AzureStorage;
       Microsoft.AspNetCore.Hosting;
+      Microsoft.AspNetCore.SpaServices;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

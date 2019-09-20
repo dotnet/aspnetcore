@@ -107,20 +107,39 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static MessagePump CreatePump()
             => new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
+        internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions)
+        {
+            var options = new HttpSysOptions();
+            configureOptions(options);
+            return new MessagePump(Options.Create(options), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        }
+
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
+            lock (PortLock)
+            {
+                while (NextPort < MaxPort)
+                {
 
-            var server = CreatePump();
-            server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
-            configureOptions(server.Listener.Options);
-            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
+                    var port = NextPort++;
+                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
+                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+                    baseAddress = prefix.ToString();
 
-            prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
-            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-            baseAddress = prefix.ToString();
-
-            return server;
+                    var server = CreatePump(configureOptions);
+                    server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
+                    try
+                    {
+                        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
+                        return server;
+                    }
+                    catch (HttpSysException)
+                    {
+                    }
+                }
+                NextPort = BasePort;
+            }
+            throw new Exception("Failed to locate a free port.");
         }
 
         internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app)
@@ -155,7 +174,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             throw new Exception("Failed to locate a free port.");
         }
-
 
         internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
 

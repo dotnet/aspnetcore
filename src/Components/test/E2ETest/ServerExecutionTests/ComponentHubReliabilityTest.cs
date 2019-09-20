@@ -12,21 +12,17 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ComponentHubReliabilityTest : IgnitorTest<AspNetSiteServerFixture>
+    public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
-        public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+        public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
-        }
-
-        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
-        {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
         [Fact]
@@ -284,6 +280,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [InlineData("afterrender-async-throw")]
         public async Task ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
         {
+            if (id == "setparameters-async-throw")
+            {
+                // In the case of setparameters-async-throw, the exception isn't triggered until after
+                // a renderbatch. This would lead to timing-based flakiness, because that batch's ACK
+                // may be received either before or after the subsequent event that is meant to trigger
+                // circuit termination. If it was received before, then the circuit would be terminated
+                // prematurely by the OnRenderCompleted call. To avoid timing-based flakiness, we can
+                // just not send OnRenderCompleted calls as they aren't required for this scenario.
+                Client.ConfirmRenderBatch = false;
+            }
+
             // Arrange
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = ServerFixture.RootUri;
