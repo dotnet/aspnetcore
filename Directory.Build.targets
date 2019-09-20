@@ -112,6 +112,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.0 -->
+    <KnownAppHostPack 
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      TargetFramework="$(DefaultNetCoreTargetFramework)"
+      Condition="!(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
+      />
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      TargetFramework="$(DefaultNetCoreTargetFramework)"
+      Condition="!(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
+      />
+  </ItemGroup>
+
+  <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
       <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>

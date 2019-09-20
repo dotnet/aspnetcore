@@ -1,15 +1,11 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-
-  <PropertyGroup>
-    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
-  </PropertyGroup>
   <!--
     Workaround https://github.com/aspnet/AspNetCore/issues/4257.
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
   -->
   <ItemGroup>
-    <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
     <!-- Required because the Razor SDK will generate attributes -->
     <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
@@ -27,20 +23,6 @@
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Workaround when there is no vNext SDK available, copy known apphost/framework reference info from 3.0 -->
-    <KnownAppHostPack 
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="!(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
-      />
-    <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
-      TargetFramework="$(DefaultNetCoreTargetFramework)"
-      Condition="!(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(DefaultNetCoreTargetFramework)')))"
-      />
   </ItemGroup>
 
   <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
