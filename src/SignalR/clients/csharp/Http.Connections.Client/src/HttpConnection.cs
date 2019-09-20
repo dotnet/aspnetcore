@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private readonly HttpConnectionOptions _httpConnectionOptions;
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
-        private string _connectionToken;
         private string _connectionId;
         private readonly ConnectionLogScope _logScope;
         private readonly ILoggerFactory _loggerFactory;
@@ -343,7 +342,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
 
                 // This should only need to happen once
-                var connectUrl = CreateConnectUrl(uri, _connectionToken);
+                var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
 
                 // We're going to search for the transfer format as a string because we don't want to parse
                 // all the transfer formats in the negotiation response, and we want to allow transfer formats
@@ -384,7 +383,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             if (negotiationResponse == null)
                             {
                                 negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
-                                connectUrl = CreateConnectUrl(uri, _connectionToken);
+                                connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
@@ -641,14 +640,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
             // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
             // connectionToken on the client to the same value.
-            if (negotiationResponse.Version > 0)
+            _connectionId = negotiationResponse.ConnectionId;
+            if (negotiationResponse.Version == 0)
             {
-                _connectionId = negotiationResponse.ConnectionId;
-                _connectionToken = negotiationResponse.ConnectionToken;
-            }
-            else
-            {
-                _connectionToken = _connectionId = negotiationResponse.ConnectionId;
+                negotiationResponse.ConnectionToken = _connectionId;
             }
 
             _logScope.ConnectionId = _connectionId;
