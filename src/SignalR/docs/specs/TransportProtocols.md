@@ -26,7 +26,7 @@ In the POST request the client sends a query string parameter with the key "nego
 * If the requested version is greater than the servers largest supported version the server will respond with its largest supported version
 The client may close the connection if the "negotiateVersion" in the response is not acceptable.
 
-The content type of the response is `application/json` and is a json payload containing properties to assist the client in establishing a persistent connection.
+The content type of the response is `application/json` and is a JSON payload containing properties to assist the client in establishing a persistent connection. Extra JSON properties that the client does not know about should be ignored. This allows for future additions without breaking older clients.
 
 ### Version 1
 
@@ -186,7 +186,11 @@ Long Polling requires that the client poll the server for new messages. Unlike t
 
 A Poll is established by sending an HTTP GET request to `[endpoint-base]` with the following query string parameters
 
-* `id` (Required) - The Connection ID ([3.1] Token) of the destination connection.
+#### Version 1
+* `id` (Required) - The Connection Token of the destination connection.
+
+#### Version 0
+* `id` (Required) - The Connection ID of the destination connection.
 
 When data is available, the server responds with a body in one of the two formats below (depending upon the value of the `Accept` header). The response may be chunked, as per the chunked encoding part of the HTTP spec.
 
