@@ -116,30 +116,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            lock (PortLock)
-            {
-                while (NextPort < MaxPort)
-                {
+            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-                    var port = NextPort++;
-                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
-                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-                    baseAddress = prefix.ToString();
+            var server = CreatePump(configureOptions);
+            server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
+            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
-                    var server = CreatePump(configureOptions);
-                    server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
-                    try
-                    {
-                        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
-                        return server;
-                    }
-                    catch (HttpSysException)
-                    {
-                    }
-                }
-                NextPort = BasePort;
-            }
-            throw new Exception("Failed to locate a free port.");
+            prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
+            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+            baseAddress = prefix.ToString();
+
+            return server;
         }
 
         internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app)
