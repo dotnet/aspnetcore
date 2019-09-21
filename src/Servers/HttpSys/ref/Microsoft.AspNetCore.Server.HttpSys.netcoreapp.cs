@@ -57,6 +57,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public Microsoft.AspNetCore.Server.HttpSys.TimeoutManager Timeouts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection UrlPrefixes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public partial interface IHttpSysRequestInfoFeature
+    {
+        System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>> RequestInfo { get; }
+    }
     public sealed partial class TimeoutManager
     {
         internal TimeoutManager() { }
