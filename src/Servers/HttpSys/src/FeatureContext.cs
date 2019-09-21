@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
-        IHttpBodyControlFeature
+        IHttpBodyControlFeature,
+        IHttpSysRequestInfoFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -545,6 +546,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
 
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+
+        IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
         internal async Task OnResponseStart()
         {
