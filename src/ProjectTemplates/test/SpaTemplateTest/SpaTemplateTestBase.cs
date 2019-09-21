@@ -66,8 +66,11 @@ namespace Templates.Test.SpaTemplateTest
             using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
-            var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
-            Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
+            if (template != "angular")
+            {
+                var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
+                Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
+            }
 
             using var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
