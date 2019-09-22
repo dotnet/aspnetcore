@@ -1,10 +1,15 @@
 variables:
   - group: Publish-Build-Assets
   - group: DotNet-DotNetCli-Storage
+  - group: DotNet-MSRC-Storage
 
   # .NET Core 3 Dev
   - name: PublicDevRelease_30_Channel_Id
     value: 3
+
+  # .NET Core 3.1 Dev
+  - name: PublicDevRelease_31_Channel_Id
+    value: 128
 
   # .NET Core 5 Dev
   - name: NetCore_5_Dev_Channel_Id
@@ -26,13 +31,13 @@ variables:
   - name: PublicRelease_30_Channel_Id
     value: 19
 
+  # .NET Core 3.1 Release
+  - name: PublicRelease_31_Channel_Id
+    value: 129
+
   # Whether the build is internal or not
   - name: IsInternalBuild
     value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
-
-  # Storage account name for proxy-backed feeds
-  - name: ProxyBackedFeedsAccountName
-    value: dotnetfeed
 
   # Default Maestro++ API Endpoint and API Version
   - name: MaestroApiEndPoint
@@ -47,8 +52,23 @@ variables:
   - name: SymbolToolVersion
     value: 1.0.1
 
+  # Feed Configurations
+  # These should include the suffix "/index.json"
+
   # Default locations for Installers and checksums
+  # Public Locations
   - name: ChecksumsBlobFeedUrl
-    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json
-  - name: InstallersBlobFeedUrl
     value: https://dotnetclichecksums.blob.core.windows.net/dotnet/index.json
+  - name: InstallersBlobFeedUrl
+    value: https://dotnetcli.blob.core.windows.net/dotnet/index.json
+
+  # Private Locations
+  - name: InternalChecksumsBlobFeedUrl
+    value: https://dotnetclichecksumsmsrc.blob.core.windows.net/dotnet/index.json
+  - name: InternalChecksumsBlobFeedKey
+    value: $(dotnetclichecksumsmsrc-storage-key)
+
+  - name: InternalInstallersBlobFeedUrl
+    value: https://dotnetclimsrc.blob.core.windows.net/dotnet/index.json
+  - name: InternalInstallersBlobFeedKey
+    value: $(dotnetclimsrc-access-key)

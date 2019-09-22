@@ -52,9 +52,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public long? MaxConnections { get { throw null; } set { } }
         public long? MaxRequestBodySize { get { throw null; } set { } }
         public long RequestQueueLimit { get { throw null; } set { } }
+        public string RequestQueueName { get { throw null; } set { } }
         public bool ThrowWriteExceptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.HttpSys.TimeoutManager Timeouts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection UrlPrefixes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public partial interface IHttpSysRequestInfoFeature
+    {
+        System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>> RequestInfo { get; }
     }
     public sealed partial class TimeoutManager
     {

@@ -1,21 +1,24 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using BasicTestApp;
 using BasicTestApp.HttpClientTest;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Threading.Tasks;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BinaryHttpClientTest : BasicTestAppTestBase, IClassFixture<AspNetSiteServerFixture>
+    public class BinaryHttpClientTest : BrowserTestBase,
+        IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
+        IClassFixture<DevHostServerFixture<BasicTestApp.Program>>
     {
+        private readonly DevHostServerFixture<BasicTestApp.Program> _devHostServerFixture;
         readonly ServerFixture _apiServerFixture;
         IWebElement _appElement;
         IWebElement _responseStatus;
@@ -24,25 +27,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public BinaryHttpClientTest(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<BasicTestApp.Program> devHostServerFixture,
-            AspNetSiteServerFixture apiServerFixture,
+            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
-            : base(browserFixture, devHostServerFixture, output)
+            : base(browserFixture, output)
         {
-            apiServerFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
+            _devHostServerFixture = devHostServerFixture;
+            _devHostServerFixture.PathBase = "/subdir";
             _apiServerFixture = apiServerFixture;
         }
 
         protected override void InitializeAsyncCore()
         {
-            Navigate(ServerPathBase, noReload: true);
-            _appElement = MountTestComponent<BinaryHttpRequestsComponent>();
+            Browser.Navigate(_devHostServerFixture.RootUri, "/subdir", noReload: true);
+            _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
         }
 
         [Fact]
         public void CanSendAndReceiveBytes()
         {
-            IssueRequest("/api/data");
+            IssueRequest("/subdir/api/data");
             Assert.Equal("OK", _responseStatus.Text);
             Assert.Equal("OK", _responseStatusText.Text);
             Assert.Equal("", _testOutcome.Text);

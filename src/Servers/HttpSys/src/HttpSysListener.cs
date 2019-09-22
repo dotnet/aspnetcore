@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 _urlGroup = new UrlGroup(_serverSession, Logger);
 
-                _requestQueue = new RequestQueue(_urlGroup, Logger);
+                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, Logger);
 
                 _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             }

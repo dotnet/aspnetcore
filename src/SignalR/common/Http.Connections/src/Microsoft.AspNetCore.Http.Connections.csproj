@@ -4,6 +4,7 @@
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,8 +35,8 @@
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
-  <ItemGroup> 
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" /> 
-  </ItemGroup> 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" />
+  </ItemGroup>
 
 </Project>

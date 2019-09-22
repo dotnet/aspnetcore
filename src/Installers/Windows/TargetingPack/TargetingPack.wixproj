@@ -80,15 +80,21 @@
    <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+
+      <!-- Everything built in this project _except_ the final package are shipping assets. -->
+      <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+      <_GeneratedPackageVersion
+          Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     </PropertyGroup>
-      <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
                       '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
-                      '$(PackageVersion)' ^
+                      '$(_GeneratedPackageVersion)' ^
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)'" />

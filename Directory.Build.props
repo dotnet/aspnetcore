@@ -21,6 +21,15 @@
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+
+    <!--
+      Following logic mimics core-setup approach as well as
+      https://github.com/dotnet/arcade/blob/694d59f090b743f894779d04a7ffe11cbaf352e7/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj#L30-L31
+      $(DotNetFinalVersionKind) is set globally when doing final aka stable builds. Arcade infrastructure should pick
+      up $(IsStableBuild) automatically; property is also used to control prerelease branding.
+    -->
+    <IsStableBuild>false</IsStableBuild>
+    <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
@@ -119,7 +128,7 @@
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
-  <!-- Artifacts layout -->
+  <!-- Artifacts layout. Keep these values consistent with items defined in eng/Publishing.props. -->
   <PropertyGroup>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>

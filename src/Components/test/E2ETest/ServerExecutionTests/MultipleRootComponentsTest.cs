@@ -1,30 +1,65 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using BasicTestApp;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class MultipleComponentsTest : BasicTestAppTestBase
+    public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixture<PrerenderedStartup>>
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
 
         public MultipleComponentsTest(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            BasicTestAppServerSiteFixture<PrerenderedStartup> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+            : base(browserFixture, serverFixture, output)
         {
         }
+
+        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
+
+        public override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            // Capture the last log timestamp so that we can filter logs when we
+            // check for duplicate connections.
+            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
+            if (lastLog != null)
+            {
+                LastLogTimeStamp = lastLog.Timestamp;
+            }
+        }
+
+        [Fact]
+        public void DoesNotStartMultipleConnections()
+        {
+            Navigate("/prerendered/multiple-components");
+
+            BeginInteractivity();
+            Browser.Exists(By.CssSelector("h3.interactive"));
+
+            Browser.True(() =>
+            {
+                var logs = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
+                var curatedLogs = logs.Where(l => l.Timestamp > LastLogTimeStamp);
+
+                return curatedLogs.Count(e => e.Message.Contains("Starting up blazor server-side application")) == 1;
+            });
+        }
+
 
         [Fact]
         public void CanRenderMultipleRootComponents()

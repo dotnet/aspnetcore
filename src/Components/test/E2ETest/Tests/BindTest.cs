@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BindTest : BasicTestAppTestBase
+    public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public BindTest(
             BrowserFixture browserFixture,
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // On WebAssembly, page reloads are expensive so skip if possible
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-            MountTestComponent<BindCasesComponent>();
-            WaitUntilExists(By.Id("bind-cases"));
+            Browser.MountTestComponent<BindCasesComponent>();
+            Browser.Exists(By.Id("bind-cases"));
         }
 
         [Fact]
