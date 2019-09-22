@@ -27,7 +27,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/AspNetCore/issues/14022")]
+        [InlineData("F#")]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
         public async Task MvcTemplate_NoAuthImplAsync(string languageOverride)
         {
@@ -43,6 +43,12 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
+
+            // Avoid the F# compiler. See https://github.com/aspnet/AspNetCore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
 
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
