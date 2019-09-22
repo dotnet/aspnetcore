@@ -77,6 +77,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
+                        var diagnostics = new Diagnostics(reporter);
+                        var certificateManager = new CertificateManager(diagnostics);
                         if ((clean.HasValue() && (exportPath.HasValue() || password.HasValue() || trust?.HasValue() == true)) ||
                             (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue())))
                         {
@@ -89,15 +91,15 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (check.HasValue())
                         {
-                            return CheckHttpsCertificate(trust, reporter);
+                            return CheckHttpsCertificate(certificateManager, trust, reporter);
                         }
 
                         if (clean.HasValue())
                         {
-                            return CleanHttpsCertificates(reporter);
+                            return CleanHttpsCertificates(certificateManager, reporter);
                         }
 
-                        return EnsureHttpsCertificate(exportPath, password, trust, reporter);
+                        return EnsureHttpsCertificate(certificateManager, exportPath, password, trust, reporter);
                     });
                 });
 
@@ -117,9 +119,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
         }
 
-        private static int CleanHttpsCertificates(IReporter reporter)
+        private static int CleanHttpsCertificates(CertificateManager manager, IReporter reporter)
         {
-            var manager = new CertificateManager();
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -146,10 +147,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
         }
 
-        private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
+        private static int CheckHttpsCertificate(CertificateManager certificateManager, CommandOption trust, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
-            var certificateManager = new CertificateManager();
             var certificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             if (certificates.Count == 0)
             {
@@ -180,25 +180,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             return Success;
         }
 
-        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption trust, IReporter reporter)
+        private static int EnsureHttpsCertificate(CertificateManager manager, CommandOption exportPath, CommandOption password, CommandOption trust, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
-            var manager = new CertificateManager();
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && trust?.HasValue() == true)
-            {
-                reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
-                    "already trusted we will run the following command:" + Environment.NewLine +
-                    "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
-                    Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the system keychain.");
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && trust?.HasValue() == true)
-            {
-                reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
-                    "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
-            }
 
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(
                 now,
@@ -208,9 +192,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 password.HasValue(),
                 password.Value());
 
-            reporter.Verbose(string.Join(Environment.NewLine, result.Diagnostics.Messages));
-
-            switch (result.ResultCode)
+            switch (result)
             {
                 case EnsureCertificateResult.Succeeded:
                     reporter.Output("The HTTPS developer certificate was generated successfully.");

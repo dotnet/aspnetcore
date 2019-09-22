@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 {
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                 var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, subject: TestCertificateSubject);
 
                 // Assert
-                Assert.Equal(EnsureCertificateResult.Succeeded, result.ResultCode);
+                Assert.Equal(EnsureCertificateResult.Succeeded, result);
                 Assert.True(File.Exists(CertificateName));
 
                 var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
@@ -143,7 +145,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject);
 
             // Assert
-            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result.ResultCode);
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
             Assert.True(File.Exists(CertificateName));
 
             var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName), certificatePassword);
@@ -227,7 +229,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             var trustFailed = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject);
 
-            Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed.ResultCode);
+            Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed);
         }
 
         [Fact(Skip = "Requires user interaction")]
@@ -253,9 +255,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
     {
         public const string TestCertificateSubject = "CN=aspnet.test";
 
-        public CertFixture()
+        public CertFixture(IMessageSink sink)
         {
-            Manager = new CertificateManager();
+            var diagnostics = new Diagnostics(sink);
+            Manager = new CertificateManager(diagnostics);
 
             CleanupCertificates();
         }
@@ -273,6 +276,39 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
+            }
+        }
+
+        private class Diagnostics : IDiagnostics
+        {
+            private readonly IMessageSink _sink;
+
+            public Diagnostics(IMessageSink sink)
+            {
+                _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+            }
+
+            public void Debug(string message)
+            {
+                _sink.OnMessage(new DiagnosticMessage(message));
+            }
+
+            public void Debug(IEnumerable<string> messages)
+            {
+                foreach (var message in messages)
+                {
+                    Debug(message);
+                }
+            }
+
+            public void Warn(string message)
+            {
+                Debug("⚠️ " + message);
+            }
+
+            public void Error(string message, Exception exception)
+            {
+                Debug("❌️ " + message);
             }
         }
     }
