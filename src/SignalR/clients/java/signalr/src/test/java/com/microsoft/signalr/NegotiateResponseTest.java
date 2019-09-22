@@ -15,8 +15,9 @@ import com.google.gson.stream.JsonReader;
 class NegotiateResponseTest {
     @Test
     public void VerifyNegotiateResponse() {
-        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"" +
-                "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}," +
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"negotiateVersion\": 99, \"connectionToken\":\"connection-token-value\"," +
+                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}," +
                 "{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}," +
                 "{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}";
         NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
@@ -26,6 +27,8 @@ class NegotiateResponseTest {
         assertNull(negotiateResponse.getAccessToken());
         assertNull(negotiateResponse.getRedirectUrl());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+        assertEquals("connection-token-value", negotiateResponse.getConnectionToken());
+        assertEquals(99, negotiateResponse.getVersion());
     }
 
     @Test
@@ -55,5 +58,24 @@ class NegotiateResponseTest {
                 "\"extra\":[\"something\"]}";
         NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+    }
+
+    @Test
+    public void NegotiateResponseWithNegotiateVersion() {
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"negotiateVersion\": 99}";
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+        assertEquals(99, negotiateResponse.getVersion());
+    }
+
+    @Test
+    public void NegotiateResponseWithConnectionToken() {
+        String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                "\"negotiateVersion\": 99, \"connectionToken\":\"connection-token-value\"}";
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
+        assertEquals("connection-token-value", negotiateResponse.getConnectionToken());
+        assertEquals(99, negotiateResponse.getVersion());
     }
 }

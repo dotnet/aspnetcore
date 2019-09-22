@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // Start timer
                 StartTimer();
 
-                // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreapp3.1/
+                // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreapp5.0/
                 // and contentRoot points to the project directory so you get things like static assets.
                 // For a published app both point to the publish directory.
                 var dllRoot = CheckIfPublishIsRequired();

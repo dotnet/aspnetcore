@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -113,16 +114,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var userAgentHeaderCollection = request.Headers.UserAgent;
-                    var userAgentHeader = Assert.Single(userAgentHeaderCollection);
-                    Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
+                    var userAgentHeader = request.Headers.UserAgent.ToString();
+
+                    Assert.NotNull(userAgentHeader);
+                    Assert.StartsWith("Microsoft SignalR/", userAgentHeader);
 
                     // user agent version should come from version embedded in assembly metadata
                     var assemblyVersion = typeof(Constants)
                             .Assembly
                             .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                    Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
+                    Assert.Contains(assemblyVersion.InformationalVersion, userAgentHeader);
 
                     requestsExecuted = true;
 

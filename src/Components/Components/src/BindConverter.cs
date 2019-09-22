@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static string FormatEnumValueCore<T>(T value, CultureInfo culture) where T : struct, Enum
         {
-            return value.ToString(); // The overload that acccepts a culture is [Obsolete]
+            return value.ToString(); // The overload that accepts a culture is [Obsolete]
         }
 
         private static string FormatNullableEnumValueCore<T>(T? value, CultureInfo culture) where T : struct, Enum
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Components
                 return null;
             }
 
-            return value.Value.ToString(); // The overload that acccepts a culture is [Obsolete]
+            return value.Value.ToString(); // The overload that accepts a culture is [Obsolete]
         }
 
         /// <summary>
@@ -1166,99 +1166,99 @@ namespace Microsoft.AspNetCore.Components
 
             public static BindFormatter<T> Get<T>()
             {
-                if (!_cache.TryGetValue(typeof(T), out var formattter))
+                if (!_cache.TryGetValue(typeof(T), out var formatter))
                 {
                     // We need to replicate all of the primitive cases that we handle here so that they will behave the same way.
                     // The result will be cached.
                     if (typeof(T) == typeof(string))
                     {
-                        formattter = (BindFormatter<string>)FormatStringValueCore;
+                        formatter = (BindFormatter<string>)FormatStringValueCore;
                     }
                     else if (typeof(T) == typeof(bool))
                     {
-                        formattter = (BindFormatter<bool>)FormatBoolValueCore;
+                        formatter = (BindFormatter<bool>)FormatBoolValueCore;
                     }
                     else if (typeof(T) == typeof(bool?))
                     {
-                        formattter = (BindFormatter<bool?>)FormatNullableBoolValueCore;
+                        formatter = (BindFormatter<bool?>)FormatNullableBoolValueCore;
                     }
                     else if (typeof(T) == typeof(int))
                     {
-                        formattter = (BindFormatter<int>)FormatIntValueCore;
+                        formatter = (BindFormatter<int>)FormatIntValueCore;
                     }
                     else if (typeof(T) == typeof(int?))
                     {
-                        formattter = (BindFormatter<int?>)FormatNullableIntValueCore;
+                        formatter = (BindFormatter<int?>)FormatNullableIntValueCore;
                     }
                     else if (typeof(T) == typeof(long))
                     {
-                        formattter = (BindFormatter<long>)FormatLongValueCore;
+                        formatter = (BindFormatter<long>)FormatLongValueCore;
                     }
                     else if (typeof(T) == typeof(long?))
                     {
-                        formattter = (BindFormatter<long?>)FormatNullableLongValueCore;
+                        formatter = (BindFormatter<long?>)FormatNullableLongValueCore;
                     }
                     else if (typeof(T) == typeof(float))
                     {
-                        formattter = (BindFormatter<float>)FormatFloatValueCore;
+                        formatter = (BindFormatter<float>)FormatFloatValueCore;
                     }
                     else if (typeof(T) == typeof(float?))
                     {
-                        formattter = (BindFormatter<float?>)FormatNullableFloatValueCore;
+                        formatter = (BindFormatter<float?>)FormatNullableFloatValueCore;
                     }
                     else if (typeof(T) == typeof(double))
                     {
-                        formattter = (BindFormatter<double>)FormatDoubleValueCore;
+                        formatter = (BindFormatter<double>)FormatDoubleValueCore;
                     }
                     else if (typeof(T) == typeof(double?))
                     {
-                        formattter = (BindFormatter<double?>)FormatNullableDoubleValueCore;
+                        formatter = (BindFormatter<double?>)FormatNullableDoubleValueCore;
                     }
                     else if (typeof(T) == typeof(decimal))
                     {
-                        formattter = (BindFormatter<decimal>)FormatDecimalValueCore;
+                        formatter = (BindFormatter<decimal>)FormatDecimalValueCore;
                     }
                     else if (typeof(T) == typeof(decimal?))
                     {
-                        formattter = (BindFormatter<decimal?>)FormatNullableDecimalValueCore;
+                        formatter = (BindFormatter<decimal?>)FormatNullableDecimalValueCore;
                     }
                     else if (typeof(T) == typeof(DateTime))
                     {
-                        formattter = (BindFormatter<DateTime>)FormatDateTimeValueCore;
+                        formatter = (BindFormatter<DateTime>)FormatDateTimeValueCore;
                     }
                     else if (typeof(T) == typeof(DateTime?))
                     {
-                        formattter = (BindFormatter<DateTime?>)FormatNullableDateTimeValueCore;
+                        formatter = (BindFormatter<DateTime?>)FormatNullableDateTimeValueCore;
                     }
                     else if (typeof(T) == typeof(DateTimeOffset))
                     {
-                        formattter = (BindFormatter<DateTimeOffset>)FormatDateTimeOffsetValueCore;
+                        formatter = (BindFormatter<DateTimeOffset>)FormatDateTimeOffsetValueCore;
                     }
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
-                        formattter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
+                        formatter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
                     }
                     else if (typeof(T).IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
                         var method = _formatEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static);
-                        formattter = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindFormatter<T>), target: null);
+                        formatter = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindFormatter<T>), target: null);
                     }
                     else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
                         var method = _formatNullableEnumValue ??= typeof(BindConverter).GetMethod(nameof(FormatNullableEnumValueCore), BindingFlags.NonPublic | BindingFlags.Static);
-                        formattter = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindFormatter<T>), target: null);
+                        formatter = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindFormatter<T>), target: null);
                     }
                     else
                     {
-                        formattter = MakeTypeConverterFormatter<T>();
+                        formatter = MakeTypeConverterFormatter<T>();
                     }
 
-                    _cache.TryAdd(typeof(T), formattter);
+                    _cache.TryAdd(typeof(T), formatter);
                 }
 
-                return (BindFormatter<T>)formattter;
+                return (BindFormatter<T>)formatter;
             }
 
             private static BindFormatter<T> MakeTypeConverterFormatter<T>()

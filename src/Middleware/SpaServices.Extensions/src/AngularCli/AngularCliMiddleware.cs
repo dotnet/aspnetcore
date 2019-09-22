@@ -23,23 +23,24 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
 
         public static void Attach(
             ISpaBuilder spaBuilder,
-            string npmScriptName)
+            string scriptName)
         {
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
             }
 
-            if (string.IsNullOrEmpty(npmScriptName))
+            if (string.IsNullOrEmpty(scriptName))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(npmScriptName));
+                throw new ArgumentException("Cannot be null or empty", nameof(scriptName));
             }
 
             // Start Angular CLI and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, logger);
+            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -62,27 +63,27 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
-            string sourcePath, string npmScriptName, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerCommand, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
 
-            var npmScriptRunner = new NpmScriptRunner(
-                sourcePath, npmScriptName, $"--port {portNumber}", null);
-            npmScriptRunner.AttachToLogger(logger);
+            var scriptRunner = new NodeScriptRunner(
+                sourcePath, scriptName, $"--port {portNumber}", null, pkgManagerCommand);
+            scriptRunner.AttachToLogger(logger);
 
             Match openBrowserLine;
-            using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
+            using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
             {
                 try
                 {
-                    openBrowserLine = await npmScriptRunner.StdOut.WaitForMatch(
+                    openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
                         new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{npmScriptName}' exited without indicating that the " +
+                        $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
                         $"Angular CLI was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
