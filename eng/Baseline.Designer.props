@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.12</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.13</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -284,10 +284,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureStorage-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Data.OData" Version="[5.8.4, )" />
     <BaselinePackageReference Include="WindowsAzure.Storage" Version="[8.1.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
@@ -1117,12 +1118,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.13</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">

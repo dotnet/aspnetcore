@@ -18,14 +18,6 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Authentication.Google;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.9' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.10' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.11' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.Identity.UI;
@@ -44,6 +36,10 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       Microsoft.AspNetCore.DataProtection.AzureStorage;
       Microsoft.AspNetCore.SpaServices;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.14' ">
+    <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
