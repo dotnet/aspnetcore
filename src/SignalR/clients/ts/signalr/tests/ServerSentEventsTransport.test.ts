@@ -59,10 +59,9 @@ describe("ServerSentEventsTransport", () => {
 
             TestEventSource.eventSource.onerror(new TestMessageEvent());
 
-            try {
-                await connectPromise;
-                expect(false).toBe(true);
-            } catch { }
+            await expect(connectPromise)
+                .rejects
+                .toEqual(new Error("Error occurred"));
             expect(closeCalled).toBe(false);
         });
     });
