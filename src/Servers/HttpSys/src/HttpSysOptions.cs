@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get => _requestQueueName;
             set
             {
-                if (value.Length > MaximumRequestQueueNameLength)
+                if (value?.Length > MaximumRequestQueueNameLength)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value),
                                                           value,

@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             internal const uint ERROR_SUCCESS = 0;
             internal const uint ERROR_FILE_NOT_FOUND = 2;
+            internal const uint ERROR_ACCESS_DENIED = 5;
+            internal const uint ERROR_SHARING_VIOLATION = 32;
             internal const uint ERROR_HANDLE_EOF = 38;
             internal const uint ERROR_NOT_SUPPORTED = 50;
             internal const uint ERROR_INVALID_PARAMETER = 87;

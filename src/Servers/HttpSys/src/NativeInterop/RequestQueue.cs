@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
             {
+                requestQueueHandle.Dispose();
                 throw new HttpSysException(Marshal.GetLastWin32Error());
             }
 
