@@ -1,13 +1,6 @@
 <Project>
-  <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' != 'true'">
-    <!-- We want to trigger GenerateReferenceSource only once per outer build -->
-    <GenerateReferenceSourceAfterTargets Condition="'$(IsCrossTargetingBuild)' == 'true'">DispatchToInnerBuilds</GenerateReferenceSourceAfterTargets>
-    <GenerateReferenceSourceAfterTargets Condition="'$(IsCrossTargetingBuild)' != 'true'">Build</GenerateReferenceSourceAfterTargets>
-    <!-- Trigger _GenerateProjectSourceInner after CoreBuild -->
-    <GenerateProjectSourceInnerDependsOnTargets>CoreBuild</GenerateProjectSourceInnerDependsOnTargets>
-  </PropertyGroup>
 
-  <Target Name="GenerateReferenceSource" AfterTargets="$(GenerateReferenceSourceAfterTargets)" Condition="'$(HasReferenceAssembly)' == 'true' AND '$(IsInnerBuild)' != 'true'">
+  <Target Name="GenerateReferenceSource" AfterTargets="DispatchToInnerBuilds" Condition="'$(HasReferenceAssembly)' == 'true'">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefProjectFileOutputPath>$(_RefSourceOutputPath)$(AssemblyName).csproj</_RefProjectFileOutputPath>
@@ -50,7 +43,7 @@
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
-  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="$(GenerateProjectSourceInnerDependsOnTargets)" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="CoreBuild" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
       <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
