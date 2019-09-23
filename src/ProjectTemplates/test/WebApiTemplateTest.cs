@@ -22,10 +22,13 @@ namespace Templates.Test
 
         public Project Project { get; set; }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public async Task WebApiTemplateAsync(string languageOverride)
+        [Fact]
+        public async Task WebApiTemplateFSharp() => await WebApiTemplateCore(languageOverride: "F#");
+
+        [Fact]
+        public async Task WebApiTemplateCSharp() => await WebApiTemplateCore(languageOverride: null);
+
+        private async Task WebApiTemplateCore(string languageOverride)
         {
             Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 

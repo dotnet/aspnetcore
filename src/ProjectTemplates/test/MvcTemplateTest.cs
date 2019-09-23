@@ -25,11 +25,14 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/AspNetCore/issues/14022")]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
-        public async Task MvcTemplate_NoAuthImplAsync(string languageOverride)
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/14022")]
+        public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
+
+        [Fact]
+        public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
+
+
+        private async Task MvcTemplateCore(string languageOverride)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
@@ -98,8 +101,7 @@ namespace Templates.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
-        public async Task MvcTemplate_IndividualAuthImplAsync(bool useLocalDB)
+        public async Task MvcTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcindividual" + (useLocalDB ? "uld" : ""), Output);
 

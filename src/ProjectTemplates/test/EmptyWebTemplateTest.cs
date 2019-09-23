@@ -22,10 +22,19 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public async Task EmptyWebTemplateAsync(string languageOverride)
+        [Fact]
+        public async Task EmptyWebTemplateCSharp()
+        {
+            await EmtpyTemplateCore(languageOverride: null);
+        }
+
+        [Fact]
+        public async Task EmptyWebTemplateFSharp()
+        {
+            await EmtpyTemplateCore("F#");
+        }
+
+        private async Task EmtpyTemplateCore(string languageOverride)
         {
             Project = await ProjectFactory.GetOrCreateProject("empty" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
