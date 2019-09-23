@@ -12,5 +12,14 @@
   },
   "order": 700,
   "icon": "vs-2017.3/RazorClassLibrary.ico",
-  "learnMoreLink": "https://go.microsoft.com/fwlink/?linkid=872103"
+  "learnMoreLink": "https://go.microsoft.com/fwlink/?linkid=872103",
+  "symbolInfo": [
+    {
+      "id": "SupportPagesAndViews",
+      "name": {
+        "text": "_Support pages and views"
+      },
+      "isVisible": "true"
+    }
+  ]
 }

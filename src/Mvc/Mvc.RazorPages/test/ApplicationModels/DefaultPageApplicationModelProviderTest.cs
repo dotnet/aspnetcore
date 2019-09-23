@@ -525,6 +525,43 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
+        [Fact]
+        public void OnProvidersExecuting_CombinesFilters_OnPageAndPageModel()
+        {
+            // Arrange
+            var provider = CreateProvider();
+            var typeInfo = typeof(PageWithFilters).GetTypeInfo();
+            var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var pageModel = context.PageApplicationModel;
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<TypeFilterAttribute>(filter),
+                filter => Assert.IsType<ServiceFilterAttribute>(filter),
+                filter => Assert.IsType<PageHandlerPageFilter>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
+        }
+
+        [ServiceFilter(typeof(Guid))]
+        private class PageWithFilters : Page
+        {
+            public PageWithFilterModel Model { get; }
+
+            public override Task ExecuteAsync() => throw new NotImplementedException();
+        }
+
+        [TypeFilter(typeof(string))]
+        private class PageWithFilterModel : PageModel
+        {
+        }
+
+        [ServiceFilter(typeof(IServiceProvider))]
+        private class FiltersOnPageAndPageModel : PageModel { }
+
         [Fact] // If the model has handler methods, we prefer those.
         public void CreateDescriptor_FindsHandlerMethod_OnModel()
         {

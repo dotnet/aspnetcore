@@ -3,18 +3,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
     internal class RouteEntry
     {
-        public RouteEntry(RouteTemplate template, Type handler)
+        public RouteEntry(RouteTemplate template, Type handler, string[] unusedRouteParameterNames)
         {
             Template = template;
+            UnusedRouteParameterNames = unusedRouteParameterNames;
             Handler = handler;
         }
 
         public RouteTemplate Template { get; }
+
+        public string[] UnusedRouteParameterNames { get; }
 
         public Type Handler { get; }
 
@@ -42,6 +47,18 @@ namespace Microsoft.AspNetCore.Components.Routing
                         parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
                         parameters[segment.Value] = matchedParameterValue;
                     }
+                }
+            }
+
+            // In addition to extracting parameter values from the URL, each route entry
+            // also knows which other parameters should be supplied with null values. These
+            // are parameters supplied by other route entries matching the same handler.
+            if (UnusedRouteParameterNames.Length > 0)
+            {
+                parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
+                for (var i = 0; i < UnusedRouteParameterNames.Length; i++)
+                {
+                    parameters[UnusedRouteParameterNames[i]] = null;
                 }
             }
 

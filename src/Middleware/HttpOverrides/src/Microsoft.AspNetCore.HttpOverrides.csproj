@@ -4,11 +4,12 @@
     <Description>ASP.NET Core basic middleware for supporting HTTP method overrides. Includes:
 * X-Forwarded-* headers to forward headers from a proxy.
 * HTTP method override header.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;proxy;headers;xforwarded</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

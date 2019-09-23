@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderExtensions.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderSegment.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ArrayRange.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderBatch.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeDiff.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeEdit.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeEditType.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrame.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrameType.cs" LinkBase="RenderTree" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Ignitor.Test" />
+  </ItemGroup>
+
+</Project>

@@ -1,14 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

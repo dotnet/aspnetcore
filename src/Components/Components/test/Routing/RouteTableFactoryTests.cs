@@ -12,6 +12,45 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
+        public void CanCacheRouteTable()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { typeof(object).Assembly, GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void DoesNotCacheRouteTableForDifferentAssemblies()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.NotSame(routes1, routes2);
+        }
+
+        [Fact]
         public void CanDiscoverRoute()
         {
             // Arrange & Act
@@ -268,8 +307,9 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder()
-                .AddRoute("/an/awesome/path")
-                .AddRoute("/{some}/awesome/{route}/").Build();
+                .AddRoute("/an/awesome/path", typeof(TestHandler1))
+                .AddRoute("/{some}/awesome/{route}/", typeof(TestHandler2))
+                .Build();
             var context = new RouteContext("/an/awesome/path");
 
             // Act
@@ -326,6 +366,41 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal("a/brilliant", routeTable.Routes[0].Template.TemplateText);
         }
 
+        [Fact]
+        public void DoesNotThrowIfStableSortComparesRouteWithItself()
+        {
+            // Test for https://github.com/aspnet/AspNetCore/issues/13313
+            // Arrange & Act
+            var builder = new TestRouteTableBuilder();
+            builder.AddRoute("r16");
+            builder.AddRoute("r05");
+            builder.AddRoute("r09");
+            builder.AddRoute("r00");
+            builder.AddRoute("r13");
+            builder.AddRoute("r02");
+            builder.AddRoute("r03");
+            builder.AddRoute("r10");
+            builder.AddRoute("r15");
+            builder.AddRoute("r14");
+            builder.AddRoute("r12");
+            builder.AddRoute("r07");
+            builder.AddRoute("r11");
+            builder.AddRoute("r08");
+            builder.AddRoute("r06");
+            builder.AddRoute("r04");
+            builder.AddRoute("r01");
+
+            var routeTable = builder.Build();
+
+            // Act
+            Assert.Equal(17, routeTable.Routes.Length);
+            for (var i = 0; i < 17; i++)
+            {
+                var templateText = "r" + i.ToString().PadLeft(2, '0');
+                Assert.Equal(templateText, routeTable.Routes[i].Template.TemplateText);
+            }
+        }
+
         [Theory]
         [InlineData("/literal", "/Literal/")]
         [InlineData("/{parameter}", "/{parameter}/")]
@@ -346,9 +421,58 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        [Fact]
+        public void SuppliesNullForUnusedHandlerParameters()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/", typeof(TestHandler1))
+                .AddRoute("/products/{param1:int}", typeof(TestHandler1))
+                .AddRoute("/products/{param2}/{PaRam1}", typeof(TestHandler1))
+                .AddRoute("/{unrelated}", typeof(TestHandler2))
+                .Build();
+            var context = new RouteContext("/products/456");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.Collection(routeTable.Routes,
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("/", route.Template.TemplateText);
+                    Assert.Equal(new[] { "param1", "param2" }, route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler2), route.Handler);
+                    Assert.Equal("{unrelated}", route.Template.TemplateText);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("products/{param1:int}", route.Template.TemplateText);
+                    Assert.Equal(new[] { "param2" }, route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("products/{param2}/{PaRam1}", route.Template.TemplateText);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                });
+            Assert.Same(typeof(TestHandler1), context.Handler);
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "param1", 456 },
+                { "param2", null },
+            }, context.Parameters);
+        }
+
         private class TestRouteTableBuilder
         {
-            IList<(string, Type)> _routeTemplates = new List<(string, Type)>();
+            IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
             Type _handler = typeof(object);
 
             public TestRouteTableBuilder AddRoute(string template, Type handler = null)
@@ -361,10 +485,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 try
                 {
-                    return new RouteTable(_routeTemplates
-                        .Select(rt => new RouteEntry(TemplateParser.ParseTemplate(rt.Item1), rt.Item2))
-                        .OrderBy(id => id, RouteTableFactory.RoutePrecedence)
-                        .ToArray());
+                    var templatesByHandler = _routeTemplates
+                        .GroupBy(rt => rt.Handler)
+                        .ToDictionary(group => group.Key, group => group.Select(g => g.Template).ToArray());
+                    return RouteTableFactory.Create(templatesByHandler);
                 }
                 catch (InvalidOperationException ex) when (ex.InnerException is InvalidOperationException)
                 {
@@ -373,5 +497,8 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 }
             }
         }
+
+        class TestHandler1 { }
+        class TestHandler2 { }
     }
 }

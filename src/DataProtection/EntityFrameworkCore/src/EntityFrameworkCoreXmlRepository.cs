@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,15 +44,11 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             {
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
 
-                // Get Collection of DataProtectionKeys from Database
-                var dataProtectionKeys = context.DataProtectionKeys.AsNoTracking();
-                
-                
-                return dataProtectionKeys.Any() ?
-                    dataProtectionKeys.Select(key => TryParseKeyXml(key.Xml)).ToList().AsReadOnly() : 
-                    new List<XElement>().AsReadOnly();
 
-                
+                // Put logger in a local such that `this` isn't captured.
+                var logger = _logger;
+                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, logger)).ToList().AsReadOnly();
+
             }
         }
 
@@ -74,7 +70,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
         }
 
-        private XElement TryParseKeyXml(string xml)
+        private static XElement TryParseKeyXml(string xml, ILogger logger)
         {
             try
             {
@@ -82,7 +78,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
             catch (Exception e)
             {
-                _logger?.LogExceptionWhileParsingKeyXml(xml, e);
+                logger?.LogExceptionWhileParsingKeyXml(xml, e);
                 return null;
             }
         }

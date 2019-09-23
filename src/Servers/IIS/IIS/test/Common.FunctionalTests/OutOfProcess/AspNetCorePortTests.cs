@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithApplicationTypes(ApplicationType.Portable);
 
         public static IEnumerable<object[]> InvalidTestVariants

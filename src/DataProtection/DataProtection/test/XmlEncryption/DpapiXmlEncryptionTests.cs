@@ -5,7 +5,6 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

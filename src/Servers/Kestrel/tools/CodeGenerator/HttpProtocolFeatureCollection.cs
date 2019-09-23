@@ -13,7 +13,7 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
-                "IResponseBodyPipeFeature",
+                "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IServiceProvidersFeature",
@@ -35,7 +35,6 @@ namespace CodeGenerator
             {
                 "IHttpUpgradeFeature",
                 "IHttp2StreamIdFeature",
-                "IHttpResponseCompletionFeature",
                 "IHttpResponseTrailersFeature",
                 "IResponseCookiesFeature",
                 "IItemsFeature",
@@ -46,19 +45,12 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature",
                 "IHttpResetFeature"
-            };
-
-            var rareFeatures = new[]
-            {
-                "IHttpSendFileFeature",
             };
 
             var allFeatures = alwaysFeatures
                 .Concat(commonFeatures)
                 .Concat(sometimesFeatures)
-                .Concat(rareFeatures)
                 .ToArray();
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.
@@ -67,7 +59,7 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
-                "IResponseBodyPipeFeature",
+                "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
@@ -77,7 +69,6 @@ namespace CodeGenerator
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature",
                 "IRouteValuesFeature",
                 "IEndpointFeature"
             };

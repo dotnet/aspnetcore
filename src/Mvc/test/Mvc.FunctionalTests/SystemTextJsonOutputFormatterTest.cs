@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11459")]
+        [Fact]
         public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 
         [Fact]
@@ -31,9 +32,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task Formatting_WithCustomEncoder()
+        {
+            // Arrange
+            static void ConfigureServices(IServiceCollection serviceCollection)
+            {
+                serviceCollection.AddControllers()
+                    .AddJsonOptions(o => o.JsonSerializerOptions.Encoder = JavaScriptEncoder.Default);
+            }
+            var client = Factory.WithWebHostBuilder(c => c.ConfigureServices(ConfigureServices)).CreateClient();
+
+            // Act
+            var response = await client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.StringWithNonAsciiContent)}");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal("\"Une b\\u00EAte de cirque\"", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11522")]
+        [Fact]
         public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
         [Fact]

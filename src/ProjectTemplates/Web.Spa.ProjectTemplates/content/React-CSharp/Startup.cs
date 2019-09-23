@@ -36,15 +36,15 @@ namespace Company.WebApplication1
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
 
-            services.AddDefaultIdentity<ApplicationUser>()
+            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
@@ -53,7 +53,11 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc(options => options.EnableEndpointRouting = false);
+
+            services.AddControllersWithViews();
+#if (IndividualLocalAuth)
+            services.AddRazorPages();
+#endif
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -87,17 +91,24 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-#if (IndividualLocalAuth)
 
+            app.UseRouting();
+
+#if (IndividualLocalAuth)
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
-
-            app.UseMvc(routes =>
+#if (!NoAuth)
+            app.UseAuthorization();
+#endif
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action=Index}/{id?}");
+#if (IndividualLocalAuth)
+                endpoints.MapRazorPages();
+#endif
             });
 
             app.UseSpa(spa =>

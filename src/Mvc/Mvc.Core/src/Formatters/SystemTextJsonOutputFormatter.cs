@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
@@ -16,20 +18,32 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
-
         /// <summary>
         /// Initializes a new <see cref="SystemTextJsonOutputFormatter"/> instance.
         /// </summary>
-        /// <param name="options">The <see cref="JsonOptions"/>.</param>
-        public SystemTextJsonOutputFormatter(JsonOptions options)
+        /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
+        public SystemTextJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
         {
-            SerializerOptions = options.JsonSerializerOptions;
+            SerializerOptions = jsonSerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
+        }
+
+        internal static SystemTextJsonOutputFormatter CreateFormatter(JsonOptions jsonOptions)
+        {
+            var jsonSerializerOptions = jsonOptions.JsonSerializerOptions;
+
+            if (jsonSerializerOptions.Encoder is null)
+            {
+                // If the user hasn't explicitly configured the encoder, use the less strict encoder that does not encode all non-ASCII characters.
+                jsonSerializerOptions = jsonSerializerOptions.Copy(JavaScriptEncoder.UnsafeRelaxedJsonEscaping);
+            }
+
+            return new SystemTextJsonOutputFormatter(jsonSerializerOptions);
         }
 
         /// <summary>
@@ -65,13 +79,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
                 var objectType = context.Object?.GetType() ?? context.ObjectType;
                 await JsonSerializer.SerializeAsync(writeStream, context.Object, objectType, SerializerOptions);
+
+                // The transcoding streams use Encoders and Decoders that have internal buffers. We need to flush these
+                // when there is no more data to be written. Stream.FlushAsync isn't suitable since it's
+                // acceptable to Flush a Stream (multiple times) prior to completion.
+                if (writeStream is TranscodingWriteStream transcodingStream)
+                {
+                    await transcodingStream.FinalWriteAsync(CancellationToken.None);
+                }
                 await writeStream.FlushAsync();
             }
             finally
             {
-                if (writeStream is TranscodingWriteStream transcoding)
+                if (writeStream is TranscodingWriteStream transcodingStream)
                 {
-                    await transcoding.DisposeAsync();
+                    await transcodingStream.DisposeAsync();
                 }
             }
         }

@@ -2,17 +2,19 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core default HTTP feature implementations.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
   </ItemGroup>
 

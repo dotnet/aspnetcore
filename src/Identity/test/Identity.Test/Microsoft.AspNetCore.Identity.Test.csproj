@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-    <Content Include="..\..\UI\src\Areas\Identity\Pages\**\*.*" LinkBase="UI\src\Areas\Identity\Pages" />
-    <Content Include="..\..\UI\src\wwwroot\**\*.*" LinkBase="UI\src\wwwroot" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,8 +15,31 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
+
+  <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_IdentitUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />
+      <_IdentityUIPages Include="$(MSBuildThisFileDirectory)..\..\UI\src\Areas\Identity\Pages\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
+    <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />
+    <!-- Drop a dummy sln to specify content root location -->
+    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
+  </Target>
+
 
 </Project>

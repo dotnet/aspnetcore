@@ -38,8 +38,18 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     startBlockContext.RegisterOperationAction(context =>
                     {
-                        var assignmentOperation = (IAssignmentOperation)context.Operation;
-                        var leftHandSide = assignmentOperation.Target;
+                        IOperation leftHandSide;
+
+                        if (context.Operation is IAssignmentOperation assignmentOperation)
+                        {
+                            leftHandSide = assignmentOperation.Target;
+                        }
+                        else
+                        {
+                            var incrementOrDecrementOperation = (IIncrementOrDecrementOperation)context.Operation;
+                            leftHandSide = incrementOrDecrementOperation.Target;
+                        }
+
                         if (leftHandSide == null)
                         {
                             // Malformed assignment, no left hand side.
@@ -96,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                             DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent,
                             propertyReference.Syntax.GetLocation(),
                             propertyReference.Member.Name));
-                    }, OperationKind.SimpleAssignment, OperationKind.CompoundAssignment, OperationKind.CoalesceAssignment);
+                    }, OperationKind.SimpleAssignment, OperationKind.CompoundAssignment, OperationKind.CoalesceAssignment, OperationKind.Increment, OperationKind.Decrement);
                 });
             });
         }

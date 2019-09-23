@@ -146,9 +146,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var values = new RouteValueDictionary(dynamicValues);
 
                 // Include values that were matched by the fallback route.
-                foreach (var kvp in originalValues)
+                if (originalValues != null)
                 {
-                    values.TryAdd(kvp.Key, kvp.Value);
+                    foreach (var kvp in originalValues)
+                    {
+                        values.TryAdd(kvp.Key, kvp.Value);
+                    }
                 }
 
                 // Update the route values

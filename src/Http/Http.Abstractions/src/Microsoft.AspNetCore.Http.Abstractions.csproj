@@ -8,11 +8,12 @@ Microsoft.AspNetCore.Builder.IApplicationBuilder
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpRequest
 Microsoft.AspNetCore.Http.HttpResponse</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

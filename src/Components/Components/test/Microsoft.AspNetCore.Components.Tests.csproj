@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

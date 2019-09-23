@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +26,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer);
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
 
             // Act
             await circuitHost.DisposeAsync();
@@ -38,10 +35,37 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Assert
             serviceScope.Verify(s => s.Dispose(), Times.Once());
             Assert.True(remoteRenderer.Disposed);
+            Assert.Null(circuitHost.Handle.CircuitHost);
         }
 
         [Fact]
-        public async Task DisposeAsync_DisposesResourcesEvenIfCircuitHandlerOrComponentThrows()
+        public async Task DisposeAsync_DisposesScopeAsynchronouslyIfPossible()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            serviceScope
+                .As<IAsyncDisposable>()
+                .Setup(f => f.DisposeAsync())
+                .Returns(new ValueTask(Task.CompletedTask))
+                .Verifiable();
+
+            var remoteRenderer = GetRemoteRenderer();
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert
+            serviceScope.Verify(s => s.Dispose(), Times.Never());
+            serviceScope.As<IAsyncDisposable>().Verify(s => s.DisposeAsync(), Times.Once());
+            Assert.True(remoteRenderer.Disposed);
+            Assert.Null(circuitHost.Handle.CircuitHost);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesResourcesAndSilencesException()
         {
             // Arrange
             var serviceScope = new Mock<IServiceScope>();
@@ -51,19 +75,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .Throws<InvalidTimeZoneException>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer,
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer,
                 handlers: new[] { handler.Object });
 
             var throwOnDisposeComponent = new ThrowOnDisposeComponent();
             circuitHost.Renderer.AssignRootComponentId(throwOnDisposeComponent);
 
             // Act
-            await Assert.ThrowsAsync<InvalidTimeZoneException>(async () =>
-            {
-                await circuitHost.DisposeAsync();
-            });
+            await circuitHost.DisposeAsync(); // Does not throw
 
             // Assert
             Assert.True(throwOnDisposeComponent.DidCallDispose);
@@ -78,9 +98,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer);
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
 
             var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
             circuitHost.Renderer.AssignRootComponentId(component);
@@ -181,7 +200,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             await initializeAsyncTask;
 
             // Assert: The async exception was reported via the side-channel
-            Assert.Same(ex, reportedErrors.Single().ExceptionObject);
+            var aex = Assert.IsType<AggregateException>(reportedErrors.Single().ExceptionObject);
+            Assert.Same(ex, aex.InnerExceptions.Single());
             Assert.False(reportedErrors.Single().IsTerminating);
         }
 
@@ -232,15 +252,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
-                new RendererRegistry(),
-                Mock.Of<IJSRuntime>(),
                 Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, rendererRegistry, jsRuntime, new CircuitClientProxy(client, "connection"), HtmlEncoder.Default, NullLogger.Instance)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
+                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), new CircuitClientProxy(client, "connection"), NullLogger.Instance)
             {
             }
 
@@ -275,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public bool DidCallDispose { get; private set; }
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => Task.CompletedTask;
 
             public void Dispose()

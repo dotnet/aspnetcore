@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Internal;
@@ -98,16 +98,23 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Now we want figure out which type is the handler type.
             TypeInfo handlerType;
+            var pageTypeAttributes = pageTypeInfo.GetCustomAttributes(inherit: true);
+            object[] handlerTypeAttributes;
             if (modelProperty.PropertyType.IsDefined(typeof(PageModelAttribute), inherit: true))
             {
                 handlerType = modelTypeInfo;
+
+                // If a PageModel is specified, combine the attributes specified on the Page and the Model type.
+                // Attributes that appear earlier in the are more significant. In this case, we'll treat attributes on the model (code)
+                // to be more signficant than the page (code-generated).
+                handlerTypeAttributes = modelTypeInfo.GetCustomAttributes(inherit: true).Concat(pageTypeAttributes).ToArray();
             }
             else
             {
                 handlerType = pageTypeInfo;
+                handlerTypeAttributes = pageTypeInfo.GetCustomAttributes(inherit: true);
             }
 
-            var handlerTypeAttributes = handlerType.GetCustomAttributes(inherit: true);
             var pageModel = new PageApplicationModel(
                 actionDescriptor,
                 declaredModelType,

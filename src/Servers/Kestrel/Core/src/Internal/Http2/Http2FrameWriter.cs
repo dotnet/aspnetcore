@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal class Http2FrameWriter
     {
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
-        private static ReadOnlySpan<byte> _continueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+        private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
         private readonly object _writeLock = new object();
         private readonly Http2Frame _outgoingFrame;
@@ -138,9 +138,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
-                _outgoingFrame.PayloadLength = _continueBytes.Length;
+                _outgoingFrame.PayloadLength = ContinueBytes.Length;
                 WriteHeaderUnsynchronized();
-                _outputWriter.Write(_continueBytes);
+                _outputWriter.Write(ContinueBytes);
                 return TimeFlushUnsynchronizedAsync();
             }
         }
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream)
+        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool forceFlush)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -261,7 +261,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 flowControl.Advance((int)dataLength);
                 WriteDataUnsynchronized(streamId, data, dataLength, endStream);
-                return TimeFlushUnsynchronizedAsync();
+
+                if (forceFlush)
+                {
+                    return TimeFlushUnsynchronizedAsync();
+                }
+
+                return default;
             }
         }
 
@@ -545,7 +551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return default;
                 }
 
-                _outgoingFrame.PreparePing(Http2PingFrameFlags.ACK);
+                _outgoingFrame.PreparePing(flags);
                 Debug.Assert(payload.Length == _outgoingFrame.PayloadLength); // 8
                 WriteHeaderUnsynchronized();
                 foreach (var segment in payload)

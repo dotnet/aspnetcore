@@ -264,6 +264,7 @@ namespace Microsoft.AspNetCore.Hosting
                     .InformationalVersion;
                 model.ClrVersion = clrVersion;
                 model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+                model.ShowRuntimeDetails = showDetailedErrors;
 
                 if (showDetailedErrors)
                 {
@@ -354,7 +355,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

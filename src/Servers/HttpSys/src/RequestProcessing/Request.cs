@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -30,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -252,6 +255,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public int KeyExchangeStrength { get; private set; }
 
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
+        {
+            get
+            {
+                if (_requestInfo == null)
+                {
+                    _requestInfo = _nativeRequestContext.GetRequestInfo();
+                }
+                return _requestInfo;
+            }
+        }
+
         private void GetTlsHandshakeResults()
         {
             var handshake = _nativeRequestContext.GetTlsHandshake();
@@ -259,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Protocol = handshake.Protocol;
             // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
             // We need to fill in the client bits so the enum shows the expected protocol.
-            // https://docs.microsoft.com/en-us/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+            // https://docs.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
             // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
 #pragma warning disable CS0618 // Type or member is obsolete
             if ((Protocol & SslProtocols.Ssl2) != 0)

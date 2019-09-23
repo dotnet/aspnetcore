@@ -8,5 +8,10 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\browser\signalr.js" />
+    <BuildOutputFiles Include="dist\webworker\signalr.js" />
+  </ItemGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

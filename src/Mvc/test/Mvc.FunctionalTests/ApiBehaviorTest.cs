@@ -56,6 +56,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     {
                         Converters = { new ValidationProblemDetailsConverter() }
                     });
+
+                Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+                Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+
                 Assert.Collection(
                     problemDetails.Errors.OrderBy(kvp => kvp.Key),
                     kvp =>
@@ -340,31 +344,31 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/pull/11460")]
+        [Fact]
         public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
         {
             return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        [Fact]
         public override Task ClientErrorResultFilterExecutesForStatusCodeResults()
         {
             return base.ClientErrorResultFilterExecutesForStatusCodeResults();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        [Fact]
         public override Task SerializingProblemDetails_IgnoresNullValuedProperties()
         {
             return base.SerializingProblemDetails_IgnoresNullValuedProperties();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        [Fact]
         public override Task SerializingProblemDetails_WithAllValuesSpecified()
         {
             return base.SerializingProblemDetails_WithAllValuesSpecified();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        [Fact]
         public override Task SerializingValidationProblemDetails_WithExtensionData()
         {
             return base.SerializingValidationProblemDetails_WithExtensionData();

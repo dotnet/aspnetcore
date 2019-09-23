@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Authentication
         public void Configure(string name, JwtBearerOptions options)
         {
             var azureADScheme = GetAzureADScheme(name);
+            if (azureADScheme is null)
+            {
+                return;
+            }
+
             var azureADOptions = _azureADOptions.Get(azureADScheme);
             if (name != azureADOptions.JwtBearerSchemeName)
             {

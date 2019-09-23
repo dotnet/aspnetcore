@@ -11,10 +11,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class DynamicControllerEndpointSelector : IDisposable
     {
-        private readonly ControllerActionEndpointDataSource _dataSource;
+        private readonly EndpointDataSource _dataSource;
         private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
 
         public DynamicControllerEndpointSelector(ControllerActionEndpointDataSource dataSource)
+            : this((EndpointDataSource)dataSource)
+        {
+        }
+
+        // Exposed for tests. We need to accept a more specific type in the constructor for DI
+        // to work.
+        protected DynamicControllerEndpointSelector(EndpointDataSource dataSource)
         {
             if (dataSource == null)
             {

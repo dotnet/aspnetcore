@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
@@ -15,7 +15,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
-    <Reference Include="System.Data.SqlClient" />
+    <Reference Include="Microsoft.Data.SqlClient" />
+
+    <!-- Intentional change to remove reference to System.Data.SqlClient. See https://github.com/aspnet/AspNetCore/issues/12445 -->
+    <SuppressBaselineReference Include="System.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

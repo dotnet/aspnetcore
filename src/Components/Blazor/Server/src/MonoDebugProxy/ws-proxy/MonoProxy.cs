@@ -100,7 +100,7 @@ namespace WsProxy {
 					break;
 				}
 			case "Debugger.paused": {
-					//TODO figure out how to stich out more frames and, in particular what happens when real wasm is on the stack
+					//TODO figure out how to stitch out more frames and, in particular what happens when real wasm is on the stack
 					var top_func = args? ["callFrames"]? [0]? ["functionName"]?.Value<string> ();
 					if (top_func == "mono_wasm_fire_bp" || top_func == "_mono_wasm_fire_bp") {
 						await OnBreakPointHit (args, token);
@@ -322,8 +322,7 @@ namespace WsProxy {
 									name = method.Name,
 									startLocation = method.StartLocation.ToJObject (),
 									endLocation = method.EndLocation.ToJObject (),
-								}},
-								@this = new { }
+								}}
 						}));
 
 						++frame_id;
@@ -420,7 +419,7 @@ namespace WsProxy {
 
 			var res = await SendCommand("Runtime.evaluate", o, token);
 
-			//if we fail we just buble that to the IDE (and let it panic over it)
+			//if we fail we just bubble that to the IDE (and let it panic over it)
 			if (res.IsErr)
 			{
 				SendResponse(msg_id, res, token);
@@ -476,7 +475,7 @@ namespace WsProxy {
 
 			var res = await SendCommand ("Runtime.evaluate", o, token);
 
-			//if we fail we just buble that to the IDE (and let it panic over it)
+			//if we fail we just bubble that to the IDE (and let it panic over it)
 			if (res.IsErr) {
 				SendResponse (msg_id, res, token);
 				return;
@@ -485,11 +484,11 @@ namespace WsProxy {
 			var values = res.Value? ["result"]? ["value"]?.Values<JObject> ().ToArray ();
 
 			var var_list = new List<JObject> ();
-
+			int i = 0;
 			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
 			// results in a "Memory access out of bounds", causing 'values' to be null,
 			// so skip returning variable values in that case.
-			for (int i = 0; values != null && i < vars.Length; ++i) {
+			while (values != null && i < var_ids.Length && i < values.Length) {
 				var value = values [i] ["value"];
 				if (((string)value ["description"]) == null)
 					value ["description"] = value ["value"]?.ToString();
@@ -498,12 +497,24 @@ namespace WsProxy {
 					name = vars [i].Name,
 					value = values [i] ["value"]
 				}));
+				i++;
+			}
+			//Async methods are special in the way that local variables can be lifted to generated class fields
+			//value of "this" comes here either
+			while (i < values.Length) {
+				String name = values [i] ["name"].ToString ();
 
+				if (name.IndexOf (">", StringComparison.Ordinal) > 0)
+					name = name.Substring (1, name.IndexOf (">", StringComparison.Ordinal) - 1);
+				var_list.Add (JObject.FromObject (new {
+					name =  name,
+					value = values [i+1] ["value"]
+				}));
+				i = i + 2;
 			}
 			o = JObject.FromObject (new {
 				result = var_list
 			});
-
 			SendResponse (msg_id, Result.Ok (o), token);
 		}
 
@@ -583,7 +594,7 @@ namespace WsProxy {
 				var res = await EnableBreakPoint (bp, token);
 				var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
-				//if we fail we just buble that to the IDE (and let it panic over it)
+				//if we fail we just bubble that to the IDE (and let it panic over it)
 				if (!ret_code.HasValue) {
 					//FIXME figure out how to inform the IDE of that.
 					Info ($"FAILED TO ENABLE BP {bp.LocalId}");
@@ -657,7 +668,7 @@ namespace WsProxy {
 				var res = await EnableBreakPoint (bp, token);
 				var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
 
-				//if we fail we just buble that to the IDE (and let it panic over it)
+				//if we fail we just bubble that to the IDE (and let it panic over it)
 				if (!ret_code.HasValue) {
 					SendResponse (msg_id, res, token);
 					return;

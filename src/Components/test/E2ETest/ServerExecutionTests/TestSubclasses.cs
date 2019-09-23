@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         private static string[] GetAdditionalArguments() =>
-            new string[] { "--circuit-detailed-errors", "true" };
+            new string[] { "--detailedErrors", "true" };
     }
 
     public class ServerRoutingTest : RoutingTest
@@ -79,14 +79,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
     public class ServerKeyTest : KeyTest
     {
         public ServerKeyTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
-        {
-        }
-    }
-
-    public class ServerAuthTest : AuthTest
-    {
-        public ServerAuthTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }

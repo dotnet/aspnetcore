@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class RoutingTest : BasicTestAppTestBase
+    public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public RoutingTest(
             BrowserFixture browserFixture,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            WaitUntilTestSelectorReady();
+            Browser.WaitUntilTestSelectorReady();
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // have a trailing slash.
             SetUrlViaPushState("");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/WithParameters/Name/Ghi/LastName/O'Jkl");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("Your full name is Ghi O'Jkl.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks();
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             SetUrlViaPushState($"/WithNumberParameters/{testInt}/{testLong}/{testDouble}/{testFloat}/{testDec}");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             var expected = $"Test parameters: {testInt} {testLong} {testDouble} {testFloat} {testDec}";
 
             Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("This is another page.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
         }
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Oopsie_Daisies%20%This_Aint_A_Real_Page");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other")).Click();
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             {
                 SetUrlViaPushState("/");
 
-                var app = MountTestComponent<TestRouter>();
+                var app = Browser.MountTestComponent<TestRouter>();
                 var button = app.FindElement(By.LinkText("Other"));
 
                 new Actions(Browser).KeyDown(key).Click(button).Build().Perform();
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             {
                 SetUrlViaPushState("/");
 
-                var app = MountTestComponent<TestRouter>();
+                var app = Browser.MountTestComponent<TestRouter>();
 
                 app.FindElement(By.LinkText("Target (_blank)")).Click();
 
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
 
             app.FindElement(By.LinkText("Other")).Click();
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with base-relative URL (matches all)")).Click();
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with base-relative URL (matches all)")).Click();
             Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("With parameters")).Click();
             Browser.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
@@ -226,10 +226,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertHighlightedLinks("With parameters", "With more parameters");
 
             // Can remove parameters while remaining on same page
-            // WARNING: This only works because the WithParameters component overrides SetParametersAsync
-            // and explicitly resets its parameters to default when each new set of parameters arrives.
-            // Without that, the page would retain the old value.
-            // See https://github.com/aspnet/AspNetCore/issues/6864 where we reverted the logic to auto-reset.
             app.FindElement(By.LinkText("With parameters")).Click();
             Browser.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
@@ -240,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default (matches all)")).Click();
             Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
@@ -251,7 +247,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with query")).Click();
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with query");
@@ -262,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with query")).Click();
             Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default with query");
@@ -273,7 +269,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other with hash")).Click();
             Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with hash");
@@ -284,7 +280,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/Other");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Default with hash")).Click();
             Browser.Equal("This is the default page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Default with hash");
@@ -295,7 +291,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Not a component")).Click();
             Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
         }
@@ -306,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
 
             // First go to some URL on the router
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("Other")).Click();
             Browser.True(() => Browser.Url.EndsWith("/Other"));
 
@@ -321,7 +317,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // to show we did go back to the right place and the Blazor app started up
             Browser.Navigate().Back();
             Browser.True(() => Browser.Url.EndsWith("/Other"));
-            WaitUntilTestSelectorReady();
+            Browser.WaitUntilTestSelectorReady();
         }
 
         [Fact]
@@ -329,8 +325,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
-            var testSelector = WaitUntilTestSelectorReady();
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation")).Click();
             Browser.True(() => Browser.Url.EndsWith("/Other"));
@@ -346,8 +342,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/");
 
-            var app = MountTestComponent<TestRouter>();
-            var testSelector = WaitUntilTestSelectorReady();
+            var app = Browser.MountTestComponent<TestRouter>();
+            var testSelector = Browser.WaitUntilTestSelectorReady();
 
             app.FindElement(By.Id("do-navigation-forced")).Click();
             Browser.True(() => Browser.Url.EndsWith("/Other"));
@@ -365,7 +361,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
             var initialUrl = Browser.Url;
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             app.FindElement(By.Id("anchor-with-no-href")).Click();
 
             Assert.Equal(initialUrl, Browser.Url);
@@ -373,9 +369,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void UsingUriHelperWithoutRouterWorks()
+        public void UsingNavigationManagerWithoutRouterWorks()
         {
-            var app = MountTestComponent<UriHelperComponent>();
+            var app = Browser.MountTestComponent<NavigationManagerComponent>();
             var initialUrl = Browser.Url;
 
             Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
@@ -389,13 +385,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void UriHelperCanReadAbsoluteUriIncludingHash()
+        {
+            var app = Browser.MountTestComponent<NavigationManagerComponent>();
+            Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
+
+            var uri = "/mytestpath?my=query&another#some/hash?tokens";
+            var expectedAbsoluteUri = $"{_serverFixture.RootUri}subdir{uri}";
+
+            SetUrlViaPushState(uri);
+            Browser.Equal(expectedAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtRouteWithExtension()
         {
             // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
             // some unknown reason
             SetUrlViaPushState("/Default.html");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With extension");
         }
@@ -405,8 +414,51 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             SetUrlViaPushState("/routeablecomponentfrompackage.html");
 
-            var app = MountTestComponent<TestRouter>();
+            var app = Browser.MountTestComponent<TestRouter>();
             Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void RoutingToComponentOutsideMainAppWorksWithAdditionalAssemblySpecified()
+        {
+            SetUrlViaPushState("/routeablecomponentfrompackage.html");
+
+            var app = Browser.MountTestComponent<TestRouterWithAdditionalAssembly>();
+            Assert.Contains("This component, including the CSS and image required to produce its", app.FindElement(By.CssSelector("div.special-style")).Text);
+        }
+
+        [Fact]
+        public void ResetsScrollPositionWhenPerformingInternalNavigation_LinkClick()
+        {
+            SetUrlViaPushState("/LongPage1");
+            var app = Browser.MountTestComponent<TestRouter>();
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            BrowserScrollY = 500;
+            Browser.True(() => BrowserScrollY > 300); // Exact position doesn't matter
+
+            app.FindElement(By.LinkText("Long page 2")).Click();
+            Browser.Equal("This is another long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            Browser.Equal(0, () => BrowserScrollY);
+        }
+
+        [Fact]
+        public void ResetsScrollPositionWhenPerformingInternalNavigation_ProgrammaticNavigation()
+        {
+            SetUrlViaPushState("/LongPage1");
+            var app = Browser.MountTestComponent<TestRouter>();
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            BrowserScrollY = 500;
+            Browser.True(() => BrowserScrollY > 300); // Exact position doesn't matter
+
+            app.FindElement(By.Id("go-to-longpage2")).Click();
+            Browser.Equal("This is another long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
+            Browser.Equal(0, () => BrowserScrollY);
+        }
+
+        private long BrowserScrollY
+        {
+            get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
+            set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
         }
 
         private string SetUrlViaPushState(string relativeUri)

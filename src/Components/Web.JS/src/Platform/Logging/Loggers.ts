@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 
-import { ILogger, LogLevel } from './ILogger';
+import { Logger, LogLevel } from './Logger';
 
-export class NullLogger implements ILogger {
-  public static instance: ILogger = new NullLogger();
+export class NullLogger implements Logger {
+  public static instance: Logger = new NullLogger();
 
   private constructor() { }
 
@@ -11,7 +11,7 @@ export class NullLogger implements ILogger {
   }
 }
 
-export class ConsoleLogger implements ILogger {
+export class ConsoleLogger implements Logger {
   private readonly minimumLogLevel: LogLevel;
 
   public constructor(minimumLogLevel: LogLevel) {

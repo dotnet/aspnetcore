@@ -1126,6 +1126,105 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        [Fact]
+        public async Task CollectionModelBinder_CollectionOfSimpleTypes_DoesNotResultInValidationError()
+        {
+            // Regression test for https://github.com/aspnet/AspNetCore/issues/13512
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Collection<string>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?[0]=hello&[1]=");
+                });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(0, modelState.ErrorCount);
+
+            Assert.True(result.IsModelSet);
+            var model = Assert.IsType<Collection<string>>(result.Model);
+            Assert.Collection(
+                model,
+                item => Assert.Equal("hello", item),
+                item => Assert.Null(item));
+
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("[0]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[1]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
+        }
+
+        [Fact]
+        public async Task CollectionModelBinder_CollectionOfNonNullableTypes_AppliesImplicitRequired()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Collection<string>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?[0]=hello&[1]=");
+                });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Equal(0, modelState.ErrorCount);
+
+            Assert.True(result.IsModelSet);
+            var model = Assert.IsType<Collection<string>>(result.Model);
+            Assert.Collection(
+                model,
+                item => Assert.Equal("hello", item),
+                item => Assert.Null(item));
+
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("[0]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[1]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
+        }
+
         private class ClosedGenericCollection : Collection<string>
         {
         }

@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     var memory = _application.Output.GetMemory();
 
                     var receiveResult = await socket.ReceiveAsync(memory, token);
-                    // Need to check again for netcoreapp3.0 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netcoreapp5.0 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         return;
@@ -189,10 +189,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 if (!_aborted && !token.IsCancellationRequested)
                 {
                     _application.Output.Complete(ex);
-
-                    // We re-throw here so we can communicate that there was an error when sending
-                    // the close frame
-                    throw;
                 }
             }
             finally
@@ -270,8 +266,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 // Send the close frame before calling into user code
                 if (WebSocketCanSend(socket))
                 {
-                    // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    try
+                    {
+                        // We're done sending, send the close frame to the client if the websocket is still open
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.ClosingWebSocketFailed(_logger, ex);
+                    }
                 }
 
                 _application.Input.Complete();

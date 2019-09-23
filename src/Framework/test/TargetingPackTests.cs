@@ -34,9 +34,6 @@ namespace Microsoft.AspNetCore
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
-            // Workaround https://github.com/aspnet/AspNetCore/issues/11206
-            dlls = dlls.Where(d => !d.Contains("System.IO.Pipelines"));
-
             Assert.All(dlls, path =>
             {
                 var assemblyName = AssemblyName.GetAssemblyName(path);
@@ -101,7 +98,7 @@ namespace Microsoft.AspNetCore
             {
                 var parts = line.Split('|');
                 Assert.Equal(4, parts.Length);
-                Assert.Equal("Microsoft.AspNetCore.App", parts[1]);
+                Assert.Equal("Microsoft.AspNetCore.App.Ref", parts[1]);
                 if (parts[2].Length > 0)
                 {
                     Assert.True(Version.TryParse(parts[2], out _), "Assembly version must be convertable to System.Version");

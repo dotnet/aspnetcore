@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {

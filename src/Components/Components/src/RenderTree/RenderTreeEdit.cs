@@ -3,11 +3,18 @@
 
 using System.Runtime.InteropServices;
 
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     /// <summary>
-    /// Represents a single edit operation on a component's render tree.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in future release.
     /// </summary>
+    //
+    // Represents a single edit operation on a component's render tree.
     [StructLayout(LayoutKind.Explicit)]
     public readonly struct RenderTreeEdit
     {

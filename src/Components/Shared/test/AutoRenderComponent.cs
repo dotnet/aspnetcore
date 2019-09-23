@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             _renderHandle = renderHandle;
         }
 
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             TriggerRender();

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for analyzing middleware in the request pipeline with System.Diagnostics.DiagnosticSource.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;diagnostics</PackageTags>

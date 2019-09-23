@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods for configuring prerendering of a Single Page Application.
     /// </summary>
+    [Obsolete("Prerendering is no longer supported out of box")]
     public static class SpaPrerenderingExtensions
     {
         /// <summary>
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
         /// <param name="configuration">Supplies configuration for the prerendering middleware.</param>
+        [Obsolete("Prerendering is no longer supported out of box")]
         public static void UseSpaPrerendering(
             this ISpaBuilder spaBuilder,
             Action<SpaPrerenderingOptions> configuration)

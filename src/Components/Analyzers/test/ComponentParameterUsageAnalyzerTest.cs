@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         class TestComponent : IComponent
         {{
             [Parameter] public string TestProperty {{ get; set; }}
+            [Parameter] public int TestInt {{ get; set; }}
             public string NonParameter {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
@@ -111,6 +112,68 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
                     Message = "Component parameter 'TestProperty' should not be set outside of its component.",
+                    Severity = DiagnosticSeverity.Warning,
+                    Locations = new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 11, 17)
+                    }
+                });
+        }
+
+        [Fact]
+        public void ComponentPropertyIncrement_Warns()
+        {
+            var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class OtherComponent : IComponent
+        {{
+            private TestComponent _testComponent;
+            void Render()
+            {{
+                _testComponent = new TestComponent();
+                _testComponent.TestInt++;
+            }}
+        }}
+    }}" + ComponentTestSource;
+
+            VerifyCSharpDiagnostic(test,
+                new DiagnosticResult
+                {
+                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                    Message = "Component parameter 'TestInt' should not be set outside of its component.",
+                    Severity = DiagnosticSeverity.Warning,
+                    Locations = new[]
+                    {
+                        new DiagnosticResultLocation("Test0.cs", 11, 17)
+                    }
+                });
+        }
+
+        [Fact]
+        public void ComponentPropertyDecrement_Warns()
+        {
+            var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class OtherComponent : IComponent
+        {{
+            private TestComponent _testComponent;
+            void Render()
+            {{
+                _testComponent = new TestComponent();
+                _testComponent.TestInt--;
+            }}
+        }}
+    }}" + ComponentTestSource;
+
+            VerifyCSharpDiagnostic(test,
+                new DiagnosticResult
+                {
+                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent.Id,
+                    Message = "Component parameter 'TestInt' should not be set outside of its component.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -52,13 +53,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             var isDone = new ManualResetEvent(false);
 
+            ExceptionDispatchInfo edi = null;
             new Thread(() =>
             {
-                action();
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    edi = ExceptionDispatchInfo.Capture(ex);
+                }
+
                 isDone.Set();
             }).Start();
 
-            isDone.WaitOne();
+            if (!isDone.WaitOne(TimeSpan.FromSeconds(10)))
+            {
+                throw new TimeoutException("Timed out waiting for: " + action);
+            }
+
+            if (edi != null)
+            {
+                throw edi.SourceException;
+            }
         }
     }
 }

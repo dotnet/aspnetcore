@@ -8,11 +8,12 @@ Commonly used types:
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsShippingPackage>false</IsShippingPackage>
 
     <!-- Required to implement an HtmlEncoder -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

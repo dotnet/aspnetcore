@@ -6,6 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular",
+  "precedence": "5000",
   "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.3.0",
   "name": "ASP.NET Core with Angular",
   "preferNameDirectory": true,
@@ -176,12 +177,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
         }
       ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
+      "replaces": "netcoreapp5.0",
+      "defaultValue": "netcoreapp5.0"
     },
     "HostIdentifier": {
       "type": "bind",

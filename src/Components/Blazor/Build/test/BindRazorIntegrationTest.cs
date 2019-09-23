@@ -55,7 +55,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<int>), 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void Render_BindToComponent_SpecifiesValue_WithoutMatchingProperties()
         {
             // Arrange
@@ -68,7 +68,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase, IComponent
     {
-        Task IComponent.SetParametersAsync(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -89,7 +89,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(EventCallback<int>), 2));
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<int>), 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void Render_BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
         {
             // Arrange
@@ -142,7 +142,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase, IComponent
     {
-        Task IComponent.SetParametersAsync(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -163,7 +163,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(EventCallback<int>), 2));
         }
 
         [Fact]
@@ -271,6 +271,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
@@ -292,6 +293,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -314,6 +316,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -338,6 +341,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
@@ -360,6 +364,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""checkbox"" @bind=""@Enabled"" />
 @code {
     public bool Enabled { get; set; }

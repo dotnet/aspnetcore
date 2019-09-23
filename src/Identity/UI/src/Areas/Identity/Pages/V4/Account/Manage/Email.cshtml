@@ -17,7 +17,9 @@
                 {
                     <div class="input-group">
                         <input asp-for="Email" class="form-control" disabled />
-                        <span class="input-group-addon" aria-hidden="true"><span class="glyphicon glyphicon-ok text-success"></span></span>
+                        <div class="input-group-append">
+                            <span class="input-group-text text-success font-weight-bold">✓</span>
+                        </div>
                     </div>
                 }
                  else
@@ -31,7 +33,7 @@
                 <input asp-for="Input.NewEmail" class="form-control" />
                 <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
             </div>
-            <button id="change-email-button" type="submit" class="btn btn-primary">Change email</button>
+            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-primary">Change email</button>
         </form>
     </div>
 </div>

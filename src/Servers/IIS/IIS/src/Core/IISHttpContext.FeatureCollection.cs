@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -23,11 +24,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext : IFeatureCollection,
                                             IHttpRequestFeature,
                                             IHttpResponseFeature,
+                                            IHttpResponseBodyFeature,
                                             IHttpUpgradeFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature,
-                                            IHttpBufferingFeature,
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature
@@ -185,6 +186,48 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
+        Stream IHttpResponseBodyFeature.Stream => ResponseBody;
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (ResponsePipeWrapper == null)
+                {
+                    ResponsePipeWrapper = PipeWriter.Create(ResponseBody, new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return ResponsePipeWrapper;
+            }
+        }
+
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (!HasResponseStarted)
+            {
+                return InitializeResponse(flushHeaders: false);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+            => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
+
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
+
+        // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
+        // any unflushed data gets flushed.
+        protected Task CompleteResponseBodyAsync()
+        {
+            if (ResponsePipeWrapper != null)
+            {
+                return ResponsePipeWrapper.CompleteAsync().AsTask();
+            }
+
+            return Task.CompletedTask;
+        }
+
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;
 
         bool IFeatureCollection.IsReadOnly => false;
@@ -269,6 +312,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
+            MaxRequestBodySize = null;
             _wasUpgraded = true;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
@@ -353,11 +397,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        void IHttpBufferingFeature.DisableRequestBuffering()
-        {
-        }
-
-        void IHttpBufferingFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
             NativeMethods.HttpDisableBuffering(_pInProcessHandler);
             DisableCompression();

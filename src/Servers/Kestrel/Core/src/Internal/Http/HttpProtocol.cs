@@ -25,7 +25,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
+    internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private object _abortLock = new object();
+        private readonly object _abortLock = new object();
         private volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _responseBytesWritten;
 
         private readonly HttpConnectionContext _context;
-        private DefaultHttpContext _httpContext;
         private RouteValueDictionary _routeValues;
         private Endpoint _endpoint;
 
@@ -296,23 +295,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        DefaultHttpContext IDefaultHttpContextContainer.HttpContext
-        {
-            get
-            {
-                if (_httpContext is null)
-                {
-                    _httpContext = new DefaultHttpContext(this);
-                }
-                else
-                {
-                    _httpContext.Initialize(this);
-                }
-
-                return _httpContext;
-            }
-        }
-
         public void InitializeBodyControl(MessageBody messageBody)
         {
             if (_bodyControl == null)
@@ -408,8 +390,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
-
-            _httpContext?.Uninitialize();
 
             OnReset();
         }
@@ -859,12 +839,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task FlushAsyncInternal()
-        {
-            return Output.FlushAsync(default).GetAsTask();
-        }
-
         private void VerifyAndUpdateWrite(int count)
         {
             var responseHeaders = HttpResponseHeaders;
@@ -1034,6 +1008,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return Task.CompletedTask;
             }
+
+            _isLeasedMemoryInvalid = true;
 
             if (_requestRejectedException != null || _applicationException != null)
             {
@@ -1365,8 +1341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_isLeasedMemoryInvalid)
             {
-                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. " +
-                    "Call StartAsync before calling GetMemory/GetSpan and Advance.");
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync or CompleteAsync and Advance.");
             }
 
             if (_canWriteResponseBody)
@@ -1574,7 +1549,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return await Output.FlushAsync(cancellationToken);
         }
 
-        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
             return WritePipeAsync(data, cancellationToken).GetAsTask();
         }

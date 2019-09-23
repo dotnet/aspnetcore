@@ -1,9 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.SpaServices.Webpack
@@ -14,6 +16,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
     /// This is useful for Webpack middleware, because it lets you fall back on prebuilt files on disk for
     /// chunks not exposed by the current Webpack config (e.g., DLL/vendor chunks).
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     internal class ConditionalProxyMiddleware
     {
         private const int DefaultHttpBufferSize = 4096;
@@ -89,7 +92,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
                 }
 
                 // We can handle this
-                context.Response.StatusCode = (int) responseMessage.StatusCode;
+                context.Response.StatusCode = (int)responseMessage.StatusCode;
                 foreach (var header in responseMessage.Headers)
                 {
                     context.Response.Headers[header.Key] = header.Value.ToArray();

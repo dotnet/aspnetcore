@@ -1340,6 +1340,38 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         }
 
         [Fact]
+        public void IsNullableReferenceType_ReturnsFalse_ForKeyValuePairWithoutNullableConstraints()
+        {
+            // Arrange
+            var type = typeof(KeyValuePair<string, object>);
+            var property = type.GetProperty(nameof(KeyValuePair<string, object>.Key));
+
+            // Act
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+
+            // Assert
+            Assert.False(result);
+        }
+
+#nullable enable
+        [Fact]
+        public void IsNullableReferenceType_ReturnsTrue_ForKeyValuePairWithNullableConstraints()
+        {
+            // Arrange
+            var type = typeof(KeyValuePair<string, object>);
+            var property = type.GetProperty(nameof(KeyValuePair<string, object>.Key))!;
+
+            // Act
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+
+            // Assert
+            // While we'd like for result to be 'true', we don't have a very good way of actually calculating it correctly.
+            // This test is primarily here to document the behavior.
+            Assert.False(result);
+        }
+#nullable restore
+
+        [Fact]
         public void IsNonNullable_FindsNullableProperty()
         {
             // Arrange

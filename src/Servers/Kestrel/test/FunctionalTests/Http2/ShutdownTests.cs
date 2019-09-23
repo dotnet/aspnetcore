@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -96,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await stopTask.DefaultTimeout();
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished "));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         }

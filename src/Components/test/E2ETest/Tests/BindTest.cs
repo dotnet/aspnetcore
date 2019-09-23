@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class BindTest : BasicTestAppTestBase
+    public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public BindTest(
             BrowserFixture browserFixture,
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // On WebAssembly, page reloads are expensive so skip if possible
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
-            MountTestComponent<BindCasesComponent>();
-            WaitUntilExists(By.Id("bind-cases"));
+            Browser.MountTestComponent<BindCasesComponent>();
+            Browser.Exists(By.Id("bind-cases"));
         }
 
         [Fact]
@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void CanBindTextboxDateTimeWithFormat()
         {
             var target = Browser.FindElement(By.Id("textbox-datetime-format"));
@@ -770,11 +770,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
             Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
 
-            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            // Clear textbox; value updates to the default
             target.Clear();
             target.SendKeys("\t");
             expected = default;
-            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal("01-01", () => target.GetAttribute("value"));
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
             Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
 
@@ -818,7 +818,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void CanBindTextboxDateTimeOffsetWithFormat()
         {
             var target = Browser.FindElement(By.Id("textbox-datetimeoffset-format"));
@@ -829,10 +829,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
             Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
 
-            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            // Clear textbox; value updates to the default
             target.Clear();
             expected = default;
-            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal("01-01", () => target.GetAttribute("value"));
             Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
             Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
 

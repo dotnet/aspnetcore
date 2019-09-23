@@ -27,10 +27,6 @@ namespace Microsoft.AspNetCore.Mvc
         public FileContentResult(byte[] fileContents, string contentType)
             : this(fileContents, MediaTypeHeaderValue.Parse(contentType))
         {
-            if (fileContents == null)
-            {
-                throw new ArgumentNullException(nameof(fileContents));
-            }
         }
 
         /// <summary>

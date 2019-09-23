@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(httpContext != null);
             Debug.Assert(routeData != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeActionImpl(diagnosticListener, actionDescriptor, httpContext, routeData);
@@ -36,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeAction.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeAction.EventName,
-                    new BeforeAction(actionDescriptor, httpContext, routeData));
+                    Diagnostics.BeforeActionEventData.EventName,
+                    new BeforeActionEventData(actionDescriptor, httpContext, routeData));
             }
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(httpContext != null);
             Debug.Assert(routeData != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterActionImpl(diagnosticListener, actionDescriptor, httpContext, routeData);
@@ -64,11 +64,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterAction.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterAction.EventName,
-                    new AfterAction(actionDescriptor, httpContext, routeData));
+                    Diagnostics.AfterActionEventData.EventName,
+                    new AfterActionEventData(actionDescriptor, httpContext, routeData));
             }
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnAuthorizationAsyncImpl(diagnosticListener, authorizationContext, filter);
@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnAuthorization.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeAuthorizationFilterOnAuthorizationEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnAuthorization.EventName,
-                    new BeforeOnAuthorization(
+                    Diagnostics.BeforeAuthorizationFilterOnAuthorizationEventData.EventName,
+                    new BeforeAuthorizationFilterOnAuthorizationEventData(
                         authorizationContext.ActionDescriptor,
                         authorizationContext,
                         filter
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnAuthorizationAsyncImpl(diagnosticListener, authorizationContext, filter);
@@ -120,11 +120,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnAuthorization.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterAuthorizationFilterOnAuthorizationEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnAuthorization.EventName,
-                    new AfterOnAuthorization(
+                    Diagnostics.AfterAuthorizationFilterOnAuthorizationEventData.EventName,
+                    new AfterAuthorizationFilterOnAuthorizationEventData(
                         authorizationContext.ActionDescriptor,
                         authorizationContext,
                         filter
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnAuthorizationImpl(diagnosticListener, authorizationContext, filter);
@@ -150,11 +150,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnAuthorization.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeAuthorizationFilterOnAuthorizationEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnAuthorization.EventName,
-                    new BeforeOnAuthorization(
+                    Diagnostics.BeforeAuthorizationFilterOnAuthorizationEventData.EventName,
+                    new BeforeAuthorizationFilterOnAuthorizationEventData(
                         authorizationContext.ActionDescriptor,
                         authorizationContext,
                         filter
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(authorizationContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnAuthorizationImpl(diagnosticListener, authorizationContext, filter);
@@ -180,11 +180,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnAuthorization.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterAuthorizationFilterOnAuthorizationEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnAuthorization.EventName,
-                    new AfterOnAuthorization(
+                    Diagnostics.AfterAuthorizationFilterOnAuthorizationEventData.EventName,
+                    new AfterAuthorizationFilterOnAuthorizationEventData(
                         authorizationContext.ActionDescriptor,
                         authorizationContext,
                         filter
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResourceExecutionImpl(diagnosticListener, resourceExecutingContext, filter);
@@ -210,11 +210,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IAsyncResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResourceFilterOnResourceExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResourceExecution.EventName,
-                    new BeforeOnResourceExecution(
+                    Diagnostics.BeforeResourceFilterOnResourceExecutionEventData.EventName,
+                    new BeforeResourceFilterOnResourceExecutionEventData(
                         resourceExecutingContext.ActionDescriptor,
                         resourceExecutingContext,
                         filter
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResourceExecutionImpl(diagnosticListener, resourceExecutedContext, filter);
@@ -240,11 +240,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IAsyncResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResourceFilterOnResourceExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResourceExecution.EventName,
-                    new AfterOnResourceExecution(
+                    Diagnostics.AfterResourceFilterOnResourceExecutionEventData.EventName,
+                    new AfterResourceFilterOnResourceExecutionEventData(
                         resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext,
                         filter
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResourceExecutingImpl(diagnosticListener, resourceExecutingContext, filter);
@@ -270,11 +270,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResourceFilterOnResourceExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResourceExecuting.EventName,
-                    new BeforeOnResourceExecuting(
+                    Diagnostics.BeforeResourceFilterOnResourceExecutingEventData.EventName,
+                    new BeforeResourceFilterOnResourceExecutingEventData(
                         resourceExecutingContext.ActionDescriptor,
                         resourceExecutingContext,
                         filter
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResourceExecutingImpl(diagnosticListener, resourceExecutingContext, filter);
@@ -300,11 +300,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResourceFilterOnResourceExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResourceExecuting.EventName,
-                    new AfterOnResourceExecuting(
+                    Diagnostics.AfterResourceFilterOnResourceExecutingEventData.EventName,
+                    new AfterResourceFilterOnResourceExecutingEventData(
                         resourceExecutingContext.ActionDescriptor,
                         resourceExecutingContext,
                         filter
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResourceExecutedImpl(diagnosticListener, resourceExecutedContext, filter);
@@ -330,11 +330,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResourceFilterOnResourceExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResourceExecuted.EventName,
-                    new BeforeOnResourceExecuted(
+                    Diagnostics.BeforeResourceFilterOnResourceExecutedEventData.EventName,
+                    new BeforeResourceFilterOnResourceExecutedEventData(
                         resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext,
                         filter
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resourceExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResourceExecutedImpl(diagnosticListener, resourceExecutedContext, filter);
@@ -360,11 +360,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResourceFilterOnResourceExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResourceExecuted.EventName,
-                    new AfterOnResourceExecuted(
+                    Diagnostics.AfterResourceFilterOnResourceExecutedEventData.EventName,
+                    new AfterResourceFilterOnResourceExecutedEventData(
                         resourceExecutedContext.ActionDescriptor,
                         resourceExecutedContext,
                         filter
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnExceptionAsyncImpl(diagnosticListener, exceptionContext, filter);
@@ -390,11 +390,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnException.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeExceptionFilterOnException.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnException.EventName,
-                    new BeforeOnException(
+                    Diagnostics.BeforeExceptionFilterOnException.EventName,
+                    new BeforeExceptionFilterOnException(
                         exceptionContext.ActionDescriptor,
                         exceptionContext,
                         filter
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnExceptionAsyncImpl(diagnosticListener, exceptionContext, filter);
@@ -420,11 +420,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnException.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterExceptionFilterOnExceptionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnException.EventName,
-                    new AfterOnException(
+                    Diagnostics.AfterExceptionFilterOnExceptionEventData.EventName,
+                    new AfterExceptionFilterOnExceptionEventData(
                         exceptionContext.ActionDescriptor,
                         exceptionContext,
                         filter
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnExceptionImpl(diagnosticListener, exceptionContext, filter);
@@ -450,11 +450,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnException.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeExceptionFilterOnException.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnException.EventName,
-                    new BeforeOnException(
+                    Diagnostics.BeforeExceptionFilterOnException.EventName,
+                    new BeforeExceptionFilterOnException(
                         exceptionContext.ActionDescriptor,
                         exceptionContext,
                         filter
@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(exceptionContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnExceptionImpl(diagnosticListener, exceptionContext, filter);
@@ -480,11 +480,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnException.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterExceptionFilterOnExceptionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnException.EventName,
-                    new AfterOnException(
+                    Diagnostics.AfterExceptionFilterOnExceptionEventData.EventName,
+                    new AfterExceptionFilterOnExceptionEventData(
                         exceptionContext.ActionDescriptor,
                         exceptionContext,
                         filter
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnActionExecutionImpl(diagnosticListener, actionExecutingContext, filter);
@@ -510,11 +510,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IAsyncActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionFilterOnActionExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnActionExecution.EventName,
-                    new BeforeOnActionExecution(
+                    Diagnostics.BeforeActionFilterOnActionExecutionEventData.EventName,
+                    new BeforeActionFilterOnActionExecutionEventData(
                         actionExecutingContext.ActionDescriptor,
                         actionExecutingContext,
                         filter
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnActionExecutionImpl(diagnosticListener, actionExecutedContext, filter);
@@ -540,11 +540,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IAsyncActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionFilterOnActionExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnActionExecution.EventName,
-                    new AfterOnActionExecution(
+                    Diagnostics.AfterActionFilterOnActionExecutionEventData.EventName,
+                    new AfterActionFilterOnActionExecutionEventData(
                         actionExecutedContext.ActionDescriptor,
                         actionExecutedContext,
                         filter
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnActionExecutingImpl(diagnosticListener, actionExecutingContext, filter);
@@ -570,11 +570,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionFilterOnActionExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnActionExecuting.EventName,
-                    new BeforeOnActionExecuting(
+                    Diagnostics.BeforeActionFilterOnActionExecutingEventData.EventName,
+                    new BeforeActionFilterOnActionExecutingEventData(
                         actionExecutingContext.ActionDescriptor,
                         actionExecutingContext,
                         filter
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnActionExecutingImpl(diagnosticListener, actionExecutingContext, filter);
@@ -600,11 +600,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionFilterOnActionExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnActionExecuting.EventName,
-                    new AfterOnActionExecuting(
+                    Diagnostics.AfterActionFilterOnActionExecutingEventData.EventName,
+                    new AfterActionFilterOnActionExecutingEventData(
                         actionExecutingContext.ActionDescriptor,
                         actionExecutingContext,
                         filter
@@ -621,7 +621,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnActionExecutedImpl(diagnosticListener, actionExecutedContext, filter);
@@ -630,11 +630,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionFilterOnActionExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnActionExecuted.EventName,
-                    new BeforeOnActionExecuted(
+                    Diagnostics.BeforeActionFilterOnActionExecutedEventData.EventName,
+                    new BeforeActionFilterOnActionExecutedEventData(
                         actionExecutedContext.ActionDescriptor,
                         actionExecutedContext,
                         filter
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnActionExecutedImpl(diagnosticListener, actionExecutedContext, filter);
@@ -660,11 +660,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionFilterOnActionExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnActionExecuted.EventName,
-                    new AfterOnActionExecuted(
+                    Diagnostics.AfterActionFilterOnActionExecutedEventData.EventName,
+                    new AfterActionFilterOnActionExecutedEventData(
                         actionExecutedContext.ActionDescriptor,
                         actionExecutedContext,
                         filter
@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        public static void BeforeActionMethod(
+        public static void BeforeControllerActionMethod(
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IReadOnlyDictionary<string, object> actionArguments,
@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionArguments != null);
             Debug.Assert(controller != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeActionMethodImpl(diagnosticListener, actionContext, actionArguments, controller);
@@ -692,11 +692,24 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IReadOnlyDictionary<string, object> actionArguments, object controller)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionMethod.EventName))
+            // Intellitrace uses this in VS, so we fire the old event with camelCase event names.
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeActionMethod.EventName,
-                    new BeforeActionMethod(
+                 "Microsoft.AspNetCore.Mvc.BeforeActionMethod",
+                 new
+                 {
+                     actionContext,
+                     actionArguments,
+                     controller
+                 });
+            }
+
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeControllerActionMethodEventData.EventName))
+            {
+                diagnosticListener.Write(
+                    Diagnostics.BeforeControllerActionMethodEventData.EventName,
+                    new BeforeControllerActionMethodEventData(
                         actionContext,
                         actionArguments,
                         controller
@@ -704,7 +717,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        public static void AfterActionMethod(
+        public static void AfterControllerActionMethod(
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             IReadOnlyDictionary<string, object> actionArguments,
@@ -716,7 +729,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionArguments != null);
             Debug.Assert(controller != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterActionMethodImpl(diagnosticListener, actionContext, actionArguments, controller, result);
@@ -725,16 +738,30 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IReadOnlyDictionary<string, object> actionArguments, object controller, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionMethod.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterControllerActionMethodEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterActionMethod.EventName,
-                    new AfterActionMethod(
+                    Diagnostics.AfterControllerActionMethodEventData.EventName,
+                    new AfterControllerActionMethodEventData(
                         actionContext,
                         actionArguments,
                         controller,
                         result
                     ));
+            }
+
+            // Firing the old event for compat.
+            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
+            {
+                diagnosticListener.Write(
+                 "Microsoft.AspNetCore.Mvc.AfterActionMethod",
+                 new
+                 {
+                     actionContext,
+                     actionArguments,
+                     controller,
+                     result
+                 });
             }
         }
 
@@ -747,7 +774,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResultExecutionImpl(diagnosticListener, resultExecutingContext, filter);
@@ -756,11 +783,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IAsyncResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResultFilterOnResultExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResultExecution.EventName,
-                    new BeforeOnResultExecution(
+                    Diagnostics.BeforeResultFilterOnResultExecutionEventData.EventName,
+                    new BeforeResultFilterOnResultExecutionEventData(
                         resultExecutingContext.ActionDescriptor,
                         resultExecutingContext,
                         filter
@@ -777,7 +804,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResultExecutionImpl(diagnosticListener, resultExecutedContext, filter);
@@ -786,11 +813,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IAsyncResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecution.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResultFilterOnResultExecutionEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResultExecution.EventName,
-                    new AfterOnResultExecution(
+                    Diagnostics.AfterResultFilterOnResultExecutionEventData.EventName,
+                    new AfterResultFilterOnResultExecutionEventData(
                         resultExecutedContext.ActionDescriptor,
                         resultExecutedContext,
                         filter
@@ -807,7 +834,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResultExecutingImpl(diagnosticListener, resultExecutingContext, filter);
@@ -816,11 +843,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResultFilterOnResultExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResultExecuting.EventName,
-                    new BeforeOnResultExecuting(
+                    Diagnostics.BeforeResultFilterOnResultExecutingEventData.EventName,
+                    new BeforeResultFilterOnResultExecutingEventData(
                         resultExecutingContext.ActionDescriptor,
                         resultExecutingContext,
                         filter
@@ -837,7 +864,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutingContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResultExecutingImpl(diagnosticListener, resultExecutingContext, filter);
@@ -846,11 +873,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecuting.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResultFilterOnResultExecutingEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResultExecuting.EventName,
-                    new AfterOnResultExecuting(
+                    Diagnostics.AfterResultFilterOnResultExecutingEventData.EventName,
+                    new AfterResultFilterOnResultExecutingEventData(
                         resultExecutingContext.ActionDescriptor,
                         resultExecutingContext,
                         filter
@@ -867,7 +894,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeOnResultExecutedImpl(diagnosticListener, resultExecutedContext, filter);
@@ -876,11 +903,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeResultFilterOnResultExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeOnResultExecuted.EventName,
-                    new BeforeOnResultExecuted(
+                    Diagnostics.BeforeResultFilterOnResultExecutedEventData.EventName,
+                    new BeforeResultFilterOnResultExecutedEventData(
                         resultExecutedContext.ActionDescriptor,
                         resultExecutedContext,
                         filter
@@ -897,7 +924,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(resultExecutedContext != null);
             Debug.Assert(filter != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterOnResultExecutedImpl(diagnosticListener, resultExecutedContext, filter);
@@ -906,11 +933,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecuted.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterResultFilterOnResultExecutedEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterOnResultExecuted.EventName,
-                    new AfterOnResultExecuted(
+                    Diagnostics.AfterResultFilterOnResultExecutedEventData.EventName,
+                    new AfterResultFilterOnResultExecutedEventData(
                         resultExecutedContext.ActionDescriptor,
                         resultExecutedContext,
                         filter
@@ -927,7 +954,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionContext != null);
             Debug.Assert(result != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 BeforeActionResultImpl(diagnosticListener, actionContext, result);
@@ -936,11 +963,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionResult.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionResultEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeActionResult.EventName,
-                    new BeforeActionResult(actionContext, result));
+                    Diagnostics.BeforeActionResultEventData.EventName,
+                    new BeforeActionResultEventData(actionContext, result));
             }
         }
 
@@ -953,7 +980,7 @@ namespace Microsoft.AspNetCore.Mvc
             Debug.Assert(actionContext != null);
             Debug.Assert(result != null);
 
-            // Inlinable fast-path check if Diagnositcs is enabled
+            // Inlinable fast-path check if diagnostic listener is enabled
             if (diagnosticListener.IsEnabled())
             {
                 AfterActionResultImpl(diagnosticListener, actionContext, result);
@@ -962,11 +989,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionResult.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionResultEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterActionResult.EventName,
-                    new AfterActionResult(actionContext, result));
+                    Diagnostics.AfterActionResultEventData.EventName,
+                    new AfterActionResultEventData(actionContext, result));
             }
         }
     }

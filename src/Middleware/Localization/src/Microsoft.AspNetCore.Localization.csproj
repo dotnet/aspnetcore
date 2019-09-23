@@ -3,11 +3,12 @@
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <Description>ASP.NET Core middleware for automatically applying culture information to HTTP requests. Culture information can be specified in the HTTP header, query string, cookie, or custom source.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;localization</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

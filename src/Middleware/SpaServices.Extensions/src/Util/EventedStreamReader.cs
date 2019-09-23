@@ -83,23 +83,35 @@ namespace Microsoft.AspNetCore.NodeServices.Util
                 var chunkLength = await _streamReader.ReadAsync(buf, 0, buf.Length);
                 if (chunkLength == 0)
                 {
+                    if (_linesBuffer.Length > 0)
+                    {
+                        OnCompleteLine(_linesBuffer.ToString());
+                        _linesBuffer.Clear();
+                    }
+
                     OnClosed();
                     break;
                 }
 
                 OnChunk(new ArraySegment<char>(buf, 0, chunkLength));
 
-                var lineBreakPos = Array.IndexOf(buf, '\n', 0, chunkLength);
-                if (lineBreakPos < 0)
+                int lineBreakPos = -1;
+                int startPos = 0;
+
+                // get all the newlines
+                while ((lineBreakPos = Array.IndexOf(buf, '\n', startPos, chunkLength - startPos)) >= 0 && startPos < chunkLength)
                 {
-                    _linesBuffer.Append(buf, 0, chunkLength);
-                }
-                else
-                {
-                    _linesBuffer.Append(buf, 0, lineBreakPos + 1);
+                    var length = (lineBreakPos + 1) - startPos;
+                    _linesBuffer.Append(buf, startPos, length);
                     OnCompleteLine(_linesBuffer.ToString());
                     _linesBuffer.Clear();
-                    _linesBuffer.Append(buf, lineBreakPos + 1, chunkLength - (lineBreakPos + 1));
+                    startPos = lineBreakPos + 1;
+                }
+
+                // get the rest
+                if (lineBreakPos < 0 && startPos < chunkLength)
+                {
+                    _linesBuffer.Append(buf, startPos, chunkLength);
                 }
             }
         }

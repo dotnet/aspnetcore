@@ -51,46 +51,22 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return;
             }
 
-            var bodyStream = context.Response.Body;
-            var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
-            var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
-            var originalStartFeature = context.Features.Get<IHttpResponseStartFeature>();
+            var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
             var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context, bodyStream, _provider,
-                originalBufferFeature, originalSendFileFeature, originalStartFeature);
-            context.Response.Body = bodyWrapperStream;
-            context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
-            context.Features.Set<IHttpsCompressionFeature>(bodyWrapperStream);
-            if (originalSendFileFeature != null)
-            {
-                context.Features.Set<IHttpSendFileFeature>(bodyWrapperStream);
-            }
-
-            if (originalStartFeature != null)
-            {
-                context.Features.Set<IHttpResponseStartFeature>(bodyWrapperStream);
-            }
+            var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature);
+            context.Features.Set<IHttpResponseBodyFeature>(compressionBody);
+            context.Features.Set<IHttpsCompressionFeature>(compressionBody);
 
             try
             {
                 await _next(context);
-                await bodyWrapperStream.FinishCompressionAsync();
+                await compressionBody.FinishCompressionAsync();
             }
             finally
             {
-                context.Response.Body = bodyStream;
-                context.Features.Set(originalBufferFeature);
+                context.Features.Set(originalBodyFeature);
                 context.Features.Set(originalCompressionFeature);
-                if (originalSendFileFeature != null)
-                {
-                    context.Features.Set(originalSendFileFeature);
-                }
-
-                if (originalStartFeature != null)
-                {
-                    context.Features.Set(originalStartFeature);
-                }
             }
         }
     }

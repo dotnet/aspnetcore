@@ -45,6 +45,10 @@ warn_as_error=${warn_as_error:-true}
 # installed on the machine instead of downloading one.
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
 
+# Enable repos to use a particular version of the on-line dotnet-install scripts.
+#    default URL: https://dot.net/v1/dotnet-install.sh
+dotnetInstallScriptVersion=${dotnetInstallScriptVersion:-'v1'}
+
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
 if [[ "$ci" == true ]]; then
   use_global_nuget_cache=${use_global_nuget_cache:-false}
@@ -77,7 +81,7 @@ function ReadGlobalVersion {
   local pattern="\"$key\" *: *\"(.*)\""
 
   if [[ ! $line =~ $pattern ]]; then
-    Write-PipelineTelemetryError -category 'InitializeTools' "Error: Cannot find \"$key\" in $global_json_file"
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Error: Cannot find \"$key\" in $global_json_file"
     ExitWithExitCode 1
   fi
 
@@ -146,14 +150,19 @@ function InitializeDotNetCli {
 
   # Add dotnet to PATH. This prevents any bare invocation of dotnet in custom
   # build steps from using anything other than what we've downloaded.
-  export PATH="$dotnet_root:$PATH"
+  Write-PipelinePrependPath -path "$dotnet_root"
 
-  if [[ $ci == true ]]; then
-    # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
-    echo "##vso[task.prependpath]$dotnet_root"
-    echo "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP]0"
-    echo "##vso[task.setvariable variable=DOTNET_SKIP_FIRST_TIME_EXPERIENCE]1"
+  # Work around issues with Azure Artifacts credential provider
+  # https://github.com/dotnet/arcade/issues/3932
+  if [[ "$ci" == true ]]; then
+    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
+    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
   fi
+
+  Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
+  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -199,7 +208,7 @@ function InstallDotNet {
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://dot.net/v1/dotnet-install.sh"
+  local install_script_url="https://dot.net/$dotnetInstallScriptVersion/dotnet-install.sh"
 
   if [[ ! -a "$install_script" ]]; then
     mkdir -p "$root"
@@ -208,12 +217,19 @@ function GetDotNetInstallScript {
 
     # Use curl if available, otherwise use wget
     if command -v curl > /dev/null; then
-      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script"
-    else
-      wget -q -O "$install_script" "$install_script_url"
+      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+        local exit_code=$?
+        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+        ExitWithExitCode $exit_code
+      }
+    else 
+      wget -q -O "$install_script" "$install_script_url" || {
+        local exit_code=$?
+        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+        ExitWithExitCode $exit_code
+      }
     fi
   fi
-
   # return value
   _GetDotNetInstallScript="$install_script"
 }
@@ -249,7 +265,7 @@ function InitializeNativeTools() {
   then
     local nativeArgs=""
     if [[ "$ci" == true ]]; then
-      nativeArgs="-InstallDirectory $tools_dir"
+      nativeArgs="--installDirectory $tools_dir"
     fi
     "$_script_dir/init-tools-native.sh" $nativeArgs
   fi
@@ -321,6 +337,13 @@ function MSBuild {
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
+
+    # Work around issues with Azure Artifacts credential provider
+    # https://github.com/dotnet/arcade/issues/3932
+    if [[ "$ci" == true ]]; then
+      dotnet nuget locals http-cache -c
+    fi
+
     local toolset_dir="${_InitializeToolset%/*}"
     local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
     args=( "${args[@]}" "-logger:$logger_path" )
@@ -387,7 +410,8 @@ mkdir -p "$toolset_dir"
 mkdir -p "$temp_dir"
 mkdir -p "$log_dir"
 
-if [[ $ci == true ]]; then
-  export TEMP="$temp_dir"
-  export TMP="$temp_dir"
-fi
+Write-PipelineSetVariable -name "Artifacts" -value "$artifacts_dir"
+Write-PipelineSetVariable -name "Artifacts.Toolset" -value "$toolset_dir"
+Write-PipelineSetVariable -name "Artifacts.Log" -value "$log_dir"
+Write-PipelineSetVariable -name "Temp" -value "$temp_dir"
+Write-PipelineSetVariable -name "TMP" -value "$temp_dir"

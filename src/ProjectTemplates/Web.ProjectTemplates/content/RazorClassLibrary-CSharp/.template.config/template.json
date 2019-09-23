@@ -4,8 +4,7 @@
   "classifications": [
     "Web",
     "Razor",
-    "Library",
-    "Razor Class Library"
+    "Library"
   ],
   "name": "Razor Class Library",
   "generatorVersions": "[1.0.0.0-*)",
@@ -22,12 +21,23 @@
   "preferNameDirectory": true,
   "sources": [
     {
-      "modifiers": [{
-        "condition": "(!SupportPagesAndViews)",
-        "exclude": [
-          "Areas/**"
-        ]
-      }]
+      "modifiers": [
+        {
+          "condition": "(!SupportPagesAndViews)",
+          "exclude": [
+            "Areas/**"
+          ]
+        },
+        {
+          "condition": "(SupportPagesAndViews)",
+          "exclude": [
+            "_Imports.razor",
+            "Component1.razor",
+            "ExampleJsInterop.cs",
+            "wwwroot/**"
+          ]
+        }
+      ]
     }
   ],
   "symbols": {
@@ -37,11 +47,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
         }
       ],
-      "defaultValue": "netcoreapp3.0"
+      "defaultValue": "netcoreapp5.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -56,7 +66,7 @@
     "SupportPagesAndViews": {
       "type": "parameter",
       "datatype": "bool",
-      "defaultValue": "true",
+      "defaultValue": "false",
       "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
     }
   },
@@ -69,7 +79,7 @@
       "path": "Areas/MyFeature/Pages/Page1.cshtml"
     }
   ],
-  "defaultName": "RazorClassLibrary1",
+  "defaultName": "RazorClassLibrary",
   "postActions": [
     {
       "condition": "(!skipRestore)",

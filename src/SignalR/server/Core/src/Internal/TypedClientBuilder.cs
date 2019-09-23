@@ -132,6 +132,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 methodBuilder.DefineGenericParameters(genericTypeNames);
             }
 
+            // Check to see if the last parameter of the method is a CancellationToken
+            bool hasCancellationToken = paramTypes.LastOrDefault() == typeof(CancellationToken);
+            if (hasCancellationToken)
+            {
+                // remove CancellationToken from input paramTypes
+                paramTypes = paramTypes.Take(paramTypes.Length - 1).ToArray();
+            }
+
             var generator = methodBuilder.GetILGenerator();
 
             // Declare local variable to store the arguments to IClientProxy.SendCoreAsync
@@ -145,7 +153,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldstr, interfaceMethodInfo.Name);
 
             // Create an new object array to hold all the parameters to this method
-            generator.Emit(OpCodes.Ldc_I4, parameters.Length); // Stack: 
+            generator.Emit(OpCodes.Ldc_I4, paramTypes.Length); // Stack: 
             generator.Emit(OpCodes.Newarr, typeof(object)); // allocate object array
             generator.Emit(OpCodes.Stloc_0);
 
@@ -162,8 +170,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // Load parameter array on to the stack.
             generator.Emit(OpCodes.Ldloc_0);
 
-            // Get 'CancellationToken.None' and put it on the stack, since we don't support CancellationToken right now
-            generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+            if (hasCancellationToken)
+            {
+                // Get CancellationToken from input argument and put it on the stack
+                generator.Emit(OpCodes.Ldarg, paramTypes.Length + 1);
+            }
+            else
+            {
+                // Get 'CancellationToken.None' and put it on the stack, for when method does not have CancellationToken
+                generator.Emit(OpCodes.Call, CancellationTokenNoneProperty.GetMethod);
+            }
 
             // Send!
             generator.Emit(OpCodes.Callvirt, invokeMethod);

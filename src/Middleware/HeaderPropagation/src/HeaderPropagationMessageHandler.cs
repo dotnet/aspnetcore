@@ -48,8 +48,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             {
                 var message =
                     $"The {nameof(HeaderPropagationValues)}.{nameof(HeaderPropagationValues.Headers)} property has not been " +
-                    $"initialized. Register the header propagation middleware by adding 'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}() " +
-                    $"in the 'Configure(...)' method.";
+                    $"initialized. Register the header propagation middleware by adding 'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}()' " +
+                    $"in the 'Configure(...)' method. Header propagation can only be used within the context of an HTTP request.";
                 throw new InvalidOperationException(message);
             }
 

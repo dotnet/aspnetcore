@@ -1,12 +1,12 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 
-<input @ref="myInput" @ref:suppressField value="Value set during render" />
+<input @ref="myInput" value="Value set during render" />
 
 @code {
     ElementReference myInput;
 
-    protected override void OnAfterRender()
+    protected override void OnAfterRender(bool firstRender)
     {
         JSRuntime.InvokeAsync<object>("setElementValue", myInput, "Value set after render");
     }

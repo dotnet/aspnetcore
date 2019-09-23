@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.Localization
         static RequestCultureProviderLoggerExtensions()
         {
             _unsupportedCulture = LoggerMessage.Define<string, IList<StringSegment>>(
-                LogLevel.Warning,
+                LogLevel.Debug,
                  new EventId (1, "UnsupportedCulture"),
                 "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
             _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
-                LogLevel.Warning,
+                LogLevel.Debug,
                  new EventId(2, "UnsupportedUICulture"),
                 "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.");
         }

@@ -3,13 +3,12 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    public class CircuitIdFactoryTest
+    public class circuitIdFactoryTest
     {
         [Fact]
         public void CreateCircuitId_Generates_NewRandomId()
@@ -17,28 +16,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
-            var id = factory.CreateCircuitId();
+            var secret = factory.CreateCircuitId();
 
             // Assert
-            Assert.NotNull(id);
+            Assert.NotNull(secret.Secret);
             // This is the magic data protection header that validates its protected
-            Assert.StartsWith("CfDJ", id);
+            Assert.StartsWith("CfDJ", secret.Secret);
         }
 
         [Fact]
-        public void CreateCircuitId_Generates_GeneratesDifferentIds_ForSuccesiveCalls()
+        public void CreateCircuitId_Generates_GeneratesDifferentIds_ForSuccessiveCalls()
         {
             // Arrange
             var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
-            var ids = Enumerable.Range(0, 100).Select(i => factory.CreateCircuitId()).ToArray();
+            var secrets = Enumerable.Range(0, 100).Select(i => factory.CreateCircuitId()).Select(s => s.Secret).ToArray();
 
             // Assert
-            Assert.All(ids, id => Assert.NotNull(id));
-            Assert.Equal(100, ids.Distinct(StringComparer.Ordinal).Count());
+            Assert.All(secrets, secret => Assert.NotNull(secret));
+            Assert.Equal(100, secrets.Distinct(StringComparer.Ordinal).Count());
         }
 
+        // Note that this test also verifies that the ID can be reproduced from the secret.
         [Fact]
         public void CircuitIds_Roundtrip()
         {
@@ -47,10 +47,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var id = factory.CreateCircuitId();
 
             // Act
-            var isValid = factory.ValidateCircuitId(id);
+            var isValid = factory.TryParseCircuitId(id.Secret, out var parsed);
 
             // Assert
             Assert.True(isValid, "Failed to validate id");
+            Assert.Equal(id, parsed);
+            Assert.Equal(id.Secret, parsed.Secret);
+            Assert.Equal(id.Id, parsed.Id);
         }
 
         [Fact]
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
-            var isValid = factory.ValidateCircuitId("$%@&==");
+            var isValid = factory.TryParseCircuitId("$%@&==", out _);
 
             // Assert
             Assert.False(isValid, "Accepted an invalid payload");
@@ -71,16 +74,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var factory = TestCircuitIdFactory.CreateTestFactory();
-            var id = factory.CreateCircuitId();
-            var protectedBytes = Base64UrlTextEncoder.Decode(id);
+            var secret = factory.CreateCircuitId();
+            var protectedBytes = Base64UrlTextEncoder.Decode(secret.Secret);
             for (int i = protectedBytes.Length - 10; i < protectedBytes.Length; i++)
             {
                 protectedBytes[i] = 0;
             }
-            var tamperedId = Base64UrlTextEncoder.Encode(protectedBytes);
+            var tampered = Base64UrlTextEncoder.Encode(protectedBytes);
 
             // Act
-            var isValid = factory.ValidateCircuitId(tamperedId);
+            var isValid = factory.TryParseCircuitId(tampered, out _);
 
             // Assert
             Assert.False(isValid, "Accepted a tampered payload");

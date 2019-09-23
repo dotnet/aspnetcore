@@ -6,6 +6,8 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
 
   static readonly FailedClassName = 'components-reconnect-failed';
 
+  static readonly RejectedClassName = 'components-reconnect-rejected';
+
   constructor(private dialog: HTMLElement) {
   }
 
@@ -24,7 +26,12 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
     this.dialog.classList.add(UserSpecifiedDisplay.FailedClassName);
   }
 
+  rejected(): void {
+    this.removeClasses();
+    this.dialog.classList.add(UserSpecifiedDisplay.RejectedClassName);
+  }
+
   private removeClasses() {
-    this.dialog.classList.remove(UserSpecifiedDisplay.ShowClassName, UserSpecifiedDisplay.HideClassName, UserSpecifiedDisplay.FailedClassName);
+    this.dialog.classList.remove(UserSpecifiedDisplay.ShowClassName, UserSpecifiedDisplay.HideClassName, UserSpecifiedDisplay.FailedClassName, UserSpecifiedDisplay.RejectedClassName);
   }
 }

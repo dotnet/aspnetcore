@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Components.Server
 {
     /// <summary>
-    /// Options to configure ASP.NET Core Components.
+    /// Options to configure circuit handler for server-side Blazor 
     /// </summary>
-    public class CircuitOptions
+    public sealed class CircuitOptions
     {
         /// <summary>
         /// Gets or sets a value that determines the maximum number of disconnected circuit state details
@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium number of circuit states retained by the server.
+        /// This value determines the maximum number of circuit states retained by the server.
         /// <seealso cref="DisconnectedCircuitRetentionPeriod"/>
         /// </para>
         /// </summary>
         /// <value>
         /// Defaults to <c>100</c>.
         /// </value>
-        public int MaxRetainedDisconnectedCircuits { get; set; } = 100;
+        public int DisconnectedCircuitMaxRetained { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets a value that determines the maximum duration state for a disconnected circuit is
@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium duration circuit state is retained by the server before being evicted.
-        /// <seealso cref="MaxRetainedDisconnectedCircuits"/>
+        /// This value determines the maximum duration circuit state is retained by the server before being evicted.
+        /// <seealso cref="DisconnectedCircuitMaxRetained"/>
         /// </para>
         /// </summary>
         /// <value>
@@ -64,5 +64,17 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Defaults to <c>1 minute</c>.
         /// </value>
         public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// Gets or sets the maximum number of render batches that a circuit will buffer until an acknowledgement for the batch is
+        /// received.
+        /// </summary>
+        /// <remarks>
+        /// When the limit of buffered render batches is reached components will stop rendering and will wait until either the
+        /// circuit is disconnected and disposed or at least one batch gets acknowledged.
+        /// </remarks>
+        /// <value>
+        /// Defaults to <c>10</c>.</value>
+        public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
     }
 }
