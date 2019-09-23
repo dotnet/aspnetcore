@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class InteropTest : BasicTestAppTestBase
+    public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public InteropTest(
             BrowserFixture browserFixture,
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
-            MountTestComponent<InteropComponent>();
+            Browser.MountTestComponent<InteropComponent>();
         }
 
         [Fact]

@@ -107,13 +107,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static MessagePump CreatePump()
             => new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
+        internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions)
+        {
+            var options = new HttpSysOptions();
+            configureOptions(options);
+            return new MessagePump(Options.Create(options), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        }
+
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-            var server = CreatePump();
+            var server = CreatePump(configureOptions);
             server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
-            configureOptions(server.Listener.Options);
             server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
             prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
@@ -155,7 +161,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             throw new Exception("Failed to locate a free port.");
         }
-
 
         internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
 

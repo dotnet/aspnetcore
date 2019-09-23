@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         // this code used Process.Exited, which could result in us missing some output due to the ordering of
                         // events.
                         //
-                        // See the remarks here: https://docs.microsoft.com/dotnet/api/system.diagnostics.process.waitforexit?view=netcore-2.2#System_Diagnostics_Process_WaitForExit_System_Int32_
+                        // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
                         if (!_process.WaitForExit(Int32.MaxValue))
                         {
                             throw new TimeoutException();

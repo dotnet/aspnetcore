@@ -313,10 +313,6 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>be3d4bad4576eecda116d3e9a368cd6959ecf5ce</Sha>
     </Dependency>
-    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview6.19264.9" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64" Pinned="true">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>a28176b5ec68b6da1472934fe9493790d1665cae</Sha>
-    </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="5.0.0-alpha1.19462.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>be3d4bad4576eecda116d3e9a368cd6959ecf5ce</Sha>
@@ -416,17 +412,17 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>d15c5687db29e4e1f31a302fe243226b0a3a17e3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19411.1">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19462.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a11024c8c22cc762011addafc30c653c938048f4</Sha>
+      <Sha>f8546fbab59a74a66c83b8cb76b3f6877ce1d374</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19411.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19462.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a11024c8c22cc762011addafc30c653c938048f4</Sha>
+      <Sha>f8546fbab59a74a66c83b8cb76b3f6877ce1d374</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19411.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19462.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a11024c8c22cc762011addafc30c653c938048f4</Sha>
+      <Sha>f8546fbab59a74a66c83b8cb76b3f6877ce1d374</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="5.0.0-alpha1.19467.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>

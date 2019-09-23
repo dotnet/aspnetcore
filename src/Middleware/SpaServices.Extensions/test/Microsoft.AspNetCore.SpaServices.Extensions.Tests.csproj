@@ -13,5 +13,5 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Content Include="js\**\*" />
   </ItemGroup>
-  
+
 </Project>
