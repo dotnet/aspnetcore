@@ -22,18 +22,6 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         }
 
         [Fact]
-        public void ShortClassNameUsedWhenShortClassNameAttributeSpecified()
-        {
-            Assert.Equal(GetType().Name, ResolvedTestClassName);
-        }
-
-        [Fact]
-        public void LoggedTestTestOutputHelperSameInstanceAsInjectedConstructorArg()
-        {
-            Assert.Same(_output, TestOutputHelper);
-        }
-
-        [Fact]
         public void LoggedFactInitializesLoggedTestProperties()
         {
             Assert.NotNull(Logger);
@@ -189,9 +177,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public bool SetupInvoked { get; private set; } = false;
         public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             try
             {
