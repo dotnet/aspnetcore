@@ -25,7 +25,6 @@
                         Vital="yes"
                         InstallCondition="$(var.SharedFrameworkInstallCondition)">
                 <MsiProperty Name="DOTNETHOME" Value="[$(var.DotNetHome)]" />
-                <Payload Name="sfx_$(var.Platform).cab" SourceFile="$(var.SharedFramework.TargetDir)sfx_$(var.Platform).cab"/>
             </MsiPackage>
         </PackageGroup>
 	</Fragment>

@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Single(openApiRefs);
         }
 
-        [Fact]
+        [Fact (Skip = "https://github.com/aspnet/AspNetCore/pull/13571/#issuecomment-531466801")]
         public async Task OpenApi_Add_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -168,7 +168,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.False(runProc.HasExited, $"Run failed with: {runProc.Output}");
         }
 
-        [Fact]
+        [Fact (Skip = "https://github.com/aspnet/AspNetCore/pull/13571/#issuecomment-531466801")]
         public async Task OpenApi_Add_FromJson()
         {
             var project = CreateBasicProject(withOpenApi: true);

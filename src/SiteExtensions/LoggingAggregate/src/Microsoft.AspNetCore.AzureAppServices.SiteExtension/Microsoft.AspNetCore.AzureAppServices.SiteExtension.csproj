@@ -15,6 +15,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
@@ -38,7 +39,25 @@
   </ItemGroup>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
+    <!-- Cannot assume this project and LB.csproj have the same package version. -->
+    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
+    <MSBuild Projects="$(RepoRoot)src\SiteExtensions\LoggingBranch\LB.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86"
+          Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
+          PrivateAssets="All" />
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64"
+          Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
+          PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- LB.csproj package content is bundled into this one. -->
       <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
 
       <!-- Temporarily skip the common files -->

@@ -25,22 +25,8 @@
         function navigationManagerNavigate() {
             Blazor.navigateTo('/subdir/some-path');
         }
-
-        (function () {
-            // Load either blazor.webassembly.js or blazor.server.js depending
-            // on the hash part of the URL. This is just to give a way for the
-            // test runner to make the selection.
-            if (location.hash === '#server') {
-                location.hash = '';
-                document.cookie = '__blazor_execution_mode=server';
-                location.reload();
-            }
-            var src = location.hash === '#server'
-                ? 'blazor.server.js'
-                : 'blazor.webassembly.js';
-            document.write('<script src="_framework/' + src + '"><' + '/script>');
-        })();
     </script>
+    <script src="_framework/blazor.webassembly.js"></script>
 
     <!-- Used by ExternalContentPackage -->
     <script src="_content/TestContentPackage/prompt.js"></script>

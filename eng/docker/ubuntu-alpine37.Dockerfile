@@ -2,8 +2,9 @@ FROM mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-16.04-cross-arm64-alpine
 ARG USER
 ARG USER_ID
 ARG GROUP_ID
+ARG WORKDIR
 
-WORKDIR /code/build
+WORKDIR ${WORKDIR}
 RUN mkdir -p "/home/$USER" && chown "${USER_ID}:${GROUP_ID}" "/home/$USER"
 ENV HOME "/home/$USER"
 

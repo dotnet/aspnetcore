@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class ComponentRenderingTest : BasicTestAppTestBase
+    public class ComponentRenderingTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public ComponentRenderingTest(
             BrowserFixture browserFixture,
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderTextOnlyComponent()
         {
-            var appElement = MountTestComponent<TextOnlyComponent>();
+            var appElement = Browser.MountTestComponent<TextOnlyComponent>();
             Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderComponentWithDataDash()
         {
-            var appElement = MountTestComponent<DataDashComponent>();
+            var appElement = Browser.MountTestComponent<DataDashComponent>();
             var element = appElement.FindElement(By.Id("cool_beans"));
             Assert.Equal("17", element.GetAttribute("data-tab"));
             Assert.Equal("17", element.Text);
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderComponentWithAttributes()
         {
-            var appElement = MountTestComponent<RedTextComponent>();
+            var appElement = Browser.MountTestComponent<RedTextComponent>();
             var styledElement = appElement.FindElement(By.TagName("h1"));
             Assert.Equal("Hello, world!", styledElement.Text);
             Assert.Equal("color: red;", styledElement.GetAttribute("style"));
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanTriggerEvents()
         {
             // Initial count is zero
-            var appElement = MountTestComponent<CounterComponent>();
+            var appElement = Browser.MountTestComponent<CounterComponent>();
             var countDisplayElement = appElement.FindElement(By.TagName("p"));
             Assert.Equal("Current count: 0", countDisplayElement.Text);
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanTriggerAsyncEventHandlers()
         {
             // Initial state is stopped
-            var appElement = MountTestComponent<AsyncEventHandlerComponent>();
+            var appElement = Browser.MountTestComponent<AsyncEventHandlerComponent>();
             var stateElement = appElement.FindElement(By.Id("state"));
             Assert.Equal("Stopped", stateElement.Text);
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanTriggerKeyPressEvents()
         {
             // List is initially empty
-            var appElement = MountTestComponent<KeyPressEventComponent>();
+            var appElement = Browser.MountTestComponent<KeyPressEventComponent>();
             var inputElement = appElement.FindElement(By.TagName("input"));
             Func<IEnumerable<IWebElement>> liElements =
                 () => appElement.FindElements(By.TagName("li"));
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanAddAndRemoveEventHandlersDynamically()
         {
-            var appElement = MountTestComponent<CounterComponent>();
+            var appElement = Browser.MountTestComponent<CounterComponent>();
             var countDisplayElement = appElement.FindElement(By.TagName("p"));
             var incrementButton = appElement.FindElement(By.TagName("button"));
             var toggleClickHandlerCheckbox = appElement.FindElement(By.CssSelector("[type=checkbox]"));
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderChildComponents()
         {
-            var appElement = MountTestComponent<ParentChildComponent>();
+            var appElement = Browser.MountTestComponent<ParentChildComponent>();
             Assert.Equal("Parent component",
                 appElement.FindElement(By.CssSelector("fieldset > legend")).Text);
 
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderChildContent_StaticHtmlBlock()
         {
-            var appElement = MountTestComponent<HtmlBlockChildContent>();
+            var appElement = Browser.MountTestComponent<HtmlBlockChildContent>();
             Assert.Equal("<p>Some-Static-Text</p>",
                 appElement.FindElement(By.Id("foo")).GetAttribute("innerHTML"));
         }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderChildContent_MixedHtmlBlock()
         {
-            var appElement = MountTestComponent<HtmlMixedChildContent>();
+            var appElement = Browser.MountTestComponent<HtmlMixedChildContent>();
 
             var one = appElement.FindElement(By.Id("one"));
             Assert.Equal("<p>Some-Static-Text</p>", one.GetAttribute("innerHTML"));
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderChildContent_EncodedHtmlInBlock()
         {
-            var appElement = MountTestComponent<HtmlEncodedChildContent>();
+            var appElement = Browser.MountTestComponent<HtmlEncodedChildContent>();
 
             var one = appElement.FindElement(By.Id("one"));
             Assert.Equal("<p>Some-Static-Text</p>", one.GetAttribute("innerHTML"));
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanTriggerEventsOnChildComponents()
         {
             // Counter is displayed as child component. Initial count is zero.
-            var appElement = MountTestComponent<CounterComponentWrapper>();
+            var appElement = Browser.MountTestComponent<CounterComponentWrapper>();
             var counterDisplay = appElement
                 .FindElements(By.TagName("p"))
                 .Single(element => element.Text == "Current count: 0");
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void ChildComponentsRerenderWhenPropertiesChanged()
         {
             // Count value is displayed in child component with initial value zero
-            var appElement = MountTestComponent<CounterComponentUsingChild>();
+            var appElement = Browser.MountTestComponent<CounterComponentUsingChild>();
             var wholeCounterElement = appElement.FindElement(By.TagName("p"));
             var messageElementInChild = wholeCounterElement.FindElement(By.ClassName("message"));
             Assert.Equal("Current count: 0", wholeCounterElement.Text);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanAddAndRemoveChildComponentsDynamically()
         {
             // Initially there are zero child components
-            var appElement = MountTestComponent<AddRemoveChildComponents>();
+            var appElement = Browser.MountTestComponent<AddRemoveChildComponents>();
             var addButton = appElement.FindElement(By.ClassName("addChild"));
             var removeButton = appElement.FindElement(By.ClassName("removeChild"));
             Func<IEnumerable<IWebElement>> childComponentWrappers = () => appElement.FindElements(By.TagName("p"));
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void ChildComponentsNotifiedWhenPropertiesChanged()
         {
             // Child component receives notification that lets it compute a property before first render
-            var appElement = MountTestComponent<PropertiesChangedHandlerParent>();
+            var appElement = Browser.MountTestComponent<PropertiesChangedHandlerParent>();
             var suppliedValueElement = appElement.FindElement(By.ClassName("supplied"));
             var computedValueElement = appElement.FindElement(By.ClassName("computed"));
             var incrementButton = appElement.FindElement(By.TagName("button"));
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanRenderFragmentsWhilePreservingSurroundingElements()
         {
             // Initially, the region isn't shown
-            var appElement = MountTestComponent<RenderFragmentToggler>();
+            var appElement = Browser.MountTestComponent<RenderFragmentToggler>();
             var originalButton = appElement.FindElement(By.TagName("button"));
             Func<IEnumerable<IWebElement>> fragmentElements = () => appElement.FindElements(By.CssSelector("p[name=fragment-element]"));
             Assert.Empty(fragmentElements());
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // The component is able to compile and output these type names only because
             // of the _ViewImports.cshtml files at the same and ancestor levels
-            var appElement = MountTestComponent<ComponentUsingImports>();
+            var appElement = Browser.MountTestComponent<ComponentUsingImports>();
             Assert.Collection(appElement.FindElements(By.TagName("p")),
                 elem => Assert.Equal(typeof(Complex).FullName, elem.Text),
                 elem => Assert.Equal(typeof(AssemblyHashAlgorithm).FullName, elem.Text));
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanUseComponentAndStaticContentFromExternalNuGetPackage()
         {
-            var appElement = MountTestComponent<ExternalContentPackage>();
+            var appElement = Browser.MountTestComponent<ExternalContentPackage>();
 
             // NuGet packages can use JS interop features to provide
             // .NET code access to browser APIs
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderSvgWithCorrectNamespace()
         {
-            var appElement = MountTestComponent<SvgComponent>();
+            var appElement = Browser.MountTestComponent<SvgComponent>();
 
             var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgElement);
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderSvgChildComponentWithCorrectNamespace()
         {
-            var appElement = MountTestComponent<SvgWithChildComponent>();
+            var appElement = Browser.MountTestComponent<SvgWithChildComponent>();
 
             var svgElement = appElement.FindElement(By.XPath("//*[local-name()='svg' and namespace-uri()='http://www.w3.org/2000/svg']"));
             Assert.NotNull(svgElement);
@@ -380,14 +380,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void LogicalElementInsertionWorksHierarchically()
         {
-            var appElement = MountTestComponent<LogicalElementInsertionCases>();
+            var appElement = Browser.MountTestComponent<LogicalElementInsertionCases>();
             Browser.Equal("First Second Third", () => appElement.Text);
         }
 
         [Fact]
         public void CanUseJsInteropToReferenceElements()
         {
-            var appElement = MountTestComponent<ElementRefComponent>();
+            var appElement = Browser.MountTestComponent<ElementRefComponent>();
             var inputElement = appElement.FindElement(By.Id("capturedElement"));
             var buttonElement = appElement.FindElement(By.TagName("button"));
 
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanCaptureReferencesToDynamicallyAddedElements()
         {
-            var appElement = MountTestComponent<ElementRefComponent>();
+            var appElement = Browser.MountTestComponent<ElementRefComponent>();
             var buttonElement = appElement.FindElement(By.TagName("button"));
             var checkbox = appElement.FindElement(By.CssSelector("input[type=checkbox]"));
 
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanCaptureReferencesToDynamicallyAddedComponents()
         {
-            var appElement = MountTestComponent<ComponentRefComponent>();
+            var appElement = Browser.MountTestComponent<ComponentRefComponent>();
             var incrementButtonSelector = By.CssSelector("#child-component button");
             var currentCountTextSelector = By.CssSelector("#child-component p:first-of-type");
             var resetButton = appElement.FindElement(By.Id("reset-child"));
@@ -458,14 +458,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanUseJsInteropForRefElementsDuringOnAfterRender()
         {
-            var appElement = MountTestComponent<AfterRenderInteropComponent>();
+            var appElement = Browser.MountTestComponent<AfterRenderInteropComponent>();
             Browser.Equal("Value set after render", () => Browser.FindElement(By.TagName("input")).GetAttribute("value"));
         }
 
         [Fact]
         public void CanRenderMarkupBlocks()
         {
-            var appElement = MountTestComponent<MarkupBlockComponent>();
+            var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
 
             // Static markup
             Assert.Equal(
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderRazorTemplates()
         {
-            var appElement = MountTestComponent<RazorTemplates>();
+            var appElement = Browser.MountTestComponent<RazorTemplates>();
 
             // code block template (component parameter)
             var element = appElement.FindElement(By.CssSelector("div#codeblocktemplate ol"));
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanRenderMultipleChildContent()
         {
-            var appElement = MountTestComponent<MultipleChildContent>();
+            var appElement = Browser.MountTestComponent<MultipleChildContent>();
 
             var table = appElement.FindElement(By.TagName("table"));
 
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 string.Empty,
                 Enumerable.Range(0, 100).Select(_ => "😊"));
 
-            var appElement = MountTestComponent<ConcurrentRenderParent>();
+            var appElement = Browser.MountTestComponent<ConcurrentRenderParent>();
 
             // It's supposed to pause the rendering for this long. The WaitAssert below
             // allows it to take up extra time if needed.
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanDispatchRenderToSyncContext()
         {
-            var appElement = MountTestComponent<DispatchingComponent>();
+            var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
 
             appElement.FindElement(By.Id("run-with-dispatch")).Click();
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanDoubleDispatchRenderToSyncContext()
         {
-            var appElement = MountTestComponent<DispatchingComponent>();
+            var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
 
             appElement.FindElement(By.Id("run-with-double-dispatch")).Click();
@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanDispatchAsyncWorkToSyncContext()
         {
-            var appElement = MountTestComponent<DispatchingComponent>();
+            var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
 
             appElement.FindElement(By.Id("run-async-with-dispatch")).Click();
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanPerformInteropImmediatelyOnComponentInsertion()
         {
-            var appElement = MountTestComponent<InteropOnInitializationComponent>();
+            var appElement = Browser.MountTestComponent<InteropOnInitializationComponent>();
             Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }
@@ -600,10 +600,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanUseAddMultipleAttributes()
         {
-            var appElement = MountTestComponent<DuplicateAttributesComponent>();
+            var appElement = Browser.MountTestComponent<DuplicateAttributesComponent>();
 
             var selector = By.CssSelector("#duplicate-on-element > div");
-            WaitUntilExists(selector);
+            Browser.Exists(selector);
 
             var element = appElement.FindElement(selector);
             Assert.Equal(string.Empty, element.GetAttribute("bool")); // attribute is present
@@ -620,10 +620,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanPatchRenderTreeToMatchLatestDOMState()
         {
-            var appElement = MountTestComponent<MovingCheckboxesComponent>();
+            var appElement = Browser.MountTestComponent<MovingCheckboxesComponent>();
             var incompleteItemsSelector = By.CssSelector(".incomplete-items li");
             var completeItemsSelector = By.CssSelector(".complete-items li");
-            WaitUntilExists(incompleteItemsSelector);
+            Browser.Exists(incompleteItemsSelector);
 
             // Mark first item as done; observe the remaining incomplete item appears unchecked
             // because the diff algoritm explicitly unchecks it

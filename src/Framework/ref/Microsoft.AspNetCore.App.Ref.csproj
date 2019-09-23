@@ -8,6 +8,8 @@
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
+    <!-- This is a reference package and does not include any dependencies. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 

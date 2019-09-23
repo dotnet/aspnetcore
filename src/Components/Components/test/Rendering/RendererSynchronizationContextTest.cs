@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public void Post_RunsAynchronously_WhenNotBusy_Exception()
+        public void Post_RunsAsynchronously_WhenNotBusy_Exception()
         {
             // Arrange
             var context = new RendererSynchronizationContext();

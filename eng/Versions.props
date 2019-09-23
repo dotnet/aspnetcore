@@ -10,6 +10,11 @@
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleasePreviewNumber>1</PreReleasePreviewNumber>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <PreReleaseVersionLabel>alpha$(PreReleasePreviewNumber)</PreReleaseVersionLabel>
     <PreReleaseBrandingLabel>Alpha $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
@@ -50,7 +55,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19411.1</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19462.4</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.0-beta1-19456-03</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
@@ -64,7 +69,6 @@
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19462.7</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-alpha1.19462.7</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19462.7</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19264.9</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha1.19462.7</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>5.0.0-alpha1.19462.7</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.0-alpha1.19462.7</SystemIOPipelinesPackageVersion>
@@ -203,6 +207,8 @@
     <MicrosoftCodeAnalysisCommonPackageVersion>3.0.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftDataODataPackageVersion>5.8.4</MicrosoftDataODataPackageVersion>
+    <MicrosoftDataServicesClientPackageVersion>5.8.4</MicrosoftDataServicesClientPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelLoggingPackageVersion>5.5.0</MicrosoftIdentityModelLoggingPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.5.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
@@ -223,17 +229,18 @@
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.8.0</GoogleProtobufPackageVersion>
-    <GrpcAspNetCorePackageVersion>0.1.22-pre3</GrpcAspNetCorePackageVersion>
-    <IdentityServer4AspNetIdentityPackageVersion>3.0.0-preview7.33</IdentityServer4AspNetIdentityPackageVersion>
-    <IdentityServer4EntityFrameworkPackageVersion>3.0.0-preview7.33</IdentityServer4EntityFrameworkPackageVersion>
-    <IdentityServer4PackageVersion>3.0.0-preview7.33</IdentityServer4PackageVersion>
-    <IdentityServer4StoragePackageVersion>3.0.0-preview7.33</IdentityServer4StoragePackageVersion>
-    <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0-preview7.33</IdentityServer4EntityFrameworkStoragePackageVersion>
+    <GrpcAspNetCorePackageVersion>2.23.1</GrpcAspNetCorePackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>3.0.0</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>3.0.0</IdentityServer4EntityFrameworkPackageVersion>
+    <IdentityServer4PackageVersion>3.0.0</IdentityServer4PackageVersion>
+    <IdentityServer4StoragePackageVersion>3.0.0</IdentityServer4StoragePackageVersion>
+    <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
-    <NewtonsoftJsonPackageVersion>12.0.1</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
+    <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverChromeDriverPackageVersion>2.43.0</SeleniumWebDriverChromeDriverPackageVersion>
@@ -248,7 +255,7 @@
     <XunitAssertPackageVersion>$(XunitVersion)</XunitAssertPackageVersion>
     <XunitExtensibilityCorePackageVersion>$(XunitVersion)</XunitExtensibilityCorePackageVersion>
     <XunitExtensibilityExecutionPackageVersion>$(XunitVersion)</XunitExtensibilityExecutionPackageVersion>
-    <MicrosoftDataSqlClientPackageVersion>1.0.19189.1-Preview</MicrosoftDataSqlClientPackageVersion>
+    <MicrosoftDataSqlClientPackageVersion>1.0.19249.1</MicrosoftDataSqlClientPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
