@@ -32,9 +32,6 @@ namespace Microsoft.AspNetCore.WebSockets
             (byte)'B', (byte)'0', (byte)'D', (byte)'C', (byte)'8', (byte)'5', (byte)'B', (byte)'1', (byte)'1'
         };
 
-        [ThreadStatic]
-        private static SHA1 _algorithm;
-
         // Verify Method, Upgrade, Connection, version,  key, etc..
         public static bool CheckSupportedWebSocketRequest(string method, IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -112,25 +109,23 @@ namespace Microsoft.AspNetCore.WebSockets
             // this concatenated value to obtain a 20-byte value and base64-encoding"
             // https://tools.ietf.org/html/rfc6455#section-4.2.2
 
-            if (_algorithm == null)
+            using (var algorithm = SHA1.Create())
             {
-                _algorithm = SHA1.Create();
+                // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' and everything is 1:1 mapping to UTF8 bytes
+                // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
+                Span<byte> mergedBytes = stackalloc byte[60];
+                Encoding.UTF8.GetBytes(requestKey, mergedBytes);
+                _encodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
+
+                Span<byte> hashedBytes = stackalloc byte[20];
+                var success = algorithm.TryComputeHash(mergedBytes, hashedBytes, out var written);
+                if (!success || written != 20)
+                {
+                    throw new InvalidOperationException("Could not compute the hash for the 'Sec-WebSocket-Accept' header.");
+                }
+
+                return Convert.ToBase64String(hashedBytes);
             }
-
-            // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' and everything is 1:1 mapping to UTF8 bytes
-            // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
-            Span<byte> mergedBytes = stackalloc byte[60];
-            Encoding.UTF8.GetBytes(requestKey, mergedBytes);
-            _encodedWebSocketKey.CopyTo(mergedBytes.Slice(24));
-
-            Span<byte> hashedBytes = stackalloc byte[20];
-            var success = _algorithm.TryComputeHash(mergedBytes, hashedBytes, out var written);
-            if (!success || written != 20)
-            {
-                throw new InvalidOperationException("Could not compute the hash for the 'Sec-WebSocket-Accept' header.");
-            }
-
-            return Convert.ToBase64String(hashedBytes);
         }
     }
 }
