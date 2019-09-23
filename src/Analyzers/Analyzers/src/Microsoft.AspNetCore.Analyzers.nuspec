@@ -7,5 +7,6 @@
   <files>
     <file src="$OutputBinary$" target="analyzers\dotnet\cs\" />
     <file src="$OutputSymbol$" target="analyzers\dotnet\cs\" />
+    <file src="$PackageIcon$" target="" />
   </files>
 </package>

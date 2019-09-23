@@ -11,5 +11,6 @@
       src="content/**"
       exclude="**/node_modules/**;**/bin/**;**/obj/**;**/.vs/**;**/.vscode/**;**/ClientApp/dist/**;**/wwwroot/dist/**;content/Directory.Build.*"
       target="" />
+    <file src="$PackageIcon$" target="" />
   </files>
 </package>

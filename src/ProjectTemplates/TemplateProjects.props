@@ -21,4 +21,8 @@
     <None Include="content/**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
+  </ItemGroup>
+
 </Project>
