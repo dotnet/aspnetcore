@@ -9,7 +9,7 @@
     <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
-      Condition="'$(TargetFramework)' == 'netcoreapp3.1'"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
       TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       />
