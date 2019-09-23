@@ -27,6 +27,7 @@ Building ASP.NET Core on Windows requires:
         ```ps1
         PS> ./eng/scripts/InstallJdk.ps1
         ```
+* Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from [https://www.google.com/chrome]
 
 ### macOS/Linux
 
