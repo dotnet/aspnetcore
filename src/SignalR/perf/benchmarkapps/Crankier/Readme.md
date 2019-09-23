@@ -4,6 +4,24 @@ Load testing for ASP.NET Core SignalR
 
 ## Commands
 
+### server
+
+The `server` command runs a web host exposing a single SignalR `Hub` endpoint on `/echo`.  After the first client connection, the server will periodically write concurrent connection information to the console.
+
+```
+> dotnet run -- help server
+
+Usage:  server [options]
+
+Options:
+  --log <LOG_LEVEL>  The LogLevel to use.
+```
+
+Notes:
+
+* `LOG_LEVEL` switches internal logging only, not concurrent connection information, and defaults to `LogLevel.None`.  Use this option to control Kestrel / SignalR Warnings & Errors being logged to console.
+
+
 ### local
 
 The `local` command launches a set of local worker clients to establish connections to your SignalR server.
@@ -31,13 +49,19 @@ Notes:
 
 #### Examples
 
-Attempt to make 10,000 connections to the `echo` hub using WebSockets and 10 workers:
+Run the server:
+
+```
+dotnet run -- server
+```
+
+Attempt to make 10,000 connections to the server using WebSockets and 10 workers:
 
 ```
 dotnet run -- local --target-url https://localhost:5001/echo --workers 10
 ```
 
-Attempt to make 5,000 connections to the `echo` hub using Long Polling
+Attempt to make 5,000 connections to the server using Long Polling
 
 ```
 dotnet run -- local --target-url https://localhost:5001/echo --connections 5000 --transport LongPolling

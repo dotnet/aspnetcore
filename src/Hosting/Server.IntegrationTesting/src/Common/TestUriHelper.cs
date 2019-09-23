@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
 {
     public static class TestUriHelper
@@ -34,7 +36,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                 }
                 else if (serverType == ServerType.HttpSys)
                 {
-                    return new UriBuilder(scheme, "localhost", TestPortHelper.GetNextHttpSysPort(scheme)).Uri;
+                    Debug.Assert(scheme == "http", "Https not supported");
+                    return new UriBuilder(scheme, "localhost", 0).Uri;
                 }
                 else
                 {

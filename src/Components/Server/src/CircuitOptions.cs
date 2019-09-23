@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium number of circuit states retained by the server.
+        /// This value determines the maximum number of circuit states retained by the server.
         /// <seealso cref="DisconnectedCircuitRetentionPeriod"/>
         /// </para>
         /// </summary>
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium duration circuit state is retained by the server before being evicted.
+        /// This value determines the maximum duration circuit state is retained by the server before being evicted.
         /// <seealso cref="DisconnectedCircuitMaxRetained"/>
         /// </para>
         /// </summary>

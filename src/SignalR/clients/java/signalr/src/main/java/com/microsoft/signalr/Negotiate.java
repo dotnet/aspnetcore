@@ -10,7 +10,7 @@ class Negotiate {
         // Check if we have a query string. If we do then we ignore it for now.
         int queryStringIndex = url.indexOf('?');
         if (queryStringIndex > 0) {
-            negotiateUrl = url.substring(0, url.indexOf('?'));
+            negotiateUrl = url.substring(0, queryStringIndex);
         } else {
             negotiateUrl = url;
         }
@@ -24,7 +24,7 @@ class Negotiate {
 
         // Add the query string back if it existed.
         if (queryStringIndex > 0) {
-            negotiateUrl += url.substring(url.indexOf('?'));
+            negotiateUrl += url.substring(queryStringIndex);
         }
 
         return negotiateUrl;

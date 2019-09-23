@@ -96,7 +96,7 @@ namespace Test
         }
 
         [Fact]
-        public void Render_ChildComponent_TriesToSetNonParamter()
+        public void Render_ChildComponent_TriesToSetNonParameter()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"

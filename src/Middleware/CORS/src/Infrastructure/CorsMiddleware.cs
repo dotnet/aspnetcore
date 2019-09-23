@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     return InvokeCoreAwaited(context, policyTask);
                 }
 
-                corsPolicy = policyTask.GetAwaiter().GetResult();
+                corsPolicy = policyTask.Result;
             }
 
             return EvaluateAndApplyPolicy(context, corsPolicy);

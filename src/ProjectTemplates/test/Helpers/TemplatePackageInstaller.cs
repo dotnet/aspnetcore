@@ -32,10 +32,12 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
+            "Microsoft.DotNet.Web.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates"
         };
 
@@ -90,7 +92,7 @@ namespace Templates.Test.Helpers
 
             /*
              * The templates are indexed by path, for example:
-              &USERPROFILE%\.templateengine\dotnetcli\v3.0.100-preview7-012821\packages\nunit3.dotnetnew.template.1.6.1.nupkg
+              &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
                 Templates:
                     NUnit 3 Test Project (nunit) C#
                     NUnit 3 Test Item (nunit-test) C#
@@ -99,7 +101,7 @@ namespace Templates.Test.Helpers
                     NUnit 3 Test Project (nunit) VB
                     NUnit 3 Test Item (nunit-test) VB
                 Uninstall Command:
-                    dotnet new -u &USERPROFILE%\.templateengine\dotnetcli\v3.0.100-preview7-012821\packages\nunit3.dotnetnew.template.1.6.1.nupkg
+                    dotnet new -u &USERPROFILE%\.templateengine\dotnetcli\v5.0.100-alpha1-013788\packages\nunit3.dotnetnew.template.1.6.1.nupkg
 
              * We don't want to construct this path so we'll rely on dotnet new --uninstall --help to construct the uninstall command.
              */
