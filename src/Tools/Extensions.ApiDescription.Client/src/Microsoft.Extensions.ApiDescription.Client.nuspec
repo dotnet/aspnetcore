@@ -8,5 +8,6 @@
     <file src="build\*" target="build" />
     <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
     <file src="$baseOutputPath$\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Client.*" target="tasks\netstandard2.0" />
+    <file src="$PackageIcon$" target="" />
   </files>
 </package>
