@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 normalizedValue = value;
             }
 
-            var stringRouteValue = routeValue?.ToString();
+            var stringRouteValue = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
             if (string.Equals(normalizedValue, stringRouteValue, StringComparison.OrdinalIgnoreCase))
             {
                 return normalizedValue;

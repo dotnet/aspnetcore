@@ -28,22 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(
 @"@custom System.Text.Encoding.ASCIIEncoding
 @custom System.Text.Encoding.UTF8Encoding",
-                new[] { descriptor },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.UTF8Encoding", markup: false).AsDirectiveToken(descriptor.Tokens[0])),
-                    Factory.EmptyHtml()));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -58,37 +43,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                     builder.AddTypeToken();
                 });
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
-                    new SourceSpan(new SourceLocation(42 + Environment.NewLine.Length, 1, 0), 7), "custom"));
 
             // Act & Assert
             ParseDocumentTest(
 @"@custom System.Text.Encoding.ASCIIEncoding
 @custom System.Text.Encoding.UTF8Encoding",
-                new[] { descriptor },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(chunkGenerator,
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.UTF8Encoding", markup: false).AsDirectiveToken(descriptor.Tokens[0])),
-                    Factory.EmptyHtml()));
+                new[] { descriptor });
         }
 
-        [Theory]
-        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
-        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
-        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherDirectives(DirectiveUsage directiveUsage)
+        [Fact]
+        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherDirectives()
         {
             // Arrange
             var customDescriptor = DirectiveDescriptor.CreateDirective(
@@ -96,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = directiveUsage;
+                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                     builder.AddTypeToken();
                 });
             var somethingDescriptor = DirectiveDescriptor.CreateDirective(
@@ -104,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = directiveUsage;
+                    builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                     builder.AddMemberToken();
                 });
 
@@ -112,28 +76,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(
 @"@custom System.Text.Encoding.ASCIIEncoding
 @something Else",
-                new[] { customDescriptor, somethingDescriptor },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(customDescriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(customDescriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(somethingDescriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("something").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Else", markup: false).AsDirectiveToken(somethingDescriptor.Tokens[0])),
-                    Factory.EmptyHtml()));
+                new[] { customDescriptor, somethingDescriptor });
         }
 
-        [Theory]
-        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
-        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
-        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherWhiteSpaceCommentsAndDirectives(DirectiveUsage directiveUsage)
+        [Fact]
+        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherWhiteSpaceCommentsAndDirectives()
         {
             // Arrange
             var customDescriptor = DirectiveDescriptor.CreateDirective(
@@ -141,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = directiveUsage;
+                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                     builder.AddTypeToken();
                 });
             var somethingDescriptor = DirectiveDescriptor.CreateDirective(
@@ -149,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = directiveUsage;
+                    builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                     builder.AddMemberToken();
                 });
 
@@ -161,33 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 @something Else
 
 <p>This is extra</p>",
-                new[] { customDescriptor, somethingDescriptor },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new CommentBlock(
-                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None),
-                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(" There are two directives beneath this ", HtmlSymbolType.RazorComment)).Accepts(AcceptedCharactersInternal.Any),
-                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
-                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(Environment.NewLine),
-                    new DirectiveBlock(new DirectiveChunkGenerator(customDescriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(customDescriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.Markup(Environment.NewLine),
-                    new DirectiveBlock(new DirectiveChunkGenerator(somethingDescriptor),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("something").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Else", markup: false).AsDirectiveToken(somethingDescriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.Markup(Environment.NewLine),
-                    BlockFactory.MarkupTagBlock("<p>"),
-                    Factory.Markup("This is extra"),
-                    BlockFactory.MarkupTagBlock("</p>")));
+                new[] { customDescriptor, somethingDescriptor });
         }
 
         [Fact]
@@ -198,20 +119,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken().AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveTokensMustBeSeparatedByWhitespace(
-                    new SourceSpan(new SourceLocation(17, 0, 17), 9), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"string1\"\"string2\"",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"string1\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -222,19 +134,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsNamespace(
-                    new SourceSpan(new SourceLocation(8, 0, 8), 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System.",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -245,19 +149,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsNamespace(
-                    new SourceSpan(new SourceLocation(8, 0, 8), 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System<",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
         [Fact]
         public void DirectiveDescriptor_CanHandleIncompleteNamespaceTokens()
@@ -267,19 +163,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsNamespace(
-                    new SourceSpan(new SourceLocation(8, 0, 8), 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System." + Environment.NewLine,
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -290,19 +178,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddNamespaceToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsNamespace(
-                    new SourceSpan(new SourceLocation(8, 0, 8), 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System<" + Environment.NewLine,
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
         
         [Fact]
@@ -316,68 +196,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(Environment.NewLine + "  @custom System.Text.Encoding.ASCIIEncoding",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.Code(Environment.NewLine + "  ").AsStatement(),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
         public void BuiltInDirectiveDoesNotErorrIfNotAtStartOfLineBecauseOfWhitespace()
         {
             // Act & Assert
-            ParseCodeBlockTest(Environment.NewLine + "  @addTagHelper \"*, Foo\"",
-                Enumerable.Empty<DirectiveDescriptor>(),
-                new DirectiveBlock(
-                    Factory.Code(Environment.NewLine + "  ").AsStatement(),
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"*, Foo\"")
-                        .AsAddTagHelper(
-                            "\"*, Foo\"",
-                            "*, Foo",
-                            "*",
-                            "Foo")));
+            ParseCodeBlockTest(Environment.NewLine + "  @addTagHelper \"*, Foo\"");
         }
 
         [Fact]
         public void BuiltInDirectiveErrorsIfNotAtStartOfLine()
         {
             // Act & Assert
-            ParseCodeBlockTest("{  @addTagHelper \"*, Foo\"" + Environment.NewLine + "}",
-                Enumerable.Empty<DirectiveDescriptor>(),
-                new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("  ")
-                        .AsStatement()
-                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
-                    new DirectiveBlock(
-                        Factory.CodeTransition(),
-                        Factory
-                            .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                            .Accepts(AcceptedCharactersInternal.None),
-                        Factory
-                            .Span(SpanKindInternal.Markup, " ", markup: false)
-                            .Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\"*, Foo\"")
-                            .AsAddTagHelper(
-                                "\"*, Foo\"",
-                                "*, Foo",
-                                "*",
-                                "Foo",
-                                RazorDiagnosticFactory.CreateParsing_DirectiveMustAppearAtStartOfLine(
-                                new SourceSpan(new SourceLocation(4, 0, 4), 12), "addTagHelper"))),
-                    Factory.Code(Environment.NewLine).AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+            ParseCodeBlockTest("{  @addTagHelper \"*, Foo\"" + Environment.NewLine + "}");
         }
 
         [Fact]
@@ -388,28 +221,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddTypeToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveMustAppearAtStartOfLine(
-                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 6), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "{  @custom System.Text.Encoding.ASCIIEncoding" + Environment.NewLine + "}",
-                new[] { descriptor },
-                new StatementBlock(
-                    Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("  ")
-                        .AsStatement()
-                        .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
-                    new DirectiveBlock(chunkGenerator,
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                    Factory.EmptyCSharp().AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -424,13 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System.Text.Encoding.ASCIIEncoding",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -445,13 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom Some_Member",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -466,13 +270,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom BaseNamespace",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "BaseNamespace", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -487,13 +285,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom BaseNamespace.Foo.Bar",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "BaseNamespace.Foo.Bar", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -508,13 +300,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"AString\"",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"AString\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -525,19 +311,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsQuotedStringLiteral(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom AString",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -548,19 +326,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsQuotedStringLiteral(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom {foo?}",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -571,19 +341,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsQuotedStringLiteral(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 9), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom 'AString'",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -594,19 +356,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsQuotedStringLiteral(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 7), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom AString\"",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -621,20 +375,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom System.Text.Encoding.ASCIIEncoding Some_Member \"AString\"",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false).AsDirectiveToken(descriptor.Tokens[1]),
-
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"AString\"", markup: false).AsDirectiveToken(descriptor.Tokens[2])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -649,26 +390,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Header\" { <p>F{o}o</p> }",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Header\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{")
-                        .AutoCompleteWith(null, atEndOfSpan: true)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    new MarkupBlock(
-                        Factory.Markup(" "),
-                        new MarkupTagBlock(
-                            Factory.Markup("<p>")),
-                        Factory.Markup("F", "{", "o", "}", "o"),
-                        new MarkupTagBlock(
-                            Factory.Markup("</p>")),
-                        Factory.Markup(" ")),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -683,19 +405,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Name\" { foo(); bar(); }",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Name\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{")
-                        .AutoCompleteWith(null, atEndOfSpan: true)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" foo(); bar(); ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -710,19 +420,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom    System.Text.Encoding.ASCIIEncoding       Some_Member    ",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-
-                    Factory.Span(SpanKindInternal.Code, "    ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-
-                    Factory.Span(SpanKindInternal.Code, "       ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false).AsDirectiveToken(descriptor.Tokens[1]),
-
-                    Factory.Span(SpanKindInternal.None, "    ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -733,19 +431,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddMemberToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsIdentifier(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "custom"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom -Some_Member",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -760,70 +450,83 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"hello\" ;  ",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.None, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.MetaCode(";").Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Markup, "  ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
-        [Theory]
-        [InlineData("string?")]
-        [InlineData("string?[]")]
-        [InlineData("global::System.Int32?")]
-        [InlineData("KeyValuePair<string, string>?")]
-        [InlineData("KeyValuePair<string, string>?[]")]
-        [InlineData("global::System.Collections.Generic.KeyValuePair<string, string>?[]")]
-        public void DirectiveDescriptor_AllowsNullableTypes(string expectedType)
+        [Fact]
+        public void DirectiveDescriptor_AllowsNullableTypes()
         {
             // Arrange
+            var variants = new[]
+            {
+                "string?",
+                "string?[]",
+                "global::System.Int32?",
+                "KeyValuePair<string, string>?",
+                "KeyValuePair<string, string>?[]",
+                "global::System.Collections.Generic.KeyValuePair<string, string>?[]",
+            };
+
+            var directiveName = "custom";
+            var source = $"@{directiveName}";
             var descriptor = DirectiveDescriptor.CreateDirective(
-                "custom",
+                directiveName,
                 DirectiveKind.SingleLine,
-                b => b.AddTypeToken());
+                b =>
+                {
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                });
+
+            for (var i = 0; i < variants.Length; i++)
+            {
+                source += $" {variants[i]}";
+            }
 
             // Act & Assert
-            ParseCodeBlockTest(
-                $"@custom {expectedType}",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, expectedType, markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+            ParseCodeBlockTest(source, new[] { descriptor });
         }
 
-        [Theory]
-        [InlineData("(bool, int)")]
-        [InlineData("(int aa, string bb)?")]
-        [InlineData("(  int?   q   ,  bool   w   )")]
-        [InlineData("( int  ?  q, bool ?w ,(long ?  [])) ?")]
-        [InlineData("(List<(int, string)?> aa, string bb)")]
-        [InlineData("(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)")]
-        public void DirectiveDescriptor_AllowsTupleTypes(string expectedType)
+        [Fact]
+        public void DirectiveDescriptor_AllowsTupleTypes()
         {
             // Arrange
+            var variants = new[]
+            {
+                "(bool, int)",
+                "(int aa, string bb)?",
+                "(  int?   q   ,  bool   w   )",
+                "( int  ?  q, bool ?w ,(long ?  [])) ?",
+                "(List<(int, string)?> aa, string bb)",
+                "(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)",
+            };
+
+            var directiveName = "custom";
+            var source = $"@{directiveName}";
             var descriptor = DirectiveDescriptor.CreateDirective(
-                "custom",
+                directiveName,
                 DirectiveKind.SingleLine,
-                b => b.AddTypeToken());
+                b =>
+                {
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                    b.AddTypeToken();
+                });
+
+            for (var i = 0; i < variants.Length; i++)
+            {
+                source += $" {variants[i]}";
+            }
 
             // Act & Assert
-            ParseCodeBlockTest(
-                $"@custom {expectedType}",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, expectedType, markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+            ParseCodeBlockTest(source, new[] { descriptor });
         }
 
         [Fact]
@@ -838,14 +541,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 $"@custom (bool, int?)   ",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "(bool, int?)", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.None, "   ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -856,22 +552,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.SingleLine,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
-                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 7), "custom", "line break"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"hello\" \"world\"",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-
-                    Factory.Span(SpanKindInternal.None, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -882,22 +567,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
-                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 5), "custom", "{"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\" World { foo(); bar(); }",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -908,20 +582,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
-                    new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 1), "custom", "{"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\"",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -932,572 +597,144 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "custom",
                 DirectiveKind.CodeBlock,
                 b => b.AddStringToken());
-            var chunkGenerator = new DirectiveChunkGenerator(descriptor);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 1), "custom", "}", "{"));
 
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"Hello\" {",
-                new[] { descriptor },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"Hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{")
-                        .AutoCompleteWith("}", atEndOfSpan: true)
-                        .Accepts(AcceptedCharactersInternal.None)));
-        }
-
-        [Fact]
-        public void TagHelperPrefixDirective_DuplicatesCauseError()
-        {
-            // Arrange
-            var expectedDiagnostic = RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
-                new SourceSpan(null, 22 + Environment.NewLine.Length, 1, 0, 16), "tagHelperPrefix");
-
-            // Act
-            var document = ParseDocument(
-@"@tagHelperPrefix ""th:""
-@tagHelperPrefix ""th""",
-                directives: null,
-                designTime: false);
-
-            // Assert
-            var directive = document.Root.Children.OfType<Block>().Last();
-            var erroredSpan = (Span)directive.Children.Last();
-            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredSpan.ChunkGenerator);
-            var diagnostic = Assert.Single(chunkGenerator.Diagnostics);
-            Assert.Equal(expectedDiagnostic, diagnostic);
+                new[] { descriptor });
         }
 
         [Fact]
         public void TagHelperPrefixDirective_NoValueSucceeds()
         {
-            ParseBlockTest("@tagHelperPrefix \"\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"\"")
-                        .AsTagHelperPrefixDirective("\"\"", string.Empty)));
+            ParseBlockTest("@tagHelperPrefix \"\"");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_Succeeds()
         {
-            ParseBlockTest("@tagHelperPrefix Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo")
-                        .AsTagHelperPrefixDirective("Foo", "Foo")));
+            ParseBlockTest("@tagHelperPrefix Foo");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_WithQuotes_Succeeds()
         {
-            ParseBlockTest("@tagHelperPrefix \"Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo\"")
-                        .AsTagHelperPrefixDirective("\"Foo\"", "Foo")));
+            ParseBlockTest("@tagHelperPrefix \"Foo\"");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_RequiresValue()
         {
-            // Arrange 
-            var expectedError = RazorDiagnosticFactory.CreateParsing_DirectiveMustHaveValue(
-                    new SourceSpan(filePath: null, absoluteIndex: 1, lineIndex: 0, characterIndex: 1, length: 15), SyntaxConstants.CSharp.TagHelperPrefixKeyword);
-
-            // Act & Assert
-            ParseBlockTest("@tagHelperPrefix ",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.EmptyCSharp()
-                        .AsTagHelperPrefixDirective(string.Empty, string.Empty, expectedError)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@tagHelperPrefix ");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 4), SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 4), SyntaxConstants.CSharp.TagHelperPrefixKeyword, '"', "\"Foo"),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@tagHelperPrefix \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo")
-                        .AsTagHelperPrefixDirective("\"Foo", "\"Foo", expectedErrors)));
+            ParseBlockTest("@tagHelperPrefix \"Foo");
         }
 
         [Fact]
         public void TagHelperPrefixDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-               RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                   new SourceSpan(filePath: null, absoluteIndex: 23, lineIndex: 0, characterIndex: 23, length: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 7), SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 7), SyntaxConstants.CSharp.TagHelperPrefixKeyword, ' ', "Foo   \""),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@tagHelperPrefix Foo   \"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo   \"")
-                        .AsTagHelperPrefixDirective("Foo   \"", "Foo   \"", expectedErrors)));
+            ParseBlockTest("@tagHelperPrefix Foo   \"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_NoValue_Invalid()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(18, 0, 18), contentLength: 1), string.Empty)
-            };
-
-            ParseBlockTest("@removeTagHelper \"\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"\"")
-                        .AsRemoveTagHelper(
-                            "\"\"",
-                            string.Empty,
-                            errors: expectedErrors)));
+            ParseBlockTest("@removeTagHelper \"\"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_InvalidLookupText_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 3), "Foo")
-            };
-
-            ParseBlockTest("@removeTagHelper Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo")
-                        .AsRemoveTagHelper(
-                            "Foo",
-                            "Foo",
-                            errors: expectedErrors)));
+            ParseBlockTest("@removeTagHelper Foo");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_SingleQuotes_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 8), "'*, Foo'")
-            };
-
-            ParseBlockTest("@removeTagHelper '*, Foo'",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("'*, Foo'")
-                        .AsRemoveTagHelper(
-                            "'*, Foo'",
-                            "'*, Foo'",
-                            errors: expectedErrors)));
+            ParseBlockTest("@removeTagHelper '*, Foo'");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(18, 0, 18), contentLength: 3), "Foo")
-            };
-
-            ParseBlockTest("@removeTagHelper \"Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo\"")
-                        .AsRemoveTagHelper(
-                            "\"Foo\"",
-                            "Foo",
-                            errors: expectedErrors)));
+            ParseBlockTest("@removeTagHelper \"Foo\"");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@removeTagHelper     Foo,   Bar    ",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, "     ", markup: false)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo,   Bar    ")
-                        .AsRemoveTagHelper(
-                            "Foo,   Bar",
-                            "Foo,   Bar",
-                            "Foo",
-                            "Bar")
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@removeTagHelper     Foo,   Bar    ");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_RequiresValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_DirectiveMustHaveValue(
-                    new SourceSpan(filePath: null, absoluteIndex: 1, lineIndex: 0, characterIndex: 1, length: 15), SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 1), string.Empty),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@removeTagHelper ",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.EmptyCSharp()
-                        .AsRemoveTagHelper(string.Empty, string.Empty, errors: expectedErrors)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@removeTagHelper ");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
             // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 4), SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 4), "\"Foo"),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@removeTagHelper \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("\"Foo", "\"Foo", errors: expectedErrors)));
+            ParseBlockTest("@removeTagHelper \"Foo");
         }
 
         [Fact]
         public void RemoveTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                    new SourceSpan(new SourceLocation(absoluteIndex: 20, lineIndex: 0, characterIndex: 20), contentLength: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 4), SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 4), "Foo\""),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@removeTagHelper Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo\"")
-                        .AsRemoveTagHelper("Foo\"", "Foo\"", errors: expectedErrors)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@removeTagHelper Foo\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_NoValue_Invalid()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 1), string.Empty),
-            };
-
-            ParseBlockTest("@addTagHelper \"\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"\"")
-                        .AsAddTagHelper(
-                            "\"\"",
-                            string.Empty,
-                            errors: expectedErrors)));
+            ParseBlockTest("@addTagHelper \"\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_InvalidLookupText_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 3), "Foo"),
-            };
-
-            ParseBlockTest("@addTagHelper Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo")
-                        .AsAddTagHelper(
-                            "Foo",
-                            "Foo",
-                            errors: expectedErrors)));
+            ParseBlockTest("@addTagHelper Foo");
         }
 
         [Fact]
         public void AddTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 3), "Foo")
-            };
-
-            ParseBlockTest("@addTagHelper \"Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo\"")
-                        .AsAddTagHelper(
-                            "\"Foo\"",
-                            "Foo",
-                            errors: expectedErrors)));
+            ParseBlockTest("@addTagHelper \"Foo\"");
         }
 
         [Fact]
         public void AddTagHelperDirective_SingleQuotes_AddsError()
         {
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 8), "'*, Foo'")
-            };
-
-            ParseBlockTest("@addTagHelper '*, Foo'",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
-                           .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("'*, Foo'")
-                        .AsAddTagHelper(
-                            "'*, Foo'",
-                            "'*, Foo'",
-                            errors: expectedErrors)));
+            ParseBlockTest("@addTagHelper '*, Foo'");
         }
 
         [Fact]
         public void AddTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@addTagHelper     Foo,   Bar    ",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, "     ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo,   Bar    ")
-                        .AsAddTagHelper(
-                            "Foo,   Bar",
-                            "Foo,   Bar",
-                            "Foo",
-                            "Bar")
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@addTagHelper     Foo,   Bar    ");
         }
 
         [Fact]
         public void AddTagHelperDirective_RequiresValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_DirectiveMustHaveValue(
-                    new SourceSpan(filePath: null, absoluteIndex: 1, lineIndex: 0, characterIndex: 1, length: 12), SyntaxConstants.CSharp.AddTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 1), string.Empty),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@addTagHelper ",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.EmptyCSharp()
-                        .AsAddTagHelper(string.Empty, string.Empty, errors: expectedErrors)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@addTagHelper ");
         }
 
         [Fact]
         public void AddTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                    new SourceSpan(filePath: null, absoluteIndex: 14, lineIndex: 0, characterIndex: 14, length: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 14, lineIndex: 0, characterIndex: 14, length: 4), SyntaxConstants.CSharp.AddTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 4), "\"Foo"),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@addTagHelper \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("\"Foo")
-                        .AsAddTagHelper("\"Foo", "\"Foo", errors: expectedErrors)));
+            ParseBlockTest("@addTagHelper \"Foo");
         }
 
         [Fact]
         public void AddTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
         {
-            // Arrange
-            var expectedErrors = new[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
-                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
-                RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
-                    new SourceSpan(filePath: null, absoluteIndex: 14, lineIndex: 0, characterIndex: 14, length: 4), SyntaxConstants.CSharp.AddTagHelperKeyword),
-                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 4), "Foo\""),
-            };
-
-            // Act & Assert
-            ParseBlockTest("@addTagHelper Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory
-                        .Span(SpanKindInternal.Markup, " ", markup: false)
-                        .Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code("Foo\"")
-                        .AsAddTagHelper("Foo\"", "Foo\"", errors: expectedErrors)
-                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
+            ParseBlockTest("@addTagHelper Foo\"");
         }
 
         [Fact]
@@ -1505,15 +742,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseDocumentTest(
                 "@inherits string[[]][]",
-                new[] { InheritsDirective.Directive, },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "string[[]][]", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens.First())),
-                    Factory.EmptyHtml()));
+                new[] { InheritsDirective.Directive, });
         }
 
         [Fact]
@@ -1521,16 +750,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseDocumentTest(
                 "@inherits System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>",
-                new[] { InheritsDirective.Directive, },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>", markup: false)
-                            .AsDirectiveToken(InheritsDirective.Directive.Tokens.First())),
-                    Factory.EmptyHtml()));
+                new[] { InheritsDirective.Directive, });
         }
 
         [Fact]
@@ -1538,16 +758,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseDocumentTest(
                 "@inherits string",
-                new[] { InheritsDirective.Directive, },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "string", markup: false)
-                            .AsDirectiveToken(InheritsDirective.Directive.Tokens.First())),
-                    Factory.EmptyHtml()));
+                new[] { InheritsDirective.Directive, });
         }
 
         [Fact]
@@ -1555,14 +766,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseCodeBlockTest(
                 "@functions { foo(); bar(); }",
-                new[] { FunctionsDirective.Directive, },
-                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" foo(); bar(); ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+                new[] { FunctionsDirective.Directive, });
         }
 
         [Fact]
@@ -1570,14 +774,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseCodeBlockTest(
                 "@functions { }",
-                new[] { FunctionsDirective.Directive, },
-                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    Factory.Code(" ").AsStatement(),
-                    Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
+                new[] { FunctionsDirective.Directive, });
         }
 
         [Fact]
@@ -1585,25 +782,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseCodeBlockTest(
                 "@section Header { <p>F{o}o</p> }",
-                new[] { SectionDirective.Directive, },
-                new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Header", CSharpSymbolType.Identifier)
-                        .AsDirectiveToken(SectionDirective.Directive.Tokens.First()),
-                    Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                    new MarkupBlock(
-                        Factory.Markup(" "),
-                        new MarkupTagBlock(
-                            Factory.Markup("<p>")),
-                        Factory.Markup("F", "{", "o", "}", "o"),
-                        new MarkupTagBlock(
-                            Factory.Markup("</p>")),
-                        Factory.Markup(" ")),
-                    Factory.MetaCode("}")
-                           .Accepts(AcceptedCharactersInternal.None)));
+                new[] { SectionDirective.Directive, });
         }
 
         [Fact]
@@ -1618,12 +797,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom ",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1638,14 +812,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"simple-value\"",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"simple-value\"", markup: false)
-                        .AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1660,14 +827,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"{formaction}?/{id}?\"",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"{formaction}?/{id}?\"", markup: false)
-                        .AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1682,15 +842,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@custom \"{formaction}?/{id}?\" System.String",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "\"{formaction}?/{id}?\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.String", markup: false).AsDirectiveToken(descriptor.Tokens.Last())));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1705,14 +857,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@TestDirective ",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, string.Empty, CSharpSymbolType.Unknown)
-                        .AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1727,13 +872,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@TestDirective PropertyName",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "PropertyName", markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1747,11 +886,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@class",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("class").Accepts(AcceptedCharactersInternal.None)));
+                new[] { descriptor });
         }
 
         [Fact]
@@ -1765,201 +900,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Act & Assert
             ParseCodeBlockTest(
                 "@namespace",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("namespace").Accepts(AcceptedCharactersInternal.None)));
+                new[] { descriptor });
         }
 
-        public static TheoryData InvalidTagHelperPrefixData
+        internal virtual void ParseCodeBlockTest(string document)
         {
-            get
-            {
-                var directiveLocation = new SourceLocation(1, 2, 3);
-
-                RazorDiagnostic InvalidPrefixError(int length, char character, string prefix)
-                {
-                    return RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
-                        new SourceSpan(directiveLocation, length), SyntaxConstants.CSharp.TagHelperPrefixKeyword, character, prefix);
-                }
-
-                return new TheoryData<string, SourceLocation, IEnumerable<RazorDiagnostic>>
-                {
-                    {
-                        "th ",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(3, ' ', "th "),
-                        }
-                    },
-                    {
-                        "th\t",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(3, '\t', "th\t"),
-                        }
-                    },
-                    {
-                        "th" + Environment.NewLine,
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(2 + Environment.NewLine.Length, Environment.NewLine[0], "th" + Environment.NewLine),
-                        }
-                    },
-                    {
-                        " th ",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(4, ' ', " th "),
-                        }
-                    },
-                    {
-                        "@",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(1, '@', "@"),
-                        }
-                    },
-                    {
-                        "t@h",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(3, '@', "t@h"),
-                        }
-                    },
-                    {
-                        "!",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(1, '!', "!"),
-                        }
-                    },
-                    {
-                        "!th",
-                        directiveLocation,
-                        new[]
-                        {
-                            InvalidPrefixError(3, '!', "!th"),
-                        }
-                    },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(InvalidTagHelperPrefixData))]
-        public void ValidateTagHelperPrefix_ValidatesPrefix(
-            string directiveText,
-            SourceLocation directiveLocation,
-            object expectedErrors)
-        {
-            // Arrange
-            var expectedDiagnostics = (IEnumerable<RazorDiagnostic>)expectedErrors;
-            var source = TestRazorSourceDocument.Create();
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var parser = new CSharpCodeParser(context);
-            var diagnostics = new List<RazorDiagnostic>();
-
-            // Act
-            parser.ValidateTagHelperPrefix(directiveText, directiveLocation, diagnostics);
-
-            // Assert
-            Assert.Equal(expectedDiagnostics, diagnostics);
-        }
-
-        [Theory]
-        [InlineData("foo,assemblyName", 4)]
-        [InlineData("foo, assemblyName", 5)]
-        [InlineData("   foo, assemblyName", 8)]
-        [InlineData("   foo   , assemblyName", 11)]
-        [InlineData("foo,    assemblyName", 8)]
-        [InlineData("   foo   ,    assemblyName   ", 14)]
-        public void ParseAddOrRemoveDirective_CalculatesAssemblyLocationInLookupText(string text, int assemblyLocation)
-        {
-            // Arrange
-            var source = TestRazorSourceDocument.Create();
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var parser = new CSharpCodeParser(context);
-
-            var directive = new CSharpCodeParser.ParsedDirective()
-            {
-                DirectiveText = text,
-            };
-
-            var diagnostics = new List<RazorDiagnostic>();
-            var expected = new SourceLocation(assemblyLocation, 0, assemblyLocation);
-
-            // Act
-            var result = parser.ParseAddOrRemoveDirective(directive, SourceLocation.Zero, diagnostics);
-
-            // Assert
-            Assert.Empty(diagnostics);
-            Assert.Equal("foo", result.TypePattern);
-            Assert.Equal("assemblyName", result.AssemblyName);
-        }
-
-        [Theory]
-        [InlineData("", 1)]
-        [InlineData("*,", 2)]
-        [InlineData("?,", 2)]
-        [InlineData(",", 1)]
-        [InlineData(",,,", 3)]
-        [InlineData("First, ", 7)]
-        [InlineData("First , ", 8)]
-        [InlineData(" ,Second", 8)]
-        [InlineData(" , Second", 9)]
-        [InlineData("SomeType,", 9)]
-        [InlineData("SomeAssembly", 12)]
-        [InlineData("First,Second,Third", 18)]
-        public void ParseAddOrRemoveDirective_CreatesErrorIfInvalidLookupText_DoesNotThrow(string directiveText, int errorLength)
-        {
-            // Arrange
-            var source = TestRazorSourceDocument.Create();
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var parser = new CSharpCodeParser(context);
-
-            var directive = new CSharpCodeParser.ParsedDirective()
-            {
-                DirectiveText = directiveText
-            };
-
-            var diagnostics = new List<RazorDiagnostic>();
-            var expectedError = RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
-                new SourceSpan(new SourceLocation(1, 2, 3), errorLength), directiveText);
-
-            // Act
-            var result = parser.ParseAddOrRemoveDirective(directive, new SourceLocation(1, 2, 3), diagnostics);
-
-            // Assert
-            Assert.Same(directive, result);
-
-            var error = Assert.Single(diagnostics);
-            Assert.Equal(expectedError, error);
+            ParseCodeBlockTest(document, Array.Empty<DirectiveDescriptor>());
         }
 
         internal virtual void ParseCodeBlockTest(
             string document,
             IEnumerable<DirectiveDescriptor> descriptors,
-            Block expected,
+            Block expected = null,
             params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseCodeBlock(RazorLanguageVersion.Latest, document, descriptors, designTime: false);
 
-            EvaluateResults(result, expected, expectedErrors);
+            BaselineTest(result);
         }
     }
 }

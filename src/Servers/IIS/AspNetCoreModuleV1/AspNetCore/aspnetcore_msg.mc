@@ -1,6 +1,7 @@
 ;/*++
 ;
-;Copyright (c) 2014 Microsoft Corporation
+; Copyright (c) .NET Foundation. All rights reserved.
+; Licensed under the MIT License. See License.txt in the project root for license information.
 ;
 ;Module Name:
 ;
@@ -69,6 +70,12 @@ Language=English
 
 Messageid=1012
 SymbolicName=ASPNETCORE_EVENT_RECYCLE_APPOFFLINE
+Language=English
+%1
+.
+
+Messageid=1030
+SymbolicName=ASPNETCORE_EVENT_PROCESS_SHUTDOWN
 Language=English
 %1
 .

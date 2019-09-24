@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(BindModelAsyncData))]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
+        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
             BindingInfo parameterBindingInfo,
             string metadataBinderModelName,
             string parameterName,
@@ -115,13 +117,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var controllerContext = GetControllerContext();
 
             // Act & Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             await parameterBinder.BindModelAsync(controllerContext, new SimpleValueProvider(), parameterDescriptor);
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.True(binderExecuted);
 
         }
 
         [Fact]
-        public async Task BindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
+        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
         {
             // Arrange
             var expectedModelName = "expectedName";
@@ -173,7 +177,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var controllerContext = GetControllerContext();
 
             // Act & Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             await argumentBinder.BindModelAsync(controllerContext, valueProvider, parameterDescriptor);
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.True(binderExecuted);
         }
 
@@ -493,6 +499,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        [ReplaceCulture]
         public async Task BindModelAsync_ForParameter_UsesValidationFromActualModel_WhenDerivedModelIsSet()
         {
             // Arrange
@@ -515,7 +522,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Mock.Of<IModelBinderFactory>(),
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -569,7 +577,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Mock.Of<IModelBinderFactory>(),
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -601,6 +610,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        [ReplaceCulture]
         public async Task BindModelAsync_ForProperty_UsesValidationFromActualModel_WhenDerivedModelIsSet()
         {
             // Arrange
@@ -622,7 +632,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Mock.Of<IModelBinderFactory>(),
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -675,7 +686,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Mock.Of<IModelBinderFactory>(),
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -704,6 +716,188 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     var error = Assert.Single(kvp.Value.Errors);
                     Assert.Equal("Always Invalid", error.ErrorMessage);
                 });
+        }
+
+        // Regression test 1 for aspnet/Mvc#7963. ModelState should never be valid.
+        [Fact]
+        public async Task BindModelAsync_ForOverlappingParametersWithSuppressions_InValid_WithValidSecondParameter()
+        {
+            // Arrange
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                Name = "patchDocument",
+                ParameterType = typeof(IJsonPatchDocument),
+            };
+
+            var actionContext = GetControllerContext();
+            var modelState = actionContext.ModelState;
+
+            // First ModelState key is not empty to match SimpleTypeModelBinder.
+            modelState.SetModelValue("id", "notAGuid", "notAGuid");
+            modelState.AddModelError("id", "This is not valid.");
+
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            modelMetadataProvider.ForType<IJsonPatchDocument>().ValidationDetails(v => v.ValidateChildren = false);
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(IJsonPatchDocument));
+
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                Mock.Of<IModelBinderFactory>(),
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
+
+            // BodyModelBinder does not update ModelState in success case.
+            var modelBindingResult = ModelBindingResult.Success(new JsonPatchDocument());
+            var modelBinder = CreateMockModelBinder(modelBindingResult);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                modelBinder,
+                new SimpleValueProvider(),
+                parameterDescriptor,
+                modelMetadata,
+                value: null);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+            Assert.False(modelState.IsValid);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("id", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.Equal("This is not valid.", error.ErrorMessage);
+                });
+        }
+
+        // Regression test 2 for aspnet/Mvc#7963. ModelState should never be valid.
+        [Fact]
+        public async Task BindModelAsync_ForOverlappingParametersWithSuppressions_InValid_WithInValidSecondParameter()
+        {
+            // Arrange
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                Name = "patchDocument",
+                ParameterType = typeof(IJsonPatchDocument),
+            };
+
+            var actionContext = GetControllerContext();
+            var modelState = actionContext.ModelState;
+
+            // First ModelState key is not empty to match SimpleTypeModelBinder.
+            modelState.SetModelValue("id", "notAGuid", "notAGuid");
+            modelState.AddModelError("id", "This is not valid.");
+
+            // Second ModelState key is empty to match BodyModelBinder.
+            modelState.AddModelError(string.Empty, "This is also not valid.");
+
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            modelMetadataProvider.ForType<IJsonPatchDocument>().ValidationDetails(v => v.ValidateChildren = false);
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(IJsonPatchDocument));
+
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                Mock.Of<IModelBinderFactory>(),
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
+
+            var modelBindingResult = ModelBindingResult.Failed();
+            var modelBinder = CreateMockModelBinder(modelBindingResult);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                modelBinder,
+                new SimpleValueProvider(),
+                parameterDescriptor,
+                modelMetadata,
+                value: null);
+
+            // Assert
+            Assert.False(result.IsModelSet);
+            Assert.False(modelState.IsValid);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.Equal("This is also not valid.", error.ErrorMessage);
+                },
+                kvp =>
+                {
+                    Assert.Equal("id", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.Equal("This is not valid.", error.ErrorMessage);
+                });
+        }
+
+        // Regression test for aspnet/Mvc#8078. Later parameter should not mark entry as valid.
+        [Fact]
+        public async Task BindModelAsync_ForOverlappingParameters_InValid_WithInValidFirstParameterAndSecondNull()
+        {
+            // Arrange
+            var parameterDescriptor = new ParameterDescriptor
+            {
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "id",
+                },
+                Name = "identifier",
+                ParameterType = typeof(string),
+            };
+
+            var actionContext = GetControllerContext();
+            var modelState = actionContext.ModelState;
+
+            // Mimic ModelStateEntry when first parameter is [FromRoute] int id and request URI is /api/values/notAnInt
+            modelState.SetModelValue("id", "notAnInt", "notAnInt");
+            modelState.AddModelError("id", "This is not valid.");
+
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(typeof(string));
+            var parameterBinder = new ParameterBinder(
+                modelMetadataProvider,
+                Mock.Of<IModelBinderFactory>(),
+                new DefaultObjectValidator(
+                    modelMetadataProvider,
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
+
+            // Mimic result when second parameter is [FromQuery(Name = "id")] string identifier and query is ?id
+            var modelBindingResult = ModelBindingResult.Success(null);
+            var modelBinder = CreateMockModelBinder(modelBindingResult);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                modelBinder,
+                new SimpleValueProvider(),
+                parameterDescriptor,
+                modelMetadata,
+                value: null);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+            Assert.False(modelState.IsValid);
+            var keyValuePair = Assert.Single(modelState);
+            Assert.Equal("id", keyValuePair.Key);
+            Assert.Equal(ModelValidationState.Invalid, keyValuePair.Value.ValidationState);
         }
 
         private static ControllerContext GetControllerContext()
@@ -760,7 +954,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 mockModelBinderFactory.Object,
                 new DefaultObjectValidator(
                     mockModelMetadataProvider.Object,
-                    new[] { GetModelValidatorProvider(validator) }),
+                    new[] { GetModelValidatorProvider(validator) },
+                    new MvcOptions()),
                 optionsAccessor,
                 loggerFactory ?? NullLoggerFactory.Instance);
         }
@@ -813,25 +1008,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return mockValueProvider.Object;
         }
 
-        private static IModelValidatorProvider CreateMockValidatorProvider(IModelValidator validator = null)
-        {
-            var mockValidator = new Mock<IModelValidatorProvider>();
-            mockValidator
-                .Setup(o => o.CreateValidators(
-                    It.IsAny<ModelValidatorProviderContext>()))
-                .Callback<ModelValidatorProviderContext>(context =>
-                {
-                    if (validator != null)
-                    {
-                        foreach (var result in context.Results)
-                        {
-                            result.Validator = validator;
-                        }
-                    }
-                });
-            return mockValidator.Object;
-        }
-
         private class Person : IEquatable<Person>, IEquatable<object>
         {
             public string Name { get; set; }
@@ -861,9 +1037,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             [Required]
             public string DerivedProperty { get; set; }
         }
-
-        [Required]
-        private Person PersonProperty { get; set; }
 
         public abstract class FakeModelMetadata : ModelMetadata
         {

@@ -1,0 +1,8 @@
+Markup block - Gen<None> - 32 - (0:0,0)
+    Tag block - Gen<TagHelper> - 32 - (0:0,0) - myth - mythTagHelper
+        StartTagAndEndTag - <myth BOUND= nAMe='john'> ... </myth>
+        BOUND - DoubleQuotes
+            Code span - Gen<None> - [] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (12:0,12) - Tokens:0
+        nAMe - SingleQuotes
+            Markup span - Gen<Markup> - [john] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
+                HtmlTokenType.Text;[john];

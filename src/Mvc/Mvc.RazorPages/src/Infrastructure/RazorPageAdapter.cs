@@ -14,10 +14,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     //
     // The page gets activated before handler methods run, but the RazorView will also activate
     // each page.
-    public class RazorPageAdapter : IRazorPage
+    public class RazorPageAdapter : IRazorPage, IModelTypeProvider
     {
         private readonly RazorPageBase _page;
+        private readonly Type _modelType;
 
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public RazorPageAdapter(RazorPageBase page)
         {
             if (page == null)
@@ -26,6 +28,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             _page = page;
+        }
+
+        public RazorPageAdapter(RazorPageBase page, Type modelType)
+        {
+            _page = page ?? throw new ArgumentNullException(nameof(page));
+            _modelType = modelType ?? throw new ArgumentNullException(nameof(modelType));
         }
 
         public ViewContext ViewContext
@@ -75,5 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             return _page.ExecuteAsync();
         }
+
+        Type IModelTypeProvider.GetModelType() => _modelType;
     }
 }

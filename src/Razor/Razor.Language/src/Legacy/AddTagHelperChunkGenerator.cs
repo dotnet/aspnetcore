@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -62,6 +63,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             combiner.Add(AssemblyName, StringComparer.Ordinal);
 
             return combiner.CombinedHash;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder("AddTagHelper:{");
+            builder.Append(LookupText);
+            builder.Append(";");
+            builder.Append(DirectiveText);
+            builder.Append(";");
+            builder.Append(TypePattern);
+            builder.Append(";");
+            builder.Append(AssemblyName);
+            builder.Append("}");
+
+            if (Diagnostics.Count > 0)
+            {
+                builder.Append(" [");
+                var ids = string.Join(", ", Diagnostics.Select(diagnostic => $"{diagnostic.Id}{diagnostic.Span}"));
+                builder.Append(ids);
+                builder.Append("]");
+            }
+
+            return builder.ToString();
         }
     }
 }

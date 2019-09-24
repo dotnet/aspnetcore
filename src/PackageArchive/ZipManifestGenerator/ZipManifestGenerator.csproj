@@ -4,7 +4,6 @@
     <OutputType>exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <SignAssembly>false</SignAssembly>
-    <PublicSign>false</PublicSign>
     <LangVersion>7.1</LangVersion>
     <DisableImplicitFrameworkReferences>false</DisableImplicitFrameworkReferences>
   </PropertyGroup>

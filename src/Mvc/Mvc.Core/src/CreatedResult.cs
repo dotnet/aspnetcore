@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -10,8 +11,11 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="ActionResult"/> that returns a Created (201) response with a Location header.
     /// </summary>
+    [DefaultStatusCode(DefaultStatusCode)]
     public class CreatedResult : ObjectResult
     {
+        private const int DefaultStatusCode = StatusCodes.Status201Created;
+
         private string _location;
 
         /// <summary>
@@ -29,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             Location = location;
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc
                 Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
 
-            StatusCode = StatusCodes.Status201Created;
+            StatusCode = DefaultStatusCode;
         }
 
         /// <summary>

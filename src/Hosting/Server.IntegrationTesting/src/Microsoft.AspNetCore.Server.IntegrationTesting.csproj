@@ -12,15 +12,18 @@
     <PackageTags>aspnetcore;testing</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <UseProjectReferences>true</UseProjectReferences>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Process\*.cs" />
+    <EmbeddedResource Include="Http.config" />
     <EmbeddedResource Include="Deployers\RemoteWindowsDeployer\RemotePSSessionHelper.ps1;Deployers\RemoteWindowsDeployer\StartServer.ps1;Deployers\RemoteWindowsDeployer\StopServer.ps1" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />

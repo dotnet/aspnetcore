@@ -1,0 +1,46 @@
+Statement block - Gen<None> - 94 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    Code span - Gen<Stmt> - [try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:42
+        CSharpTokenType.Keyword;[try];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[IOException];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[ioex];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[handleIO];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Exception];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[ex];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[handleOther];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -180,6 +181,12 @@ namespace MusicStore
                 DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures
+            });
+
+            app.Use((context, next) =>
+            {
+                context.Response.Headers["Arch"] = RuntimeInformation.ProcessArchitecture.ToString();
+                return next();
             });
 
             // Configure Session.

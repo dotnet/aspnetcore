@@ -1,0 +1,9 @@
+Markup block - Gen<None> - 33 - (0:0,0)
+    Tag block - Gen<TagHelper> - 33 - (0:0,0) - p - ptaghelper
+        SelfClosing - <p class1='' class2= class3="" />
+        class1 - SingleQuotes
+            Markup block - Gen<None> - 0 - (0:0,0)
+        class2 - DoubleQuotes
+            Markup span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:0
+        class3 - DoubleQuotes
+            Markup block - Gen<None> - 0 - (0:0,0)

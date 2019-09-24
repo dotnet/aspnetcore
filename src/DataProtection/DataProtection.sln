@@ -45,11 +45,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataPr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{DC6D371D-200A-40D9-B4BE-C9202C27A863}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redis", "Redis", "{1A2E71DA-8DFE-4DDA-B713-14B5F2B8EBAE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StackExchangeRedis", "StackExchangeRedis", "{1A2E71DA-8DFE-4DDA-B713-14B5F2B8EBAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Redis", "Redis\src\Microsoft.AspNetCore.DataProtection.Redis.csproj", "{0FEAE8C5-4EAF-4E87-9A07-69FCE19B31D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{0FEAE8C5-4EAF-4E87-9A07-69FCE19B31D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Redis.Tests", "Redis\test\Microsoft.AspNetCore.DataProtection.Redis.Tests.csproj", "{8A71D3B4-D617-4960-8616-A196FBF351FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests", "StackExchangeRedis\test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj", "{8A71D3B4-D617-4960-8616-A196FBF351FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9DF098B3-C8ED-471C-AE03-52E3196C1811}"
 EndProject
@@ -68,6 +68,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SystemWeb", "SystemWeb", "{AA4BAE43-BD74-4292-8468-46F4DF60F9C7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.SystemWeb", "SystemWeb\src\Microsoft.AspNetCore.DataProtection.SystemWeb.csproj", "{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test", "EntityFrameworkCore\test\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj", "{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -358,6 +364,30 @@ Global
 		{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}.Release|x64.Build.0 = Release|Any CPU
 		{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}.Release|x86.ActiveCfg = Release|Any CPU
 		{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}.Release|x86.Build.0 = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|x64.Build.0 = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Debug|x86.Build.0 = Debug|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|x64.ActiveCfg = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|x64.Build.0 = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|x86.ActiveCfg = Release|Any CPU
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}.Release|x86.Build.0 = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|x64.Build.0 = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Debug|x86.Build.0 = Debug|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x64.ActiveCfg = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x64.Build.0 = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x86.ActiveCfg = Release|Any CPU
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{18BE6FD1-1EB1-44AD-A3AE-398C990060F5} = {ABD364B3-09A1-4CFE-8D26-FF6417DDEC84}
@@ -383,5 +413,7 @@ Global
 		{C5C425C8-5626-409B-9A81-4DC496CE41F4} = {9DF098B3-C8ED-471C-AE03-52E3196C1811}
 		{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E} = {9DF098B3-C8ED-471C-AE03-52E3196C1811}
 		{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7} = {AA4BAE43-BD74-4292-8468-46F4DF60F9C7}
+		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224} = {64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}
+		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC} = {64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}
 	EndGlobalSection
 EndGlobal

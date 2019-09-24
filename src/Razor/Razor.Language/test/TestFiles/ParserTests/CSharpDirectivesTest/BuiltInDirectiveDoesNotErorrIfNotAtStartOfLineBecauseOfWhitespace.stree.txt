@@ -1,0 +1,12 @@
+Directive block - Gen<None> - 26 - (0:0,0)
+    Code span - Gen<Stmt> - [LF  ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.WhiteSpace;[  ];
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (4:1,2) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    MetaCode span - Gen<None> - [addTagHelper] - SpanEditHandler;Accepts:None - (5:1,3) - Tokens:1
+        CSharpTokenType.Identifier;[addTagHelper];
+    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (17:1,15) - Tokens:1
+        CSharpTokenType.WhiteSpace;[ ];
+    Code span - Gen<AddTagHelper:{"*, Foo";*, Foo;*;Foo}> - ["*, Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (18:1,16) - Tokens:1
+        CSharpTokenType.StringLiteral;["*, Foo"];

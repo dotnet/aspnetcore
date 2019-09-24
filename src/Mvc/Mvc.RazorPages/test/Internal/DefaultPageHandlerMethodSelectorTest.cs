@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -400,6 +401,57 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Values =
                     {
                         { "handler", "Add" }
+                    }
+                },
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Method = "Post"
+                    },
+                },
+            };
+            var selector = CreateSelector();
+
+            // Act
+            var actual = selector.Select(pageContext);
+
+            // Assert
+            Assert.Same(descriptor1, actual);
+        }
+
+        [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void Select_ReturnsHandlerThatMatchesHandler_UsesInvariantCulture()
+        {
+            // Arrange
+            var descriptor1 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                Name = "10/31/2018 07:37:38 -07:00",
+            };
+
+            var descriptor2 = new HandlerMethodDescriptor
+            {
+                HttpMethod = "POST",
+                Name = "Delete",
+            };
+
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    HandlerMethods = new List<HandlerMethodDescriptor>()
+                    {
+                        descriptor1,
+                        descriptor2,
+                    },
+                },
+                RouteData = new RouteData
+                {
+                    Values =
+                    {
+                        { "handler", new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)) },
                     }
                 },
                 HttpContext = new DefaultHttpContext

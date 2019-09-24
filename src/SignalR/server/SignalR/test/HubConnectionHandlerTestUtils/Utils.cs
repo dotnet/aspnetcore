@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null)
+        public static IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null, ILoggerFactory loggerFactory = null)
         {
             var services = new ServiceCollection();
             services.AddOptions()
@@ -61,12 +63,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             addServices?.Invoke(services);
 
+            if (loggerFactory != null)
+            {
+                services.AddSingleton(loggerFactory);
+            }
+
             return services.BuildServiceProvider();
         }
 
-        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType)
+        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, ILoggerFactory loggerFactory = null)
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = CreateServiceProvider(null, loggerFactory);
             return (Connections.ConnectionHandler)serviceProvider.GetService(GetConnectionHandlerType(hubType));
         }
     }

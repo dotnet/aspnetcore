@@ -96,6 +96,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public IReadOnlyList<IRazorPage> ViewStartPages { get; }
 
+        internal Action<IRazorPage, ViewContext> OnAfterPageActivated { get; set; }
+
         /// <inheritdoc />
         public virtual async Task RenderAsync(ViewContext context)
         {
@@ -166,6 +168,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             page.ViewContext = context;
             _pageActivator.Activate(page, context);
+
+            OnAfterPageActivated?.Invoke(page, context);
 
             _diagnosticSource.BeforeViewPage(page, context);
 

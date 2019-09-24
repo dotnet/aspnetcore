@@ -348,66 +348,26 @@
                           Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
         <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
 
-      <!-- CA to add config section to applicationhost.config -->
+        
         <CustomAction Id="CA_ADD_CONFIGSECTION_PROPERTY"
                           Property="CA_ADD_CONFIGSECTION"
-                          Value="[IISEXPRESS_APPHOST_CONFIG];[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
-        <CustomAction Id="CA_ADD_CONFIGSECTION" Script="jscript" Execute="deferred" Return="check" Impersonate="no">
-            <![CDATA[
-                var caData = Session.Property("CustomActionData");
-                configfiles = caData.split(';');
-                for (var i = 0; i < configfiles.length; i++) {
-                    var configfile = configfiles[i];
-                    var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
-                    xmlDoc.async = false;
-                    xmlDoc.preserveWhiteSpace = true;
-                    xmlDoc.load(configfile );
-                    if (xmlDoc.parseError.errorCode == 0) {
-                        xmlDoc.setProperty("SelectionLanguage", "XPath");
-                        var websvrNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
-                        if (websvrNode != null) {
-                            var ancmNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"$(var.AspNetCoreSectionName)\"]");
-                            if (ancmNode == null) {
-                                ancmNode = xmlDoc.createElement("section");
-                                ancmNode.setAttribute("name", "$(var.AspNetCoreSectionName)");
-                                ancmNode.setAttribute("overrideModeDefault", "Allow");
-                                websvrNode.appendChild(ancmNode);
-                                xmlDoc.save(configfile );
-                            }
-                        }
-                    }
-                }
-            ]]>
-        </CustomAction>
+                          Value="[IISEXPRESS_APPHOST_CONFIG]"/>
+        <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
 
-        <!-- CA to remove config section to applicationhost.config -->
+        <CustomAction Id="CA_ADD_CONFIGSECTION_PROPERTY_TMP"
+                          Property="CA_ADD_CONFIGSECTION_TMP"
+                          Value="[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
+        <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
         <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY"
-                          Property="CA_REMOVE_CONFIGSECTION"
-                          Value="[IISEXPRESS_APPHOST_CONFIG];[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
-        <CustomAction Id="CA_REMOVE_CONFIGSECTION" Script="jscript" Execute="deferred" Return="check" Impersonate="no">
-            <![CDATA[
-                var caData = Session.Property("CustomActionData");
-                configfiles = caData.split(';');
-                for (var i = 0; i < configfiles.length; i++) {
-                    var configfile = configfiles[i];
-                    var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
-                    xmlDoc.async = false;
-                    xmlDoc.preserveWhiteSpace = true;
-                    xmlDoc.load(configfile );
-                    if (xmlDoc.parseError.errorCode == 0) {
-                        xmlDoc.setProperty("SelectionLanguage", "XPath");
-                        var websvrNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
-                        if (websvrNode != null) {
-                            var ancmNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"$(var.AspNetCoreSectionName)\"]");
-                            if (ancmNode != null) {
-                                websvrNode.removeChild(ancmNode);
-                                xmlDoc.save(configfile );
-                            }
-                        }
-                    }
-                }
-            ]]>
-        </CustomAction>
+                            Property="CA_REMOVE_CONFIGSECTION"
+                            Value="[IISEXPRESS_APPHOST_CONFIG]"/>
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY_TMP"
+                Property="CA_REMOVE_CONFIGSECTION_TMP"
+                Value="[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
+        <CustomAction Id="CA_REMOVE_CONFIGSECTION_TMP" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
 
         <?if $(var.Platform) = "x64" ?>
             <CustomAction Id="CA_UNLOCK_HANDLER32_PROPERTY"
@@ -502,67 +462,25 @@
                               Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
             <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
 
-      <!-- CA to add config section to applicationhost.config -->
-            <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY"
-                              Property="CA_ADD_CONFIGSECTION32"
-                              Value="[IISEXPRESS_APPHOST_CONFIG32];[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
-            <CustomAction Id="CA_ADD_CONFIGSECTION32" Script="jscript" Execute="deferred" Return="check" Impersonate="no">
-                <!-- Warning LGHT1076: ICE03: String overflow. Orca.exe inspection shows the custom action value is populated correctly -->
-                <![CDATA[
-                    var caData = Session.Property("CustomActionData");
-                    configfiles = caData.split(';');
-                    for (var i = 0; i < configfiles.length; i++) {
-                        var configfile = configfiles[i];
-                        var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
-                        xmlDoc.async = false;
-                        xmlDoc.preserveWhiteSpace = true;
-                        xmlDoc.load(configfile);
-                        if (xmlDoc.parseError.errorCode == 0) {
-                            xmlDoc.setProperty("SelectionLanguage", "XPath");
-                            var websvrNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
-                            if (websvrNode != null) {
-                                var ancmNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"$(var.AspNetCoreSectionName)\"]");
-                                if (ancmNode == null) {
-                                    ancmNode = xmlDoc.createElement("section");
-                                    ancmNode.setAttribute("name", "$(var.AspNetCoreSectionName)");
-                                    ancmNode.setAttribute("overrideModeDefault", "Allow");
-                                    websvrNode.appendChild(ancmNode);
-                                    xmlDoc.save(configfile);
-                                }
-                            }
-                        }
-                    }
-                ]]>
-            </CustomAction>
+                <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY"
+                            Property="CA_ADD_CONFIGSECTION32"
+                            Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
+            <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION32" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
 
-            <!-- CA to remove config section to applicationhost.config -->
+            <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY_TMP"
+                            Property="CA_ADD_CONFIGSECTION32_TMP"
+                            Value="[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
+            <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION32_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
+
             <CustomAction Id="CA_REMOVE_CONFIGSECTION32_PROPERTY"
                               Property="CA_REMOVE_CONFIGSECTION32"
-                              Value="[IISEXPRESS_APPHOST_CONFIG32];[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
-            <CustomAction Id="CA_REMOVE_CONFIGSECTION32" Script="jscript" Execute="deferred" Return="check" Impersonate="no">
-                <![CDATA[
-                    var caData = Session.Property("CustomActionData");
-                    configfiles = caData.split(';');
-                    for (var i = 0; i < configfiles.length; i++) {
-                        var configfile = configfiles[i];
-                        var xmlDoc = new ActiveXObject("Msxml2.DOMDocument");
-                        xmlDoc.async = false;
-                        xmlDoc.preserveWhiteSpace = true;
-                        xmlDoc.load(configfile);
-                        if (xmlDoc.parseError.errorCode == 0) {
-                            xmlDoc.setProperty("SelectionLanguage", "XPath");
-                            var websvrNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]");
-                            if (websvrNode != null) {
-                                var ancmNode = xmlDoc.selectSingleNode("//configuration/configSections/sectionGroup[@name=\"system.webServer\"]/section[@name=\"$(var.AspNetCoreSectionName)\"]");
-                                if (ancmNode != null) {
-                                    websvrNode.removeChild(ancmNode);
-                                    xmlDoc.save(configfile);
-                                }
-                            }
-                        }
-                    }
-                ]]>
-           </CustomAction>
+                              Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
+
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32_PROPERTY_TMP"
+                    Property="CA_REMOVE_CONFIGSECTION32_TMP"
+                    Value="[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
+            <CustomAction Id="CA_REMOVE_CONFIGSECTION32_TMP" BinaryKey="IISCustomActionDll" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" />
         <?endif?>
 
         <InstallExecuteSequence>
@@ -581,6 +499,8 @@
             <Custom Action="CA_SET_MODULE" After="CA_SET_MODULE_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
             <Custom Action="CA_ADD_CONFIGSECTION_PROPERTY" After="CA_SET_MODULE"><![CDATA[(NOT REMOVE)]]></Custom>
             <Custom Action="CA_ADD_CONFIGSECTION" After="CA_ADD_CONFIGSECTION_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION_PROPERTY_TMP" After="CA_ADD_CONFIGSECTION"><![CDATA[(NOT REMOVE)]]></Custom>
+            <Custom Action="CA_ADD_CONFIGSECTION_TMP" After="CA_ADD_CONFIGSECTION_PROPERTY_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
             <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_PROPERTY" After="CA_ADD_CONFIGSECTION"><![CDATA[(NOT REMOVE)]]></Custom>
             <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION" After="CA_ADD_TRACE_PROVIDER_DEFINITION_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
             <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION"><![CDATA[(NOT REMOVE)]]></Custom>
@@ -591,6 +511,8 @@
             <Custom Action="CA_REMOVE_MODULE" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
             <Custom Action="CA_REMOVE_CONFIGSECTION_PROPERTY" Before="CA_REMOVE_CONFIGSECTION"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
             <Custom Action="CA_REMOVE_CONFIGSECTION" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION_PROPERTY_TMP" Before="CA_REMOVE_CONFIGSECTION_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+            <Custom Action="CA_REMOVE_CONFIGSECTION_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
             <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
             <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
             <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
@@ -621,6 +543,8 @@
                 <Custom Action="CA_SET_MODULE32" After="CA_ADD_MODULE32_PROPERTY"><![CDATA[(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)]]></Custom>
                 <Custom Action="CA_ADD_CONFIGSECTION32_PROPERTY" After="CA_SET_MODULE32"><![CDATA[(NOT REMOVE)]]></Custom>
                 <Custom Action="CA_ADD_CONFIGSECTION32" After="CA_ADD_CONFIGSECTION32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32_PROPERTY_TMP" After="CA_ADD_CONFIGSECTION32"><![CDATA[(NOT REMOVE)]]></Custom>
+                <Custom Action="CA_ADD_CONFIGSECTION32_TMP" After="CA_ADD_CONFIGSECTION32_PROPERTY_TMP"><![CDATA[(NOT REMOVE)]]></Custom>
                 <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION32_PROPERTY" After="CA_ADD_CONFIGSECTION32"><![CDATA[(NOT REMOVE)]]></Custom>
                 <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION32" After="CA_ADD_TRACE_PROVIDER_DEFINITION32_PROPERTY"><![CDATA[(NOT REMOVE)]]></Custom>
                 <Custom Action="CA_ADD_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY" After="CA_ADD_TRACE_PROVIDER_DEFINITION32"><![CDATA[(NOT REMOVE)]]></Custom>
@@ -631,6 +555,8 @@
                 <Custom Action="CA_REMOVE_MODULE32" After="CA_REMOVE_MODULE32_PROPERTY"><![CDATA[(REMOVE~="ALL" AND IISEXPRESS_INSTALL_PATH32 AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
                 <Custom Action="CA_REMOVE_CONFIGSECTION32_PROPERTY" Before="CA_REMOVE_CONFIGSECTION32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
                 <Custom Action="CA_REMOVE_CONFIGSECTION32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32_PROPERTY_TMP" Before="CA_REMOVE_CONFIGSECTION32_TMP"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
+                <Custom Action="CA_REMOVE_CONFIGSECTION32_TMP" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
                 <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION32_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
                 <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION32" Before="RemoveFiles"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>
                 <Custom Action="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32_PROPERTY" Before="CA_REMOVE_TRACE_PROVIDER_DEFINITION_TMP32"><![CDATA[(REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE)]]></Custom>

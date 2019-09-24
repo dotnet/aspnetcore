@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -35,8 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
-                TryGetValueFast(key, out value);
+                TryGetValueFast(key, out var value);
                 return value;
             }
             set
@@ -44,6 +44,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_isReadOnly)
                 {
                     ThrowHeadersReadOnlyException();
+                }
+                if (string.IsNullOrEmpty(key))
+                {
+                    ThrowInvalidEmptyHeaderName();
                 }
                 if (value.Count == 0)
                 {
@@ -61,8 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 // Unlike the IHeaderDictionary version, this getter will throw a KeyNotFoundException.
-                StringValues value;
-                if (!TryGetValueFast(key, out value))
+                if (!TryGetValueFast(key, out var value))
                 {
                     ThrowKeyNotFoundException();
                 }
@@ -94,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
 
-        int ICollection<KeyValuePair<string, StringValues>>.Count => GetCountFast();
+        public int Count => GetCountFast();
 
         bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
@@ -170,6 +173,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 ThrowHeadersReadOnlyException();
             }
+            if (string.IsNullOrEmpty(key))
+            {
+                ThrowInvalidEmptyHeaderName();
+            }
 
             if (value.Count > 0 && !AddValueFast(key, value))
             {
@@ -188,9 +195,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Contains(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value);
         }
 
@@ -220,9 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool ICollection<KeyValuePair<string, StringValues>>.Remove(KeyValuePair<string, StringValues> item)
         {
-            StringValues value;
             return
-                TryGetValueFast(item.Key, out value) &&
+                TryGetValueFast(item.Key, out var value) &&
                 value.Equals(item.Value) &&
                 RemoveFast(item.Key);
         }
@@ -241,27 +246,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return TryGetValueFast(key, out value);
         }
 
-        public static void ValidateHeaderCharacters(in StringValues headerValues)
+        public static void ValidateHeaderValueCharacters(in StringValues headerValues)
         {
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
 
             {
-                ValidateHeaderCharacters(headerValues[i]);
+                ValidateHeaderValueCharacters(headerValues[i]);
             }
         }
 
-        public static void ValidateHeaderCharacters(string headerCharacters)
+        public static void ValidateHeaderValueCharacters(string headerCharacters)
         {
             if (headerCharacters != null)
             {
-                foreach (var ch in headerCharacters)
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(headerCharacters);
+                if (invalid >= 0)
                 {
-                    if (ch < 0x20 || ch > 0x7E)
-                    {
-                        ThrowInvalidHeaderCharacter(ch);
-                    }
+                    ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
                 }
+            }
+        }
+
+        public static void ValidateHeaderNameCharacters(string headerCharacters)
+        {
+            var invalid = HttpCharacters.IndexOfInvalidTokenChar(headerCharacters);
+            if (invalid >= 0)
+            {
+                ThrowInvalidHeaderCharacter(headerCharacters[invalid]);
             }
         }
 
@@ -439,6 +451,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static void ThrowInvalidHeaderCharacter(char ch)
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(string.Format("0x{0:X4}", (ushort)ch)));
+        }
+
+        private static void ThrowInvalidEmptyHeaderName()
+        {
+            throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
         }
     }
 }

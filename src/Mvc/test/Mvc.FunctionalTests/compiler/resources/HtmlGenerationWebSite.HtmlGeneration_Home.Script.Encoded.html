@@ -19,11 +19,27 @@
         // Fallback to globbed src
     </script>
 <script>(false||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/site.js]]" title='"the" title'></script>]]"));</script>
+    
+    <script src="HtmlEncode[[/styles/siteIntegrity.js?a=integrity]]" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script loading primary source, applied integrity hash to primary source.
+    </script>
+<script>(true||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/sub/site2.js?a=integrity]]" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ="></script>]]"));</script>
+
+    <script src="HtmlEncode[[/styles/siteIntegrity.js?a=integrity]]" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+
+       // Script uses fallback source, applies integrity hash to fallback.
+    </script>
+<script>(false||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/sub/siteIntegrity2.js?a=integrity]]" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ="></script>]]"));</script>
+
+    <script src="HtmlEncode[[/styles/siteIntegrity.js?a=integrity]]" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script uses fallback source, ignores integrity hash on fallback.
+    </script>
+<script>(false||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/sub/siteIntegrity3.js?a=integrity]]" crossorigin="anonymous"></script>]]"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src with exclude
     </script>
-<script>(false||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script>]]"));</script>
+<script>(false||document.write("JavaScriptEncode[[<script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/siteIntegrity.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity2.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity3.js]]"></script>]]"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed and static src
@@ -65,7 +81,7 @@
     <script src="HtmlEncode[[/styles/site.js]]"></script>
 
     <!-- Globbed script tag with existing file and exclude -->
-    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script>
+    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/siteIntegrity.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity2.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity3.js]]"></script>
 
     <script>
         // Globbed script tag missing include
@@ -76,7 +92,7 @@
     </script>
 
     <!-- Globbed script tag with comma separated include pattern -->
-    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/site3.js]]"></script>
+    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/siteIntegrity.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/site3.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity2.js]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity3.js]]"></script>
 
     <!-- Globbed script tag with missing file -->
     
@@ -110,9 +126,9 @@
     </script>
 
     <!-- Globbed script tag with existing files and version -->
-    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script><script src="HtmlEncode[[/styles/sub/site3.js?v=lmeAMiqm76lnGyqHhu6PIBHAC0Vt46mgVB_KaG_gGdA]]"></script>
+    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/siteIntegrity.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script><script src="HtmlEncode[[/styles/sub/site3.js?v=lmeAMiqm76lnGyqHhu6PIBHAC0Vt46mgVB_KaG_gGdA]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity2.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity3.js?v=6I1ncApSzTYytACF7244bg3a_sEnKrGH8nVudoaN984]]"></script>
 
     <!-- Globbed script tag with existing file, exclude and version -->
-    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script>
+    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/siteIntegrity.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity2.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ]]"></script><script src="HtmlEncode[[/styles/sub/siteIntegrity3.js?v=6I1ncApSzTYytACF7244bg3a_sEnKrGH8nVudoaN984]]"></script>
 </body>
 </html>

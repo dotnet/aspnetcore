@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                     values[nameof(RazorPagesOptions.AllowMappingHeadRequestsToGetHandler)] = true;
                 }
 
+                if (Version >= CompatibilityVersion.Version_2_2)
+                {
+                    values[nameof(RazorPagesOptions.AllowDefaultHandlingForOptionsRequests)] = true;
+                }
+
                 return values;
             }
         }

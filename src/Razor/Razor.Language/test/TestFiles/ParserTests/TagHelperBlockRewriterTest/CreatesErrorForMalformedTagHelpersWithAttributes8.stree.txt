@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 18 - (0:0,0)
+    Tag block - Gen<TagHelper> - 18 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p foo bar
+        foo - Minimized
+        bar - Minimized
+        Tag block - Gen<TagHelper> - 8 - (10:0,10) - strong - strongtaghelper
+            StartTagAndEndTag - <strong>

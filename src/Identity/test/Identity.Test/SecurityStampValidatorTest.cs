@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var signInManager = new Mock<SignInManager<PocoUser>>(userManager.Object,
                 contextAccessor.Object, claimsManager.Object, identityOptions.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
-            signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(shouldStampValidate ? user : default(PocoUser)).Verifiable();
+            signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(shouldStampValidate ? user : default).Verifiable();
 
             if (shouldStampValidate)
             {
@@ -145,6 +145,50 @@ namespace Microsoft.AspNetCore.Identity.Test
                 await SecurityStampValidator.ValidatePrincipalAsync(context);
                 Assert.Null(context.Principal);
             });
+        }
+
+        [Fact]
+        public async Task OnValidateIdentityAcceptsWhenStoreDoesNotSupportSecurityStamp()
+        {
+            var user = new PocoUser("test");
+            var httpContext = new Mock<HttpContext>();
+
+
+            var userManager = MockHelpers.MockUserManager<PocoUser>();
+
+            var claimsManager = new Mock<IUserClaimsPrincipalFactory<PocoUser>>();
+            var identityOptions = new Mock<IOptions<IdentityOptions>>();
+            identityOptions.Setup(a => a.Value).Returns(new IdentityOptions());
+            var options = new Mock<IOptions<SecurityStampValidatorOptions>>();
+            options.Setup(a => a.Value).Returns(new SecurityStampValidatorOptions { ValidationInterval = TimeSpan.Zero });
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
+            var signInManager = new SignInManager<PocoUser>(userManager.Object,
+                contextAccessor.Object, claimsManager.Object, identityOptions.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
+            userManager.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>())).ReturnsAsync(user).Verifiable();
+            claimsManager.Setup(c => c.CreateAsync(user)).ReturnsAsync(new ClaimsPrincipal()).Verifiable();
+
+            var services = new ServiceCollection();
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager);
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock()));
+            httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
+
+            var tid = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+            tid.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(tid),
+                new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow.AddSeconds(-1) },
+                IdentityConstants.ApplicationScheme);
+
+            var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(), new CookieAuthenticationOptions(), ticket);
+            Assert.NotNull(context.Properties);
+            Assert.NotNull(context.Options);
+            Assert.NotNull(context.Principal);
+            await SecurityStampValidator.ValidatePrincipalAsync(context);
+            Assert.NotNull(context.Principal);
+
+            userManager.VerifyAll();
+            claimsManager.VerifyAll();
         }
 
         [Fact]

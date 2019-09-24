@@ -5,85 +5,87 @@
     <ExternalDependency>
       <!-- The NuGet package version. Floating versions not allowed. -->
       <Version></Version>
-      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
-      <AppMetapackage>false</AppMetapackage>
-      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
-      <AllMetapackage>false</AllMetapackage>
     </ExternalDependency>
   </ItemDefinitionGroup>
 
   <ItemGroup>
     <!-- Packages from aspnet/Extensions -->
+    <ExternalDependency Include="Internal.AspNetCore.Analyzers" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Analyzer.Testing" Version="$(MicrosoftAspNetCoreAnalyzerTestingPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)"  />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)"  AllMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)"  AllMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="$(MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion)"  />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="$(MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing"  Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)"  AllMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.EventLog" Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)"  />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)"  />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)"  />
-    <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.NonCapturingTimer.Sources" Version="$(MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-
+    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion)" />
   </ItemGroup>
 
-   <ItemGroup>
+  <ItemGroup>
     <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
     <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <ExternalDependency Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" />
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" />
-    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" AppMetapackage="true" AllMetapackage="true"/>
+    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.DocumentDB.Core" Version="$(MicrosoftAzureDocumentDBCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" />
@@ -93,12 +95,9 @@
     <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllPackageVersion)" />
     <ExternalDependency Include="Microsoft.Data.OData" Version="$(MicrosoftDataODataPackageVersion)" />
     <ExternalDependency Include="Microsoft.Data.Services.Client" Version="$(MicrosoftDataServicesClientPackageVersion)" />
-
-
-    <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
 
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
@@ -112,6 +111,18 @@
     <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion" />
+
+    <!--
+      BenchmarksOnly* package versions come from NuGet.org and are intended only for use in benchmarks apps where EF
+      is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
+      dependencies. Do not use these external dependencies elsewhere.
+    -->
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" VariableName="BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion" />
+    <ExternalDependency Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" VariableName="BenchmarksOnlyMySqlConnectorPackageVersion" />
+    <ExternalDependency Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" VariableName="BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion" />
+    <ExternalDependency Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" VariableName="BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion" />
 
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="$(MicrosoftDotNetProjectModelPackageVersion)" />
@@ -127,8 +138,16 @@
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp11PackageVersion)" VariableName="MicrosoftNETCoreApp11PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" VariableName="MicrosoftNETCoreApp20PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" VariableName="MicrosoftNETCoreApp21PackageVersion" />
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp22PackageVersion)" VariableName="MicrosoftNETCoreApp22PackageVersion" />
+    <!-- This variable should be used for anything that needs "latest" netcoreapp. -->
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" VariableName="MicrosoftNETCoreAppPackageVersion" />
+
+    <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost21PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost21PackageVersion" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
 
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
@@ -151,7 +170,9 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" />
     <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Version="$(MicrosoftVisualStudioWebBrowserLinkPackageVersion)" AllMetapackage="true"  />
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <ExternalDependency Include="mod_spatialite" Version="$(mod_spatialitePackageVersion)" />
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" />
@@ -161,6 +182,10 @@
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandard16PackageVersion)" VariableName="NETStandard16PackageVersion" />
     <!-- netstandard2.0 -->
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandardLibrary20PackageVersion)" VariableName="NETStandardLibrary20PackageVersion" />
+
+    <ExternalDependency Include="NetTopologySuite.Core" Version="$(NetTopologySuiteCorePackageVersion)" />
+    <ExternalDependency Include="NetTopologySuite.IO.SpatiaLite" Version="$(NetTopologySuiteIOSpatiaLitePackageVersion)" />
+    <ExternalDependency Include="NetTopologySuite.IO.SqlServerBytes" Version="$(NetTopologySuiteIOSqlServerBytesPackageVersion)" />
 
     <!-- This version should be used by runtime packages -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
@@ -191,7 +216,7 @@
     <ExternalDependency Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" AppMetapackage="true" AllMetapackage="true" MetapackageVersionRangeType="Minimum" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <ExternalDependency Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />

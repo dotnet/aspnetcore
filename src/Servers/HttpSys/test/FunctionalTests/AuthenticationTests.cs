@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -239,7 +238,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]

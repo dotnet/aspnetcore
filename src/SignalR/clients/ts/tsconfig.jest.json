@@ -6,7 +6,8 @@
         "noUnusedParameters": false,
         "typeRoots": [
             "./common/node_modules/@types"
-        ]
+        ],
+        "allowJs": true
     },
     "include": [
         "./*/tests/**/*"

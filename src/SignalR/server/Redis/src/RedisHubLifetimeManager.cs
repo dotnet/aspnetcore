@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.Group(groupName), message);
         }
 
-        public override async Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
         {
             if (groupName == null)
             {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             var message = _protocol.WriteInvocation(methodName, args, excludedConnectionIds);
-            await PublishAsync(_channels.Group(groupName), message);
+            return PublishAsync(_channels.Group(groupName), message);
         }
 
         public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channels.User(userId), message);
         }
 
-        public override async Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -176,14 +176,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             if (connection != null)
             {
                 // short circuit if connection is on this server
-                await AddGroupAsyncCore(connection, groupName);
-                return;
+                return AddGroupAsyncCore(connection, groupName);
             }
 
-            await SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Add);
+            return SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Add);
         }
 
-        public override async Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
             if (connectionId == null)
             {
@@ -199,11 +198,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             if (connection != null)
             {
                 // short circuit if connection is on this server
-                await RemoveGroupAsyncCore(connection, groupName);
-                return;
+                return RemoveGroupAsyncCore(connection, groupName);
             }
 
-            await SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Remove);
+            return SendGroupActionAndWaitForAck(connectionId, groupName, GroupAction.Remove);
         }
 
         public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
@@ -271,7 +269,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await _bus.PublishAsync(channel, payload);
         }
 
-        private async Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
+        private Task AddGroupAsyncCore(HubConnectionContext connection, string groupName)
         {
             var feature = connection.Features.Get<IRedisFeature>();
             var groupNames = feature.Groups;
@@ -281,12 +279,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 // Connection already in group
                 if (!groupNames.Add(groupName))
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
             }
 
             var groupChannel = _channels.Group(groupName);
-            await _groups.AddSubscriptionAsync(groupChannel, connection, SubscribeToGroupAsync);
+            return _groups.AddSubscriptionAsync(groupChannel, connection, SubscribeToGroupAsync);
         }
 
         /// <summary>
@@ -297,10 +295,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             var groupChannel = _channels.Group(groupName);
 
-            await _groups.RemoveSubscriptionAsync(groupChannel, connection, async channelName =>
+            await _groups.RemoveSubscriptionAsync(groupChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                await _bus.UnsubscribeAsync(channelName);
+                return _bus.UnsubscribeAsync(channelName);
             });
 
             var feature = connection.Features.Get<IRedisFeature>();
@@ -329,10 +327,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             var userChannel = _channels.User(connection.UserIdentifier);
 
-            return _users.RemoveSubscriptionAsync(userChannel, connection, async channelName =>
+            return _users.RemoveSubscriptionAsync(userChannel, connection, channelName =>
             {
                 RedisLog.Unsubscribe(_logger, channelName);
-                await _bus.UnsubscribeAsync(channelName);
+                return _bus.UnsubscribeAsync(channelName);
             });
         }
 
@@ -343,10 +341,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _ackHandler.Dispose();
         }
 
-        private void SubscribeToAll()
+        private Task SubscribeToAll()
         {
             RedisLog.Subscribing(_logger, _channels.All);
-            _bus.Subscribe(_channels.All, async (c, data) =>
+            return _bus.SubscribeAsync(_channels.All, async (c, data) =>
             {
                 try
                 {
@@ -373,9 +371,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        private void SubscribeToGroupManagementChannel()
+        private Task SubscribeToGroupManagementChannel()
         {
-            _bus.Subscribe(_channels.GroupManagement, async (c, data) =>
+            return _bus.SubscribeAsync(_channels.GroupManagement, async (c, data) =>
             {
                 try
                 {
@@ -408,10 +406,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        private void SubscribeToAckChannel()
+        private Task SubscribeToAckChannel()
         {
             // Create server specific channel in order to send an ack to a single server
-            _bus.Subscribe(_channels.Ack(_serverName), (c, data) =>
+            return _bus.SubscribeAsync(_channels.Ack(_serverName), (c, data) =>
             {
                 var ackId = _protocol.ReadAck((byte[])data);
 
@@ -435,9 +433,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             var userChannel = _channels.User(connection.UserIdentifier);
 
-            return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
+            return _users.AddSubscriptionAsync(userChannel, connection, (channelName, subscriptions) =>
             {
-                await _bus.SubscribeAsync(channelName, async (c, data) =>
+                RedisLog.Subscribing(_logger, channelName);
+                return _bus.SubscribeAsync(channelName, async (c, data) =>
                 {
                     try
                     {
@@ -534,9 +533,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                             RedisLog.NotConnected(_logger);
                         }
 
-                        SubscribeToAll();
-                        SubscribeToGroupManagementChannel();
-                        SubscribeToAckChannel();
+                        await SubscribeToAll();
+                        await SubscribeToGroupManagementChannel();
+                        await SubscribeToAckChannel();
                     }
                 }
                 finally

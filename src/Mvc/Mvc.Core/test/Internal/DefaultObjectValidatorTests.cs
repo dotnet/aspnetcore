@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -22,7 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultObjectValidatorTests
     {
-        private IModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
+        private readonly MvcOptions _options = new MvcOptions { AllowShortCircuitingValidationWhenNoValidatorsArePresent = true };
+
+        private ModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
         public void Validate_SimpleValueType_Valid_WithPrefix()
@@ -133,6 +136,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(entry.Errors);
         }
 
+        // More like how product code does suppressions than Validate_SimpleType_SuppressValidation()
+        [Fact]
+        public void Validate_SimpleType_SuppressValidationWithNullKey()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var validator = CreateValidator();
+            var model = "test";
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry { SuppressValidation = true } }
+            };
+
+            // Act
+            validator.Validate(actionContext, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
 
         [Fact]
         public void Validate_ComplexValueType_Valid()
@@ -1146,11 +1170,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
-            var validator = CreateValidator(typeof(List<string>));
+            var validator = CreateValidator(typeof(List<ValidatedModel>));
 
-            var model = new List<string>()
+            var model = new List<ValidatedModel>()
             {
-                "15",
+                new ValidatedModel { Value = "15" },
             };
 
             modelState.SetModelValue("userIds[0]", "15", "15");
@@ -1166,6 +1190,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var entry = modelState["userIds[0]"];
             Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
             Assert.Empty(entry.Errors);
+        }
+
+        private class ValidatedModel
+        {
+            [Required]
+            public string Value { get; set; }
         }
 
         [Fact]
@@ -1195,6 +1225,207 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Empty(entry.Value.Errors);
         }
 
+        // Regression test for aspnet/Mvc#7992
+        [Fact]
+        public void Validate_SuppressValidation_AfterHasReachedMaxErrors_Invalid()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            modelState.MaxAllowedErrors = 2;
+            modelState.AddModelError(key: "one", errorMessage: "1");
+            modelState.AddModelError(key: "two", errorMessage: "2");
+
+            var validator = CreateValidator();
+            var model = (object)23; // Box ASAP
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry { SuppressValidation = true } }
+            };
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            Assert.True(modelState.HasReachedMaxErrors);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.IsType<TooManyModelErrorsException>(error.Exception);
+                },
+                kvp =>
+                {
+                    Assert.Equal("one", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.Equal("1", error.ErrorMessage);
+                });
+        }
+
+        [Fact]
+        public void Validate_Throws_IfValidationDepthExceedsMaxDepth()
+        {
+            // Arrange
+            var maxDepth = 5;
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '{maxDepth}' when validating property '{nameof(DepthObject.Depth)}' on type '{typeof(DepthObject)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider modifying 'MvcOptions.MaxValidationDepth' or suppressing validation on the model type.";
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => validator.Validate(actionContext, validationState, prefix: string.Empty, model));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Validate_WorksIfObjectGraphIsSmallerThanMaxDepth()
+        {
+            // Arrange
+            var maxDepth = 5;
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth - 1);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            // Act & Assert
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+            Assert.True(actionContext.ModelState.IsValid);
+        }
+
+        [Fact]
+        public void Validate_Throws_WithMaxDepth_1()
+        {
+            // Arrange
+            var maxDepth = 1;
+            var expected = $"ValidationVisitor exceeded the maximum configured validation depth '{maxDepth}' when validating property '{nameof(DepthObject.Depth)}' on type '{typeof(DepthObject)}'. " +
+                "This may indicate a very deep or infinitely recursive object graph. Consider modifying 'MvcOptions.MaxValidationDepth' or suppressing validation on the model type.";
+            _options.MaxValidationDepth = maxDepth;
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new DepthObject(maxDepth + 1);
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+            var method = GetType().GetMethod(nameof(Validate_Throws_ForTopLevelMetadataData), BindingFlags.NonPublic | BindingFlags.Instance);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => validator.Validate(actionContext, validationState, prefix: string.Empty, model));
+            Assert.Equal(expected, ex.Message);
+            Assert.NotNull(ex.HelpLink);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            actionContext.ModelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            actionContext.ModelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            var modelState = actionContext.ModelState;
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            Assert.True(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators_DoesNotUpdateValidationState()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            var modelState = actionContext.ModelState;
+            modelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            modelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+            modelState["Property2"].ValidationState = ModelValidationState.Skipped;
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            Assert.True(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+        }
+
+        [Fact]
+        public void Validate_TypeWithoutValidators_DoesNotResetInvalidState()
+        {
+            var actionContext = new ActionContext();
+            var validator = CreateValidator();
+            var model = new ModelWithoutValidation();
+            var validationState = new ValidationStateDictionary
+            {
+                { model, new ValidationStateEntry() }
+            };
+
+            var modelState = actionContext.ModelState;
+            modelState.SetModelValue("Property1", new ValueProviderResult("value1"));
+            modelState.SetModelValue("Property2", new ValueProviderResult("value2"));
+            modelState["Property2"].ValidationState = ModelValidationState.Invalid;
+
+            // Act
+            validator.Validate(actionContext, validationState, string.Empty, model);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Invalid, modelState.ValidationState);
+            Assert.False(modelState.IsValid);
+
+            var entry = modelState["Property1"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = modelState["Property2"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+        }
+
+        private class ModelWithoutValidation
+        {
+            public string Property1 { get; set; }
+
+            public string Property2 { get; set; }
+        }
+
         private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
             var excludeFilters = new List<SuppressChildValidationMetadataProvider>();
@@ -1205,14 +1436,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
             var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
-            return new DefaultObjectValidator(metadataProvider, validatorProviders);
+            return new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions());
         }
 
-        private static DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
+        private DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(providers);
             var validatorProviders = TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders;
-            return new DefaultObjectValidator(metadataProvider, validatorProviders);
+            return new DefaultObjectValidator(metadataProvider, validatorProviders, _options);
         }
 
         private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)
@@ -1222,6 +1453,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private class ThrowingProperty
         {
+            [Required]
             public string WatchOut
             {
                 get
@@ -1335,6 +1567,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             void DoSomething();
         }
 
+        private void Validate_Throws_ForTopLevelMetadataData(DepthObject depthObject) { }
+
         // Custom validation attribute that returns multiple entries in ValidationResult.MemberNames and those member
         // names are indexers. An example scenario is an attribute that confirms all entries in a list are unique.
         private class InvalidItemsAttribute : ValidationAttribute
@@ -1378,6 +1612,32 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class InvalidAddress
         {
             public string City { get; set; }
+        }
+
+        private class DepthObject
+        {
+            public DepthObject(int maxAllowedDepth, int depth = 0)
+            {
+                MaxAllowedDepth = maxAllowedDepth;
+                Depth = depth;
+            }
+
+            [Range(-10, 400)]
+            public int Depth { get; }
+            public int MaxAllowedDepth { get; }
+
+            public DepthObject Instance
+            {
+                get
+                {
+                    if (Depth == MaxAllowedDepth - 1)
+                    {
+                        return this;
+                    }
+
+                    return new DepthObject(MaxAllowedDepth, Depth + 1);
+                }
+            }
         }
     }
 }

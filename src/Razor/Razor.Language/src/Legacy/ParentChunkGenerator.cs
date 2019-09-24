@@ -47,10 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             public void Accept(ParserVisitor visitor, Block block)
             {
-                for (var i = 0; i < block.Children.Count; i++)
-                {
-                    block.Children[i].Accept(visitor);
-                }
+                visitor.VisitDefault(block);
             }
         }
     }

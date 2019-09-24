@@ -155,7 +155,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (!StringSegment.IsNullOrEmpty(fileName))
             {
-                FileName = Sanatize(fileName);
+                FileName = Sanitize(fileName);
             }
             else
             {
@@ -166,7 +166,7 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>
         /// Sets the FileName parameter using encodings appropriate for MIME headers.
-        /// The FileNameStar paraemter is removed.
+        /// The FileNameStar parameter is removed.
         /// </summary>
         /// <param name="fileName"></param>
         public void SetMimeFileName(StringSegment fileName)
@@ -434,7 +434,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         // Replaces characters not suitable for HTTP headers with '_' rather than MIME encoding them.
-        private StringSegment Sanatize(StringSegment input)
+        private StringSegment Sanitize(StringSegment input)
         {
             var result = input;
 

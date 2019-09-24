@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     // add routes that behave as advertised.
     public class RequestDelegateRouteBuilderExtensionsTest
     {
-        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+        private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
         public static TheoryData<Action<IRouteBuilder>, Action<HttpContext>> MatchingActions
         {

@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("", "value", "?=value")]
         [InlineData("", "", "?=")]
         [InlineData("", null, "?=")]
-        public void CreateNameValue_Success(string name, string value, string exepcted)
+        public void CreateNameValue_Success(string name, string value, string expected)
         {
             var query = QueryString.Create(name, value);
-            Assert.Equal(exepcted, query.Value);
+            Assert.Equal(expected, query.Value);
         }
 
         [Fact]

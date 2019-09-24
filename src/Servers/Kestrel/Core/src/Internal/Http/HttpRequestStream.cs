@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -117,6 +118,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return ReadAsyncInternal(destination, cancellationToken);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
@@ -189,29 +193,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidateState(CancellationToken cancellationToken)
         {
-            switch (_state)
+            var state = _state;
+            if (state == HttpStreamState.Open)
             {
-                case HttpStreamState.Open:
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                    break;
-                case HttpStreamState.Closed:
-                    throw new ObjectDisposedException(nameof(HttpRequestStream));
-                case HttpStreamState.Aborted:
-                    if (_error != null)
-                    {
-                        ExceptionDispatchInfo.Capture(_error).Throw();
-                    }
-                    else
-                    {
-                        throw new TaskCanceledException();
-                    }
-                    break;
+                cancellationToken.ThrowIfCancellationRequested();
             }
+            else if (state == HttpStreamState.Closed)
+            {
+                ThrowObjectDisposedException();
+            }
+            else
+            {
+                if (_error != null)
+                {
+                    ExceptionDispatchInfo.Capture(_error).Throw();
+                }
+                else
+                {
+                    ThrowTaskCanceledException();
+                }
+            }
+
+            void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
+            void ThrowTaskCanceledException() => throw new TaskCanceledException();
         }
     }
 }

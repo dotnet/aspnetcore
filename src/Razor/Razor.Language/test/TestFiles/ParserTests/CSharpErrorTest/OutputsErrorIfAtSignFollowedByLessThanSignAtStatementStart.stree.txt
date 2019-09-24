@@ -1,0 +1,30 @@
+Statement block - Gen<None> - 23 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:6
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+    Markup block - Gen<None> - 13 - (9:0,9)
+        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
+            HtmlTokenType.WhiteSpace;[ ];
+        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
+            HtmlTokenType.Transition;[@];
+        Tag block - Gen<None> - 3 - (11:0,11)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (11:0,11) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Text;[p];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
+            HtmlTokenType.Text;[Bar];
+        Tag block - Gen<None> - 4 - (17:0,17)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[p];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
+            HtmlTokenType.WhiteSpace;[ ];
+    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

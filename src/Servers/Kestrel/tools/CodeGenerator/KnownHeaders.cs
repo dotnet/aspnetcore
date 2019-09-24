@@ -9,18 +9,11 @@ using System.Text;
 
 namespace CodeGenerator
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class KnownHeaders
     {
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
             return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
-
-        static string If(bool condition, Func<string> formatter)
-        {
-            return condition ? formatter() : "";
         }
 
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) =>
@@ -276,7 +269,22 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
             }})
             .ToArray();
-            // 63 for reponseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
+
+            var responseTrailers = new[]
+            {
+                "ETag",
+            }
+            .Select((header, index) => new KnownHeader
+            {
+                Name = header,
+                Index = index,
+                EnhancedSetter = enhancedHeaders.Contains(header),
+                ExistenceCheck = responseHeadersExistence.Contains(header),
+                PrimaryHeader = responsePrimaryHeaders.Contains(header)
+            })
+            .ToArray();
+
+            // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
             Debug.Assert(responseHeaders.Length <= 63);
             Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
 
@@ -295,6 +303,13 @@ namespace CodeGenerator
                     HeadersByLength = responseHeaders.GroupBy(x => x.Name.Length),
                     ClassName = "HttpResponseHeaders",
                     Bytes = responseHeaders.SelectMany(header => header.Bytes).ToArray()
+                },
+                new
+                {
+                    Headers = responseTrailers,
+                    HeadersByLength = responseTrailers.GroupBy(x => x.Name.Length),
+                    ClassName = "HttpResponseTrailers",
+                    Bytes = responseTrailers.SelectMany(header => header.Bytes).ToArray()
                 }
             };
             foreach (var loop in loops.Where(l => l.Bytes != null))
@@ -409,8 +424,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override void SetValueFast(string key, in StringValues value)
-        {{{(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(value);" : "")}
+        {{{(loop.ClassName != "HttpRequestHeaders" ? @"
+            ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -431,8 +446,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override bool AddValueFast(string key, in StringValues value)
-        {{{(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(value);" : "")}
+        {{{(loop.ClassName != "HttpRequestHeaders" ? @"
+            ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
@@ -458,7 +473,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     break;")}
             }}
 {(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderCharacters(key);" : "")}
+            ValidateHeaderNameCharacters(key);" : "")}
             Unknown.Add(key, value);
             // Return true, above will throw and exit for false
             return true;

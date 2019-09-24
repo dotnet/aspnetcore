@@ -59,6 +59,7 @@ namespace SocialSample
                 .AddCookie(o => o.LoginPath = new PathString("/login"))
                 // You must first create an app with Facebook and add its ID and Secret to your user-secrets.
                 // https://developers.facebook.com/apps/
+                // https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login
                 .AddFacebook(o =>
             {
                 o.AppId = Configuration["facebook:appid"];
@@ -74,6 +75,8 @@ namespace SocialSample
             })
                 // You must first create an app with Google and add its ID and Secret to your user-secrets.
                 // https://console.developers.google.com/project
+                // https://developers.google.com/identity/protocols/OAuth2WebServer
+                // https://developers.google.com/+/web/people/
                 .AddOAuth("Google-AccessToken", "Google AccessToken only", o =>
             {
                 o.ClientId = Configuration["google:clientid"];
@@ -92,6 +95,8 @@ namespace SocialSample
             })
                 // You must first create an app with Google and add its ID and Secret to your user-secrets.
                 // https://console.developers.google.com/project
+                // https://developers.google.com/identity/protocols/OAuth2WebServer
+                // https://developers.google.com/+/web/people/
                 .AddGoogle(o =>
             {
                 o.ClientId = Configuration["google:clientid"];
@@ -108,6 +113,7 @@ namespace SocialSample
             })
                 // You must first create an app with Twitter and add its key and Secret to your user-secrets.
                 // https://apps.twitter.com/
+                // https://developer.twitter.com/en/docs/basics/authentication/api-reference/access_token
                 .AddTwitter(o =>
             {
                 o.ConsumerKey = Configuration["twitter:consumerkey"];

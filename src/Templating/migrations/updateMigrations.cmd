@@ -1,12 +1,13 @@
-SET version=2.1.0
+SET version=2.2.0-preview1
 echo Make sure to have ran build.cmd once to ensure artifacts have been created.
 echo Generating version=%version%, edit updateMigrations.cmd to update the version.
 
 echo Generating migration for RazorPages-SqlLite--------------
 rd "Company.WebApplication1" /s /q
 mkdir "Company.WebApplication1"
-dotnet new razor --auth Individual -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
+dotnet new razor --no-restore --auth Individual -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
 rd "Company.WebApplication1\Data\Migrations" /s /q
+powershell.exe -File .\updateProj.ps1
 cd Company.WebApplication1
 dotnet ef migrations add CreateIdentitySchema -o Data\Migrations
 cd ..
@@ -20,8 +21,9 @@ copy "Company.WebApplication1\Data\Migrations\*" "..\src\Microsoft.DotNet.Web.Pr
 echo Generating migration for RazorPages-SqlServer(localb)--------------
 rd "Company.WebApplication1" /s /q
 mkdir "Company.WebApplication1"
-dotnet new razor --auth Individual --use-local-db -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
+dotnet new razor --no-restore --auth Individual --use-local-db -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
 rd "Company.WebApplication1\Data\Migrations" /s /q
+powershell.exe -File .\updateProj.ps1
 cd Company.WebApplication1
 dotnet ef migrations add CreateIdentitySchema -o Data\Migrations
 cd ..
@@ -35,8 +37,9 @@ rd "Company.WebApplication1" /s /q
 
 echo Generating migration for StarterWeb-SqlServer(localb)--------------
 mkdir "Company.WebApplication1"
-dotnet new mvc --auth Individual --use-local-db -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
+dotnet new mvc --no-restore --auth Individual --use-local-db -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
 rd "Company.WebApplication1\Data\Migrations" /s /q
+powershell.exe -File .\updateProj.ps1
 cd Company.WebApplication1
 dotnet ef migrations add CreateIdentitySchema -o Data\Migrations
 cd ..
@@ -50,8 +53,9 @@ copy "Company.WebApplication1\Data\Migrations\*" "..\src\Microsoft.DotNet.Web.Pr
 echo Generating migration for StarterWeb-SqlLite--------------
 rd "Company.WebApplication1" /s /q
 mkdir "Company.WebApplication1"
-dotnet new mvc --auth Individual -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
+dotnet new mvc --no-restore --auth Individual -i ..\artifacts\build\Microsoft.DotNet.Web.ProjectTemplates.*.nupkg -o Company.WebApplication1
 rd "Company.WebApplication1\Data\Migrations" /s /q
+powershell.exe -File .\updateProj.ps1
 cd Company.WebApplication1
 dotnet ef migrations add CreateIdentitySchema -o Data\Migrations
 cd ..

@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -120,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -158,6 +161,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -177,6 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -197,6 +202,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -220,6 +226,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -242,6 +249,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -261,6 +269,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -281,6 +290,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }

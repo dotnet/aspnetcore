@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 ActionConstraints = new List<IActionConstraintMetadata>(),
                 AttributeRouteInfo = new AttributeRouteInfo(),
+                EndpointMetadata = new List<object>(),
                 FilterDescriptors = new List<FilterDescriptor>(),
                 RelativePath = "/Foo",
                 RouteValues = new Dictionary<string, string>(),
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Same(actionDescriptor.ActionConstraints, actual.ActionConstraints);
             Assert.Same(actionDescriptor.AttributeRouteInfo, actual.AttributeRouteInfo);
+            Assert.Same(actionDescriptor.EndpointMetadata, actual.EndpointMetadata);
             Assert.Same(actionDescriptor.RelativePath, actual.RelativePath);
             Assert.Same(actionDescriptor.RouteValues, actual.RouteValues);
             Assert.Same(actionDescriptor.ViewEnginePath, actual.ViewEnginePath);
@@ -249,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void CreateHandlerMethods_CopiesParameterDecriptorsFromParameterModel()
+        public void CreateHandlerMethods_CopiesParameterDescriptorsFromParameterModel()
         {
             // Arrange
             var actionDescriptor = new PageActionDescriptor();

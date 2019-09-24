@@ -66,6 +66,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<CollectionModelBinder<int>>(result);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Create_ForSupportedType_ReturnsBinder_WithExpectedAllowValidatingTopLevelNodes(
+            bool allowValidatingTopLevelNodes)
+        {
+            // Arrange
+            var provider = new CollectionModelBinderProvider();
+
+            var context = new TestModelBinderProviderContext(typeof(List<int>));
+            context.MvcOptions.AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
+            context.OnCreatingBinder(m =>
+            {
+                Assert.Equal(typeof(int), m.ModelType);
+                return Mock.Of<IModelBinder>();
+            });
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var binder = Assert.IsType<CollectionModelBinder<int>>(result);
+            Assert.Equal(allowValidatingTopLevelNodes, binder.AllowValidatingTopLevelNodes);
+        }
+
         private class Person
         {
             public string Name { get; set; }

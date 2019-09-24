@@ -1,3 +1,5 @@
 {
-  "shadowCopy": false
+  "diagnosticMessages": true,
+  "shadowCopy": false,
+  "longRunningTestSeconds": 60
 }

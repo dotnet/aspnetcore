@@ -30,8 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var templateEngine = new RazorTemplateEngine(
                 RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine,
                 fileSystem);
-            var options = Options.Create(new RazorPagesOptions());
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var razorPageOptions = Options.Create(new RazorPagesOptions());
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, razorPageOptions, razorViewEngineOptions);
 
             // Act
             var changeToken = changeProvider.GetChangeToken();
@@ -57,8 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 fileSystem);
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = rootDirectory;
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
 
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
 
             // Act
             var changeToken = changeProvider.GetChangeToken();
@@ -81,7 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine,
                 fileSystem);
             var options = Options.Create(new RazorPagesOptions { AllowAreas = true });
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
 
             // Act
             var changeToken = changeProvider.GetChangeToken();
@@ -104,8 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
 
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
 
             // Act & Assert
             var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeProvider.GetChangeToken());
@@ -131,7 +135,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             options.Value.RootDirectory = "/dir1/dir2";
             options.Value.AllowAreas = true;
 
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
 
             // Act & Assert
             var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeProvider.GetChangeToken());
@@ -155,14 +160,37 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 fileSystem);
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions { AllowAreas = false });
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions { AllowRecompilingViewsOnFileChange = true });
 
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
 
             // Act & Assert
             var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeProvider.GetChangeToken());
             Assert.Collection(compositeChangeToken.ChangeTokens,
                 changeToken => Assert.Same(fileProvider.GetChangeToken("/_ViewImports.cshtml"), changeToken),
                 changeToken => Assert.Same(fileProvider.GetChangeToken("/Pages/**/*.cshtml"), changeToken));
+        }
+
+        [Fact]
+        public void GetChangeToken_DoesNotWatch_WhenOptionIsReset()
+        {
+            // Arrange
+            var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider.Object);
+
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var templateEngine = new RazorTemplateEngine(
+                RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem).Engine,
+                fileSystem);
+            templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
+            var options = Options.Create(new RazorPagesOptions());
+            var razorViewEngineOptions = Options.Create(new RazorViewEngineOptions());
+
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options, razorViewEngineOptions);
+
+            // Act & Assert
+            var compositeChangeToken = Assert.IsType<NullChangeToken>(changeProvider.GetChangeToken());
+            fileProvider.Verify(f => f.Watch(It.IsAny<string>()), Times.Never());
         }
     }
 }

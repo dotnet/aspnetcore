@@ -102,7 +102,7 @@ namespace System.Buffers.Tests
         }
 
         [Fact]
-        public void PeekReturnsMinuOneByteInTheEnd()
+        public void PeekReturnsMinusOneByteInTheEnd()
         {
             var reader = new BufferReader(Factory.CreateWithContent(new byte[] { 1, 2 }));
             Assert.Equal(1, reader.Read());
@@ -221,7 +221,7 @@ namespace System.Buffers.Tests
         }
 
         [Fact]
-        public void PeekWorkesWithEmptySegments()
+        public void PeekWorksWithEmptySegments()
         {
             var buffer = Factory.CreateWithContent(new byte[] { 1 });
             var reader = new BufferReader(buffer);
@@ -235,7 +235,7 @@ namespace System.Buffers.Tests
         }
 
         [Fact]
-        public void WorkesWithEmptyBuffer()
+        public void WorksWithEmptyBuffer()
         {
             var reader = new BufferReader(Factory.CreateWithContent(new byte[] { }));
 

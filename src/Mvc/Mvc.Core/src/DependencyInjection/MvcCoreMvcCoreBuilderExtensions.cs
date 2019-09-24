@@ -170,6 +170,31 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures <see cref="ApiBehaviorOptions"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="setupAction">The configure action.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder ConfigureApiBehaviorOptions(
+            this IMvcCoreBuilder builder,
+            Action<ApiBehaviorOptions> setupAction)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
+            builder.Services.Configure(setupAction);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>

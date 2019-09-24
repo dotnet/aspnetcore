@@ -1,0 +1,26 @@
+Statement block - Gen<None> - 40 - (0:0,0)
+    Code span - Gen<Stmt> - [do { var foo = bar; } while(foo != bar);] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:24
+        CSharpTokenType.Keyword;[do];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[while];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.NotEqual;[!=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];

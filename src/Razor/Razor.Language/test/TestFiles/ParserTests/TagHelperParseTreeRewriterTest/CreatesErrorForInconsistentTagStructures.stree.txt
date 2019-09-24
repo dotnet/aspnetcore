@@ -1,0 +1,3 @@
+Markup block - Gen<None> - 7 - (0:0,0)
+    Tag block - Gen<TagHelper> - 7 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2
+        StartTagOnly - <input>

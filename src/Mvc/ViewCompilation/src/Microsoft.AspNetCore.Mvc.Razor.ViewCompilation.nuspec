@@ -26,13 +26,17 @@
 
   <files>
     <file src="build\**\*" target="build\" />
-    <file src="$OutputBinary$" target="build\netstandard2.0\$AssemblyName$.dll" />
-    <file src="$OutputSymbol$" target="build\netstandard2.0\$AssemblyName$.pdb" />
+
+    <file src="$OutputBinary$" target="build\netstandard2.0\netcoreapp2.0\" />
+    <file src="$OutputSymbol$" target="build\netstandard2.0\netcoreapp2.0\" />
+
+    <file src="$OutputExeX86$" target="build\netstandard2.0\net461\" />
+    <file src="$OutputExeSymbolX86$" target="build\netstandard2.0\net461\" />
+
+    <file src="$OutputExeAnyCPU$" target="build\netstandard2.0\net461\" />
+    <file src="$OutputExeSymbolAnyCPU$" target="build\netstandard2.0\net461\" />
+
     <file src="$TaskBinary$" target="build\netstandard2.0\$AssemblyName$.Tasks.dll" />
     <file src="$TaskSymbol$" target="build\netstandard2.0\$AssemblyName$.Tasks.pdb" />
-    <file src="$OutputExeX86$" target="build\netstandard2.0\" />
-    <file src="$OutputExeSymbolX86$" target="build\netstandard2.0\" />
-    <file src="$OutputExeX64$" target="build\netstandard2.0\" />
-    <file src="$OutputExeSymbolX64$" target="build\netstandard2.0\" />
   </files>
 </package>

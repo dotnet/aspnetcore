@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 31 - (0:0,0)
+    Tag block - Gen<TagHelper> - 31 - (0:0,0) - input - InputTagHelper3
+        SelfClosing - <input string-prefix-value=''/>
+        string-prefix-value - SingleQuotes
+            Markup block - Gen<None> - 0 - (0:0,0)

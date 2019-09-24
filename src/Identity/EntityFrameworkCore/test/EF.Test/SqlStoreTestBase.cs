@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected virtual void SetupAddIdentity(IServiceCollection services)
         {
-            services.AddIdentity<TUser, TRole>(options =>
+            services.AddIdentityCore<TUser>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireLowercase = false;
@@ -41,8 +41,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 options.Password.RequireUppercase = false;
                 options.User.AllowedUserNameCharacters = null;
             })
+            .AddRoles<TRole>()
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<TestDbContext>();
+
+            services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
         }
 
         protected override void SetupIdentityServices(IServiceCollection services, object context)

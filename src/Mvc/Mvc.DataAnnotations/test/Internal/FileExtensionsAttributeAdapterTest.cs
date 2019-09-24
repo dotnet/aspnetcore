@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
-            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
-            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 .Returns(new LocalizedString(attribute.ErrorMessage, expectedErrorMessage));
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
-            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             attribute.ErrorMessage = "{0} expects only the following extensions: {1}";
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
-            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new Dictionary<string, string>());
 
             context.Attributes.Add("data-val", "original");
             context.Attributes.Add("data-val-fileextensions", "original");

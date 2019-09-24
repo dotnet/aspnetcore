@@ -77,9 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     string.Equals(CS0234, g.Id, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(CS0246, g.Id, StringComparison.OrdinalIgnoreCase)))
                 {
-                    additionalMessage = Resources.FormatCompilation_DependencyContextIsNotSpecified(
-                        "Microsoft.NET.Sdk.Web",
-                        "PreserveCompilationContext");
+                    additionalMessage = Resources.FormatCompilation_MissingReferences(
+                        "CopyRefAssembliesToPublishDirectory");
                 }
 
                 var compilationFailure = new CompilationFailure(

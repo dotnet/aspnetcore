@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.WebSockets.Internal
 {
@@ -63,14 +64,14 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             return validConnection && validUpgrade && validVersion && validKey;
         }
 
-        public static IEnumerable<KeyValuePair<string, string>> GenerateResponseHeaders(string key, string subProtocol)
+        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
         {
-            yield return new KeyValuePair<string, string>(Constants.Headers.Connection, Constants.Headers.ConnectionUpgrade);
-            yield return new KeyValuePair<string, string>(Constants.Headers.Upgrade, Constants.Headers.UpgradeWebSocket);
-            yield return new KeyValuePair<string, string>(Constants.Headers.SecWebSocketAccept, CreateResponseKey(key));
+            headers[Constants.Headers.Connection] = Constants.Headers.ConnectionUpgrade;
+            headers[Constants.Headers.Upgrade] = Constants.Headers.UpgradeWebSocket;
+            headers[Constants.Headers.SecWebSocketAccept] = CreateResponseKey(key);
             if (!string.IsNullOrWhiteSpace(subProtocol))
             {
-                yield return new KeyValuePair<string, string>(Constants.Headers.SecWebSocketProtocol, subProtocol);
+                headers[Constants.Headers.SecWebSocketProtocol] = subProtocol;
             }
         }
 

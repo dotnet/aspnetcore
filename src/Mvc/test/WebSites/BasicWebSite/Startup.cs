@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -26,25 +26,12 @@ namespace BasicWebSite
                     options.Conventions.Add(new ApplicationDescription("This is a basic website."));
                     // Filter that records a value in HttpContext.Items
                     options.Filters.Add(new TraceResourceFilter());
+
+                    // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
+                    options.EnableEndpointRouting = false;
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddXmlDataContractSerializerFormatters();
-
-            services.Configure<ApiBehaviorOptions>(options =>
-            {
-                var previous = options.InvalidModelStateResponseFactory;
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    var result = (BadRequestObjectResult)previous(context);
-                    if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute))
-                    {
-                        result.ContentTypes.Clear();
-                        result.ContentTypes.Add("application/vnd.error+json");
-                    }
-
-                    return result;
-                };
-            });
 
             services.ConfigureBaseWebSiteAuthPolicies();
 
@@ -56,6 +43,8 @@ namespace BasicWebSite
             services.AddSingleton<ContactsRepository>();
             services.AddScoped<RequestIdService>();
             services.AddTransient<ServiceActionFilter>();
+            services.AddScoped<TestResponseGenerator>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app)

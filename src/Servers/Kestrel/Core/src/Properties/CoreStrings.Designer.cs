@@ -1117,20 +1117,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("EndPointRequiresAtLeastOneProtocol");
 
         /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string EndPointRequiresTlsForHttp1AndHttp2
-        {
-            get => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-        }
-
-        /// <summary>
-        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
-        /// </summary>
-        internal static string FormatEndPointRequiresTlsForHttp1AndHttp2()
-            => GetString("EndPointRequiresTlsForHttp1AndHttp2");
-
-        /// <summary>
         /// HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.
         /// </summary>
         internal static string EndPointHttp2NotNegotiated
@@ -1779,20 +1765,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("MultipleCertificateSources", "endpointName"), endpointName);
 
         /// <summary>
-        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
-        /// </summary>
-        internal static string Http2NotSupported
-        {
-            get => GetString("Http2NotSupported");
-        }
-
-        /// <summary>
-        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
-        /// </summary>
-        internal static string FormatHttp2NotSupported()
-            => GetString("Http2NotSupported");
-
-        /// <summary>
         /// Cannot write to the response body, the response has completed.
         /// </summary>
         internal static string WritingToResponseBodyAfterResponseCompleted
@@ -1875,6 +1847,370 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatConnectionTimedOutByServer()
             => GetString("ConnectionTimedOutByServer");
+
+        /// <summary>
+        /// The received frame size of {size} exceeds the limit {limit}.
+        /// </summary>
+        internal static string Http2ErrorFrameOverLimit
+        {
+            get => GetString("Http2ErrorFrameOverLimit");
+        }
+
+        /// <summary>
+        /// The received frame size of {size} exceeds the limit {limit}.
+        /// </summary>
+        internal static string FormatHttp2ErrorFrameOverLimit(object size, object limit)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorFrameOverLimit", "size", "limit"), size, limit);
+
+        /// <summary>
+        /// Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.
+        /// </summary>
+        internal static string Http2ErrorMinTlsVersion
+        {
+            get => GetString("Http2ErrorMinTlsVersion");
+        }
+
+        /// <summary>
+        /// Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.
+        /// </summary>
+        internal static string FormatHttp2ErrorMinTlsVersion(object protocol)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorMinTlsVersion", "protocol"), protocol);
+
+        /// <summary>
+        /// Invalid HTTP/2 connection preface.
+        /// </summary>
+        internal static string Http2ErrorInvalidPreface
+        {
+            get => GetString("Http2ErrorInvalidPreface");
+        }
+
+        /// <summary>
+        /// Invalid HTTP/2 connection preface.
+        /// </summary>
+        internal static string FormatHttp2ErrorInvalidPreface()
+            => GetString("Http2ErrorInvalidPreface");
+
+        /// <summary>
+        /// Header name cannot be a null or empty string.
+        /// </summary>
+        internal static string InvalidEmptyHeaderName
+        {
+            get => GetString("InvalidEmptyHeaderName");
+        }
+
+        /// <summary>
+        /// Header name cannot be a null or empty string.
+        /// </summary>
+        internal static string FormatInvalidEmptyHeaderName()
+            => GetString("InvalidEmptyHeaderName");
+
+        /// <summary>
+        /// The connection or stream was aborted because a write operation was aborted with a CancellationToken.
+        /// </summary>
+        internal static string ConnectionOrStreamAbortedByCancellationToken
+        {
+            get => GetString("ConnectionOrStreamAbortedByCancellationToken");
+        }
+
+        /// <summary>
+        /// The connection or stream was aborted because a write operation was aborted with a CancellationToken.
+        /// </summary>
+        internal static string FormatConnectionOrStreamAbortedByCancellationToken()
+            => GetString("ConnectionOrStreamAbortedByCancellationToken");
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string Http2ErrorInitialWindowSizeInvalid
+        {
+            get => GetString("Http2ErrorInitialWindowSizeInvalid");
+        }
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string FormatHttp2ErrorInitialWindowSizeInvalid()
+            => GetString("Http2ErrorInitialWindowSizeInvalid");
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string Http2ErrorWindowUpdateSizeInvalid
+        {
+            get => GetString("Http2ErrorWindowUpdateSizeInvalid");
+        }
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.
+        /// </summary>
+        internal static string FormatHttp2ErrorWindowUpdateSizeInvalid()
+            => GetString("Http2ErrorWindowUpdateSizeInvalid");
+
+        /// <summary>
+        /// The HTTP/2 connection faulted.
+        /// </summary>
+        internal static string Http2ConnectionFaulted
+        {
+            get => GetString("Http2ConnectionFaulted");
+        }
+
+        /// <summary>
+        /// The HTTP/2 connection faulted.
+        /// </summary>
+        internal static string FormatHttp2ConnectionFaulted()
+            => GetString("Http2ConnectionFaulted");
+
+        /// <summary>
+        /// The client reset the request stream.
+        /// </summary>
+        internal static string Http2StreamResetByClient
+        {
+            get => GetString("Http2StreamResetByClient");
+        }
+
+        /// <summary>
+        /// The client reset the request stream.
+        /// </summary>
+        internal static string FormatHttp2StreamResetByClient()
+            => GetString("Http2StreamResetByClient");
+
+        /// <summary>
+        /// The request stream was aborted.
+        /// </summary>
+        internal static string Http2StreamAborted
+        {
+            get => GetString("Http2StreamAborted");
+        }
+
+        /// <summary>
+        /// The request stream was aborted.
+        /// </summary>
+        internal static string FormatHttp2StreamAborted()
+            => GetString("Http2StreamAborted");
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string Http2ErrorFlowControlWindowExceeded
+        {
+            get => GetString("Http2ErrorFlowControlWindowExceeded");
+        }
+
+        /// <summary>
+        /// The client sent more data than what was available in the flow-control window.
+        /// </summary>
+        internal static string FormatHttp2ErrorFlowControlWindowExceeded()
+            => GetString("Http2ErrorFlowControlWindowExceeded");
+
+        /// <summary>
+        /// CONNECT requests must not send :scheme or :path headers.
+        /// </summary>
+        internal static string Http2ErrorConnectMustNotSendSchemeOrPath
+        {
+            get => GetString("Http2ErrorConnectMustNotSendSchemeOrPath");
+        }
+
+        /// <summary>
+        /// CONNECT requests must not send :scheme or :path headers.
+        /// </summary>
+        internal static string FormatHttp2ErrorConnectMustNotSendSchemeOrPath()
+            => GetString("Http2ErrorConnectMustNotSendSchemeOrPath");
+
+        /// <summary>
+        /// The Method '{method}' is invalid.
+        /// </summary>
+        internal static string Http2ErrorMethodInvalid
+        {
+            get => GetString("Http2ErrorMethodInvalid");
+        }
+
+        /// <summary>
+        /// The Method '{method}' is invalid.
+        /// </summary>
+        internal static string FormatHttp2ErrorMethodInvalid(object method)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorMethodInvalid", "method"), method);
+
+        /// <summary>
+        /// The request :path is invalid: '{path}'
+        /// </summary>
+        internal static string Http2StreamErrorPathInvalid
+        {
+            get => GetString("Http2StreamErrorPathInvalid");
+        }
+
+        /// <summary>
+        /// The request :path is invalid: '{path}'
+        /// </summary>
+        internal static string FormatHttp2StreamErrorPathInvalid(object path)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2StreamErrorPathInvalid", "path"), path);
+
+        /// <summary>
+        /// The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.
+        /// </summary>
+        internal static string Http2StreamErrorSchemeMismatch
+        {
+            get => GetString("Http2StreamErrorSchemeMismatch");
+        }
+
+        /// <summary>
+        /// The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorSchemeMismatch(object requestScheme, object transportScheme)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2StreamErrorSchemeMismatch", "requestScheme", "transportScheme"), requestScheme, transportScheme);
+
+        /// <summary>
+        /// Less data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string Http2StreamErrorLessDataThanLength
+        {
+            get => GetString("Http2StreamErrorLessDataThanLength");
+        }
+
+        /// <summary>
+        /// Less data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorLessDataThanLength()
+            => GetString("Http2StreamErrorLessDataThanLength");
+
+        /// <summary>
+        /// More data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string Http2StreamErrorMoreDataThanLength
+        {
+            get => GetString("Http2StreamErrorMoreDataThanLength");
+        }
+
+        /// <summary>
+        /// More data received than specified in the Content-Length header.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorMoreDataThanLength()
+            => GetString("Http2StreamErrorMoreDataThanLength");
+
+        /// <summary>
+        /// An error occurred after the response headers were sent, a reset is being sent.
+        /// </summary>
+        internal static string Http2StreamErrorAfterHeaders
+        {
+            get => GetString("Http2StreamErrorAfterHeaders");
+        }
+
+        /// <summary>
+        /// An error occurred after the response headers were sent, a reset is being sent.
+        /// </summary>
+        internal static string FormatHttp2StreamErrorAfterHeaders()
+            => GetString("Http2StreamErrorAfterHeaders");
+
+        /// <summary>
+        /// A new stream was refused because this connection has reached its stream limit.
+        /// </summary>
+        internal static string Http2ErrorMaxStreams
+        {
+            get => GetString("Http2ErrorMaxStreams");
+        }
+
+        /// <summary>
+        /// A new stream was refused because this connection has reached its stream limit.
+        /// </summary>
+        internal static string FormatHttp2ErrorMaxStreams()
+            => GetString("Http2ErrorMaxStreams");
+
+        /// <summary>
+        /// A value greater than zero is required.
+        /// </summary>
+        internal static string GreaterThanZeroRequired
+        {
+            get => GetString("GreaterThanZeroRequired");
+        }
+
+        /// <summary>
+        /// A value greater than zero is required.
+        /// </summary>
+        internal static string FormatGreaterThanZeroRequired()
+            => GetString("GreaterThanZeroRequired");
+
+        /// <summary>
+        /// A value between {min} and {max} is required.
+        /// </summary>
+        internal static string ArgumentOutOfRange
+        {
+            get => GetString("ArgumentOutOfRange");
+        }
+
+        /// <summary>
+        /// A value between {min} and {max} is required.
+        /// </summary>
+        internal static string FormatArgumentOutOfRange(object min, object max)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ArgumentOutOfRange", "min", "max"), min, max);
+
+        /// <summary>
+        /// Dynamic tables size update did not occur at the beginning of the first header block.
+        /// </summary>
+        internal static string HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock
+        {
+            get => GetString("HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock");
+        }
+
+        /// <summary>
+        /// Dynamic tables size update did not occur at the beginning of the first header block.
+        /// </summary>
+        internal static string FormatHPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock()
+            => GetString("HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock");
+
+        /// <summary>
+        /// The given buffer was too small to encode any headers.
+        /// </summary>
+        internal static string HPackErrorNotEnoughBuffer
+        {
+            get => GetString("HPackErrorNotEnoughBuffer");
+        }
+
+        /// <summary>
+        /// The given buffer was too small to encode any headers.
+        /// </summary>
+        internal static string FormatHPackErrorNotEnoughBuffer()
+            => GetString("HPackErrorNotEnoughBuffer");
+
+        /// <summary>
+        /// The decoded integer exceeds the maximum value of Int32.MaxValue.
+        /// </summary>
+        internal static string HPackErrorIntegerTooBig
+        {
+            get => GetString("HPackErrorIntegerTooBig");
+        }
+
+        /// <summary>
+        /// The decoded integer exceeds the maximum value of Int32.MaxValue.
+        /// </summary>
+        internal static string FormatHPackErrorIntegerTooBig()
+            => GetString("HPackErrorIntegerTooBig");
+
+        /// <summary>
+        /// The client closed the connection.
+        /// </summary>
+        internal static string ConnectionAbortedByClient
+        {
+            get => GetString("ConnectionAbortedByClient");
+        }
+
+        /// <summary>
+        /// The client closed the connection.
+        /// </summary>
+        internal static string FormatConnectionAbortedByClient()
+            => GetString("ConnectionAbortedByClient");
+
+        /// <summary>
+        /// A frame of type {frameType} was received after stream {streamId} was reset or aborted.
+        /// </summary>
+        internal static string Http2ErrorStreamAborted
+        {
+            get => GetString("Http2ErrorStreamAborted");
+        }
+
+        /// <summary>
+        /// A frame of type {frameType} was received after stream {streamId} was reset or aborted.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamAborted(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamAborted", "frameType", "streamId"), frameType, streamId);
 
         private static string GetString(string name, params string[] formatterNames)
         {

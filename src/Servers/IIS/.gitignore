@@ -7,6 +7,7 @@ _ReSharper.*/
 packages/
 artifacts/
 PublishProfiles/
+BenchmarkDotNet.Artifacts/
 *.user
 *.suo
 *.cache
@@ -35,14 +36,19 @@ project.lock.json
 *.tlog
 *.CppClean.log
 *msbuild.log
+gtest.log
 Debug/
+x64/Debug/
 Release/
+x64/Release/
 x64/
 *vcxproj.filters
 *.aps
 *.pdb
 *.lib
 *.idb
+*.res
+*.pch
 aspnetcoremodule.h
 aspnetcore_msg.h
 aspnetcore_msg.rc

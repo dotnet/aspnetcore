@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 => typeof(Task<IActionResult>).IsAssignableFrom(executor.MethodReturnType);
         }
 
-        // Task<PhysicalfileResult> DownloadFile(..)
+        // Task<PhysicalFileResult> DownloadFile(..)
         // ValueTask<ViewResult> GetViewsAsync(..)
         private class TaskOfActionResultExecutor : ActionMethodExecutor
         {

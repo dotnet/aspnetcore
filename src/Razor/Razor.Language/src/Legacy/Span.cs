@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public ISpanChunkGenerator ChunkGenerator { get; private set; }
 
         public SpanKindInternal Kind { get; private set; }
-        public IReadOnlyList<ISymbol> Symbols { get; private set; }
+        public IReadOnlyList<IToken> Tokens { get; private set; }
 
         // Allow test code to re-link spans
         public Span Previous { get; internal set; }
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var length = 0;
                     if (_content == null)
                     {
-                        for (var i = 0; i < Symbols.Count; i++)
+                        for (var i = 0; i < Tokens.Count; i++)
                         {
-                            length += Symbols[i].Content.Length;
+                            length += Tokens[i].Content.Length;
                         }
                     }
                     else
@@ -67,19 +67,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (_content == null)
                 {
-                    var symbolCount = Symbols.Count;
-                    if (symbolCount == 1)
+                    var tokenCount = Tokens.Count;
+                    if (tokenCount == 1)
                     {
                         // Perf: no StringBuilder allocation if not necessary
-                        _content = Symbols[0].Content;
+                        _content = Tokens[0].Content;
                     }
                     else
                     {
                         var builder = new StringBuilder();
-                        for (var i = 0; i < symbolCount; i++)
+                        for (var i = 0; i < tokenCount; i++)
                         {
-                            var symbol = Symbols[i];
-                            builder.Append(symbol.Content);
+                            var token = Tokens[i];
+                            builder.Append(token.Content);
                         }
 
                         _content = builder.ToString();
@@ -93,11 +93,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ReplaceWith(SpanBuilder builder)
         {
             Kind = builder.Kind;
-            Symbols = builder.Symbols;
+            Tokens = builder.Tokens;
 
-            for (var i = 0; i <Symbols.Count; i++)
+            for (var i = 0; i <Tokens.Count; i++)
             {
-                Symbols[i].Parent = this;
+                Tokens[i].Parent = this;
             }
 
             EditHandler = builder.EditHandler;
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             builder.Append("> Gen: <");
             builder.Append(ChunkGenerator.ToString());
             builder.Append("> {");
-            builder.Append(string.Join(";", Symbols.GroupBy(sym => sym.GetType()).Select(grp => string.Concat(grp.Key.Name, ":", grp.Count()))));
+            builder.Append(string.Join(";", Tokens.GroupBy(sym => sym.GetType()).Select(grp => string.Concat(grp.Key.Name, ":", grp.Count()))));
             builder.Append("}");
             return builder.ToString();
         }
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Kind.Equals(other.Kind) &&
                 EditHandler.Equals(other.EditHandler) &&
                 ChunkGenerator.Equals(other.ChunkGenerator) &&
-                Symbols.SequenceEqual(other.Symbols);
+                Tokens.SequenceEqual(other.Tokens);
         }
 
         public override int GetHashCode()

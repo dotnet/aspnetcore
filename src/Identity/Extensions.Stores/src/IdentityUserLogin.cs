@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual string ProviderDisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the of the primary key of the user associated with this login.
+        /// Gets or sets the primary key of the user associated with this login.
         /// </summary>
         public virtual TKey UserId { get; set; }
     }

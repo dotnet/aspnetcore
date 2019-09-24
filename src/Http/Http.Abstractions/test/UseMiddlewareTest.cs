@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokesStub));
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeAsyncMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeAsyncMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAsyncStub));
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddleware_MutlipleInvokeAndInvokeAsyncMethods_ThrowsException()
+        public void UseMiddleware_MultipleInvokeAndInvokeAsyncMethods_ThrowsException()
         {
             var builder = new ApplicationBuilder(new DummyServiceProvider());
             builder.UseMiddleware(typeof(MiddlewareMultipleInvokeAndInvokeAsyncStub));
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void UseMiddlewareWithIvokeWithOutAndRefThrows()
+        public void UseMiddlewareWithInvokeWithOutAndRefThrows()
         {
             var mockServiceProvider = new DummyServiceProvider();
             var builder = new ApplicationBuilder(mockServiceProvider);

@@ -454,49 +454,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             Assert.Equal(new[] { "ControllersAssembly", "MvcSandbox" }, candidates.Select(a => a.Name));
         }
 
-        // This test verifies DefaultAssemblyPartDiscoveryProvider.ReferenceAssemblies reflects the actual loadable assemblies
-        // of the libraries that Microsoft.AspNetCore.Mvc depends on.
-        // If we add or remove dependencies, this test should be changed together.
-        [Fact]
-        public void ReferenceAssemblies_ReturnsLoadableReferenceAssemblies()
-        {
-            // Arrange
-            var excludeAssemblies = new string[]
-            {
-                "Microsoft.AspNetCore.Mvc.Core.Test",
-                "Microsoft.AspNetCore.Mvc.Razor.Extensions.Reference",
-                "Microsoft.AspNetCore.Mvc.TestCommon",
-                "Microsoft.AspNetCore.Mvc.TestDiagnosticListener",
-                "Microsoft.AspNetCore.Mvc.WebApiCompatShim",
-            };
-
-            var additionalAssemblies = new[]
-            {
-                // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
-                "Microsoft.AspNetCore.All",
-                "Microsoft.AspNetCore.Mvc.Formatters.Xml",
-            };
-
-            var dependencyContextLibraries = DependencyContext.Load(ThisAssembly)
-                .CompileLibraries
-                .Where(r => r.Name.StartsWith("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase) &&
-                    !excludeAssemblies.Contains(r.Name, StringComparer.OrdinalIgnoreCase))
-                .Select(r => r.Name);
-
-            var expected = dependencyContextLibraries
-                .Concat(additionalAssemblies)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-
-            // Act
-            var referenceAssemblies = ApplicationAssembliesProvider
-                .ReferenceAssemblies
-                .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
-
-            // Assert
-            Assert.Equal(expected, referenceAssemblies, StringComparer.OrdinalIgnoreCase);
-        }
-
         private class TestApplicationAssembliesProvider : ApplicationAssembliesProvider
         {
             public DependencyContext DependencyContext { get; set; }

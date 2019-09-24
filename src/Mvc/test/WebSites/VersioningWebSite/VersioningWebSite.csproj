@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\TestResponseGenerator.cs" Link="TestResponseGenerator.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />

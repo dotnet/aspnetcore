@@ -39,7 +39,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ToString_UseDifferentrangeConditions_AllSerializedCorrectly()
+        public void ToString_UseDifferentRangeConditions_AllSerializedCorrectly()
         {
             var rangeCondition = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"x\""));
             Assert.Equal("\"x\"", rangeCondition.ToString());
@@ -49,7 +49,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void GetHashCode_UseSameAndDifferentrangeConditions_SameOrDifferentHashCodes()
+        public void GetHashCode_UseSameAndDifferentRangeConditions_SameOrDifferentHashCodes()
         {
             var rangeCondition1 = new RangeConditionHeaderValue("\"x\"");
             var rangeCondition2 = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"x\""));

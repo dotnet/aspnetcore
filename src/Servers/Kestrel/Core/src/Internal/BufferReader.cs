@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace System.Buffers
@@ -19,16 +17,31 @@ namespace System.Buffers
         private int _consumedBytes;
         private bool _end;
 
-        public BufferReader(ReadOnlySequence<byte> buffer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BufferReader(in ReadOnlySequence<byte> buffer)
         {
-            _end = false;
             _index = 0;
             _consumedBytes = 0;
             _sequence = buffer;
             _currentSequencePosition = _sequence.Start;
             _nextSequencePosition = _currentSequencePosition;
-            _currentSpan = ReadOnlySpan<byte>.Empty;
-            MoveNext();
+
+            if (_sequence.TryGet(ref _nextSequencePosition, out var memory, true))
+            {
+                _end = false;
+                _currentSpan = memory.Span;
+                if (_currentSpan.Length == 0)
+                {
+                    // No space in first span, move to one with space
+                    MoveNext();
+                }
+            }
+            else
+            {
+                // No space in any spans and at end of sequence
+                _end = true;
+                _currentSpan = default;
+            }
         }
 
         public bool End => _end;
@@ -90,11 +103,26 @@ namespace System.Buffers
             _end = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int byteCount)
+        {
+            if (!_end && byteCount > 0 && (_index + byteCount) < _currentSpan.Length)
+            {
+                _consumedBytes += byteCount;
+                _index += byteCount;
+            }
+            else
+            {
+                AdvanceNext(byteCount);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AdvanceNext(int byteCount)
         {
             if (byteCount < 0)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
             }
 
             _consumedBytes += byteCount;
@@ -118,7 +146,7 @@ namespace System.Buffers
 
             if (byteCount > 0)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
             }
         }
     }

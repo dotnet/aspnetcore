@@ -11,10 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -142,11 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Arrange
             var tempDataNull = false;
             var viewDataNull = false;
-            var deligateHit = false;
+            var delegateHit = false;
 
             var view = CreateView(async (v) =>
             {
-                deligateHit = true;
+                delegateHit = true;
                 tempDataNull = v.TempData == null;
                 viewDataNull = v.ViewData == null;
 
@@ -176,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(200, context.Response.StatusCode);
-            Assert.True(deligateHit);
+            Assert.True(delegateHit);
             Assert.False(viewDataNull);
             Assert.False(tempDataNull);
         }

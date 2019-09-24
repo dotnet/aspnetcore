@@ -112,9 +112,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var asyncResultFilter = Mock.Of<IAsyncResultFilter>();
             var resourceFilter = Mock.Of<IResourceFilter>();
             var asyncResourceFilter = Mock.Of<IAsyncResourceFilter>();
-            var orderedresourceFilterMock = new Mock<IOrderedResourceFilter>();
-            orderedresourceFilterMock.SetupGet(f => f.Order).Returns(-100);
-            var orderedResourceFilter = orderedresourceFilterMock.Object;
+            var orderedResourceFilterMock = new Mock<IOrderedResourceFilter>();
+            orderedResourceFilterMock.SetupGet(f => f.Order).Returns(-100);
+            var orderedResourceFilter = orderedResourceFilterMock.Object;
             var filters = new IFilterMetadata[]
             {
                 actionFilter,

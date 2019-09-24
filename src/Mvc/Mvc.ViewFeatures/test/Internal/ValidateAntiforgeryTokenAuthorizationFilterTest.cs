@@ -73,5 +73,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Assert
             antiforgery.Verify(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()), Times.Never());
         }
+
+        [Fact]
+        public async Task Filter_SetsFailureResult()
+        {
+            // Arrange
+            var antiforgery = new Mock<IAntiforgery>(MockBehavior.Strict);
+            antiforgery
+                .Setup(a => a.ValidateRequestAsync(It.IsAny<HttpContext>()))
+                .Throws(new AntiforgeryValidationException("Failed"))
+                .Verifiable();
+
+            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
+
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            actionContext.HttpContext.Request.Method = "POST";
+
+            var context = new AuthorizationFilterContext(actionContext, new[] { filter });
+
+            // Act
+            await filter.OnAuthorizationAsync(context);
+
+            // Assert
+            Assert.IsType<AntiforgeryValidationFailedResult>(context.Result);
+        }
     }
 }

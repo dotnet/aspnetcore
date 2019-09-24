@@ -63,12 +63,14 @@ if (-not $NoCommit) {
 try {
     $updatedVars = UpdateVersions $variables $dependencies $depsPath
 
-    if (-not $NoCommit) {
-        $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+    if ($NoCommit) {
+        exit 0
+    }
 
-        if ($body) {
-            CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
-        }
+    $body = CommitUpdatedVersions $updatedVars $dependencies $depsPath
+
+    if ($body) {
+        CreatePR "aspnet" $GithubUsername $GithubUpstreamBranch $destinationBranch $body $GithubToken
     }
 }
 finally {

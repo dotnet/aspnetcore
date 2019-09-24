@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <param name="result">The <see cref="JsonResult"/>.</param>
         /// <returns>A <see cref="Task"/> which will complete when writing has completed.</returns>
-        public virtual Task ExecuteAsync(ActionContext context, JsonResult result)
+        public virtual async Task ExecuteAsync(ActionContext context, JsonResult result)
         {
             if (context == null)
             {
@@ -128,9 +128,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
                     var jsonSerializer = JsonSerializer.Create(serializerSettings);
                     jsonSerializer.Serialize(jsonWriter, result.Value);
                 }
-            }
 
-            return Task.CompletedTask;
+                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                // buffers. This is better than just letting dispose handle it (which would result in a synchronous write).
+                await writer.FlushAsync();
+            }
         }
     }
 }

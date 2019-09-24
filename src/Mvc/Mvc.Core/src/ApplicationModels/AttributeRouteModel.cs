@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -221,6 +222,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public static string ReplaceTokens(string template, IDictionary<string, string> values)
         {
+            return ReplaceTokens(template, values, routeTokenTransformer: null);
+        }
+
+        public static string ReplaceTokens(string template, IDictionary<string, string> values, IOutboundParameterTransformer routeTokenTransformer)
+        {
             var builder = new StringBuilder();
             var state = TemplateParserState.Plaintext;
 
@@ -369,6 +375,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                     token,
                                     string.Join(", ", values.Keys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase)));
                                 throw new InvalidOperationException(message);
+                            }
+
+                            if (routeTokenTransformer != null)
+                            {
+                                value = routeTokenTransformer.TransformOutbound(value);
                             }
 
                             builder.Append(value);

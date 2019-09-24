@@ -12,14 +12,15 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+  <ItemGroup Label="Sources packages">
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

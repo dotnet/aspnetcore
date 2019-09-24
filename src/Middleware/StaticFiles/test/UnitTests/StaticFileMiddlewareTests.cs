@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest("TestDocument.txt").GetAsync();
 
                 var last = fileInfo.LastModified;
-                var trimed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
+                var trimmed = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
 
-                Assert.Equal(response.Content.Headers.LastModified.Value, trimed);
+                Assert.Equal(response.Content.Headers.LastModified.Value, trimmed);
             }
         }
 

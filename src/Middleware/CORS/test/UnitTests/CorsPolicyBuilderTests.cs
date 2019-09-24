@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -126,6 +126,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var corsPolicy = builder.Build();
             Assert.False(corsPolicy.AllowAnyOrigin);
             Assert.Equal(new List<string>() { "http://example.com", "http://example2.com" }, corsPolicy.Origins);
+        }
+
+        [Fact]
+        public void WithOrigins_NormalizesOrigins()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://www.EXAMPLE.com", "HTTPS://example2.com");
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.Equal(new List<string>() { "http://www.example.com", "https://example2.com" }, corsPolicy.Origins);
         }
 
         [Fact]
@@ -287,6 +298,86 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.False(corsPolicy.SupportsCredentials);
+        }
+
+        [Theory]
+        [InlineData("Some-String", "some-string")]
+        [InlineData("x:\\Test", "x:\\test")]
+        [InlineData("FTP://Some-url", "ftp://some-url")]
+        public void GetNormalizedOrigin_ReturnsLowerCasedValue_IfStringIsNotHttpOrHttpsUrl(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_DoesNotAddPort_IfUriDoesNotSpecifyOne()
+        {
+            // Arrange
+            var origin = "http://www.example.com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(origin, normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_LowerCasesScheme()
+        {
+            // Arrange
+            var origin = "HTTP://www.example.com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal("http://www.example.com", normalizedOrigin);
+        }
+
+        [Fact]
+        public void GetNormalizedOrigin_LowerCasesHost()
+        {
+            // Arrange
+            var origin = "http://www.Example.Com";
+
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal("http://www.example.com", normalizedOrigin);
+        }
+
+        [Theory]
+        [InlineData("http://www.Example.com:80", "http://www.example.com:80")]
+        [InlineData("https://www.Example.com:8080", "https://www.example.com:8080")]
+        public void GetNormalizedOrigin_PreservesPort_ForNonIdnHosts(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
+        }
+
+        [Theory]
+        [InlineData("http://Bücher.example", "http://xn--bcher-kva.example")]
+        [InlineData("http://Bücher.example.com:83", "http://xn--bcher-kva.example.com:83")]
+        [InlineData("https://example.қаз", "https://example.xn--80ao21a")]
+        [InlineData("http://😉.fm", "http://xn--n28h.fm", Skip = "Fails on Win2k8 R2")]
+        // Note that in following case, the default port (443 for HTTPS) is not preserved.
+        [InlineData("https://www.example.இந்தியா:443", "https://www.example.xn--xkc2dl3a5ee0h")]
+        public void GetNormalizedOrigin_ReturnsPunyCodedOrigin(string origin, string expected)
+        {
+            // Act
+            var normalizedOrigin = CorsPolicyBuilder.GetNormalizedOrigin(origin);
+
+            // Assert
+            Assert.Equal(expected, normalizedOrigin);
         }
     }
 }

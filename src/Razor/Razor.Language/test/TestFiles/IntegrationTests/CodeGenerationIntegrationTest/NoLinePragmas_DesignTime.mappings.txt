@@ -124,25 +124,25 @@ Generated Location: (3201:111,50 [7] )
 
 Source Location: (556:32,34 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 ||
-Generated Location: (3285:117,46 [0] )
+Generated Location: (3363:118,34 [0] )
 ||
 
 Source Location: (571:33,13 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |i|
-Generated Location: (3390:119,13 [1] )
+Generated Location: (3499:123,13 [1] )
 |i|
 
 Source Location: (581:35,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |lock(new object()) {
     |
-Generated Location: (3516:124,1 [26] )
+Generated Location: (3625:128,1 [26] )
 |lock(new object()) {
     |
 
 Source Location: (654:36,51 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NoLinePragmas.cshtml)
 |
 }|
-Generated Location: (3716:130,51 [3] )
+Generated Location: (3825:134,51 [3] )
 |
 }|
 

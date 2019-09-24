@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            return descriptorX != null &&
+            return
                 string.Equals(descriptorX.Kind, descriptorY.Kind, StringComparison.Ordinal) &&
                 descriptorX.IsIndexerStringProperty == descriptorY.IsIndexerStringProperty &&
                 descriptorX.IsEnum == descriptorY.IsEnum &&
@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 string.Equals(descriptorX.IndexerTypeName, descriptorY.IndexerTypeName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.Documentation, descriptorY.Documentation, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(descriptorX.Diagnostics, descriptorY.Diagnostics) &&
                 Enumerable.SequenceEqual(
                     descriptorX.Metadata.OrderBy(propertyX => propertyX.Key, StringComparer.Ordinal),
                     descriptorY.Metadata.OrderBy(propertyY => propertyY.Key, StringComparer.Ordinal));
@@ -74,19 +73,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Kind);
-            hashCodeCombiner.Add(descriptor.IsIndexerStringProperty);
-            hashCodeCombiner.Add(descriptor.IsEnum);
-            hashCodeCombiner.Add(descriptor.HasIndexer);
-            hashCodeCombiner.Add(descriptor.Name, _stringComparer);
-            hashCodeCombiner.Add(descriptor.IndexerNamePrefix, _stringComparer);
-            hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.IndexerTypeName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.Documentation, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Kind);
+            hash.Add(descriptor.Name, _stringComparer);
 
-            return hashCodeCombiner.CombinedHash;
+            return hash.CombinedHash;
         }
     }
 }
