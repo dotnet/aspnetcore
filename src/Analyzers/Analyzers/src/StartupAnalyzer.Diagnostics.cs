@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 {
                     // ASP
                     BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
+                    IncorrectlyConfiguredAuthorizationMiddleware,
 
                     // MVC
                     UnsupportedUseMvcWithEndpointRouting,
@@ -42,6 +43,15 @@ namespace Microsoft.AspNetCore.Analyzers
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
                 helpLinkUri: "https://aka.ms/YJggeFn");
+
+            internal readonly static DiagnosticDescriptor IncorrectlyConfiguredAuthorizationMiddleware = new DiagnosticDescriptor(
+                "ASP0001",
+                "Authorization middleware is incorrectly configured.",
+                "The call to UseAuthorization should appear between app.UseRouting() and app.UseEndpoints(..) for authorization to be correctly evaluated.",
+                "Usage",
+                DiagnosticSeverity.Warning,
+                isEnabledByDefault: true,
+                helpLinkUri: "https://aka.ms/AA64fv1");
         }
     }
 }
