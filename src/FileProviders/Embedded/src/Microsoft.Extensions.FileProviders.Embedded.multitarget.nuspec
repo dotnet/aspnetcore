@@ -10,6 +10,7 @@
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
+    <icon>packageIcon.png</icon>
   </metadata>
 
   <files>
