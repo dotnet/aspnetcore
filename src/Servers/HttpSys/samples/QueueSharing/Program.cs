@@ -14,26 +14,23 @@ namespace QueueSharing
     {
         public static void Main(string[] args)
         {
-            Console.Write("Create and (l)isten, (c)reate only, (a)ttach to existing, or attach (o)r create? ");
+            Console.Write("Create and (c)reate, (a)ttach to existing, or attach (o)r create? ");
             var key = Console.ReadKey();
             Console.WriteLine();
             var mode = RequestQueueMode.Create;
             switch (key.KeyChar)
             {
-                case 'c':
-                    mode = RequestQueueMode.Controller;
-                    break;
                 case 'a':
                     mode = RequestQueueMode.AttachToExisting;
                     break;
                 case 'o':
                     mode = RequestQueueMode.AttachOrCreate;
                     break;
-                case 'l':
+                case 'c':
                     mode = RequestQueueMode.Create;
                     break;
                 default:
-                    Console.WriteLine("Unknown option, defaulting to (l)isten.");
+                    Console.WriteLine("Unknown option, defaulting to (c)create.");
                     break;
             }
 

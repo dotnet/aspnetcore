@@ -32,10 +32,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 Created = false;
             }
-            else if (_mode == RequestQueueMode.Controller)
-            {
-                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Controller;
-            }
 
             HttpRequestQueueV2Handle requestQueueHandle = null;
 
@@ -72,8 +68,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
-            if (_mode != RequestQueueMode.Controller &&
-                HttpSysListener.SkipIOCPCallbackOnSuccess &&
+            if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
                 !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
                     requestQueueHandle,
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
