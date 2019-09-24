@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 if (foundDelete)
                 {
-                    if ((allLogs[i].Write.EventId.Name == "LongPollingTerminated" || allLogs[i].Write.EventId.Name == "ApplicationError")
+                    if ((allLogs[i].Write.EventId.Name == "LongPollingTerminated" || allLogs[i].Write.EventId.Name == "ApplicationError" || allLogs[i].Write.EventId.Name == "FailedDispose")
                         && allLogs[i].Write.Exception?.Message.Contains("Reading is not allowed after reader was completed.") == true)
                     {
                         results.Remove(allLogs[i]);
