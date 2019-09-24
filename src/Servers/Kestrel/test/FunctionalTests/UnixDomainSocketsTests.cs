@@ -21,11 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class UnixDomainSocketsTest : TestApplicationErrorLoggerLoggedTest
     {
-#if LIBUV
         [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
-#else
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, WindowsVersions.Win10, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
-#endif
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocket()
