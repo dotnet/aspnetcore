@@ -5,6 +5,7 @@
     <packageTypes>
       <packageType name="Template" />
     </packageTypes>
+    <icon>packageIcon.png</icon>
   </metadata>
   <files>
     <file

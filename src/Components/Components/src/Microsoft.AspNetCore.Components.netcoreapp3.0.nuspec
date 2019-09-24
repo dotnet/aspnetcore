@@ -9,6 +9,7 @@
         <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
+    <icon>packageIcon.png</icon>
   </metadata>
   <files>
     <file src="$OutputBinary$" target="lib\" />
