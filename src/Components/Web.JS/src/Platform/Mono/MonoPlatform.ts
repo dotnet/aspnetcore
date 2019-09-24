@@ -217,7 +217,7 @@ function addGlobalModuleScriptTagsToDocument(callback: () => void) {
 
   const scriptElem = document.createElement('script');
 
-  // This polutes global but is needed so it can be called from the script.
+  // This pollutes global but is needed so it can be called from the script.
   window["__wasmmodulecallback__"] = callback;
   scriptElem.type="text/javascript"
   scriptElem.text = 'var Module = { onRuntimeInitialized: function () {  console.log("Initialized"); }}; window["__wasmmodulecallback__"](); window["__wasmmodulecallback__"] = null;';
