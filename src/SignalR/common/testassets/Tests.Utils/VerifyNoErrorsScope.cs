@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         && allLogs[i].Write.Exception?.Message.Contains("Reading is not allowed after reader was completed.") == true)
                     {
                         results.Remove(allLogs[i]);
-                        results.Add(new LogRecord(DateTime.Now, new WriteContext() { LogLevel = LogLevel.Error, EventId = new EventId(10, "blah") }));
                     }
                 }
             }
