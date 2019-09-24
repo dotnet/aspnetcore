@@ -1,10 +1,4 @@
 <Project>
-  <ItemDefinitionGroup>
-    <HelixAvailableTargetQueue>
-      <EnableByDefault>true</EnableByDefault>
-    </HelixAvailableTargetQueue>
-  </ItemDefinitionGroup>
-
   <!-- this file is shared between Helix.proj and .csproj files -->
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
