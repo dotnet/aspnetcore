@@ -58,7 +58,7 @@ namespace Templates.Test.Helpers
 
             var arguments = published ? $"exec {dllPath}" : "run";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
-            if(hasListeningUri)
+            if (hasListeningUri)
             {
                 ListeningUri = GetListeningUri(output);
             }
@@ -108,7 +108,7 @@ namespace Templates.Test.Helpers
                 HttpMethod.Get,
                 new Uri(ListeningUri, page.Url));
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await RequestWithRetries(client => client.SendAsync(request), _httpClient);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -141,12 +141,34 @@ namespace Templates.Test.Helpers
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
-                        return await _httpClient.GetAsync(anchor.Href);
+                        return await RequestWithRetries(client => client.GetAsync(anchor.Href), _httpClient);
                     }, logger: NullLogger.Instance);
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
             }
+        }
+
+        private async Task<T> RequestWithRetries<T>(Func<HttpClient, Task<T>> requester, HttpClient client, int retries = 3, TimeSpan initialDelay = default)
+        {
+            var currentDelay = initialDelay == default ? TimeSpan.FromSeconds(30) : initialDelay;
+            for (int i = 0; i <= retries; i++)
+            {
+                try
+                {
+                    return await requester(client);
+                }
+                catch (Exception)
+                {
+                    if (i == retries)
+                    {
+                        throw;
+                    }
+                    await Task.Delay(currentDelay);
+                    currentDelay *= 2;
+                }
+            }
+            throw new InvalidOperationException("Max retries reached.");
         }
 
         private Uri GetListeningUri(ITestOutputHelper output)
@@ -190,7 +212,7 @@ namespace Templates.Test.Helpers
 
         internal Task<HttpResponseMessage> SendRequest(string path)
         {
-            return _httpClient.GetAsync(new Uri(ListeningUri, path));
+            return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
         }
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
@@ -204,7 +226,7 @@ namespace Templates.Test.Helpers
                 request.Headers.Add("Accept", acceptContentType);
             }
 
-            var response = await _httpClient.SendAsync(request);
+            var response = await RequestWithRetries(client => client.SendAsync(request), _httpClient);
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
