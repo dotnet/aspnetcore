@@ -918,7 +918,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             await middleware.Invoke(httpContext, mockProvider);
 
             // Assert
-            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareInvoked"));
+            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareWithEndpointInvoked"));
         }
 
         [Fact]
@@ -936,12 +936,37 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 "DefaultPolicyName");
 
             var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute("MetadataPolicyName"), new DisableCorsAttribute()), "Test endpoint"));
 
             // Act
             await middleware.Invoke(httpContext, mockProvider);
 
             // Assert
-            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareInvoked"));
+            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareWithEndpointInvoked"));
+        }
+
+        [Fact]
+        public async Task Invoke_WithoutEndpoint_InvokeFlagSet()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = Mock.Of<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider);
+
+            // Assert
+            Assert.DoesNotContain(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareWithEndpointInvoked"));
         }
     }
 }
