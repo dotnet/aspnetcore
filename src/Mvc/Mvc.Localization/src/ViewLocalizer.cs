@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// Creates a new <see cref="ViewLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IHostingEnvironment hostingEnvironment)
+        /// <param name="hostingEnvironment">The <see cref="IWebHostEnvironment"/>.</param>
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IWebHostEnvironment hostingEnvironment)
         {
             if (localizerFactory == null)
             {
@@ -80,7 +80,11 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
 
         /// <inheritdoc />
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
+
+#pragma warning disable CS0618 // Type or member is obsolete
         public IHtmlLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <inheritdoc />
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>

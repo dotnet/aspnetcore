@@ -39,12 +39,8 @@ namespace MusicStore.Models
         [Required]
         public DateTime Created { get; set; }
 
-        /// <summary>
-        /// TODO: Temporary hack to populate the orderdetails until EF does this automatically. 
-        /// </summary>
         public Album()
         {
-            OrderDetails = new List<OrderDetail>();
             Created = DateTime.UtcNow;
         }
     }

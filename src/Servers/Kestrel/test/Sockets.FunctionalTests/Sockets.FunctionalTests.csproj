@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Sockets.FunctionalTests</TestGroupName>
@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <Compile Include="..\FunctionalTests\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
@@ -16,12 +18,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
 </Project>

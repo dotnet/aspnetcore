@@ -6,21 +6,27 @@ namespace Microsoft.AspNetCore.Identity
     /// <summary>
     /// Implements <see cref="ILookupNormalizer"/> by converting keys to their upper cased invariant culture representation.
     /// </summary>
-    public class UpperInvariantLookupNormalizer : ILookupNormalizer
+    public sealed class UpperInvariantLookupNormalizer : ILookupNormalizer
     {
         /// <summary>
-        /// Returns a normalized representation of the specified <paramref name="key"/>
-        /// by converting keys to their upper cased invariant culture representation.
+        /// Returns a normalized representation of the specified <paramref name="name"/>.
         /// </summary>
-        /// <param name="key">The key to normalize.</param>
-        /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
-        public virtual string Normalize(string key)
+        /// <param name="name">The key to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="name"/>.</returns>
+        public string NormalizeName(string name)
         {
-            if (key == null)
+            if (name == null)
             {
                 return null;
             }
-            return key.Normalize().ToUpperInvariant();
+            return name.Normalize().ToUpperInvariant();
         }
+
+        /// <summary>
+        /// Returns a normalized representation of the specified <paramref name="email"/>.
+        /// </summary>
+        /// <param name="email">The email to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="email"/>.</returns>
+        public string NormalizeEmail(string email) => NormalizeName(email);
     }
 }

@@ -8,7 +8,6 @@
 #include "exceptions.h"
 #include "config_utility.h"
 
-
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {
     if (m_ppStrArguments != NULL)
@@ -16,18 +15,12 @@ REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
         delete[] m_ppStrArguments;
         m_ppStrArguments = NULL;
     }
-
-    if (m_pEnvironmentVariables != NULL)
-    {
-        m_pEnvironmentVariables->Clear();
-        delete m_pEnvironmentVariables;
-        m_pEnvironmentVariables = NULL;
-    }
 }
 
 HRESULT
 REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     _In_  IHttpServer             *pHttpServer,
+    _In_  IHttpSite               *pSite,
     _In_  IHttpApplication        *pHttpApplication,
     _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
 )
@@ -49,7 +42,7 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
 
         pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
 
-        hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
+        hr = pRequestHandlerConfig->Populate(pHttpServer, pSite, pHttpApplication);
         if (FAILED(hr))
         {
             goto Finished;
@@ -85,6 +78,7 @@ Finished:
 HRESULT
 REQUESTHANDLER_CONFIG::Populate(
     IHttpServer    *pHttpServer,
+    IHttpSite      *pSite,
     IHttpApplication   *pHttpApplication
 )
 {
@@ -99,12 +93,7 @@ REQUESTHANDLER_CONFIG::Populate(
     IAppHostElement                *pWindowsAuthenticationElement = NULL;
     IAppHostElement                *pBasicAuthenticationElement = NULL;
     IAppHostElement                *pAnonymousAuthenticationElement = NULL;
-    IAppHostElement                *pEnvVarList = NULL;
-    IAppHostElement                *pEnvVar = NULL;
-    IAppHostElementCollection      *pEnvVarCollection = NULL;
     ULONGLONG                       ullRawTimeSpan = 0;
-    ENUM_INDEX                      index;
-    ENVIRONMENT_VAR_ENTRY*          pEntry = NULL;
     DWORD                           dwCounter = 0;
     DWORD                           dwPosition = 0;
     WCHAR*                          pszPath = NULL;
@@ -113,15 +102,22 @@ REQUESTHANDLER_CONFIG::Populate(
     BSTR                            bstrAnonymousAuthSection = NULL;
     BSTR                            bstrAspNetCoreSection = NULL;
 
-    m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
-    if (FAILED(hr = m_pEnvironmentVariables->Initialize(37 /*prime*/)))
+    pAdminManager = pHttpServer->GetAdminManager();
+    try
     {
-        delete m_pEnvironmentVariables;
-        m_pEnvironmentVariables = NULL;
-        goto Finished;
+        WebConfigConfigurationSource source(pAdminManager, *pHttpApplication);
+        if (pSite != nullptr)
+        {
+            m_struHttpsPort.Copy(BindingInformation::GetHttpsPort(BindingInformation::Load(source, *pSite)).c_str());
+        }
+
+        m_pEnvironmentVariables = source.GetSection(CS_ASPNETCORE_SECTION)->GetMap(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
+    }
+    catch (...)
+    {
+        FINISHED_IF_FAILED(OBSERVE_CAUGHT_EXCEPTION());
     }
 
-    pAdminManager = pHttpServer->GetAdminManager();
     hr = m_struConfigPath.Copy(pHttpApplication->GetAppConfigPath());
     if (FAILED(hr))
     {
@@ -383,58 +379,6 @@ REQUESTHANDLER_CONFIG::Populate(
         goto Finished;
     }
 
-    hr = GetElementChildByName(pAspNetCoreElement,
-        CS_ASPNETCORE_ENVIRONMENT_VARIABLES,
-        &pEnvVarList);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = pEnvVarList->get_Collection(&pEnvVarCollection);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    for (hr = FindFirstElement(pEnvVarCollection, &index, &pEnvVar);
-        SUCCEEDED(hr);
-        hr = FindNextElement(pEnvVarCollection, &index, &pEnvVar))
-    {
-        if (hr == S_FALSE)
-        {
-            hr = S_OK;
-            break;
-        }
-
-        if (FAILED(hr = GetElementStringProperty(pEnvVar,
-            CS_ASPNETCORE_ENVIRONMENT_VARIABLE_NAME,
-            &strEnvName)) ||
-            FAILED(hr = GetElementStringProperty(pEnvVar,
-                CS_ASPNETCORE_ENVIRONMENT_VARIABLE_VALUE,
-                &strEnvValue)) ||
-            FAILED(hr = strEnvName.Append(L"=")) ||
-            FAILED(hr = STRU::ExpandEnvironmentVariables(strEnvValue.QueryStr(), &strExpandedEnvValue)))
-        {
-            goto Finished;
-        }
-
-        pEntry = new ENVIRONMENT_VAR_ENTRY();
-
-        if (FAILED(hr = pEntry->Initialize(strEnvName.QueryStr(), strExpandedEnvValue.QueryStr())) ||
-            FAILED(hr = m_pEnvironmentVariables->InsertRecord(pEntry)))
-        {
-            goto Finished;
-        }
-        strEnvName.Reset();
-        strEnvValue.Reset();
-        strExpandedEnvValue.Reset();
-        pEnvVar->Release();
-        pEnvVar = NULL;
-        pEntry->Dereference();
-        pEntry = NULL;
-    }
-
 Finished:
 
     if (pAspNetCoreElement != NULL)
@@ -459,30 +403,6 @@ Finished:
     {
         pBasicAuthenticationElement->Release();
         pBasicAuthenticationElement = NULL;
-    }
-
-    if (pEnvVarList != NULL)
-    {
-        pEnvVarList->Release();
-        pEnvVarList = NULL;
-    }
-
-    if (pEnvVar != NULL)
-    {
-        pEnvVar->Release();
-        pEnvVar = NULL;
-    }
-
-    if (pEnvVarCollection != NULL)
-    {
-        pEnvVarCollection->Release();
-        pEnvVarCollection = NULL;
-    }
-
-    if (pEntry != NULL)
-    {
-        pEntry->Dereference();
-        pEntry = NULL;
     }
 
     return hr;

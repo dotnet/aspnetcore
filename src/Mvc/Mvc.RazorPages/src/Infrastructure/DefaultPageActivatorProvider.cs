@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     /// <summary>
     /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
     /// </summary>
-    public class DefaultPageActivatorProvider : IPageActivatorProvider
+    internal class DefaultPageActivatorProvider : IPageActivatorProvider
     {
         private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
 
         /// <inheritdoc />
-        public virtual Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        public Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return CreatePageFactory(pageTypeInfo);
         }
 
-        public virtual Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        public Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {

@@ -12,26 +12,21 @@ using Xunit;
 
 namespace MusicStore.Controllers
 {
-    public class StoreControllerTest
+    public class StoreControllerTest : IClassFixture<SqliteInMemoryFixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly SqliteInMemoryFixture _fixture;
 
-        public StoreControllerTest()
+        public StoreControllerTest(SqliteInMemoryFixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
         public async Task Index_CreatesViewWithGenres()
         {
             // Arrange
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             CreateTestGenres(numberOfGenres: 10, numberOfAlbums: 1, dbContext: dbContext);
 
             var controller = new StoreController(dbContext, new TestAppSettings());
@@ -53,7 +48,7 @@ namespace MusicStore.Controllers
         {
             // Arrange
             var controller = new StoreController(
-                _serviceProvider.GetRequiredService<MusicStoreContext>(),
+                _fixture.Context,
                 new TestAppSettings());
 
             // Act
@@ -69,7 +64,7 @@ namespace MusicStore.Controllers
             // Arrange
             var genreName = "Genre 1";
 
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             CreateTestGenres(numberOfGenres: 3, numberOfAlbums: 3, dbContext: dbContext);
 
             var controller = new StoreController(dbContext, new TestAppSettings());
@@ -94,11 +89,11 @@ namespace MusicStore.Controllers
             // Arrange
             var albumId = int.MinValue;
             var controller = new StoreController(
-                _serviceProvider.GetRequiredService<MusicStoreContext>(),
+                _fixture.Context,
                  new TestAppSettings());
 
             // Act
-            var result = await controller.Details(_serviceProvider.GetRequiredService<IMemoryCache>(), albumId);
+            var result = await controller.Details(_fixture.ServiceProvider.GetRequiredService<IMemoryCache>(), albumId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -110,10 +105,10 @@ namespace MusicStore.Controllers
             // Arrange
             var albumId = 1;
 
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var genres = CreateTestGenres(numberOfGenres: 3, numberOfAlbums: 3, dbContext: dbContext);
 
-            var cache = _serviceProvider.GetRequiredService<IMemoryCache>();
+            var cache = _fixture.ServiceProvider.GetRequiredService<IMemoryCache>();
 
             var controller = new StoreController(dbContext, new TestAppSettings());
 
@@ -145,31 +140,22 @@ namespace MusicStore.Controllers
             artist.Name = "Artist1";
 
             var albums = Enumerable.Range(1, numberOfAlbums * numberOfGenres).Select(n =>
-                  new Album()
+                  new Album
                   {
                       AlbumId = n,
                       Artist = artist,
-                      ArtistId = artist.ArtistId
+                      ArtistId = artist.ArtistId,
+                      Title = "Greatest Hits",
                   }).ToList();
 
             var generes = Enumerable.Range(1, numberOfGenres).Select(n =>
-                 new Genre()
+                 new Genre
                  {
                      Albums = albums.Where(i => i.AlbumId % numberOfGenres == n - 1).ToList(),
                      GenreId = n,
                      Name = "Genre " + n
                  });
 
-            var artis = Enumerable.Range(1, numberOfGenres).Select(n =>
-                 new Genre()
-                 {
-                     Albums = albums.Where(i => i.AlbumId % numberOfGenres == n - 1).ToList(),
-                     GenreId = n,
-                     Name = "Genre " + n,
-                 });
-
-            dbContext.Add(artist);
-            dbContext.AddRange(albums);
             dbContext.AddRange(generes);
             dbContext.SaveChanges();
 

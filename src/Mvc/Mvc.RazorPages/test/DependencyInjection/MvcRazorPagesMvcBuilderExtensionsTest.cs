@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -17,7 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddRazorPagesOptions_AddsConventions()
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection().AddOptions()
+                .AddSingleton<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>();
             var applicationModelConvention = Mock.Of<IPageApplicationModelConvention>();
             var routeModelConvention = Mock.Of<IPageRouteModelConvention>();
             var builder = new MvcBuilder(services, new ApplicationPartManager());

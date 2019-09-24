@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <Description>$(Description)
+
+To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.
+    </Description>
+  </PropertyGroup>
+
+  <Import Project="GenerateContent.targets" />
+</Project>

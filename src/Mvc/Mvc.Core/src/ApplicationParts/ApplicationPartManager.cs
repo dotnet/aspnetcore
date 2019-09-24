@@ -52,17 +52,55 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
         internal void PopulateDefaultParts(string entryAssemblyName)
         {
-            var entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
-            var assembliesProvider = new ApplicationAssembliesProvider();
-            var applicationAssemblies = assembliesProvider.ResolveAssemblies(entryAssembly);
+            var assemblies = GetApplicationPartAssemblies(entryAssemblyName);
 
-            foreach (var assembly in applicationAssemblies)
+            var seenAssemblies = new HashSet<Assembly>();
+
+            foreach (var assembly in assemblies)
             {
-                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-                foreach (var part in partFactory.GetApplicationParts(assembly))
+                if (!seenAssemblies.Add(assembly))
                 {
-                    ApplicationParts.Add(part);
+                    // "assemblies" may contain duplicate values, but we want unique ApplicationPart instances.
+                    // Note that we prefer using a HashSet over Distinct since the latter isn't
+                    // guaranteed to preserve the original ordering.
+                    continue;
                 }
+
+                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
+                {
+                    ApplicationParts.Add(applicationPart);
+                }
+            }
+        }
+
+        private static IEnumerable<Assembly> GetApplicationPartAssemblies(string entryAssemblyName)
+        {
+            var entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
+
+            // Use ApplicationPartAttribute to get the closure of direct or transitive dependencies
+            // that reference MVC.
+            var assembliesFromAttributes = entryAssembly.GetCustomAttributes<ApplicationPartAttribute>()
+                .Select(name => Assembly.Load(name.AssemblyName))
+                .OrderBy(assembly => assembly.FullName, StringComparer.Ordinal)
+                .SelectMany(GetAsemblyClosure);
+
+            // The SDK will not include the entry assembly as an application part. We'll explicitly list it
+            // and have it appear before all other assemblies \ ApplicationParts.
+            return GetAsemblyClosure(entryAssembly)
+                .Concat(assembliesFromAttributes);
+        }
+
+        private static IEnumerable<Assembly> GetAsemblyClosure(Assembly assembly)
+        {
+            yield return assembly;
+
+            var relatedAssemblies = RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: false)
+                .OrderBy(assembly => assembly.FullName, StringComparer.Ordinal);
+
+            foreach (var relatedAssembly in relatedAssemblies)
+            {
+                yield return relatedAssembly;
             }
         }
     }

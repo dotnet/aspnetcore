@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -32,12 +32,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private readonly ICompositeViewEngine _viewEngine;
         private readonly IViewBufferScope _viewBufferScope;
 
+        /// <summary>
+        /// Creates a new <see cref="PartialTagHelper"/>.
+        /// </summary>
+        /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/> used to locate the partial view.</param>
+        /// <param name="viewBufferScope">The <see cref="IViewBufferScope"/>.</param>
         public PartialTagHelper(
             ICompositeViewEngine viewEngine,
-#pragma warning disable PUB0001 // Pubternal type in public API
-            IViewBufferScope viewBufferScope
-#pragma warning restore PUB0001
-            )
+            IViewBufferScope viewBufferScope)
         {
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _viewBufferScope = viewBufferScope ?? throw new ArgumentNullException(nameof(viewBufferScope));
@@ -94,6 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         public ViewDataDictionary ViewData { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

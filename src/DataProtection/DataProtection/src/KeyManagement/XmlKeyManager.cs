@@ -62,7 +62,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// </summary>
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
+#pragma warning disable PUB0001 // Pubternal type IActivator in public API
         public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator)
+#pragma warning restore PUB0001 // Pubternal type IActivator in public API
             : this(keyManagementOptions, activator, NullLoggerFactory.Instance)
         { }
 
@@ -72,7 +74,9 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+#pragma warning disable PUB0001 // Pubternal type IActivator in public API
         public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator, ILoggerFactory loggerFactory)
+#pragma warning restore PUB0001 // Pubternal type IActivator in public API
             : this(keyManagementOptions, activator, loggerFactory, DefaultKeyStorageDirectories.Instance)
         { }
 

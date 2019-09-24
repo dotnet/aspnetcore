@@ -4,9 +4,7 @@
 using System;
 using System.Buffers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -38,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             dataAnnotationOptionsSetup.Configure(Value);
 
             var loggerFactory = new LoggerFactory();
-            var jsonOptions = Options.Create(new MvcJsonOptions());
+            var jsonOptions = Options.Create(new MvcNewtonsoftJsonOptions());
             var charPool = ArrayPool<char>.Shared;
             var objectPoolProvider = new DefaultObjectPoolProvider();
 
-            var mvcJsonMvcOptionsSetup = new MvcJsonMvcOptionsSetup(
+            var mvcJsonMvcOptionsSetup = new NewtonsoftJsonMvcOptionsSetup(
                 loggerFactory,
                 jsonOptions,
                 charPool,

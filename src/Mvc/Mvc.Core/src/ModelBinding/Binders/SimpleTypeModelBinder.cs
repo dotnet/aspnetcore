@@ -5,9 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -18,19 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly TypeConverter _typeConverter;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="SimpleTypeModelBinder"/>.</para>
-        /// </summary>
-        /// <param name="type">The type to create binder for.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public SimpleTypeModelBinder(Type type)
-            : this(type, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SimpleTypeModelBinder"/>.

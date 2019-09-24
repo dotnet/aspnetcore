@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 
 namespace System.IO.Pipelines
 {
@@ -60,7 +61,7 @@ namespace System.IO.Pipelines
             return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return WriteCoreAsync(source, cancellationToken);

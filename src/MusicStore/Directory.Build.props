@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Some of the tests make assertions which require symbols to map exactly back to the source root. -->
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+  </PropertyGroup>
+</Project>

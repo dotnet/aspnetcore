@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
 {
@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     {
         private FormContext _formContext;
         private DynamicViewData _viewBag;
+        private Dictionary<object, object> _items;
 
         /// <summary>
         /// Creates an empty <see cref="ViewContext"/>.
@@ -130,12 +131,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Html5DateRenderingMode = viewContext.Html5DateRenderingMode;
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
             ValidationMessageElement = viewContext.ValidationMessageElement;
-
             ExecutingFilePath = viewContext.ExecutingFilePath;
             View = view;
             ViewData = viewData;
             TempData = viewContext.TempData;
             Writer = writer;
+
+            // The dictionary needs to be initialized at this point so that child viewcontexts share the same underlying storage;
+            _items = viewContext.Items;
         }
 
         /// <summary>
@@ -225,6 +228,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// This property contains the path of the file currently being rendered.
         /// </remarks>
         public string ExecutingFilePath { get; set; }
+
+        /// <summary>
+        /// Gets a key/value collection that can be used to share data within the scope of this view execution.
+        /// </summary>
+        internal Dictionary<object, object> Items => _items ??= new Dictionary<object, object>();
 
         public FormContext GetFormContextForClientValidation()
         {

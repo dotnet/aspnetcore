@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
+    <Description>Components feature for ASP.NET Core.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <Reference Include="System.Buffers" />
+  </ItemGroup>
+
+  <Target Name="_GetNuspecDependencyPackageVersions">
+    <MSBuild Targets="_GetPackageVersionInfo"
+        BuildInParallel="$(BuildInParallel)"
+        Projects="../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectPathWithVersion" />
+    </MSBuild>
+    <ItemGroup>
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Components.Analyzers')->'componentAnalyzerPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Authorization')->'authorizationPackageVersion=%(PackageVersion)')" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp3.0.nuspec</NuspecFile>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
+    <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
+    <NuspecProperty Include="OutputBinary=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).pdb" />
+    <NuspecProperty Include="OutputDocumentation=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).xml" />
+  </ItemGroup>
+
+</Project>

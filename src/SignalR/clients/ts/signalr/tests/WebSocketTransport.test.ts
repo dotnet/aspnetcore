@@ -53,7 +53,7 @@ describe("WebSocketTransport", () => {
                 connectComplete = true;
             })();
 
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             expect(connectComplete).toBe(false);
 
@@ -61,7 +61,7 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toBeNull();
+                .toThrow("There was an error with the transport.");
             expect(connectComplete).toBe(false);
         });
     });

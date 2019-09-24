@@ -7,7 +7,6 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Xunit;
@@ -68,15 +67,13 @@ namespace E2ETests
         {
             var requestHeaders = string.Join("\n", response.RequestMessage.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value)));
             _logger.Log(logLevel, 0,
-               new FormattedLogValues("Request headers: {0}", requestHeaders),
-               exception: null,
-               formatter: (o, e) => o.ToString());
+               "Request headers: {0}",
+               requestHeaders);
 
             var responseHeaders = string.Join("\n", response.Headers.Select(h => h.Key + "=" + string.Join(",", h.Value)));
             _logger.Log(logLevel, 0,
-                new FormattedLogValues("Response headers: {0}", responseHeaders),
-                exception: null,
-                formatter: (o, e) => o.ToString());
+                "Response headers: {0}",
+                responseHeaders);
         }
 
         public async Task VerifyHomePage(

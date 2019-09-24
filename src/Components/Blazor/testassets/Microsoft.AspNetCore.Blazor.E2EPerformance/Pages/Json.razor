@@ -1,0 +1,99 @@
+@page "/json"
+@using System.Text.Json
+@inject IJSRuntime JSRuntime
+
+<h2>JSON performance</h2>
+
+<p><button id="reset-all" @onclick=Reset>Reset</button></p>
+
+<button id="serialize-small" @onclick=SerializeSmall>Serialize (small)</button>
+<button id="serialize-large" @onclick=SerializeLarge>Serialize (large)</button>
+
+<p><pre style="border: 1px solid black; overflow: scroll;">@serializedValue</pre></p>
+@if (serializedValue != null)
+{
+    <p>Serialized length: <strong id="serialized-length">@serializedValue.Length</strong> chars</p>
+}
+
+<button id="deserialize-small" @onclick=DeserializeSmall>Deserialize (small)</button>
+<button id="deserialize-large" @onclick=DeserializeLarge>Deserialize (large)</button>
+
+@if (numPeopleDeserialized > 0)
+{
+    <p>Deserialized <strong id="deserialized-count">@numPeopleDeserialized</strong> people</p>
+}
+
+@code {
+    static string[] Clearances = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
+    Person smallOrgChart = GenerateOrgChart(1, 4);
+    Person largeOrgChart = GenerateOrgChart(5, 4);
+    string smallOrgChartJson;
+    string largeOrgChartJson;
+    int numPeopleDeserialized;
+
+    protected override void OnInitialized()
+    {
+        smallOrgChartJson = JsonSerializer.Serialize(smallOrgChart);
+        largeOrgChartJson = JsonSerializer.Serialize(largeOrgChart);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BenchmarkEvent.Send(JSRuntime, "Finished JSON processing");
+    }
+
+    string serializedValue;
+
+    void Reset()
+    {
+        serializedValue = null;
+        numPeopleDeserialized = 0;
+    }
+
+    void SerializeSmall()
+        => serializedValue = JsonSerializer.Serialize(smallOrgChart);
+
+    void SerializeLarge()
+        => serializedValue = JsonSerializer.Serialize(largeOrgChart);
+
+    void DeserializeSmall()
+        => numPeopleDeserialized = Deserialize(smallOrgChartJson);
+
+    void DeserializeLarge()
+        => numPeopleDeserialized = Deserialize(largeOrgChartJson);
+
+    static Person GenerateOrgChart(int totalDepth, int numDescendantsPerNode, int thisDepth = 0, string namePrefix = null, int siblingIndex = 0)
+    {
+        var name = $"{namePrefix ?? "CEO"} - Subordinate {siblingIndex}";
+        var rng = new Random(0);
+        return new Person
+        {
+            Name = name,
+            IsAdmin = siblingIndex % 2 == 0,
+            Salary = 10000000 / (thisDepth + 1),
+            SecurityClearances = Clearances
+                .ToDictionary(c => c, _ => (object)(rng.Next(0, 2) == 0)),
+            Subordinates = Enumerable.Range(0, thisDepth < totalDepth ? numDescendantsPerNode : 0)
+                .Select(index => GenerateOrgChart(totalDepth, numDescendantsPerNode, thisDepth + 1, name, index))
+                .ToList()
+        };
+    }
+
+    static int Deserialize(string json)
+    {
+        var ceo = JsonSerializer.Deserialize<Person>(json);
+        return CountPeople(ceo);
+    }
+
+    static int CountPeople(Person root)
+        => 1 + (root.Subordinates?.Sum(CountPeople) ?? 0);
+
+    class Person
+    {
+        public string Name { get; set; }
+        public int Salary { get; set; }
+        public bool IsAdmin { get; set; }
+        public List<Person> Subordinates { get; set; }
+        public Dictionary<string, object> SecurityClearances { get; set; }
+    }
+}

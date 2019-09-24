@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System.Net;
@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 
@@ -157,6 +159,61 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests
 
             // Assert
             Assert.Equal(expectedStatusCode, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ADB2C_EndToEnd_PasswordReset()
+        {
+            var client = Factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(
+                services =>
+                {
+                    services
+                        .AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
+                        .AddAzureADB2C(o =>
+                        {
+                            o.Instance = "https://login.microsoftonline.com/tfp/";
+                            o.ClientId = "ClientId";
+                            o.CallbackPath = "/signin-oidc";
+                            o.Domain = "test.onmicrosoft.com";
+                            o.SignUpSignInPolicyId = "B2C_1_SiUpIn";
+                            o.ResetPasswordPolicyId = "B2C_1_SSPR";
+                            o.EditProfilePolicyId = "B2C_1_SiPe";
+                        });
+
+                    services.Configure<OpenIdConnectOptions>(AzureADB2CDefaults.OpenIdScheme, o =>
+                    {
+                        o.Configuration = new OpenIdConnectConfiguration()
+                        {
+                            Issuer = "https://www.example.com",
+                            TokenEndpoint = "https://www.example.com/token",
+                            AuthorizationEndpoint = "https://www.example.com/authorize",
+                            EndSessionEndpoint = "https://www.example.com/logout"
+                        };
+                        // CookieContainer doesn't allow cookies from other paths
+                        o.CorrelationCookie.Path = "/";
+                        o.NonceCookie.Path = "/";
+                    });
+
+                    services.AddMvc(o => o.Filters.Add(
+                        new AuthorizeFilter(new AuthorizationPolicyBuilder(new[] { AzureADB2CDefaults.AuthenticationScheme })
+                            .RequireAuthenticatedUser().Build())));
+                })).CreateClient(new WebApplicationFactoryClientOptions() { AllowAutoRedirect = false });
+
+            var response = await client.GetAsync("/api/get");
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+            var location = response.Headers.Location;
+            Assert.StartsWith("https://www.example.com/authorize", location.AbsoluteUri);
+            var queryString = location.Query;
+            var query = QueryHelpers.ParseQuery(queryString);
+            var state = query["state"];
+            Assert.False(StringValues.IsNullOrEmpty(state));
+
+            // Mock Authorization response
+            response = await client.GetAsync($"/signin-oidc?error=access_denied&error_description=AADB2C90118&state={state}");
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/AzureADB2C/Account/ResetPassword/AzureADB2C", response.Headers.Location.OriginalString);
         }
     }
 }

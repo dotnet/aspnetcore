@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private async Task RunMatchTest(string methodName, string conventionMethodName, bool expected)
         {
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testController = compilation.GetTypeByMetadataName(TestControllerName);
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionNameMatchBehavior.Exact;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = testConvention.GetMembers(nameof(TestConvention.MethodWithoutMatchBehavior)).First();
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionNameMatchBehavior.Exact;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = testConvention.GetMembers(nameof(TestConvention.MethodWithRandomAttributes)).First();
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionNameMatchBehavior.Prefix;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = testConvention.GetMembers(nameof(TestConvention.Get)).First();
@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionTypeMatchBehavior.AssignableFrom;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.Get)).First();
@@ -524,7 +524,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionTypeMatchBehavior.AssignableFrom;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.MethodParameterWithRandomAttributes)).First();
@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             // Arrange
             var expected = SymbolApiConventionTypeMatchBehavior.Any;
             var compilation = await GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var testConvention = compilation.GetTypeByMetadataName(TestConventionName);
             var method = (IMethodSymbol)testConvention.GetMembers(nameof(TestConvention.MethodWithAnyTypeMatchBehaviorParameter)).First();

@@ -191,7 +191,11 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 // The build system compiles every file under the resources folder as a resource available at runtime
                 // with the same name as the file name. Need to update this file on disc.
+
+// https://github.com/aspnet/AspNetCore/issues/10423
+#pragma warning disable 0618
                 var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Mvc");
+#pragma warning restore 0618
                 var projectPath = Path.Combine(solutionPath, "test", assembly.GetName().Name);
                 var fullPath = Path.Combine(projectPath, resourceName);
                 WriteFile(fullPath, content);

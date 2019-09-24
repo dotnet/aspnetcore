@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -59,5 +60,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets or sets the <see cref="TypeInfo"/> of the page.
         /// </summary>
         public TypeInfo PageTypeInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associated <see cref="Endpoint"/> of this page.
+        /// </summary>
+        public Endpoint Endpoint { get; set; }
     }
 }

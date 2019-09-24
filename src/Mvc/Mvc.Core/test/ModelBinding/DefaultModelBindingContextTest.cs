@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -195,7 +194,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     throw new ArgumentNullException(nameof(bindingContext));
                 }
-                Debug.Assert(bindingContext.Result == null);
 
                 throw new NotImplementedException();
             }

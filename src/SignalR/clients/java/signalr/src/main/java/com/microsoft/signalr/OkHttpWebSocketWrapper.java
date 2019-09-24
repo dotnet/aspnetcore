@@ -43,7 +43,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         }
 
         Request request = new Request.Builder()
-            .url(url.toString())
+            .url(url)
             .headers(headerBuilder.build())
             .build();
 

@@ -5,6 +5,7 @@ using System.Buffers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 
 namespace FormatterWebSite.Controllers
@@ -12,7 +13,7 @@ namespace FormatterWebSite.Controllers
     public class JsonFormatterController : Controller
     {
         private static readonly JsonSerializerSettings _indentedSettings;
-        private readonly JsonOutputFormatter _indentingFormatter;
+        private readonly NewtonsoftJsonOutputFormatter _indentingFormatter;
 
         static JsonFormatterController()
         {
@@ -22,7 +23,7 @@ namespace FormatterWebSite.Controllers
 
         public JsonFormatterController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new JsonOutputFormatter(_indentedSettings, charPool);
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
         }
 
         public IActionResult ReturnsIndentedJson()
@@ -31,7 +32,7 @@ namespace FormatterWebSite.Controllers
             {
                 Id = 1,
                 Alias = "john",
-                description = "Administrator",
+                description = "This is long so we can test large objects " + new string('a', 1024 * 65),
                 Designation = "Administrator",
                 Name = "John Williams"
             };
@@ -62,6 +63,21 @@ namespace FormatterWebSite.Controllers
             }
 
             return Content(value.ToString());
+        }
+
+        [HttpPost]
+        public ActionResult<SimpleModel> RoundtripSimpleModel([FromBody] SimpleModel model)
+        {
+            return model;
+        }
+
+        public class SimpleModel
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string StreetName { get; set; }
         }
     }
 }

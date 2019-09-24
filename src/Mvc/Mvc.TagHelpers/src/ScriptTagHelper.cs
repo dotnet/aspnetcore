@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -83,28 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="ScriptTagHelper"/>.
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
-        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public ScriptTagHelper(
-            IHostingEnvironment hostingEnvironment,
-            IMemoryCache cache,
-            HtmlEncoder htmlEncoder,
-            JavaScriptEncoder javaScriptEncoder,
-            IUrlHelperFactory urlHelperFactory)
-            : base(urlHelperFactory, htmlEncoder)
-        {
-            HostingEnvironment = hostingEnvironment;
-            Cache = cache;
-            JavaScriptEncoder = javaScriptEncoder;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ScriptTagHelper"/>.
-        /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
         /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
@@ -112,9 +89,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
-        [ActivatorUtilitiesConstructor]
         public ScriptTagHelper(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
             IFileVersionProvider fileVersionProvider,
             HtmlEncoder htmlEncoder,
@@ -200,18 +176,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        protected internal IHostingEnvironment HostingEnvironment { get; }
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// </summary>
+        protected internal IWebHostEnvironment HostingEnvironment { get; }
 
+        /// <summary>
+        /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
+        /// </summary>
         protected internal IMemoryCache Cache { get; private set; }
 
         internal IFileVersionProvider FileVersionProvider { get; private set; }
 
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.JavaScriptEncoder"/> used to encode fallback information.
+        /// </summary>
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
+        /// <summary>
+        /// Gets the <see cref="GlobbingUrlBuilder"/> used to populate included and excluded urls.
+        /// </summary>
         // Internal for ease of use when testing.
-#pragma warning disable PUB0001 // Pubternal type in public API
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
-#pragma warning restore PUB0001
 
         // Shared writer for determining the string content of a TagHelperAttribute's Value.
         private StringWriter StringWriter
@@ -345,8 +331,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                     var addSrc = true;
 
-                    // Perf: Avoid allocating enumerator
-                    for (var i = 0; i < attributes.Count; i++)
+                    // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+                    var attributesCount = attributes.Count;
+                    for (var i = 0; i < attributesCount; i++)
                     {
                         var attribute = attributes[i];
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
@@ -448,8 +435,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var addSrc = true;
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
                 if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))

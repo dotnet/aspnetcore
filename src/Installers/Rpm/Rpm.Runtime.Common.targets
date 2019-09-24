@@ -1,0 +1,29 @@
+<!-- This file is for properties shared by the generic aspnetcore-runtime rpm and RHEL rpm.  -->
+<Project>
+
+  <PropertyGroup>
+    <!-- installer versions -->
+    <!-- CLI would take a dependency such as 'aspnetcore-runtime-M.N >= M.N.P'. Here M.N is the part of the id and M.N.P is the package version -->
+    <PackageId>$(RuntimeInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
+
+    <!-- Set package revision to '1' for RTM releases, but include the build number in pre-releases -->
+    <PackageRevision Condition=" '$(VersionSuffix)' == '' ">1</PackageRevision>
+    <PackageRevision Condition=" '$(VersionSuffix)' != '' ">0.1.$(VersionSuffix.Replace('-', '_'))</PackageRevision>
+
+    <PackageSummary>$(SharedFxProductName)</PackageSummary>
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+
+    <PackageContentRoot>$(SharedFrameworkLayoutRoot)</PackageContentRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+
+    <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
+    <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
+  </ItemGroup>
+</Project>

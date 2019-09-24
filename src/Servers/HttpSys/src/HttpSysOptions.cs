@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value.HasValue && value < -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infiniate.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infinite.");
                 }
 
                 if (value.HasValue && _urlGroup != null)
@@ -136,9 +136,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
-        /// The default is `true`.
+        /// The default is `false`.
         /// </summary>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request

@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Core\test\Routing\ActionEndpointDataSourceBaseTest.cs" Link="Infrastructure\ActionEndpointDataSourceBaseTest.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />

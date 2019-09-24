@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,6 +55,35 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.Common
                     }
                 }
             }
+        }
+
+        private const int BasePort = 5001;
+        private const int MaxPort = 8000;
+        private static int NextPort = BasePort;
+
+        // GetNextPort doesn't check for HttpSys urlacls.
+        public static int GetNextHttpSysPort(string scheme)
+        {
+            while (NextPort < MaxPort)
+            {
+                var port = NextPort++;
+
+                using (var server = new HttpListener())
+                {
+                    server.Prefixes.Add($"{scheme}://localhost:{port}/");
+                    try
+                    {
+                        server.Start();
+                        server.Stop();
+                        return port;
+                    }
+                    catch (HttpListenerException)
+                    {
+                    }
+                }
+            }
+            NextPort = BasePort;
+            throw new Exception("Failed to locate a free port.");
         }
     }
 }

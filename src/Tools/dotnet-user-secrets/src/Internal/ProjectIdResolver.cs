@@ -11,6 +11,10 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ProjectIdResolver
     {
         private const string DefaultConfig = "Debug";
@@ -70,6 +74,11 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                     _reporter.Verbose(process.StandardOutput.ReadToEnd());
                     _reporter.Verbose(process.StandardError.ReadToEnd());
                     throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                }
+
+                if (!File.Exists(outputFile))
+                {
+                    throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
                 }
 
                 var id = File.ReadAllText(outputFile)?.Trim();

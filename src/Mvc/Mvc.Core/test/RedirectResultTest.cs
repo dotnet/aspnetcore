@@ -5,13 +5,13 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -73,11 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedPath)
         {
             // Arrange
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.Setup(o => o.Redirect(expectedPath, false))
-                        .Verifiable();
-
-            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var httpContext = GetHttpContext(appRoot);
             var actionContext = GetActionContext(httpContext);
             var result = new RedirectResult(contentPath);
 
@@ -86,7 +82,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
-            httpResponse.Verify();
+            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 
         [Theory]
@@ -101,11 +98,7 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedPath)
         {
             // Arrange
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.Setup(o => o.Redirect(expectedPath, false))
-                        .Verifiable();
-
-            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var httpContext = GetHttpContext(appRoot);
             var actionContext = GetActionContext(httpContext);
             var result = new RedirectResult(contentPath);
 
@@ -114,7 +107,8 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
-            httpResponse.Verify();
+            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 
         private static ActionContext GetActionContext(HttpContext httpContext)
@@ -137,26 +131,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         private static HttpContext GetHttpContext(
-            string appRoot,
-            string contentPath,
-            string expectedPath,
-            HttpResponse response)
+            string appRoot)
         {
-            var httpContext = new Mock<HttpContext>();
-            var serviceProvider = GetServiceProvider();
-
-            httpContext.Setup(o => o.Response)
-                .Returns(response);
-            httpContext.SetupGet(o => o.RequestServices)
-                .Returns(serviceProvider);
-            httpContext.SetupGet(o => o.Items)
-                .Returns(new ItemsDictionary());
-            httpContext.Setup(o => o.Request.PathBase)
-                .Returns(new PathString(appRoot));
-            httpContext.SetupGet(h => h.Features)
-                .Returns(new FeatureCollection());
-
-            return httpContext.Object;
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = GetServiceProvider();
+            httpContext.Request.PathBase = new PathString(appRoot);
+            return httpContext;
         }
     }
 }

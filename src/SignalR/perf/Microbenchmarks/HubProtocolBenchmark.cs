@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments)]
         public Message Input { get; set; }
 
-        [Params(Protocol.MsgPack, Protocol.Json)]
+        [Params(Protocol.MsgPack, Protocol.Json, Protocol.NewtonsoftJson)]
         public Protocol HubProtocol { get; set; }
 
         [GlobalSetup]
@@ -31,6 +31,9 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     break;
                 case Protocol.Json:
                     _hubProtocol = new JsonHubProtocol();
+                    break;
+                case Protocol.NewtonsoftJson:
+                    _hubProtocol = new NewtonsoftJsonHubProtocol();
                     break;
             }
 
@@ -77,7 +80,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public enum Protocol
         {
             MsgPack = 0,
-            Json = 1
+            Json = 1,
+            NewtonsoftJson = 2,
         }
 
         public enum Message

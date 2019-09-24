@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -29,12 +30,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             if (Protocol == "json")
             {
-                protocol = new JsonHubProtocol();
+                protocol = new NewtonsoftJsonHubProtocol();
             }
             else
             {
                 // New line in result to trigger SSE formatting
-                protocol = new JsonHubProtocol
+                protocol = new NewtonsoftJsonHubProtocol
                 {
                     PayloadSerializer = { Formatting = Formatting.Indented }
                 };

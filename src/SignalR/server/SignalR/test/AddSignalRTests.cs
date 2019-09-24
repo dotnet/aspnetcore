@@ -1,4 +1,4 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -64,6 +64,35 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
+        }
+
+        [Fact]
+        public void HubSpecificOptionsDoNotAffectGlobalHubOptions()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+                options.SupportedProtocols.Clear();
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
+            Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
+        }
+
+        [Fact]
+        public void StreamBufferCapacityGetSet()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+                options.StreamBufferCapacity = 42;
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Assert.Equal(42, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.StreamBufferCapacity);
         }
     }
 

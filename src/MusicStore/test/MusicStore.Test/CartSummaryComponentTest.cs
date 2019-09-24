@@ -1,30 +1,22 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using MusicStore.Controllers;
 using MusicStore.Models;
 using Xunit;
 
 namespace MusicStore.Components
 {
-    public class CartSummaryComponentTest
+    public class CartSummaryComponentTest : IClassFixture<SqliteInMemoryFixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly SqliteInMemoryFixture _fixture;
 
-        public CartSummaryComponentTest()
+        public CartSummaryComponentTest(SqliteInMemoryFixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
@@ -42,7 +34,7 @@ namespace MusicStore.Components
             viewContext.HttpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             PopulateData(dbContext, cartId, albumTitle: "AlbumA", itemCount: 10);
 
             // CartSummaryComponent initialization
@@ -65,10 +57,20 @@ namespace MusicStore.Components
 
         private static void PopulateData(MusicStoreContext context, string cartId, string albumTitle, int itemCount)
         {
-            var album = new Album()
+            var album = new Album
             {
                 AlbumId = 1,
                 Title = albumTitle,
+                Artist = new Artist
+                {
+                    ArtistId = 1,
+                    Name = "Kung Fu Kenny"
+                },
+                Genre = new Genre
+                {
+                    GenreId = 1,
+                    Name = "Rap"
+                }
             };
 
             var cartItems = Enumerable.Range(1, itemCount).Select(n =>

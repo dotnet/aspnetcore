@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
+    <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
+    <Name>AspNetCoreTargetingPack</Name>
+    <OutputName>$(Name)-$(Platform)</OutputName>
+    <OutputType>Package</OutputType>
+    <IsShipping>true</IsShipping>
+    <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
+    <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
+    <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
+    <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
+    <HarvestSource>$(IntermediateOutputPath)dn\</HarvestSource>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+    <DefineConstants>$(DefineConstants);AspNetCoreTargetingPackSource=$(HarvestSource)</DefineConstants>
+    <NamespaceGuid>DDBB771F-963F-47D3-8510-9ABD04DBE1D1</NamespaceGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixDependencyExtension">
+      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <Name>WixDependencyExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
+      <Name>WixNetFxExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DependencyProvider.wxs" />
+    <Compile Include="Product.wxs" />
+    <EmbeddedResource Include="Strings.wxl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HarvestDirectory Include="$(HarvestSource)">
+      <SuppressRootDirectory>true</SuppressRootDirectory>
+      <ComponentGroupName>CG_AspNetCoreTargetingPack</ComponentGroupName>
+      <DirectoryRefId>DOTNETHOME</DirectoryRefId>
+      <PreprocessorVariable>var.AspNetCoreTargetingPackSource</PreprocessorVariable>
+    </HarvestDirectory>
+  </ItemGroup>
+
+  <!-- TODO: https://github.com/aspnet/AspNetCore/issues/6304. harvest from TargetingPackLayoutRoot directly. Unzipping is currently required because the zip has the signed versions of .dll files. -->
+  <Target Name="ExtractIntermediateTargetingPack" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <TargetingPackHarvestRoot Condition="'$(TargetingPackHarvestRoot)' == ''">$(InstallersOutputPath)</TargetingPackHarvestRoot>
+      <IntermediateTargetingPackZip>$(TargetingPackHarvestRoot)aspnetcore-targeting-pack-$(PackageVersion).zip</IntermediateTargetingPackZip>
+    </PropertyGroup>
+
+    <Unzip SourceFiles="$(IntermediateTargetingPackZip)" DestinationFolder="$(HarvestSource)" />
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
+    <PackageFileName>$(TargetingPackInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+
+    <!-- Suppresses building this project completely during servicing builds. -->
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
+  </PropertyGroup>
+
+   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+
+      <!-- Everything built in this project _except_ the final package are shipping assets. -->
+      <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+      <_GeneratedPackageVersion
+          Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
+    </PropertyGroup>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(_GeneratedPackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)'" />
+  </Target>
+</Project>

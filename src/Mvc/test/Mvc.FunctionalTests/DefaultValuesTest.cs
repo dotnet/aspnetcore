@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class DefaultValuesTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class DefaultValuesTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public DefaultValuesTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public DefaultValuesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

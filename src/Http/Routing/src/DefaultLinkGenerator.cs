@@ -10,7 +10,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing
     internal sealed class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
-        private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
+        private readonly TemplateBinderFactory _binderFactory;
         private readonly ILogger<DefaultLinkGenerator> _logger;
         private readonly IServiceProvider _serviceProvider;
 
@@ -38,14 +37,14 @@ namespace Microsoft.AspNetCore.Routing
 
         public DefaultLinkGenerator(
             ParameterPolicyFactory parameterPolicyFactory,
-            CompositeEndpointDataSource dataSource,
-            ObjectPool<UriBuildingContext> uriBuildingContextPool,
+            TemplateBinderFactory binderFactory,
+            EndpointDataSource dataSource,
             IOptions<RouteOptions> routeOptions,
             ILogger<DefaultLinkGenerator> logger,
             IServiceProvider serviceProvider)
         {
             _parameterPolicyFactory = parameterPolicyFactory;
-            _uriBuildingContextPool = uriBuildingContextPool;
+            _binderFactory = binderFactory;
             _logger = logger;
             _serviceProvider = serviceProvider;
 
@@ -282,40 +281,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private TemplateBinder CreateTemplateBinder(RouteEndpoint endpoint)
         {
-            // Now create the constraints and parameter transformers from the pattern
-            var policies = new List<(string parameterName, IParameterPolicy policy)>();
-            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
-            {
-                var parameterName = kvp.Key;
-
-                // It's possible that we don't have an actual route parameter, we need to support that case.
-                var parameter = endpoint.RoutePattern.GetParameter(parameterName);
-
-                // Use the first parameter transformer per parameter
-                var foundTransformer = false;
-                for (var i = 0; i < kvp.Value.Count; i++)
-                {
-                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, kvp.Value[i]);
-                    if (!foundTransformer && parameterPolicy is IOutboundParameterTransformer parameterTransformer)
-                    {
-                        policies.Add((parameterName, parameterTransformer));
-                        foundTransformer = true;
-                    }
-
-                    if (parameterPolicy is IRouteConstraint constraint)
-                    {
-                        policies.Add((parameterName, constraint));
-                    }
-                }
-            }
-
-            return new TemplateBinder(
-                UrlEncoder.Default,
-                _uriBuildingContextPool,
-                endpoint.RoutePattern,
-                new RouteValueDictionary(endpoint.RoutePattern.Defaults),
-                endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>()?.RequiredValues.Keys,
-                policies);
+            return _binderFactory.Create(endpoint.RoutePattern);
         }
 
         // Internal for testing
@@ -404,13 +370,13 @@ namespace Microsoft.AspNetCore.Routing
                 LogLevel.Debug,
                 EventIds.TemplateFailedRequiredValues,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "A required route value is missing, or has a different value from the required default values." +
+                "A required route value is missing, or has a different value from the required default values. " +
                 "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}");
 
             private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedConstraint,
-                "Failed to process the template {Template} for {Endpoint}. " + 
+                "Failed to process the template {Template} for {Endpoint}. " +
                 "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}");
 
             private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(

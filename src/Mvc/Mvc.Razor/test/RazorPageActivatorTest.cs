@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -27,15 +26,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         public RazorPageActivatorTest()
         {
-            DiagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+            DiagnosticListener = new DiagnosticListener("Microsoft.AspNetCore");
             HtmlEncoder = new HtmlTestEncoder();
             JsonHelper = Mock.Of<IJsonHelper>();
             MetadataProvider = new EmptyModelMetadataProvider();
-            ModelExpressionProvider = new ModelExpressionProvider(MetadataProvider, new ExpressionTextCache());
+            ModelExpressionProvider = new ModelExpressionProvider(MetadataProvider);
             UrlHelperFactory = new UrlHelperFactory();
         }
 
-        private DiagnosticSource DiagnosticSource { get; }
+        private DiagnosticListener DiagnosticListener { get; }
 
         private HtmlEncoder HtmlEncoder { get; }
 
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
 
             // When we don't have a model property, the activator will just leave ViewData alone.
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -230,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private RazorPageActivator CreateActivator()
         {
-            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticSource, HtmlEncoder, ModelExpressionProvider);
+            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticListener, HtmlEncoder, ModelExpressionProvider);
         }
 
         private ViewContext CreateViewContext(ViewDataDictionary viewData = null)
@@ -246,7 +245,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var serviceProvider = new ServiceCollection()
                 .AddSingleton(myService)
                 .AddSingleton(htmlHelper)
-                .AddSingleton(new ExpressionTextCache())
                 .BuildServiceProvider();
 
             var httpContext = new DefaultHttpContext

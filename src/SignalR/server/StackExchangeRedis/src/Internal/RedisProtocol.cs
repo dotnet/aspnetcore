@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
-    public class RedisProtocol
+    internal class RedisProtocol
     {
         private readonly IReadOnlyList<IHubProtocol> _protocols;
 

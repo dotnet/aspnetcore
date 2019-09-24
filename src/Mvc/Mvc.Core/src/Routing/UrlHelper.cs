@@ -32,7 +32,21 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// Gets the top-level <see cref="IRouter"/> associated with the current request. Generally an
         /// <see cref="IRouteCollection"/> implementation.
         /// </summary>
-        protected IRouter Router => ActionContext.RouteData.Routers[0];
+        protected IRouter Router
+        {
+            get
+            {
+                var routers = ActionContext.RouteData.Routers;
+                if (routers.Count == 0)
+                {
+                    throw new InvalidOperationException("Could not find an IRouter associated with the ActionContext. "
+                        + "If your application is using endpoint routing then you can get a IUrlHelperFactory with "
+                        + "dependency injection and use it to create a UrlHelper, or use Microsoft.AspNetCore.Routing.LinkGenerator.");
+                }
+
+                return routers[0];
+            }
+        }
 
         /// <inheritdoc />
         public override string Action(UrlActionContext actionContext)

@@ -1,0 +1,143 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
+    <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+
+    <!-- Properties that affect test runs -->
+    <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
+    <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
+    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
+    <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="template-baselines.json" />
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetEfFullPath</_Parameter1>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.0/any/dotnet-ef.dll</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestPackageRestorePath</_Parameter1>
+      <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
+      <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  
+  <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
+    <PropertyGroup>
+      <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
+      <TestTemplateTestsProps>$(TestTemplateCreationFolder)$(TestTemplateTestsProps)</TestTemplateTestsProps>
+      <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
+        <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
+        <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>TestTemplateCreationFolder</_Parameter1>
+        <_Parameter2>$(TestTemplateCreationFolder)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>CustomTemplateHivePath</_Parameter1>
+        <_Parameter2>$(CustomTemplateHivePath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+
+    <Message Importance="high" Text="Preparing environment for tests" />
+    <!-- Remove the template creation folders and the package-restore folders to ensure that when we run the tests we don't
+         get cached results and changes show up.
+    -->
+
+    <ItemGroup>
+      <_ExistingFilesFromLastRun Include="$(TestTemplateCreationFolder)**\*" />
+    </ItemGroup>
+
+    <Delete Files="@(_ExistingFilesFromLastRun)" ContinueOnError="true" />
+
+    <Removedir Directories="$(TestTemplateCreationFolder)" Condition="Exists('$(TestTemplateCreationFolder)')" ContinueOnError="true">
+      <Output TaskParameter="RemovedDirectories" ItemName="_CleanedUpDirectories" />
+    </Removedir>
+    <Removedir Directories="$(TestPackageRestorePath)" Condition="Exists('$(TestPackageRestorePath)')" ContinueOnError="true">
+      <Output TaskParameter="RemovedDirectories" ItemName="_CleanedUpDirectories" />
+    </Removedir>
+
+    <Message Importance="high" Text="Removed directory %(_CleanedUpDirectories.Identity)" />
+
+    <MakeDir Directories="$(TestTemplateCreationFolder)">
+      <Output TaskParameter="DirectoriesCreated" ItemName="_CreatedDirectories" />
+    </MakeDir>
+    <MakeDir Directories="$(TestPackageRestorePath)">
+      <Output TaskParameter="DirectoriesCreated" ItemName="_CreatedDirectories" />
+    </MakeDir>
+
+    <Message Importance="high" Text="Created directory %(_CreatedDirectories.Identity)" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.targets.in"
+      Properties="TemplateTestsPropsPath=$(TestTemplateTestsProps)"
+      OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
+      Properties=""
+      OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
+
+    <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />
+
+    <Delete Files="$(TestTemplateTestsProps)" />
+
+  </Target>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+
+</Project>

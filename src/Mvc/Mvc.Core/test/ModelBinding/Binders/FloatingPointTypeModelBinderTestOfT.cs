@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -342,8 +341,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/aspnet/AspNetCore-Internal/issues/2626")]
+        [Theory]
         [MemberData(nameof(ConvertibleTypeData))]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_FrenchThirtyTwoThousandPointOne(Type destinationType)
         {

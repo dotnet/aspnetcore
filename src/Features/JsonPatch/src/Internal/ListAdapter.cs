@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,10 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ListAdapter : IAdapter
     {
         public virtual bool TryAdd(
@@ -318,7 +322,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        protected struct PositionInfo
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        protected readonly struct PositionInfo
         {
             public PositionInfo(PositionType type, int index)
             {
@@ -330,6 +338,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             public int Index { get; }
         }
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected enum PositionType
         {
             Index, // valid index
@@ -338,6 +350,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             OutOfBounds
         }
 
+        /// <summary>
+        /// This API supports infrastructure and is not intended to be used
+        /// directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         protected enum OperationType
         {
             Add,

@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Sockets.BindTests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="..\BindTests\**\*.cs" />
     <Compile Include="..\Sockets.FunctionalTests\TransportSelector.cs" />
+    <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
@@ -17,7 +19,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
   </ItemGroup>
 
 </Project>

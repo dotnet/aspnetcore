@@ -14,8 +14,8 @@ try {
                 frameworks: ["jasmine"],
                 files: [
                     "wwwroot/lib/msgpack5/msgpack5.js",
-                    "node_modules/@aspnet/signalr/dist/browser/signalr.js",
-                    "node_modules/@aspnet/signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack.js",
+                    "node_modules/@microsoft/signalr/dist/browser/signalr.js",
+                    "node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack.js",
                     "wwwroot/dist/signalr-functional-tests.js"
                 ],
                 preprocessors: {
@@ -31,6 +31,7 @@ try {
                 // Log browser messages to a file, not the terminal.
                 browserConsoleLogOptions: {
                     level: "debug",
+                    format: "[%b] %T: %m",
                     terminal: false
                 },
 
@@ -47,7 +48,7 @@ try {
                 reporters: [...defaultReporters, ...(config.reporters || [])],
 
                 junitReporter: {
-                    outputDir: "../../../artifacts/logs",
+                    outputDir: "../../../../../artifacts/log",
                     outputFile: `${process.platform}` + ".functionaltest.junit.xml",
                 },
             });

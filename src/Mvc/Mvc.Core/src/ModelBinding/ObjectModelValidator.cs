@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -101,9 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract ValidationVisitor GetValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
-#pragma warning disable PUB0001 // Pubternal type in public API
             ValidatorCache validatorCache,
-#pragma warning restore PUB0001
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState);
     }

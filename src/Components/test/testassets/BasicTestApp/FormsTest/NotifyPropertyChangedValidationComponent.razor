@@ -1,0 +1,105 @@
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+@using System.Runtime.CompilerServices;
+@using Microsoft.AspNetCore.Components.Forms
+
+<p>
+    There's no requirement for models to implement INotifyPropertyChanged, but if they do,
+    you can easily wire that up to the EditContext. Then you have no need to use the built-in
+    Input* components - you can instead bind to regular HTML elements and still get modification
+    notifications. This provides more flexibility in how the UI is rendered, at the cost of
+    more complexity and boilerplate in your model classes.
+</p>
+<p>
+    This example also shows that you don't strictly have to use EditForm. You can manually
+    cascade an EditContext to the components that integrate with it.
+</p>
+
+<form @onsubmit="HandleSubmit">
+    <p class="user-name">
+        User name:
+        <input @bind="person.UserName" class="@editContext.FieldCssClass(() => person.UserName)" />
+    </p>
+    <p class="accepts-terms">
+        Accept terms:
+        <input type="checkbox" @bind="person.AcceptsTerms" class="@editContext.FieldCssClass(() => person.AcceptsTerms)" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    <CascadingValue Value="@editContext" IsFixed="true">
+        <ValidationSummary />
+    </CascadingValue>
+</form>
+
+<div id="submission-status">@submissionStatus</div>
+
+@code {
+    MyModel person = new MyModel();
+    EditContext editContext;
+    string submissionStatus;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person).AddDataAnnotationsValidation();
+
+        // Wire up INotifyPropertyChanged to the EditContext
+        person.PropertyChanged += (sender, eventArgs) =>
+        {
+            var fieldIdentifier = new FieldIdentifier(sender, eventArgs.PropertyName);
+            editContext.NotifyFieldChanged(fieldIdentifier);
+        };
+    }
+
+    void HandleSubmit()
+    {
+        if (editContext.Validate())
+        {
+            submissionStatus = $"Submitted at {DateTime.Now.ToLongTimeString()}";
+            editContext.MarkAsUnmodified();
+        }
+    }
+
+    class MyModel : INotifyPropertyChanged
+    {
+        string _userName;
+        bool _acceptsTerms;
+
+        [Required, StringLength(10, ErrorMessage = "That name is too long")]
+        public string UserName
+        {
+            get => _userName;
+            set => SetProperty(ref _userName, value);
+        }
+
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms")]
+        public bool AcceptsTerms
+        {
+            get => _acceptsTerms;
+            set => SetProperty(ref _acceptsTerms, value);
+        }
+
+        #region INotifyPropertyChanged boilerplate
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(storage, value))
+            {
+                return false;
+            }
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        #endregion
+    }
+}

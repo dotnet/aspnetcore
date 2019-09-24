@@ -1,0 +1,39 @@
+<Project>
+  <Target Name="GenerateTestProps"
+      BeforeTargets="CoreCompile"
+      DependsOnTargets="PrepareForTest"
+      Condition="$(DesignTimeBuild) != true">
+    <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackVersionInfo" />
+    </MSBuild>
+
+    <!-- Runtime and Ref packs may have separate versions. -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_RuntimePackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <PropsProperties>
+        RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
+        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
+        MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
+        MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
+        MicrosoftAspNetCoreAppRefPackageVersion=@(_TargetingPackVersionInfo->'%(PackageVersion)');
+        MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
+        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
+      </PropsProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)\TemplateTests.props.in"
+      Properties="$(PropsProperties)"
+      OutputPath="$(TestTemplateTestsProps)" />
+  </Target>
+</Project>

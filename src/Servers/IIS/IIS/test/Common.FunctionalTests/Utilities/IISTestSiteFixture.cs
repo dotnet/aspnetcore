@@ -9,35 +9,8 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public class OutOfProcessTestSiteFixture : IISTestSiteFixture
-    {
-        public OutOfProcessTestSiteFixture() : base(Configure)
-        {
-        }
-
-        private static void Configure(IISDeploymentParameters deploymentParameters)
-        {
-            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
-            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-        }
-    }
-
-    public class OutOfProcessV1TestSiteFixture : IISTestSiteFixture
-    {
-        public OutOfProcessV1TestSiteFixture() : base(Configure)
-        {
-        }
-
-        private static void Configure(IISDeploymentParameters deploymentParameters)
-        {
-            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
-            deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-            deploymentParameters.AncmVersion = AncmVersion.AspNetCoreModule;
-        }
-    }
-
     public class IISTestSiteFixture : IDisposable
     {
         private ApplicationDeployer _deployer;
@@ -108,15 +81,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 return;
             }
 
-            var deploymentParameters = new IISDeploymentParameters(Helpers.GetInProcessTestSitesPath(),
-                DeployerSelector.ServerType,
-                RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
+            var deploymentParameters = new IISDeploymentParameters()
             {
-                TargetFramework = Tfm.NetCoreApp22,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
+                RuntimeArchitecture = RuntimeArchitecture.x64,
+                RuntimeFlavor =  RuntimeFlavor.CoreClr,
+                TargetFramework = Tfm.NetCoreApp30,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
+                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
+                ServerType =  DeployerSelector.ServerType
             };
 
             _configure(deploymentParameters);

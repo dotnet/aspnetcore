@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class DefaultWebSocketManager : WebSocketManager
+    internal sealed class DefaultWebSocketManager : WebSocketManager
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
@@ -23,14 +23,19 @@ namespace Microsoft.AspNetCore.Http.Internal
             Initialize(features);
         }
 
-        public virtual void Initialize(IFeatureCollection features)
+        public void Initialize(IFeatureCollection features)
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _features.Initalize(features);
         }
 
-        public virtual void Uninitialize()
+        public void Initialize(IFeatureCollection features, int revision)
         {
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features.Initalize(features, revision);
+        }
+
+        public void Uninitialize()
+        {
+            _features = default;
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
@@ -51,7 +56,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             get
             {
-                return ParsingHelpers.GetHeaderSplit(HttpRequestFeature.Headers, HeaderNames.WebSocketSubProtocols);
+                return HttpRequestFeature.Headers.GetCommaSeparatedValues(HeaderNames.WebSocketSubProtocols);
             }
         }
 

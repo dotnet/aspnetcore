@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,14 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -32,7 +30,6 @@ namespace Microsoft.AspNetCore.Routing
         private protected IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
@@ -48,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing
             return CreateServices().GetRequiredService<DfaMatcherBuilder>();
         }
 
-        private protected static  int[] SampleRequests(int endpointCount, int count)
+        private protected static int[] SampleRequests(int endpointCount, int count)
         {
             // This isn't very high tech, but it's at least regular distribution.
             // We sort the route templates by precedence, so this should result in
@@ -116,11 +113,14 @@ namespace Microsoft.AspNetCore.Routing
             params object[] metadata)
         {
             var endpointMetadata = new List<object>(metadata ?? Array.Empty<object>());
-            endpointMetadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+            if (routeName != null)
+            {
+                endpointMetadata.Add(new RouteNameMetadata(routeName));
+            }
 
             return new RouteEndpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints),
+                RoutePatternFactory.Parse(template, defaults, constraints, requiredValues),
                 order,
                 new EndpointMetadataCollection(endpointMetadata),
                 displayName);
@@ -129,26 +129,21 @@ namespace Microsoft.AspNetCore.Routing
         protected (HttpContext httpContext, RouteValueDictionary ambientValues) CreateCurrentRequestContext(
             object ambientValues = null)
         {
-            var feature = new EndpointSelectorContext { RouteValues = new RouteValueDictionary(ambientValues) };
             var context = new DefaultHttpContext();
-            context.Features.Set<IEndpointFeature>(feature);
-            context.Features.Set<IRouteValuesFeature>(feature);
+            context.Request.RouteValues = new RouteValueDictionary(ambientValues);
 
-            return (context, feature.RouteValues);
+            return (context, context.Request.RouteValues);
         }
 
         protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, RouteEndpoint endpoint)
         {
-            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
-            var requiredValues = routeValuesAddressMetadata?.RequiredValues ?? new RouteValueDictionary();
-
             treeRouteBuilder.MapOutbound(
                 NullRouter.Instance,
                 new RouteTemplate(RoutePatternFactory.Parse(
                     endpoint.RoutePattern.RawText,
                     defaults: endpoint.RoutePattern.Defaults,
                     parameterPolicies: null)),
-                requiredLinkValues: new RouteValueDictionary(requiredValues),
+                requiredLinkValues: new RouteValueDictionary(endpoint.RoutePattern.RequiredValues),
                 routeName: null,
                 order: 0);
         }

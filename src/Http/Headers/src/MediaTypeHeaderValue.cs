@@ -439,7 +439,7 @@ namespace Microsoft.Net.Http.Headers
         public override string ToString()
         {
             var builder = new StringBuilder();
-            builder.Append(_mediaType);
+            builder.Append(_mediaType.AsSpan());
             NameValueHeaderValue.ToString(_parameters, separator: ';', leadingSeparator: true, destination: builder);
             return builder.ToString();
         }

@@ -9,7 +9,10 @@ namespace E2ETests
     {
         public static string GetApplicationPath()
         {
+            // https://github.com/aspnet/AspNetCore/issues/8343
+#pragma warning disable 0618
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("MusicStore");
+#pragma warning restore 0618
             return Path.GetFullPath(Path.Combine(solutionDirectory, "samples", "MusicStore"));
         }
 

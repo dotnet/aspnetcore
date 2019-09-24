@@ -1,5 +1,0 @@
-(1,2): Error RZ1035: Missing close angle for tag helper 'p'.
-(1,2): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.
-(1,4): Error RZ1031: The tag helper 'p' must not have C# in the element's attribute declaration area.
-(1,5): Error RZ1006: The do block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
-(1,32): Error RZ1026: Encountered end tag "p" with no matching start tag.  Are your start/end tags properly balanced?

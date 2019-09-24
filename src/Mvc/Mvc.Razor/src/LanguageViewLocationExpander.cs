@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Instantiates a new <see cref="Internal.DefaultTagHelperActivator"/> instance.
+        /// Instantiates a new <see cref="LanguageViewLocationExpander"/> instance.
         /// </summary>
         /// <param name="format">The <see cref="LanguageViewLocationExpanderFormat"/>.</param>
         public LanguageViewLocationExpander(LanguageViewLocationExpanderFormat format)

@@ -75,7 +75,7 @@ public:
     {
     }
 
-private:
+protected:
     IHttpContext& m_pHttpContext;
     mutable LONG  m_cRefs = 1;
 };

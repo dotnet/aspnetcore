@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// </summary>
     public class ConsumesConstraintForFormFileParameterConvention : IActionModelConvention
     {
+        /// <inheritdoc />
         public void Apply(ActionModel action)
         {
             if (action == null)
@@ -29,6 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             AddMultipartFormDataConsumesAttribute(action);
         }
 
+        /// <summary>
+        /// Determines if this instance of <see cref="IActionModelConvention"/> applies to a specified <paramref name="action"/>.
+        /// </summary>
+        /// <param name="action">The <see cref="ActionModel"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if the convention applies, otherwise <see langword="false"/>.
+        /// Derived types may override this method to selectively apply this convention.
+        /// </returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
 
         // Internal for unit testing

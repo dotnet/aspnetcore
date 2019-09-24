@@ -1,0 +1,57 @@
+{
+  "name": "company.webapplication1",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "connected-react-router": "6.2.1",
+    "history": "4.7.2",
+    "jquery": "^3.4.1",
+    "merge": "1.2.1",
+    "popper.js": "^1.14.7",
+    "react": "16.7.0",
+    "react-dom": "16.7.0",
+    "react-redux": "6.0.0",
+    "react-router": "4.3.1",
+    "react-router-dom": "4.3.1",
+    "react-scripts": "^3.0.1",
+    "reactstrap": "7.0.2",
+    "redux": "4.0.1",
+    "redux-thunk": "2.3.0",
+    "typescript": "3.2.2"
+  },
+  "devDependencies": {
+    "@types/history": "4.7.2",
+    "@types/jest": "23.3.11",
+    "@types/node": "10.12.18",
+    "@types/react": "16.7.18",
+    "@types/react-dom": "16.0.11",
+    "@types/react-redux": "6.0.11",
+    "@types/react-router": "4.4.3",
+    "@types/react-router-dom": "4.3.1",
+    "@types/reactstrap": "6.4.3",
+    "cross-env": "5.2.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-flowtype": "2.50.3",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-jsx-a11y": "6.1.2",
+    "eslint-plugin-react": "7.11.1",
+    "typescript-eslint-parser": "21.0.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "cross-env CI=true react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "lint": "eslint ./src/**/*.ts ./src/**/*.tsx"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

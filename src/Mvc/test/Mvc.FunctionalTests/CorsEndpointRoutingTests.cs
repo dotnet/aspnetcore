@@ -9,5 +9,5 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             : base(fixture)
         {
         }
-        }
+    }
 }

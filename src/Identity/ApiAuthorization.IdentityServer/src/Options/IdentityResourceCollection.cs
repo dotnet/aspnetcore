@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using IdentityServer4.Models;
@@ -48,18 +48,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 }
 
                 throw new InvalidOperationException($"IdentityResource '{key}' not found.");
-            }
-        }
-
-        /// <summary>
-        /// Adds the identity resources in <paramref name="identityResources"/> to the collection.
-        /// </summary>
-        /// <param name="identityResources">The list of <see cref="IdentityResource"/> to add.</param>
-        public void AddRange(IEnumerable<IdentityResource> identityResources)
-        {
-            foreach (var resource in identityResources)
-            {
-                Add(resource);
             }
         }
 

@@ -37,7 +37,7 @@ namespace TestNamespace
 }";
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var method = (IMethodSymbol)compilation.GetTypeByMetadataName("TestNamespace.TestController").GetMembers("Get").First();
 
             // Act
@@ -52,7 +52,7 @@ namespace TestNamespace
         {
             // Arrange
             var compilation = await GetCompilation();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var type = compilation.GetTypeByMetadataName(typeof(ApiConventionAnalyzerTest_IndexModel).FullName);
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_IndexModel.OnGet)).First();
 
@@ -68,7 +68,7 @@ namespace TestNamespace
         {
             // Arrange
             var compilation = await GetCompilation();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var type = compilation.GetTypeByMetadataName(typeof(ApiConventionAnalyzerTest_NotApiController).FullName);
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_NotApiController.Index)).First();
 
@@ -84,7 +84,7 @@ namespace TestNamespace
         {
             // Arrange
             var compilation = await GetCompilation();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var type = compilation.GetTypeByMetadataName(typeof(ApiConventionAnalyzerTest_NotAction).FullName);
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_NotAction.Index)).First();
 
@@ -100,7 +100,7 @@ namespace TestNamespace
         {
             // Arrange
             var compilation = await GetCompilation();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var type = compilation.GetTypeByMetadataName(typeof(ApiConventionAnalyzerTest_Valid).FullName);
             var method = (IMethodSymbol)type.GetMembers(nameof(ApiConventionAnalyzerTest_Valid.Index)).First();
 
@@ -116,7 +116,7 @@ namespace TestNamespace
         {
             // Arrange
             var compilation = await GetCompilation(nameof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssembly));
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
             var type = compilation.GetTypeByMetadataName(typeof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssemblyController).FullName);
             var method = (IMethodSymbol)type.GetMembers(nameof(IsApiControllerAction_ReturnsTrue_IfAttributeIsDeclaredOnAssemblyController.Action)).First();
 

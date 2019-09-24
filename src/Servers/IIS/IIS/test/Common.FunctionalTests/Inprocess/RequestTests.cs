@@ -6,12 +6,13 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(IISTestSiteCollection.Name)]
+    [RequiresNewHandler]
     public class RequestInProcessTests
     {
         private readonly IISTestSiteFixture _fixture;

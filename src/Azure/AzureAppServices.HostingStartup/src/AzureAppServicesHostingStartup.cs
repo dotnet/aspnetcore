@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
 {
     /// <summary>
-    /// A dynamic azure lightup experiance
+    /// A dynamic azure lightup experience
     /// </summary>
     public class AzureAppServicesHostingStartup : IHostingStartup
     {

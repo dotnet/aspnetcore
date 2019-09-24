@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions) => listenOptions.UseHttps(_ => { });
- 
+
         /// <summary>
         /// Configure Kestrel to use HTTPS.
         /// </summary>
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName)));
         }
 
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password));
         }
 
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password,
             Action<HttpsConnectionAdapterOptions> configureOptions)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
         }
 
@@ -184,6 +186,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
             }
+
             return listenOptions.UseHttps(options);
         }
 
@@ -198,6 +201,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 return false;
             }
+
             listenOptions.UseHttps(options);
             return true;
         }
@@ -210,10 +214,17 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
         {
-            var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-            listenOptions.ConnectionAdapters.Add(new HttpsConnectionAdapter(httpsOptions, loggerFactory));
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+            listenOptions.IsTls = true;
+            listenOptions.Use(next =>
+            {
+                // Set the list of protocols from listen options
+                httpsOptions.HttpProtocols = listenOptions.Protocols;
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+                return middleware.OnConnectionAsync;
+            });
+
             return listenOptions;
         }
     }

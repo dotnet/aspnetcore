@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +22,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new KitchenSinkApp(logger);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();

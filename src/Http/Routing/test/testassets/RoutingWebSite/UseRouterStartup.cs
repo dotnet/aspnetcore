@@ -38,6 +38,17 @@ namespace RoutingWebSite
                         defaults: new { lastName = "Doe" },
                         constraints: new { lastName = new RegexRouteConstraint(new Regex("[a-zA-Z]{3}", RegexOptions.CultureInvariant, RegexMatchTimeout)) });
             });
+
+            app.Map("/Branch1", branch => SetupBranch(branch, "Branch1"));
+            app.Map("/Branch2", branch => SetupBranch(branch, "Branch2"));
+        }
+
+        private void SetupBranch(IApplicationBuilder app, string name)
+        {
+            app.UseRouter(routes =>
+            {
+                routes.MapGet("api/get/{id}", (request, response, routeData) => response.WriteAsync($"{name} - API Get {routeData.Values["id"]}"));
+            });
         }
     }
 }

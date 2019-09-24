@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Runtime server features for ASP.NET Core Components.</Description>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS0436;$(NoWarn)</NoWarn>
+    <DefineConstants>$(DefineConstants);MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+
+    <!-- Add a project dependency without reference output assemblies to enforce build order -->
+    <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
+    <ProjectReference
+      Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MessagePackRoot>$(RepoRoot)src\submodules\MessagePack-CSharp\src\MessagePack\</MessagePackRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
+
+    <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\Shared\src\WebEventData.cs" />
+
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
+
+    <!-- MessagePack -->
+    <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)ExtensionHeader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)ExtensionResult.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackCode.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackReader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackReader.Integers.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackWriter.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)Nil.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)FloatBits.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)StringEncoding.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequencePool.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
+
+    <!-- Shared descriptor infrastructure with MVC -->
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BlazorServerJSFile>..\..\Web.JS\dist\$(Configuration)\blazor.server.js</BlazorServerJSFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
+  </ItemGroup>
+
+</Project>

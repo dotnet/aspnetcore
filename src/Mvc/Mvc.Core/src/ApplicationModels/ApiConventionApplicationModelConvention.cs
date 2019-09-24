@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public ProducesErrorResponseTypeAttribute DefaultErrorResponseType { get; }
 
+        /// <inheritdoc />
         public void Apply(ActionModel action)
         {
             if (action == null)
@@ -50,6 +51,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             DiscoverErrorResponseType(action);
         }
 
+        /// <summary>
+        /// Determines if this instance of <see cref="IActionModelConvention"/> applies to a specified <paramref name="action"/>.
+        /// </summary>
+        /// <param name="action">The <see cref="ActionModel"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if the convention applies, otherwise <see langword="false"/>.
+        /// Derived types may override this method to selectively apply this convention.
+        /// </returns>
         protected virtual bool ShouldApply(ActionModel action) => true;
 
         private static void DiscoverApiConvention(ActionModel action)

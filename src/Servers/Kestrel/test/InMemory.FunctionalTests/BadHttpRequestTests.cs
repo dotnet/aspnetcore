@@ -151,9 +151,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task BadRequestLogsAreNotHigherThanInformation()
+        public async Task BadRequestLogsAreNotHigherThanDebug()
         {
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 await context.Request.Body.ReadAsync(new byte[1], 0, 1);
             }, new TestServiceContext(LoggerFactory)))
@@ -166,18 +166,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
-
-                await server.StopAsync();
             }
 
-            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
-            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information);
+            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
+            Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17);
         }
 
         [Fact]
         public async Task TestRequestSplitting()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var client = server.CreateConnection())
                 {
@@ -187,8 +185,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await client.Receive("HTTP/1.1 400");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -203,15 +199,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
                 .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAll(request);
                     await ReceiveBadRequestResponse(connection, expectedResponseStatusCode, server.Context.DateHeaderValue, expectedAllowHeader);
                 }
-
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
