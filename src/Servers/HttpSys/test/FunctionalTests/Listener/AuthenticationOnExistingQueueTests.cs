@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             using var baseServer = Utilities.CreateHttpAuthServer(authType, DenyAnoymous, out var address);
@@ -64,7 +63,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             using var baseServer = Utilities.CreateHttpAuthServer(authType, AllowAnoymous, out var address);

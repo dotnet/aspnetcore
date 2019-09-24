@@ -69,142 +69,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task Server_ClientDisconnects_CallCanceled()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            using var client = new HttpClient();
-
-            var responseTask = client.GetAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            var ct = context.DisconnectToken;
-            Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-            Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.Set());
-
-            client.CancelPendingRequests();
-
-            Assert.True(canceled.WaitOne(interval), "canceled");
-            Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-            await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
-
-            context.Dispose();
-        }
-
-        [ConditionalFact]
-        public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            using var client = new HttpClient();
-            var responseTask = client.GetAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-
-            client.CancelPendingRequests();
-            await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
-
-            var ct = context.DisconnectToken;
-            Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-            ct.Register(() => canceled.Set());
-            Assert.True(ct.WaitHandle.WaitOne(interval));
-            Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-            Assert.True(canceled.WaitOne(interval), "canceled");
-
-            context.Dispose();
-        }
-
-        [ConditionalFact]
-        public async Task Server_TokenRegisteredAfterResponseSent_Success()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            using var client = new HttpClient();
-            var responseTask = client.GetAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            context.Dispose();
-
-            var response = await responseTask;
-            response.EnsureSuccessStatusCode();
-            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
-
-            var ct = context.DisconnectToken;
-            Assert.False(ct.CanBeCanceled, "CanBeCanceled");
-            ct.Register(() => canceled.Set());
-            Assert.False(ct.WaitHandle.WaitOne(interval));
-            Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-
-            Assert.False(canceled.WaitOne(interval), "canceled");
-        }
-
-        [ConditionalFact]
-        public async Task Server_Abort_CallCanceled()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            
-            var responseTask = SendRequestAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            var ct = context.DisconnectToken;
-            Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-            Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.Set());
-            context.Abort();
-            Assert.True(canceled.WaitOne(interval), "Aborted");
-            Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-            await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
-        }
-
-        [ConditionalFact]
-        public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            using var baseServer = Utilities.CreateHttpServer(out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
-            var responseTask = SendRequestAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            var ct = context.DisconnectToken;
-            Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-            Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-            ct.Register(() => canceled.Set());
-
-            context.Response.Headers["Connection"] = "close";
-
-            context.Response.ContentLength = 11;
-            await using (var writer = new StreamWriter(context.Response.Body))
-            {
-                await writer.WriteAsync("Hello World");
-            }
-
-            Assert.True(canceled.WaitOne(interval), "Disconnected");
-            Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-            var response = await responseTask;
-            Assert.Equal("Hello World", response);
-        }
-
-        [ConditionalFact]
+        // No-ops if you did not create the queue
         public async Task Server_SetQueueLimit_Success()
         {
             using var baseServer = Utilities.CreateHttpServer(out var address);
@@ -220,14 +85,51 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        public async Task Server_PathBase_Success()
+        {
+            using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
+            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+            server.Options.UrlPrefixes.Add(address); // Need to mirror the setting so we can parse out PathBase
+
+            var responseTask = SendRequestAsync(root + "/pathBase/paTh");
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            Assert.Equal("/pathBase", context.Request.PathBase);
+            Assert.Equal("/paTh", context.Request.Path);
+            context.Dispose();
+
+            var response = await responseTask;
+            Assert.Equal(string.Empty, response);
+        }
+
+        [ConditionalFact]
+        public async Task Server_PathBaseMismatch_Success()
+        {
+            using var baseServer = Utilities.CreateDynamicHttpServer("/PathBase", out var root, out var address);
+            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+
+            var responseTask = SendRequestAsync(root + "/pathBase/paTh");
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            Assert.Equal(string.Empty, context.Request.PathBase);
+            Assert.Equal("/pathBase/paTh", context.Request.Path);
+            context.Dispose();
+
+            var response = await responseTask;
+            Assert.Equal(string.Empty, response);
+        }
+
+        [ConditionalFact]
+        // Changes to the base server are reflected
         public async Task Server_HotAddPrefix_Success()
         {
             using var baseServer = Utilities.CreateHttpServer(out var address);
             using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+            server.Options.UrlPrefixes.Add(address); // Keep them in sync
 
             var responseTask = SendRequestAsync(address);
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
             Assert.Equal(string.Empty, context.Request.PathBase);
             Assert.Equal("/", context.Request.Path);
             context.Dispose();
@@ -236,11 +138,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             Assert.Equal(string.Empty, response);
 
             address += "pathbase/";
+            baseServer.Options.UrlPrefixes.Add(address);
             server.Options.UrlPrefixes.Add(address);
 
             responseTask = SendRequestAsync(address);
 
-            context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
             Assert.Equal("/pathbase", context.Request.PathBase);
             Assert.Equal("/", context.Request.Path);
             context.Dispose();
@@ -250,16 +153,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        // Changes to the base server are reflected
         public async Task Server_HotRemovePrefix_Success()
         {
             using var baseServer = Utilities.CreateHttpServer(out var address);
             using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+            server.Options.UrlPrefixes.Add(address); // Keep them in sync
 
             address += "pathbase/";
+            baseServer.Options.UrlPrefixes.Add(address);
             server.Options.UrlPrefixes.Add(address);
             var responseTask = SendRequestAsync(address);
 
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
             Assert.Equal("/pathbase", context.Request.PathBase);
             Assert.Equal("/", context.Request.Path);
             context.Dispose();
@@ -267,11 +173,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             var response = await responseTask;
             Assert.Equal(string.Empty, response);
 
+            Assert.True(baseServer.Options.UrlPrefixes.Remove(address));
             Assert.True(server.Options.UrlPrefixes.Remove(address));
 
             responseTask = SendRequestAsync(address);
 
-            context = await server.AcceptAsync(Utilities.DefaultTimeout);
+            context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
             Assert.Equal(string.Empty, context.Request.PathBase);
             Assert.Equal("/pathbase/", context.Request.Path);
             context.Dispose();

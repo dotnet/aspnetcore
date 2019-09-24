@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Port = port;
             PortValue = portValue;
             Path = path;
+            PathWithoutTrailingSlash = Path.Length > 1 ? Path[0..^1] : string.Empty;
             FullPrefix = string.Format(CultureInfo.InvariantCulture, "{0}://{1}:{2}{3}", Scheme, Host, Port, Path);
         }
 
@@ -150,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Port { get; private set; }
         public int PortValue { get; private set; }
         public string Path { get; private set; }
+        public string PathWithoutTrailingSlash { get; private set; }
         public string FullPrefix { get; private set; }
 
         public override bool Equals(object obj)

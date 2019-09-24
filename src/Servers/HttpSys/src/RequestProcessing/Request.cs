@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -66,25 +67,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            // TODO: How to make base paths work when the prefix is defined elsewhere? Loop and test?
-            else if (!RequestContext.Server.RequestQueue.Created || prefix == null)
+            else if (prefix == null)
             {
+                // Url registrations might be out of sync between instances sharing a queue.
                 PathBase = string.Empty;
                 Path = originalPath;
             }
-            // These paths are both unescaped already.
-            else if (originalPath.Length == prefix.Path.Length - 1)
-            {
-                // They matched exactly except for the trailing slash.
-                PathBase = originalPath;
-                Path = string.Empty;
-            }
-            else
+            // Make sure it was really a match. The queue configuration may be out of sync with other instances.
+            else if (prefix.PathWithoutTrailingSlash.Length > 0
+                && new PathString(originalPath).StartsWithSegments(new PathString(prefix.PathWithoutTrailingSlash), StringComparison.OrdinalIgnoreCase, out var remainder))
             {
                 // url: /base/path, prefix: /base/, base: /base, path: /path
                 // url: /, prefix: /, base: , path: /
-                PathBase = originalPath.Substring(0, prefix.Path.Length - 1);
-                Path = originalPath.Substring(prefix.Path.Length - 1);
+                PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                Path = remainder.Value;
+            }
+            else
+            {
+                // Url registrations might be out of sync between instances sharing a queue.
+                PathBase = string.Empty;
+                Path = originalPath;
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();

@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
                 }
 
-                if (_requestQueue != null)
+                if (_requestQueue != null && _requestQueue.Created)
                 {
                     _requestQueue.SetLengthLimit(_requestQueueLength);
                 }
