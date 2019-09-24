@@ -56,7 +56,7 @@ namespace Ignitor
 
         private CancellableOperation<CapturedAttachComponentCall> NextAttachComponentReceived { get; set; }
 
-        internal CancellableOperation<CapturedRenderBatch> NextBatchReceived { get; set; }
+        private CancellableOperation<CapturedRenderBatch> NextBatchReceived { get; set; }
 
         private CancellableOperation<string> NextErrorReceived { get; set; }
 
@@ -396,7 +396,7 @@ namespace Ignitor
             NextJSInteropReceived?.Completion?.TrySetResult(null);
         }
 
-        protected virtual void OnRenderBatch(int id, byte[] data)
+        private void OnRenderBatch(int id, byte[] data)
         {
             var capturedBatch = new CapturedRenderBatch(id, data);
 
