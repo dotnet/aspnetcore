@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }, options =>
             {
                 options.RequestQueueName = queueName;
-                options.Mode = RequestQueueMode.AttachToExisting;
+                options.RequestQueueMode = RequestQueueMode.AttachToExisting;
             }))
             {
                 var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")

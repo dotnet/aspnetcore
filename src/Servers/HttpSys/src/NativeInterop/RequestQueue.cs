@@ -97,12 +97,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
 
-            // If we did not create then we skip this step
-            if (!Created)
-            {
-                return;
-            }
-
             var info = new HttpApiTypes.HTTP_BINDING_INFO();
             info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             info.RequestQueueHandle = Handle.DangerousGetHandle();
@@ -121,12 +115,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Note that this method may be called multiple times (Stop() and then Abort()). This
             // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid 
             // Url groups.
-
-            // If we did not create then we skip this step
-            if (!Created)
-            {
-                return;
-            }
 
             var info = new HttpApiTypes.HTTP_BINDING_INFO();
             info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;

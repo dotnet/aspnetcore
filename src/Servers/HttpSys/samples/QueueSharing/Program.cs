@@ -42,7 +42,7 @@ namespace QueueSharing
                     {
                         options.UrlPrefixes.Add("http://localhost:5000");
                         options.RequestQueueName = "QueueName";
-                        options.Mode = mode;
+                        options.RequestQueueMode = mode;
                     }).ConfigureServices(services =>
                     {
 

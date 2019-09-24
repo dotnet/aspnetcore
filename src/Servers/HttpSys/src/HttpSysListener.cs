@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // V2 initialization sequence:
             // 1. Create server session
             // 2. Create url group
-            // 3. Create request queue - Done in Start()
+            // 3. Create request queue
             // 4. Add urls to url group - Done in Start()
             // 5. Attach request queue to url group - Done in Start()
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 _urlGroup = new UrlGroup(_serverSession, Logger);
 
-                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.Mode, Logger);
+                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
 
                 _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             }
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    // if we created the Q then set up the URL behaviors
+                    // If this instance created the queue then configure it.
                     if (_requestQueue.Created)
                     {
                         Options.Apply(UrlGroup, RequestQueue);
@@ -192,15 +192,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    // if we created the Q delete the URL prefixes
+                    // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
                     {
                         Options.UrlPrefixes.UnregisterAllPrefixes();
+                        _requestQueue.DetachFromUrlGroup();
                     }
 
                     _state = State.Stopped;
 
-                    _requestQueue.DetachFromUrlGroup();
                 }
             }
             catch (Exception exception)

@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         internal static HttpSysListener CreateServerOnExistingQueue(AuthenticationSchemes authScheme, bool allowAnonymos, string requestQueueName)
         {
             var options = new HttpSysOptions();
-            options.Mode = RequestQueueMode.AttachToExisting;
+            options.RequestQueueMode = RequestQueueMode.AttachToExisting;
             options.RequestQueueName = requestQueueName;
             options.Authentication.Schemes = authScheme;
             options.Authentication.AllowAnonymous = allowAnonymos;
