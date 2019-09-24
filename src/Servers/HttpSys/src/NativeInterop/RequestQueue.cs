@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     HttpApi.Version,
                     requestQueueName,
                     null,
-                    (uint) flags,
+                    flags,
                     out requestQueueHandle);
 
             if (_mode == RequestQueueMode.AttachOrCreate && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
@@ -50,7 +50,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 statusCode = HttpApi.HttpCreateRequestQueue(
                         HttpApi.Version,
                         requestQueueName,
-                        null, (uint) flags,
+                        null,
+                        flags,
                         out requestQueueHandle);
             }
 
