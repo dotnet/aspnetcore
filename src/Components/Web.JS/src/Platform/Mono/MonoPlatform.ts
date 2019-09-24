@@ -26,7 +26,7 @@ export const monoPlatform: Platform = {
         init: () => { },
       };
       // Emscripten works by expecting the module config to be a global
-      // MacOSX Catalina initializes Module differently so needa workaround for now.
+      // MacOSX Catalina initializes Module differently so needs a workaround for now.
       addGlobalModuleScriptTagsToDocument(() => {
         window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
         addScriptTagsToDocument();
