@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             new DiagnosticDescriptor(
                 "MVC1004",
                 "Rename model bound parameter.",
-                "Property on type '{0}' has the same name as parameter '{1}'. This may result in incorrect model binding. Consider renaming the parameter or using a model binding attribute to override the name.",
+                "Property on type '{0}' has the same name as parameter '{1}'. This may result in incorrect model binding. " +
+                "Consider renaming the parameter or the property to avoid conflicts. If the type '{0}' has a custom type converter or custom model binder, you can suppress this message.",
                 "Naming",
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
