@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Returns string representation of this <see cref="UriEndPoint"/> using <see cref="Uri.ToString"/>.
         /// </summary>
-        /// <returns>Text representation of this <see cref="UriEndPoint"/></returns>
+        /// <returns>Text representation of this <see cref="UriEndPoint"/>.</returns>
         public override string ToString()
         {
             return Uri.ToString();
