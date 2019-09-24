@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public int MaxAccepts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long? MaxConnections { get { throw null; } set { } }
         public long? MaxRequestBodySize { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode Mode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long RequestQueueLimit { get { throw null; } set { } }
         public string RequestQueueName { get { throw null; } set { } }
         public bool ThrowWriteExceptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -60,6 +61,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public partial interface IHttpSysRequestInfoFeature
     {
         System.Collections.Generic.IReadOnlyDictionary<int, System.ReadOnlyMemory<byte>> RequestInfo { get; }
+    }
+    public enum RequestQueueMode
+    {
+        Create = 0,
+        Controller = 1,
+        AttachToExisting = 2,
+        AttachOrCreate = 3,
     }
     public sealed partial class TimeoutManager
     {
