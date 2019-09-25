@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
-        private string _httpProtocolVersion = null;
+        private string _httpProtocolVersion;
         private X509Certificate2 _certificate;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
@@ -98,6 +98,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     else if (protocol.Major == 1 && protocol.Minor == 0)
                     {
                         _httpProtocolVersion = "HTTP/1.0";
+                    }
+                    else if (protocol.Major == 2 && protocol.Minor == 0)
+                    {
+                        _httpProtocolVersion = "HTTP/2";
                     }
                     else
                     {
