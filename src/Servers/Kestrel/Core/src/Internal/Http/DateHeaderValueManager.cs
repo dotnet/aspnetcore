@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// </summary>
     internal class DateHeaderValueManager : IHeartbeatHandler
     {
-        private static readonly byte[] _datePreambleBytes = Encoding.ASCII.GetBytes("\r\nDate: ");
+        private static ReadOnlySpan<byte> DatePreambleBytes => new byte[8] { (byte)'\r', (byte)'\n', (byte)'D', (byte)'a', (byte)'t', (byte)'e', (byte)':', (byte)' ' };
 
         private DateHeaderValues _dateValues;
 
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void SetDateValues(DateTimeOffset value)
         {
             var dateValue = HeaderUtilities.FormatDate(value);
-            var dateBytes = new byte[_datePreambleBytes.Length + dateValue.Length];
-            Buffer.BlockCopy(_datePreambleBytes, 0, dateBytes, 0, _datePreambleBytes.Length);
-            Encoding.ASCII.GetBytes(dateValue, 0, dateValue.Length, dateBytes, _datePreambleBytes.Length);
+            var dateBytes = new byte[DatePreambleBytes.Length + dateValue.Length];
+            DatePreambleBytes.CopyTo(dateBytes);
+            Encoding.ASCII.GetBytes(dateValue, dateBytes.AsSpan(DatePreambleBytes.Length));
 
             var dateValues = new DateHeaderValues
             {
