@@ -17,6 +17,4 @@
     <file src="$PackageIcon$" target="" />
     <file src="$outputPath$\**" target="\" />
   </files>
-
-
 </package>
