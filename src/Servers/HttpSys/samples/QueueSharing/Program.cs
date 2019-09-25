@@ -43,6 +43,7 @@ namespace QueueSharing
                         options.UrlPrefixes.Add("http://localhost:5000");
                         options.RequestQueueName = "QueueName";
                         options.RequestQueueMode = mode;
+                        options.MaxAccepts = 1; // Better load rotation between instances.
                     }).ConfigureServices(services =>
                     {
 

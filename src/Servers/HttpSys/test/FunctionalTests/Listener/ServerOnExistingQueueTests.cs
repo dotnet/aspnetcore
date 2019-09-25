@@ -119,6 +119,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             Assert.Equal(string.Empty, response);
         }
 
+        [ConditionalTheory]
+        [InlineData("/", "/", "", "/")]
+        [InlineData("/basepath/", "/basepath", "/basepath", "")]
+        [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
+        [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
+        [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
+        [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
+        public async Task Server_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
+        {
+            using var baseServer = Utilities.CreateDynamicHttpServer(pathBase, out var root, out var baseAddress);
+            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+            server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
+
+            var responseTask = SendRequestAsync(root + requestPath);
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            Assert.Equal(expectedPathBase, context.Request.PathBase);
+            Assert.Equal(expectedPath, context.Request.Path);
+            context.Dispose();
+
+            var response = await responseTask;
+            Assert.Equal(string.Empty, response);
+        }
+
         [ConditionalFact]
         // Changes to the base server are reflected
         public async Task Server_HotAddPrefix_Success()

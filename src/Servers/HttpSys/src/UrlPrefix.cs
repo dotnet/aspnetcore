@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Scheme = scheme;
             Host = host;
             Port = port;
+            HostAndPort = string.Format(CultureInfo.InvariantCulture, "{0}:{1}", Host, Port);
             PortValue = portValue;
             Path = path;
             PathWithoutTrailingSlash = Path.Length > 1 ? Path[0..^1] : string.Empty;
@@ -145,14 +146,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Create(scheme, host, port, path);
         }
 
-        public bool IsHttps { get; private set; }
-        public string Scheme { get; private set; }
-        public string Host { get; private set; }
-        public string Port { get; private set; }
-        public int PortValue { get; private set; }
-        public string Path { get; private set; }
-        public string PathWithoutTrailingSlash { get; private set; }
-        public string FullPrefix { get; private set; }
+        public bool IsHttps { get; }
+        public string Scheme { get; }
+        public string Host { get; }
+        public string Port { get; }
+        internal string HostAndPort { get; }
+        public int PortValue { get; }
+        public string Path { get; }
+        internal string PathWithoutTrailingSlash { get; }
+        public string FullPrefix { get; }
 
         public override bool Equals(object obj)
         {
