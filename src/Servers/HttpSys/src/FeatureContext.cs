@@ -175,22 +175,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (IsNotInitialized(Fields.Protocol))
                 {
                     var protocol = Request.ProtocolVersion;
-                    if (protocol == Constants.V2)
+                    _httpProtocolVersion = protocol switch
                     {
-                        _httpProtocolVersion = "HTTP/2";
-                    }
-                    else if (protocol == Constants.V1_1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol == Constants.V1_0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
+                        { Major: 2, Minor: 0 } => "HTTP/2",
+                        { Major: 1, Minor: 1 } => "HTTP/1.1",
+                        { Major: 1, Minor: 0 } => "HTTP/1.0",
+                        _ => "HTTP/" + protocol.ToString(2)
+                    };
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
