@@ -117,8 +117,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
 
-            header[8] = (byte)'\r';
+            // hoist the bound check
             header[9] = (byte)'\n';
+            header[8] = (byte)'\r';
 
             return new ArraySegment<byte>(header, offset, header.Length - offset);
         }
