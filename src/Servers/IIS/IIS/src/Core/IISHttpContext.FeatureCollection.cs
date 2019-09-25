@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -86,13 +87,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         string IHttpRequestFeature.Protocol
         {
-            get => _httpProtocolVersion ??= HttpVersion switch
-            {
-                { Major: 2, Minor: 0 } => "HTTP/2",
-                { Major: 1, Minor: 1 } => "HTTP/1.1",
-                { Major: 1, Minor: 0 } => "HTTP/1.0",
-                _ => "HTTP/" + HttpVersion.ToString(2)
-            };
+            get => _httpProtocolVersion ??= HttpVersion.GetHttpProtocolVersion();
             set => _httpProtocolVersion = value;
         }
 
