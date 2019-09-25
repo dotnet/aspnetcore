@@ -76,6 +76,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var output = new StringBuilder();
             var outputLock = new object();
 
+            var diagnostics = new StringBuilder();
+            diagnostics.AppendLine("Process execution diagnostics:");
+
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
 
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var timeoutTask = GetTimeoutForProcess(process, timeout);
+            var timeoutTask = GetTimeoutForProcess(process, timeout, diagnostics);
 
             var waitTask = Task.Run(() =>
             {
@@ -100,10 +103,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 process.WaitForExit();
 
+
                 string outputString;
                 lock (outputLock)
                 {
-                    outputString = output.ToString();
+                    // This marks the end of the diagnostic info which we collect when something goes wrong.
+                    diagnostics.AppendLine("Process output:");
+
+                    // Expected output
+                    // Process execution diagnostics:
+                    // ...
+                    // Process output:
+                    outputString = diagnostics.ToString();
+                    outputString += output.ToString();
                 }
 
                 var result = new ProcessResult(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputString);
@@ -128,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            async Task<ProcessResult> GetTimeoutForProcess(Process process, TimeSpan? timeout)
+            async Task<ProcessResult> GetTimeoutForProcess(Process process, TimeSpan? timeout, StringBuilder diagnostics)
             {
                 await Task.Delay(timeout.Value);
 
@@ -139,12 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
                 if (!process.HasExited)
                 {
-                    var procDumpProcess = await CaptureDump(process);
-                    if (procDumpProcess != null && procDumpProcess.HasExited)
-                    {
-                        Console.WriteLine("ProcDump failed to run.");
-                        procDumpProcess.Kill();
-                    }
+                    await CollectDumps(process, timeout, diagnostics);
 
                     // This is a timeout.
                     process.Kill();
@@ -153,7 +160,46 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
             }
 
-            async Task<Process> CaptureDump(Process process)
+            static async Task CollectDumps(Process process, TimeSpan? timeout, StringBuilder diagnostics)
+            {
+                var procDumpProcess = await CaptureDump(process, timeout, diagnostics);
+                var allDotNetProcesses = Process.GetProcessesByName("dotnet");
+
+                var allDotNetChildProcessCandidates = allDotNetProcesses
+                    .Where(p => p.StartTime >= process.StartTime && p.Id != process.Id);
+
+                if (!allDotNetChildProcessCandidates.Any())
+                {
+                    diagnostics.AppendLine("Couldn't find any candidate child process.");
+                    foreach (var dotnetProcess in allDotNetProcesses)
+                    {
+                        diagnostics.AppendLine($"Found dotnet process with PID {dotnetProcess.Id} and start time {dotnetProcess.StartTime}.");
+                    }
+                }
+
+                foreach (var childProcess in allDotNetChildProcessCandidates)
+                {
+                    diagnostics.AppendLine($"Found child process candidate '{childProcess.Id}'.");
+                }
+
+                var childrenProcessDumpProcesses = await Task.WhenAll(allDotNetChildProcessCandidates.Select(d => CaptureDump(d, timeout, diagnostics)));
+                foreach (var childProcess in childrenProcessDumpProcesses)
+                {
+                    if (childProcess != null && childProcess.HasExited)
+                    {
+                        diagnostics.AppendLine($"ProcDump failed to run for child dotnet process candidate '{process.Id}'.");
+                        childProcess.Kill();
+                    }
+                }
+
+                if (procDumpProcess != null && procDumpProcess.HasExited)
+                {
+                    diagnostics.AppendLine($"ProcDump failed to run for '{process.Id}'.");
+                    procDumpProcess.Kill();
+                }
+            }
+
+            static async Task<Process> CaptureDump(Process process, TimeSpan? timeout, StringBuilder diagnostics)
             {
                 var metadataAttributes = Assembly.GetExecutingAssembly()
                     .GetCustomAttributes<AssemblyMetadataAttribute>();
@@ -163,13 +209,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 if (string.IsNullOrEmpty(procDumpPath))
                 {
-                    Console.WriteLine("ProcDumpPath not defined.");
+                    diagnostics.AppendLine("ProcDumpPath not defined.");
                     return null;
                 }
                 var procDumpExePath = Path.Combine(procDumpPath, "procdump.exe");
                 if (!File.Exists(procDumpExePath))
                 {
-                    Console.WriteLine($"Can't find procdump.exe in '{procDumpPath}'.");
+                    diagnostics.AppendLine($"Can't find procdump.exe in '{procDumpPath}'.");
                     return null;
                 }
 
@@ -178,13 +224,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 if (string.IsNullOrEmpty(dumpDirectory))
                 {
-                    Console.WriteLine("ArtifactsLogDir not defined.");
+                    diagnostics.AppendLine("ArtifactsLogDir not defined.");
                     return null;
                 }
 
                 if (!Directory.Exists(dumpDirectory))
                 {
-                    Console.WriteLine($"'{dumpDirectory}' does not exist.");
+                    diagnostics.AppendLine($"'{dumpDirectory}' does not exist.");
                     return null;
                 }
 
