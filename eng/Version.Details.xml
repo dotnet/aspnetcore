@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.0.0-preview9.19462.2">
+    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.0.0-preview9.19475.1">
       <Uri>https://github.com/aspnet/Blazor</Uri>
-      <Sha>348e050ecd9bd8924581afb677089ae5e2d5e508</Sha>
+      <Sha>46318d1a8a1bacf36f6d2c95e960d578d38ad65a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
