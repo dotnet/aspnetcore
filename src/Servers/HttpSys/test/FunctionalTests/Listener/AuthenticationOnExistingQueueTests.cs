@@ -160,26 +160,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [ConditionalFact]
-        public async Task MultipleAuthTypes_KerberosAllowAnonymousButSpecify401_ChallengesAdded()
-        {
-            using var baseServer = Utilities.CreateHttpAuthServer(AuthenticationSchemes.Kerberos, AllowAnoymous, out var address);
-            using var server = Utilities.CreateServerOnExistingQueue(AuthenticationSchemes.Kerberos, AllowAnoymous, baseServer.Options.RequestQueueName);
-
-            Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
-
-            var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-            Assert.NotNull(context.User);
-            Assert.False(context.User.Identity.IsAuthenticated);
-            Assert.Equal(AuthenticationSchemes.Kerberos, context.Response.AuthenticationChallenges);
-            context.Response.StatusCode = 401;
-            context.Dispose();
-
-            var response = await responseTask;
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Equal("Kerberos", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
-        }
-
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool useDefaultCredentials = false)
         {
             HttpClientHandler handler = new HttpClientHandler();
