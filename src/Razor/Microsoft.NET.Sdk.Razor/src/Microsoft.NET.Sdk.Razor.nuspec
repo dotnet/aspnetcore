@@ -3,6 +3,9 @@
   <metadata>
     $CommonMetadataElements$
     <icon>packageIcon.png</icon>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
   </metadata>
 
   <files>
@@ -14,4 +17,6 @@
     <file src="$PackageIcon$" target="" />
     <file src="$outputPath$\**" target="\" />
   </files>
+
+
 </package>

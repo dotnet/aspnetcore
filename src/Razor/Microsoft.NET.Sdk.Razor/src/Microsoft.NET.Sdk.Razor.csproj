@@ -10,7 +10,7 @@
     <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks since they need to be backwards compatible. -->
 
     <!-- Allow assemblies outside of lib in the package -->
-    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <NoWarn>$(NoWarn);NU5100;NU5129</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

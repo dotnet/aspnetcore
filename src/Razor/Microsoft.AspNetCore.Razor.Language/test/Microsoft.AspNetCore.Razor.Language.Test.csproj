@@ -4,6 +4,9 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+
+    <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
+    <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
   <ItemGroup>
