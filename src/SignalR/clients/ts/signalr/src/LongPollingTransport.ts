@@ -6,7 +6,7 @@ import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getUserAgent, sendMessage } from "./Utils";
 
 // Not exported from 'index', this type is internal.
 /** @private */
@@ -60,7 +60,9 @@ export class LongPollingTransport implements ITransport {
 
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
-            headers: {},
+            headers: {
+                ["X-SignalR-UserAgent"]: `${getUserAgent()}`,
+            },
             timeout: 100000,
         };
 

@@ -9,7 +9,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger, Platform } from "./Utils";
+import { Arg, createLogger, getUserAgent, Platform } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
@@ -308,6 +308,7 @@ export class HttpConnection implements IConnection {
             if (token) {
                 headers = {
                     ["Authorization"]: `Bearer ${token}`,
+                    ["X-SignalR-UserAgent"]: `${getUserAgent()}`,
                 };
             }
         }

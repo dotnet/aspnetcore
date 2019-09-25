@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { VERSION } from ".";
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
@@ -180,4 +181,46 @@ export class ConsoleLogger implements ILogger {
             }
         }
     }
+}
+
+/** @private */
+export function getUserAgent(): string {
+    // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
+    return constructUserAgent(VERSION, getOsName(), getRuntimeVersion());
+}
+
+function constructUserAgent(version: string, os: string, runtimeVersion: string): string {
+    return `Microsoft SignalR/${version} (${version}; ${os}; Browser; ${runtimeVersion})`;
+}
+
+function getOsName(): string {
+    let os: string = "";
+    if (Platform.isNode) {
+        os = process.platform;
+    } else {
+        if (window && window.navigator) {
+            os = window.navigator.platform;
+        }
+    }
+    switch (os) {
+        case "win32":
+            return "Windows NT";
+        case "darwin":
+            return "macOS";
+        case "freebsd":
+        case "linux":
+        case "openbsd":
+        case "sunos":
+        case "aix":
+            return "Linux";
+        default:
+            return os;
+    }
+}
+
+function getRuntimeVersion(): string {
+    if (Platform.isNode) {
+        return process.versions.node;
+    }
+    return "";
 }
