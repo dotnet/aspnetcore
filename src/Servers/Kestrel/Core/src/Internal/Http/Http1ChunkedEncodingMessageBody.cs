@@ -458,7 +458,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedSuffix.
             examined = suffixBuffer.End;
 
-            if (suffixSpan[0] == '\r' && suffixSpan[1] == '\n')
+            // index 1 first, to elide the bound check for index 0
+            if (suffixSpan[1] == '\n' && suffixSpan[0] == '\r')
             {
                 consumed = suffixBuffer.End;
                 AddAndCheckConsumedBytes(2);
@@ -486,7 +487,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedTrailer.
             examined = trailerBuffer.End;
 
-            if (trailerSpan[0] == '\r' && trailerSpan[1] == '\n')
+            // index 1 first, to elide the bound check for index 0
+            if (trailerSpan[1] == '\n' && trailerSpan[0] == '\r')
             {
                 consumed = trailerBuffer.End;
                 AddAndCheckConsumedBytes(2);

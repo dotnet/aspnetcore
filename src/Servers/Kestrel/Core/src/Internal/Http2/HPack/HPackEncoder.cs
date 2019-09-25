@@ -70,11 +70,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     buffer[0] = (byte)(0x80 | StaticTable.Instance.StatusIndex[statusCode]);
                     return 1;
                 default:
+                    // index 1 first, to elide the bound check for index 0
+                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+                    buffer[1] = (byte)statusBytes.Length;
+
                     // Send as Literal Header Field Without Indexing - Indexed Name
                     buffer[0] = 0x08;
 
-                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
-                    buffer[1] = (byte)statusBytes.Length;
                     ((Span<byte>)statusBytes).CopyTo(buffer.Slice(2));
 
                     return 2 + statusBytes.Length;

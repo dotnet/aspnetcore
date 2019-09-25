@@ -190,8 +190,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Fast path, we're still looking at the same span
                     if (span.Length >= 2)
                     {
-                        ch1 = span[0];
+                        // index 1 first, to elide the bound check for index 0
                         ch2 = span[1];
+                        ch1 = span[0];
                     }
                     else if (reader.TryRead(out ch1)) // Possibly split across spans
                     {

@@ -621,8 +621,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Bitshifter.WriteUInt24BigEndian(buffer, (uint)frame.PayloadLength);
             buffer = buffer.Slice(3);
 
-            buffer[0] = (byte)frame.Type;
+            // index 1 first, to elide the bound check for index 0
             buffer[1] = frame.Flags;
+            buffer[0] = (byte)frame.Type;
             buffer = buffer.Slice(2);
 
             Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId, preserveHighestBit: false);

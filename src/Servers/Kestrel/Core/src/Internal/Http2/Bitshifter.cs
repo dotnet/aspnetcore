@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt24BigEndian(ReadOnlySpan<byte> source)
         {
-            return (uint)((source[0] << 16) | (source[1] << 8) | source[2]);
+            return (uint)(source[2] | (source[1] << 8) | (source[0] << 16));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteUInt24BigEndian(Span<byte> destination, uint value)
         {
             Debug.Assert(value <= 0xFF_FF_FF, value.ToString());
-            destination[0] = (byte)((value & 0xFF_00_00) >> 16);
-            destination[1] = (byte)((value & 0x00_FF_00) >> 8);
             destination[2] = (byte)(value & 0x00_00_FF);
+            destination[1] = (byte)((value & 0x00_FF_00) >> 8);
+            destination[0] = (byte)((value & 0xFF_00_00) >> 16);
         }
 
         // Drops the highest order bit
