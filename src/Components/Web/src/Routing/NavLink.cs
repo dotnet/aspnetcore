@@ -109,6 +109,11 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool ShouldMatch(string currentUriAbsolute)
         {
+            if (_hrefAbsolute == null)
+            {
+                return false;
+            }
+
             if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
             {
                 return true;
