@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private object _compilationReferencesLock = new object();
         private bool _compilationReferencesInitialized;
         private IReadOnlyList<MetadataReference> _compilationReferences;
+        private readonly IAssemblyPartResolver _assemblyPartResolver;
 
         public RazorReferenceManager(
             ApplicationPartManager partManager,
@@ -26,6 +28,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             _partManager = partManager;
             _options = options.Value;
+            // In a later release this could be extensible to add more assembly resolvers through options?
+            // For now it would just make sure that compilation of plugins works without breaking the application
+            _assemblyPartResolver = new CompositeAssemblyPartResolver(
+                new IAssemblyPartResolver[]
+                {
+                    new CompileOptionsPartResolver(new HashSet<string>(options.Value.AdditionalReferencePaths, StringComparer.OrdinalIgnoreCase)),
+                    new DependencyContextResolver(), 
+                });
         }
 
         public virtual IReadOnlyList<MetadataReference> CompilationReferences
@@ -62,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 }
                 else if (part is AssemblyPart assemblyPart)
                 {
-                    referencePaths.AddRange(assemblyPart.GetReferencePaths());
+                    referencePaths.AddRange(_assemblyPartResolver.GetReferencePaths(assemblyPart));
                 }
             }
 
