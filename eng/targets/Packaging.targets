@@ -1,7 +1,11 @@
 <Project>
 
+  <!--
+    For now at least, disable this check and ignore out-of-date package baselines.
+    Revisit after aspnet/AspNetCore#12702 is complete.
+  -->
   <Target Name="EnsureBaselineIsUpdated"
-          Condition="'$(IsServicingBuild)' == 'true' AND '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)'"
+          Condition="'$(IsServicingBuild)' == 'true' AND '$(StabilizePackageVersion)' != 'true' AND '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)'"
           BeforeTargets="BeforeBuild">
     <Error Text="The package baseline ($(AspNetCoreBaselineVersion)) is out of date with the latest release of this repo ($(PreviousAspNetCoreReleaseVersion)).
                  See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
