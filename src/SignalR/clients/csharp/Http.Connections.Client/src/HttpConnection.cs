@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                                 connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                             }
 
-                            Log.StartingTransport(_logger, transportType, connectUrl);
+                            Log.StartingTransport(_logger, transportType, uri);
                             await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
                             break;
                         }
