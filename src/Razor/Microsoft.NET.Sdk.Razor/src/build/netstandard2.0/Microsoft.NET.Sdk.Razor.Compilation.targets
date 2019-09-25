@@ -117,10 +117,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <LangVersion Condition="'$(LangVersion)' == ''">$(MaxSupportedLangVersion)</LangVersion>
     </PropertyGroup>
 
-    <PropertyGroup>
-      <RazorCompilationErrorLog Condition="'$(RazorCompilationErrorLog)'==''">$(IntermediateOutputPath)$(RazorTargetName).Compilation.log</RazorCompilationErrorLog>
-    </PropertyGroup>
-
     <Csc
          AdditionalLibPaths="$(AdditionalLibPaths)"
          AddModules="@(AddModules)"

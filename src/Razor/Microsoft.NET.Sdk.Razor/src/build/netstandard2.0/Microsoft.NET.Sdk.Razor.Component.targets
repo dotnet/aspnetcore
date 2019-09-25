@@ -180,10 +180,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
-    <PropertyGroup>
-      <RazorComponentErrorLog Condition="'$(RazorComponentErrorLog)'==''"><$(IntermediateOutputPath)$(RazorTargetName).Component.log/RazorComponentErrorLog>
-    </PropertyGroup>
-
     <Csc
          AdditionalLibPaths="$(AdditionalLibPaths)"
          AddModules="@(AddModules)"
