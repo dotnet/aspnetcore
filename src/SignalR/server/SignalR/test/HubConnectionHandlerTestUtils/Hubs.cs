@@ -933,6 +933,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
+        public ChannelReader<int> CancelableStreamNullableParameter(int x, string y, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(x);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(y);
+            });
+
+            return channel.Reader;
+        }
+
         public ChannelReader<int> StreamNullableParameter(int x, int? input)
         {
             var channel = Channel.CreateBounded<int>(10);
