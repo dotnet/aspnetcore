@@ -2,7 +2,14 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+    @if (UseExperimentalValidator)
+    {
+        <BlazorDataAnnotationsValidator />
+    }
+    else
+    {
     <DataAnnotationsValidator />
+    }
 
     <p class="name">
         Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
@@ -10,6 +17,10 @@
     <p class="email">
         Email: <InputText @bind-Value="person.Email" />
         <ValidationMessage For="@(() => person.Email)" />
+    </p>
+    <p class="confirm-email">
+        Email: <InputText @bind-Value="person.ConfirmEmail" />
+        <ValidationMessage For="@(() => person.ConfirmEmail)" />
     </p>
     <p class="age">
         Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
@@ -49,12 +60,18 @@
 
     <button type="submit">Submit</button>
 
+    <p class="model-errors">
+        <ValidationSummary Model="person" />
+    </p>
+
     <ValidationSummary />
 </EditForm>
 
 <ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
 
 @code {
+    protected virtual bool UseExperimentalValidator => false;
+
     Person person = new Person();
     EditContext editContext;
     ValidationMessageStore customValidationMessageStore;
@@ -74,6 +91,9 @@
         [EmailAddress(ErrorMessage = "That doesn't look like a real email address")]
         [StringLength(10, ErrorMessage = "We only accept very short email addresses (max 10 chars)")]
         public string Email { get; set; }
+
+        [Compare(nameof(Email), ErrorMessage = "Email and confirm email do not match.")]
+        public string ConfirmEmail { get; set; }
 
         [Range(0, 200, ErrorMessage = "Nobody is that old")]
         public int AgeInYears { get; set; }

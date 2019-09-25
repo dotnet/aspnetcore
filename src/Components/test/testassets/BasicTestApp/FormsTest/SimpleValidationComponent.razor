@@ -2,7 +2,14 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
-    <DataAnnotationsValidator />
+    @if (UseExperimentalValidator)
+    {
+        <BlazorDataAnnotationsValidator />
+    }
+    else
+    {
+        <DataAnnotationsValidator />
+    }
 
     <p class="user-name">
         User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />
@@ -29,6 +36,8 @@
 }
 
 @code {
+    protected virtual bool UseExperimentalValidator => false;
+
     string lastCallback;
 
     [Required(ErrorMessage = "Please choose a username")]

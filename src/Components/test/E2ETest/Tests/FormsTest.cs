@@ -1,18 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,10 +33,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
         }
 
+        protected virtual IWebElement MountSimpleValidationComponent()
+            => Browser.MountTestComponent<SimpleValidationComponent>();
+
+        protected virtual IWebElement MountTypicalValidationComponent()
+            => Browser.MountTestComponent<TypicalValidationComponent>();
+
         [Fact]
         public async Task EditFormWorksWithDataAnnotationsValidator()
         {
-            var appElement = Browser.MountTestComponent<SimpleValidationComponent>();
+            var appElement = MountSimpleValidationComponent();;
             var form = appElement.FindElement(By.TagName("form"));
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
@@ -77,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputTextInteractsWithEditContext()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -104,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputNumberInteractsWithEditContext_NonNullableInt()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -136,7 +141,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputNumberInteractsWithEditContext_NullableFloat()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var heightInput = appElement.FindElement(By.ClassName("height")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -160,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputTextAreaInteractsWithEditContext()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var descriptionInput = appElement.FindElement(By.ClassName("description")).FindElement(By.TagName("textarea"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -187,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var renewalDateInput = appElement.FindElement(By.ClassName("renewal-date")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -218,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputDateInteractsWithEditContext_NullableDateTimeOffset()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var expiryDateInput = appElement.FindElement(By.ClassName("expiry-date")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -241,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputSelectInteractsWithEditContext()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
             var select = ticketClassInput.WrappedElement;
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -263,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void InputCheckboxInteractsWithEditContext()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
             var isEvilInput = appElement.FindElement(By.ClassName("is-evil")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -331,7 +336,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void ValidationMessageDisplaysMessagesForField()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var emailContainer = appElement.FindElement(By.ClassName("email"));
             var emailInput = emailContainer.FindElement(By.TagName("input"));
             var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer);
@@ -356,9 +361,42 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void ErrorsFromCompareAttribute()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var emailContainer = appElement.FindElement(By.ClassName("email"));
+            var emailInput = emailContainer.FindElement(By.TagName("input"));
+            var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
+            var confirmInput = confirmEmailContainer.FindElement(By.TagName("input"));
+            var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
+            var modelErrors = CreateValidationMessagesAccessor(appElement.FindElement(By.ClassName("model-errors")));
+            CreateValidationMessagesAccessor(emailContainer);
+            var submitButton = appElement.FindElement(By.TagName("button"));
+
+            // Updates on edit
+            emailInput.SendKeys("a@b.com\t");
+
+            submitButton.Click();
+            Browser.Empty(confirmEmailValidationMessage);
+            Browser.Equal(new[] { "Email and confirm email do not match." }, modelErrors);
+
+            confirmInput.SendKeys("not-test@example.com\t");
+            Browser.Equal(new[] { "Email and confirm email do not match." }, confirmEmailValidationMessage);
+
+            // Can become correct
+            confirmInput.Clear();
+            confirmInput.SendKeys("a@b.com\t");
+
+            Browser.Empty(confirmEmailValidationMessage);
+
+            submitButton.Click();
+            Browser.Empty(modelErrors);
+        }
+
+        [Fact]
         public void InputComponentsCauseContainerToRerenderOnChange()
         {
-            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var appElement = MountTypicalValidationComponent();
             var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
             var selectedTicketClassDisplay = appElement.FindElement(By.Id("selected-ticket-class"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
