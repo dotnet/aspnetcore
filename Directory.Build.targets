@@ -58,13 +58,8 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
-    <!--
-      Build entire repo while we settle the infrastructure; ignore PatchConfig.props.
-      Do _not_ do this when stabilizing versions.
-    -->
-    <IsPackageInThisPatch
-        Condition="'$(IsPackageInThisPatch)' == '' AND '$(StabilizePackageVersion)' != 'true'">true</IsPackageInThisPatch>
+  <PropertyGroup
+      Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
