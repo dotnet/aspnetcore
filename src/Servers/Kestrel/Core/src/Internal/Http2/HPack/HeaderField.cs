@@ -12,11 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public HeaderField(Span<byte> name, Span<byte> value)
         {
-            Name = new byte[name.Length];
-            name.CopyTo(Name);
-
-            Value = new byte[value.Length];
-            value.CopyTo(Value);
+            Name = name.ToArray();
+            Value = value.ToArray();
         }
 
         public byte[] Name { get; }
