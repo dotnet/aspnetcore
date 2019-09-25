@@ -9,9 +9,10 @@
     -->
     <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
 
-    <!-- Only build assemblies in Microsoft.AspNetCore.App in source build -->
+    <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
-    <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceBuild
+        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsReferenceAssemblyProject)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">
@@ -161,7 +162,6 @@
   </Target>
 
   <Import Project="eng\Workarounds.targets" />
-  <Import Project="eng\IndirectReferences.props" Condition="'$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true'" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
