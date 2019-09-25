@@ -14,20 +14,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         public IEnumerable<string> GetReferencePaths(AssemblyPart assemblyPart)
         {
-            IEnumerable<string> references;
             try
             {
-                references = assemblyPart.GetReferencePaths();
+                return assemblyPart.GetReferencePaths();
             }
             catch (InvalidOperationException)
             {
                 // DependencyContext was unable to resolve the dependencies because it is unaware of additional references.
-                yield break;
-            }
-
-            foreach (var reference in references)
-            {
-                yield return reference;
+                return Array.Empty<string>();
             }
         }
     }
