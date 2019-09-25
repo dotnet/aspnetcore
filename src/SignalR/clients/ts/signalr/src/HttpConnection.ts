@@ -302,16 +302,17 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        let headers;
+        let headers = {};
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
             if (token) {
                 headers = {
                     ["Authorization"]: `Bearer ${token}`,
-                    ["X-SignalR-UserAgent"]: `${getUserAgent()}`,
                 };
             }
         }
+
+        headers["X-SignalR-UserAgent"] = getUserAgent();
 
         const negotiateUrl = this.resolveNegotiateUrl(url);
         this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);

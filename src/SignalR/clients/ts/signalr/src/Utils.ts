@@ -26,7 +26,6 @@ export class Arg {
 
 /** @private */
 export class Platform {
-
     public static get isBrowser(): boolean {
         return typeof window === "object";
     }
@@ -83,7 +82,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 
 /** @private */
 export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
-    let headers;
+    let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
         if (token) {
@@ -92,6 +91,8 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
             };
         }
     }
+
+    headers["X-SignalR-UserAgent"] = getUserAgent(),
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
@@ -186,41 +187,59 @@ export class ConsoleLogger implements ILogger {
 /** @private */
 export function getUserAgent(): string {
     // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
-    return constructUserAgent(VERSION, getOsName(), getRuntimeVersion());
+    return constructUserAgent(VERSION, getOsName(), getRuntime(), getRuntimeVersion());
 }
 
-function constructUserAgent(version: string, os: string, runtimeVersion: string): string {
-    return `Microsoft SignalR/${version} (${version}; ${os}; Browser; ${runtimeVersion})`;
+/** @private */
+export function constructUserAgent(version: string, os: string, runtime: string, runtimeVersion: string | undefined): string {
+    let userAgent: string = "Microsoft SignalR/";
+
+    userAgent += version.split("-")[0];
+    userAgent += ` (${version}; `;
+
+    if (os && os !== "") {
+        userAgent += `${os}; `;
+    }
+
+    userAgent += `${runtime}`;
+
+    if (runtimeVersion) {
+        userAgent += `; ${runtimeVersion}`;
+    }
+
+    userAgent += ")";
+    return userAgent;
 }
 
 function getOsName(): string {
     let os: string = "";
     if (Platform.isNode) {
         os = process.platform;
-    } else {
-        if (window && window.navigator) {
-            os = window.navigator.platform;
-        }
     }
+
     switch (os) {
         case "win32":
             return "Windows NT";
         case "darwin":
             return "macOS";
-        case "freebsd":
         case "linux":
-        case "openbsd":
-        case "sunos":
-        case "aix":
             return "Linux";
         default:
             return os;
     }
 }
 
-function getRuntimeVersion(): string {
+function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
     }
-    return "";
+    return undefined;
+}
+
+function getRuntime(): string {
+    if (Platform.isNode) {
+        return "NodeJS";
+    } else {
+        return "Browser";
+    }
 }
