@@ -35,7 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove comment above ^
 
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
-    
+
     Remove Returns="@(CscCommandLineArgs)"
     Remove <Import Project="Microsoft.Managed.Core.targets"/>
     Remove Returns="@(CscCommandLineArgs)"
@@ -60,7 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove additional steps after calling CSC
 
     Add our FileWrites after the call to CSC
-    
+
     Add Condition="'@(RazorCompile)'!=''" as a condition to the RazorCoreCompile target.
   -->
   <Target Name="RazorCoreCompile"
@@ -117,6 +117,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <LangVersion Condition="'$(LangVersion)' == ''">$(MaxSupportedLangVersion)</LangVersion>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <RazorCompilationErrorLog Condition="'$(RazorCompilationErrorLog)'==''">$(IntermediateOutputPath)$(RazorTargetName).Compilation.log</RazorCompilationErrorLog>
+    </PropertyGroup>
+
     <Csc
          AdditionalLibPaths="$(AdditionalLibPaths)"
          AddModules="@(AddModules)"
@@ -137,7 +141,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          EmitDebugInformation="$(DebugSymbols)"
          EnvironmentVariables="$(CscEnvironment)"
          ErrorEndLocation="$(ErrorEndLocation)"
-         ErrorLog="$(ErrorLog)"
+         ErrorLog="$(RazorCompilationErrorLog)"
          ErrorReport="$(ErrorReport)"
          Features="$(Features)"
          FileAlignment="$(FileAlignment)"
