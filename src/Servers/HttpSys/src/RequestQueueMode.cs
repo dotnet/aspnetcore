@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         Create = 0,
         /// <summary>
         /// Attach to an existing queue with the name given. This will fail if the queue does not already exist.
-        /// Most configuration options are ignored when attaching to an existing queue.
+        /// Most configuration options do not apply when attaching to an existing queue.
         /// </summary>
-        AttachToExisting,
+        Attach,
         /// <summary>
-        /// Attach to an existing queue with the given name if it exists, otherwise create it.
+        /// Create a queue with the given name if it does not already exist, otherwise attach to the existing queue.
         /// </summary>
-        AttachOrCreate
+        CreateOrAttach
     }
 }

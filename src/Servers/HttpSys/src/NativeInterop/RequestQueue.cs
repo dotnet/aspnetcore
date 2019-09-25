@@ -27,26 +27,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
             Created = true;
-            if (_mode == RequestQueueMode.AttachToExisting || _mode == RequestQueueMode.AttachOrCreate)
+            if (_mode == RequestQueueMode.Attach)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 Created = false;
             }
-
-            HttpRequestQueueV2Handle requestQueueHandle = null;
 
             var statusCode = HttpApi.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
                     null,
                     flags,
-                    out requestQueueHandle);
+                    out var requestQueueHandle);
 
-            if (_mode == RequestQueueMode.AttachOrCreate && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
             {
-                // Tried to attach, but it didn't exist so create it.
-                Created = true;
-                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+                // Tried to create, but it already exist so attach to it instead.
+                Created = false;
+                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 statusCode = HttpApi.HttpCreateRequestQueue(
                         HttpApi.Version,
                         requestQueueName,
@@ -81,6 +79,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Handle = requestQueueHandle;
             BoundHandle = ThreadPoolBoundHandle.BindHandle(Handle);
+
+            if (!Created)
+            {
+                _logger.LogInformation("Attached to an existing request queue.");
+            }
         }
 
         /// <summary>

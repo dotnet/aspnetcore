@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public int MaxAccepts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long? MaxConnections { get { throw null; } set { } }
         public long? MaxRequestBodySize { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode Mode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long RequestQueueLimit { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode RequestQueueMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string RequestQueueName { get { throw null; } set { } }
         public bool ThrowWriteExceptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.HttpSys.TimeoutManager Timeouts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -65,9 +65,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public enum RequestQueueMode
     {
         Create = 0,
-        Controller = 1,
-        AttachToExisting = 2,
-        AttachOrCreate = 3,
+        Attach = 1,
+        CreateOrAttach = 2,
     }
     public sealed partial class TimeoutManager
     {

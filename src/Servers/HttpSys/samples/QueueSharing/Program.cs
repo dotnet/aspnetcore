@@ -21,10 +21,10 @@ namespace QueueSharing
             switch (key.KeyChar)
             {
                 case 'a':
-                    mode = RequestQueueMode.AttachToExisting;
+                    mode = RequestQueueMode.Attach;
                     break;
                 case 'o':
-                    mode = RequestQueueMode.AttachOrCreate;
+                    mode = RequestQueueMode.CreateOrAttach;
                     break;
                 case 'c':
                     mode = RequestQueueMode.Create;
