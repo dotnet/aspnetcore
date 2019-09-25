@@ -59,6 +59,12 @@
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
+    <!--
+      For now at least, build entire repo to settle the infrastructure and ignore out-of-date package baselines. May
+      revisit after aspnet/AspNetCore#12702 is complete.
+    -->
+    <IsPackageInThisPatch
+        Condition="'$(IsPackageInThisPatch)' == '' AND '$(IsServicingBuild)' == 'true' AND '$(StabilizePackageVersion)' != 'true'">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
