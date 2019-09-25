@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.6">
+<Baseline Version="2.2.7">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -12,8 +12,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="2.2.0-preview-35687" />
   <Package Id="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.6" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.6" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.7" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.7" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />
@@ -39,7 +39,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.2.7" />
   <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="2.2.5" />
@@ -53,7 +53,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Hosting" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
   <Package Id="Microsoft.AspNetCore.Html.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Http.Connections.Client" Version="1.1.0" />
@@ -122,7 +122,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="1.1.5" />
   <Package Id="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
   <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.2.7" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />

@@ -29,10 +29,6 @@ Later on, this will be checked using this condition:
       java:signalr;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.3' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
     <PackagesInPatch>
       @aspnet/signalr;
@@ -68,6 +64,10 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.DataProtection.AzureStorage;
       Microsoft.AspNetCore.Hosting;
       Microsoft.AspNetCore.SpaServices;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.8' ">
+    <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
