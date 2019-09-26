@@ -10,6 +10,9 @@ const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
+const internalAttributeNamePrefix = '__internal_';
+const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
+const eventStopBubblingAttributeNamePrefix = 'stopBubbling_';
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
@@ -310,8 +313,30 @@ export class BrowserRenderer {
         return this.tryApplyValueProperty(batch, element, attributeFrame);
       case 'checked':
         return this.tryApplyCheckedProperty(batch, element, attributeFrame);
-      default:
+      default: {
+        if (attributeName.startsWith(internalAttributeNamePrefix)) {
+          this.applyInternalAttribute(batch, element, attributeName.substring(internalAttributeNamePrefix.length), attributeFrame);
+          return true;
+        }
         return false;
+      }
+    }
+  }
+
+  private applyInternalAttribute(batch: RenderBatch, element: Element, internalAttributeName: string, attributeFrame: RenderTreeFrame | null) {
+    const attributeValue = attributeFrame ? batch.frameReader.attributeValue(attributeFrame) : null;
+
+    if (internalAttributeName.startsWith(eventStopBubblingAttributeNamePrefix)) {
+      // Stop bubbling
+      const eventName = internalAttributeName.substring(eventStopBubblingAttributeNamePrefix.length);
+      this.eventDelegator.setStopBubbling(element, eventName, attributeValue !== null);
+    } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
+      // Prevent default
+      const eventName = internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length);
+      this.eventDelegator.setPreventDefault(element, eventName, attributeValue !== null);
+    } else {
+      // The prefix makes this attribute name reserved, so any other usage is disallowed
+      throw new Error(`Unsupported internal attribute '${internalAttributeName}'`);
     }
   }
 
