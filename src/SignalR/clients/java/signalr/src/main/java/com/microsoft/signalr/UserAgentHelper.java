@@ -12,23 +12,36 @@ public class UserAgentHelper {
     }
 
     public static String createUserAgentString() {
+        return constructUserAgentString(Version.getDetailedVersion(), getOS(), "Java", getJavaVersion(), getJavaVendor());
+    }
+
+    public static String constructUserAgentString(String detailedVersion, String os, String runtime, String runtimeVersion, String vendor) {
         StringBuilder agentBuilder = new StringBuilder("Microsoft SignalR/");
 
-        // Parsing version numbers
-        String detailedVersion = Version.getDetailedVersion();
         agentBuilder.append(getVersion(detailedVersion));
         agentBuilder.append(" (");
         agentBuilder.append(detailedVersion);
-        agentBuilder.append("; ");
 
-        // Getting the OS name
-        agentBuilder.append(getOS());
-        agentBuilder.append("; Java; ");
+        if (!os.isEmpty()) {
+            agentBuilder.append("; ");
+            agentBuilder.append(os);
+        }
 
-        // Vendor and Version
-        agentBuilder.append(getJavaVersion());
-        agentBuilder.append("; ");
-        agentBuilder.append(getJavaVendor());
+        if (!runtime.isEmpty()) {
+            agentBuilder.append("; ");
+            agentBuilder.append(runtime);
+        }
+
+        if (!runtimeVersion.isEmpty()) {
+            agentBuilder.append("; ");
+            agentBuilder.append(runtimeVersion);
+        }
+
+        if (!vendor.isEmpty()) {
+            agentBuilder.append("; ");
+            agentBuilder.append(vendor);
+        }
+
         agentBuilder.append(")");
 
         return agentBuilder.toString();
@@ -49,6 +62,16 @@ public class UserAgentHelper {
     }
 
     static String getOS() {
-        return System.getProperty("os.name");
+        String osName = System.getProperty("os.name").toLowerCase();
+
+        if (osName.indexOf("win") >= 0) {
+            return "Windows NT";
+        } else if (osName.contains("mac") || osName.contains("darwin")) {
+            return "macOS";
+        } else if (osName.contains("linux")) {
+            return "Linux";
+        } else {
+            return osName;
+        }
     }
 }
