@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 {
     public class HtmlHelperComponentExtensionsTests
     {
-        private const string PrerenderedServerComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
-        private const string ServerComponentPattern = "^<!--Blazor:(.*?)-->$";
+        private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
+        private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
 
         private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.Server);
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, ServerComponentPattern);
+            var match = Regex.Match(content, ComponentPattern);
 
             // Assert
             Assert.True(match.Success);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.ServerPrerendered);
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
             // Assert
             Assert.True(match.Success);
@@ -122,6 +122,230 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         }
 
         [Fact]
+        public async Task CanRender_ParameterlessComponent_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.Client);
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, ComponentPattern);
+
+            // Assert
+            Assert.True(match.Success);
+            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Null(marker.PrerenderId);
+            Assert.Equal("client", marker.Type);
+            Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
+            Assert.Equal(typeof(TestComponent).FullName, marker.TypeName);
+        }
+
+        [Fact]
+        public async Task CanPrerender_ParameterlessComponent_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.ClientPrerendered);
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+
+            // Assert
+            Assert.True(match.Success);
+            var preamble = match.Groups["preamble"].Value;
+            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.NotNull(preambleMarker.PrerenderId);
+            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, preambleMarker.Assembly);
+            Assert.Equal(typeof(TestComponent).FullName, preambleMarker.TypeName);
+
+            var prerenderedContent = match.Groups["content"].Value;
+            Assert.Equal("<h1>Hello world!</h1>", prerenderedContent);
+
+            var epilogue = match.Groups["epilogue"].Value;
+            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
+            Assert.Null(epilogueMarker.Assembly);
+            Assert.Null(epilogueMarker.TypeName);
+            Assert.Null(epilogueMarker.Type);
+            Assert.Null(epilogueMarker.ParameterDefinitions);
+            Assert.Null(epilogueMarker.ParameterValues);        }
+
+        [Fact]
+        public async Task CanRender_ComponentWithParameters_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<GreetingComponent>(
+                RenderMode.Client,
+                new
+                {
+                    Name = "Daniel"
+                });
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, ComponentPattern);
+
+            // Assert
+            Assert.True(match.Success);
+            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Null(marker.PrerenderId);
+            Assert.Equal("client", marker.Type);
+            Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
+            Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
+
+            var parameterDefinition = Assert.Single(marker.ParameterDefinitions);
+            Assert.Equal("Name", parameterDefinition.Name);
+            Assert.Equal("System.String", parameterDefinition.TypeName);
+            Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
+
+            var value = Assert.Single(marker.ParameterValues);
+            var rawValue = Assert.IsType<JsonElement>(value);
+            Assert.Equal("Daniel", rawValue.GetString());
+        }
+
+        [Fact]
+        public async Task CanRender_ComponentWithNullParameters_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<GreetingComponent>(
+                RenderMode.Client,
+                new
+                {
+                    Name = (string)null
+                });
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, ComponentPattern);
+
+            // Assert
+            Assert.True(match.Success);
+            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Null(marker.PrerenderId);
+            Assert.Equal("client", marker.Type);
+            Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
+            Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
+
+            var parameterDefinition = Assert.Single(marker.ParameterDefinitions);
+            Assert.Equal("Name", parameterDefinition.Name);
+            Assert.Null(parameterDefinition.TypeName);
+            Assert.Null(parameterDefinition.Assembly);
+
+            var value = Assert.Single(marker.ParameterValues);
+            Assert.Null(value);
+        }
+
+        [Fact]
+        public async Task CanPrerender_ComponentWithParameters_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<GreetingComponent>(
+                RenderMode.ClientPrerendered,
+                new
+                {
+                    Name = "Daniel"
+                });
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+
+            // Assert
+            Assert.True(match.Success);
+            var preamble = match.Groups["preamble"].Value;
+            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.NotNull(preambleMarker.PrerenderId);
+            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
+            Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
+
+            var parameterDefinition = Assert.Single(preambleMarker.ParameterDefinitions);
+            Assert.Equal("Name", parameterDefinition.Name);
+            Assert.Equal("System.String", parameterDefinition.TypeName);
+            Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
+
+            var value = Assert.Single(preambleMarker.ParameterValues);
+            var rawValue = Assert.IsType<JsonElement>(value);
+            Assert.Equal("Daniel", rawValue.GetString());
+
+            var prerenderedContent = match.Groups["content"].Value;
+            Assert.Equal("<p>Hello Daniel!</p>", prerenderedContent);
+
+            var epilogue = match.Groups["epilogue"].Value;
+            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
+            Assert.Null(epilogueMarker.Assembly);
+            Assert.Null(epilogueMarker.TypeName);
+            Assert.Null(epilogueMarker.Type);
+            Assert.Null(epilogueMarker.ParameterDefinitions);
+            Assert.Null(epilogueMarker.ParameterValues);
+        }
+
+        [Fact]
+        public async Task CanPrerender_ComponentWithNullParameters_ClientMode()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var result = await helper.RenderComponentAsync<GreetingComponent>(
+                RenderMode.ClientPrerendered,
+                new
+                {
+                    Name = (string)null
+                });
+            result.WriteTo(writer, HtmlEncoder.Default);
+            var content = writer.ToString();
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+
+            // Assert
+            Assert.True(match.Success);
+            var preamble = match.Groups["preamble"].Value;
+            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.NotNull(preambleMarker.PrerenderId);
+            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
+            Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
+
+            var parameterDefinition = Assert.Single(preambleMarker.ParameterDefinitions);
+            Assert.Equal("Name", parameterDefinition.Name);
+            Assert.Null(parameterDefinition.TypeName);
+            Assert.Null(parameterDefinition.Assembly);
+
+            var value = Assert.Single(preambleMarker.ParameterValues);
+            Assert.Null(value);
+
+            var prerenderedContent = match.Groups["content"].Value;
+            Assert.Equal("<p>Hello (null)!</p>", prerenderedContent);
+
+            var epilogue = match.Groups["epilogue"].Value;
+            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
+            Assert.Null(epilogueMarker.Assembly);
+            Assert.Null(epilogueMarker.TypeName);
+            Assert.Null(epilogueMarker.Type);
+            Assert.Null(epilogueMarker.ParameterDefinitions);
+            Assert.Null(epilogueMarker.ParameterValues);
+        }
+
+        [Fact]
         public async Task CanRenderMultipleServerComponents()
         {
             // Arrange
@@ -135,12 +359,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var firstResult = await helper.RenderComponentAsync<TestComponent>(RenderMode.ServerPrerendered);
             firstResult.WriteTo(firstWriter, HtmlEncoder.Default);
             var firstComponent = firstWriter.ToString();
-            var firstMatch = Regex.Match(firstComponent, PrerenderedServerComponentPattern, RegexOptions.Multiline);
+            var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
             var secondResult = await helper.RenderComponentAsync<TestComponent>(RenderMode.Server);
             secondResult.WriteTo(secondWriter, HtmlEncoder.Default);
             var secondComponent = secondWriter.ToString();
-            var secondMatch = Regex.Match(secondComponent, ServerComponentPattern);
+            var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
             // Assert
             Assert.True(firstMatch.Success);
@@ -206,7 +430,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 });
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, ServerComponentPattern);
+            var match = Regex.Match(content, ComponentPattern);
 
             // Assert
             Assert.True(match.Success);
@@ -251,7 +475,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 });
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, ServerComponentPattern);
+            var match = Regex.Match(content, ComponentPattern);
 
             // Assert
             Assert.True(match.Success);
@@ -296,7 +520,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 });
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
             // Assert
             Assert.True(match.Success);
@@ -353,7 +577,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 });
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
-            var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
+            var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
             // Assert
             Assert.True(match.Success);
