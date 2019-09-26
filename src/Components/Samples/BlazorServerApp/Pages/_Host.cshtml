@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @namespace BlazorServerApp.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
@@ -14,7 +14,7 @@
 </head>
 <body>
     <app>
-        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered, new { SayHello = true }))
+        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
     <script src="_framework/blazor.server.js"></script>
