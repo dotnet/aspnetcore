@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             new InitCommand(null, null).Execute(MakeCommandContext(), projectDir);
 
             var projectDocument = XDocument.Load(projectFile);
-            Assert.False(projectDocument.Declaration is XDeclaration);
+            Assert.Null(projectDocument.Declaration);
         }
 
         [Fact]
