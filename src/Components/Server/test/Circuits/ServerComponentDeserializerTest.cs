@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private string SerializeComponent(string assembly, string type) =>
             JsonSerializer.Serialize(
-                new ServerComponent(0, assembly, type, "[]", "[]", Guid.NewGuid()),
+                new ServerComponent(0, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
                 ServerComponentSerializationSettings.JsonSerializationOptions);
 
         private ServerComponentDeserializer CreateServerComponentDeserializer()

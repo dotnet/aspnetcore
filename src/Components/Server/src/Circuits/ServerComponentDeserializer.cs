@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return default;
             }
 
-            if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParametersDefinitions, serverComponent.ParameterValues, out var parameters))
+            if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out var parameters))
             {
                 // TryDeserializeParameters does appropriate logging.
                 return default;

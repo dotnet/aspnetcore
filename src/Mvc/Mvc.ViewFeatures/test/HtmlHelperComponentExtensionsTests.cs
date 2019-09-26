@@ -223,15 +223,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Equal(typeof(GreetingComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.NotNull(serverComponent.ParametersDefinitions);
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(serverComponent.ParametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions));
+            var parameterDefinition = Assert.Single(serverComponent.ParameterDefinitions);
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Equal("System.String", parameterDefinition.TypeName);
             Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
 
-            Assert.NotNull(serverComponent.ParameterValues);
-            var value = Assert.Single(JsonSerializer.Deserialize<string[]>(serverComponent.ParameterValues));
-            Assert.Equal("Daniel", value);
+            var value = Assert.Single(serverComponent.ParameterValues);
+            var rawValue = Assert.IsType<JsonElement>(value);
+            Assert.Equal("Daniel", rawValue.GetString());
         }
 
         [Fact]
@@ -269,14 +268,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Equal(typeof(GreetingComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.NotNull(serverComponent.ParametersDefinitions);
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(serverComponent.ParametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions));
+            Assert.NotNull(serverComponent.ParameterDefinitions);
+            var parameterDefinition = Assert.Single(serverComponent.ParameterDefinitions);
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Null(parameterDefinition.TypeName);
             Assert.Null(parameterDefinition.Assembly);
 
-            Assert.NotNull(serverComponent.ParameterValues);
-            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(serverComponent.ParameterValues));
+            var value = Assert.Single(serverComponent.ParameterValues);;
             Assert.Null(value);
         }
 
@@ -317,15 +315,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Equal(typeof(GreetingComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.NotNull(serverComponent.ParametersDefinitions);
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(serverComponent.ParametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions));
+            var parameterDefinition = Assert.Single(serverComponent.ParameterDefinitions);
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Equal("System.String", parameterDefinition.TypeName);
             Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
 
-            Assert.NotNull(serverComponent.ParameterValues);
-            var value = Assert.Single(JsonSerializer.Deserialize<string[]>(serverComponent.ParameterValues));
-            Assert.Equal("Daniel", value);
+            var value = Assert.Single(serverComponent.ParameterValues);
+            var rawValue = Assert.IsType<JsonElement>(value);
+            Assert.Equal("Daniel", rawValue.GetString());
 
             var prerenderedContent = match.Groups["content"].Value;
             Assert.Equal("<p>Hello Daniel!</p>", prerenderedContent);
@@ -375,14 +372,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Equal(typeof(GreetingComponent).FullName, serverComponent.TypeName);
             Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
 
-            Assert.NotNull(serverComponent.ParametersDefinitions);
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(serverComponent.ParametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions));
+            Assert.NotNull(serverComponent.ParameterDefinitions);
+            var parameterDefinition = Assert.Single(serverComponent.ParameterDefinitions);
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Null(parameterDefinition.TypeName);
             Assert.Null(parameterDefinition.Assembly);
 
-            Assert.NotNull(serverComponent.ParameterValues);
-            var value = Assert.Single(JsonSerializer.Deserialize<string[]>(serverComponent.ParameterValues));
+            var value = Assert.Single(serverComponent.ParameterValues);
             Assert.Null(value);
 
             var prerenderedContent = match.Groups["content"].Value;

@@ -22,32 +22,21 @@ namespace Microsoft.AspNetCore.Components.Server
             _parametersCache = parametersCache;
         }
 
-        public bool TryDeserializeParameters(string parametersDefinitions, string parameterValues, out ParameterView parameters)
+        public bool TryDeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues, out ParameterView parameters)
         {
             parameters = default;
-            var definitions = GetParameterDefinitions(parametersDefinitions);
-            if (definitions == null)
-            {
-                return false;
-            }
-
-            var jsonValues = GetParameterValues(parameterValues);
-            if (jsonValues == null)
-            {
-                return false;
-            }
-            if (jsonValues.RootElement.ValueKind != JsonValueKind.Array)
-            {
-                Log.ParameterValuesInvalidFormat(_logger);
-                return false;
-            }
-
             var parametersDictionary = new Dictionary<string, object>();
-            var valuesEnumerator = jsonValues.RootElement.EnumerateArray();
-            var i = 0;
-            for (; i < definitions.Length && valuesEnumerator.MoveNext(); i++)
+
+            if (parameterValues.Count != parametersDefinitions.Count)
             {
-                var definition = definitions[i];
+                // Mismatched number of definition/parameter values.
+                Log.MismatchedParameterAndDefinitions(_logger, parametersDefinitions.Count, parameterValues.Count);
+                return false;
+            }
+
+            for (var i = 0; i < parametersDefinitions.Count; i++)
+            {
+                var definition = parametersDefinitions[i];
                 if (definition.Name == null)
                 {
                     Log.MissingParameterDefinitionName(_logger);
@@ -73,10 +62,14 @@ namespace Microsoft.AspNetCore.Components.Server
                     }
                     try
                     {
+                        // At this point we know the parameter is not null, as we don't serialize the type name or the assembly name
+                        // for null parameters.
+                        var value = (JsonElement)parameterValues[i];
                         var parameterValue = JsonSerializer.Deserialize(
-                            valuesEnumerator.Current.GetRawText(),
+                            value.GetRawText(),
                             parameterType,
                             ServerComponentSerializationSettings.JsonSerializationOptions);
+
                         parametersDictionary.Add(definition.Name, parameterValue);
                     }
                     catch (Exception e)
@@ -85,12 +78,6 @@ namespace Microsoft.AspNetCore.Components.Server
                         return false;
                     }
                 }
-            }
-            if (i != definitions.Length)
-            {
-                // Mismatched number of definition/parameter values.
-                Log.MismatchedParameterAndDefinitions(_logger, definitions.Length, jsonValues.RootElement.GetArrayLength());
-                return false;
             }
 
             parameters = ParameterView.FromDictionary(parametersDictionary);

@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 sequence,
                 rootComponent.Assembly.GetName().Name,
                 rootComponent.FullName,
-                JsonSerializer.Serialize(definitions, ServerComponentSerializationSettings.JsonSerializationOptions),
-                JsonSerializer.Serialize(values, ServerComponentSerializationSettings.JsonSerializationOptions),
+                definitions,
+                values,
                 invocationId.Value);
 
             var serializedServerComponent = JsonSerializer.Serialize(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);

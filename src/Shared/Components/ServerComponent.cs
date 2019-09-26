@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.Components
             int sequence,
             string assemblyName,
             string typeName,
-            string parametersDefinitions,
-            string parameterValues,
+            IList<ComponentParameter> parametersDefinitions,
+            IList<object> parameterValues,
             Guid invocationId) =>
-            (Sequence, AssemblyName, TypeName, ParametersDefinitions, ParameterValues, InvocationId) =
+            (Sequence, AssemblyName, TypeName, ParameterDefinitions, ParameterValues, InvocationId) =
             (sequence, assemblyName, typeName, parametersDefinitions, parameterValues, invocationId);
 
         // The order in which this component was rendered
@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Components
         public string TypeName { get; set; }
 
         // The definition for the parameters for the component.
-        public string ParametersDefinitions { get; set; }
+        public IList<ComponentParameter> ParameterDefinitions { get; set; }
 
         // The values for the parameters for the component.
-        public string ParameterValues { get; set; }
+        public IList<object> ParameterValues { get; set; }
 
         // An id that uniquely identifies all components generated as part of a single HTTP response.
         public Guid InvocationId { get; set; }
