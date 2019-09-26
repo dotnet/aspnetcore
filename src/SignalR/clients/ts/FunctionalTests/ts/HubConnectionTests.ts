@@ -6,6 +6,7 @@
 
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { getUserAgentHeader } from "@microsoft/signalr/dist/esm/Utils";
 
 import { eachTransport, eachTransportAndProtocolAndHttpClient, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
@@ -1084,6 +1085,25 @@ describe("hubConnection", () => {
             expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
             // Check to see that the Content-Type header is set the expected value
             expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
+
+            await hubConnection.stop();
+            done();
+        } catch (e) {
+            fail(e);
+        }
+    });
+
+    it("sets the user agent header", async (done) => {
+        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
+            .withHubProtocol(new JsonHubProtocol())
+            .build();
+
+        try {
+            await hubConnection.start();
+
+            // Check to see that the Content-Type header is set the expected value
+            const [name, value] = getUserAgentHeader();
+            expect(await hubConnection.invoke("GetHeader", name)).toEqual(value);
 
             await hubConnection.stop();
             done();

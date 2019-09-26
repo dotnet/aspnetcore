@@ -202,7 +202,8 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
     let userAgent: string = "Microsoft SignalR/";
 
-    userAgent += version.split("-")[0];
+    const majorAndMinor = version.split(".");
+    userAgent += `${majorAndMinor[0]}.${majorAndMinor[1]}`;
     userAgent += ` (${version}; `;
 
     if (os && os !== "") {
