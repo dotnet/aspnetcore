@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">MvcSandbox</a>
+    <a class="navbar-brand" href="">MvcSandbox for @User</a>
     <button class="navbar-toggler" @onclick="@ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -21,6 +21,8 @@
     bool collapseNavMenu = true;
 
     string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    [CascadingParameter(Name = "User")] public string User { get; set; }
 
     void ToggleNavMenu()
     {

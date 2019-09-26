@@ -67,6 +67,38 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             };
         }
 
+        /// <summary>
+        /// Renders the <paramref name="type"/> <see cref="IComponent"/>.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/>.</param>
+        /// <param name="type">The component type.</param>
+        /// <param name="parameters">An <see cref="object"/> containing the parameters to pass
+        /// to the component.</param>
+        /// <param name="renderMode">The <see cref="RenderMode"/> for the component.</param>
+        /// <returns>The HTML produced by the rendered <paramref name="type"/>.</returns>
+        public static async Task<IHtmlContent> RenderComponentAsync(
+            this IHtmlHelper htmlHelper,
+            Type type,
+            RenderMode renderMode,
+            object parameters)
+        {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            var context = htmlHelper.ViewContext.HttpContext;
+            return renderMode switch
+            {
+                RenderMode.Client => NonPrerenderedClientComponent(context, type, GetParametersCollection(parameters)),
+                RenderMode.ClientPrerendered => await PrerenderedClientComponentAsync(context, type, GetParametersCollection(parameters)),
+                RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(htmlHelper.ViewContext), type, GetParametersCollection(parameters)),
+                RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(context, GetOrCreateInvocationId(htmlHelper.ViewContext), type, GetParametersCollection(parameters)),
+                RenderMode.Static => await StaticComponentAsync(context, type, GetParametersCollection(parameters)),
+                _ => throw new ArgumentException("Invalid render mode", nameof(renderMode)),
+            };
+        }
+
         private static async Task<IHtmlContent> PrerenderedClientComponentAsync(HttpContext context, Type rootComponent, ParameterView parametersCollection)
         {
             var serviceProvider = context.RequestServices;
