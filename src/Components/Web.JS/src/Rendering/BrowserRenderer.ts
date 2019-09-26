@@ -284,15 +284,10 @@ export class BrowserRenderer {
   private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
-    const browserRendererId = this.browserRendererId;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
 
     if (eventHandlerId) {
-      const firstTwoChars = attributeName.substring(0, 2);
-      const eventName = attributeName.substring(2);
-      if (firstTwoChars !== 'on' || !eventName) {
-        throw new Error(`Attribute has nonzero event handler ID, but attribute name '${attributeName}' does not start with 'on'.`);
-      }
+      const eventName = stripOnPrefix(attributeName);
       this.eventDelegator.setListener(toDomElement, eventName, eventHandlerId, componentId);
       return;
     }
@@ -328,11 +323,11 @@ export class BrowserRenderer {
 
     if (internalAttributeName.startsWith(eventStopBubblingAttributeNamePrefix)) {
       // Stop bubbling
-      const eventName = internalAttributeName.substring(eventStopBubblingAttributeNamePrefix.length);
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopBubblingAttributeNamePrefix.length));
       this.eventDelegator.setStopBubbling(element, eventName, attributeValue !== null);
     } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
       // Prevent default
-      const eventName = internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length);
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));
       this.eventDelegator.setPreventDefault(element, eventName, attributeValue !== null);
     } else {
       // The prefix makes this attribute name reserved, so any other usage is disallowed
@@ -501,4 +496,12 @@ function clearBetween(start: Node, end: Node): void {
   // We sanitize the start comment by removing all the information from it now that we don't need it anymore
   // as it adds noise to the DOM.
   start.textContent = '!';
+}
+
+function stripOnPrefix(attributeName: string) {
+  if (attributeName.startsWith('on')) {
+    return attributeName.substring(2);
+  }
+
+  throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }
