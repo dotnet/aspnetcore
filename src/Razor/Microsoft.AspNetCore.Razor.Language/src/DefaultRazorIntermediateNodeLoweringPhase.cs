@@ -1099,8 +1099,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 if (node.Source != null)
                 {
-                    Debug.Assert(node.Source.Value.FilePath != null);
-
                     node.Source = new SourceSpan(
                         node.Source.Value.FilePath,
                         node.Source.Value.AbsoluteIndex,
