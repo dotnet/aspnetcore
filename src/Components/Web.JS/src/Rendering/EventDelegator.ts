@@ -74,6 +74,16 @@ export class EventDelegator {
     }
   }
 
+  public setStopBubbling(element: Element, eventName: string, value: boolean) {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    infoForElement.stopBubbling(eventName, value);
+  }
+
+  public setPreventDefault(element: Element, eventName: string, value: boolean) {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    infoForElement.preventDefault(eventName, value);
+  }
+
   private onGlobalEvent(evt: Event) {
     if (!(evt.target instanceof Element)) {
       return;
@@ -188,6 +198,8 @@ class EventHandlerInfosForElement {
   // that name at any one time.
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
   private handlers: { [eventName: string]: EventHandlerInfo } = {};
+  private preventDefaultFlags: { [eventName: string]: boolean } | null = null;
+  private stopBubblingFlags: { [eventName: string]: boolean } | null = null;
 
   public getHandler(eventName: string): EventHandlerInfo | null {
     return this.handlers.hasOwnProperty(eventName) ? this.handlers[eventName] : null;
@@ -201,8 +213,28 @@ class EventHandlerInfosForElement {
     delete this.handlers[eventName];
   }
 
+  public preventDefault(eventName: string, setValue: boolean | null): boolean {
+    if (setValue !== null) {
+      this.preventDefaultFlags = this.preventDefaultFlags || {};
+      this.preventDefaultFlags[eventName] = setValue;
+    }
+
+    return this.preventDefaultFlags ? this.preventDefaultFlags[eventName] : false;
+  }
+
+  public stopBubbling(eventName: string, setValue: boolean | null): boolean {
+    if (setValue !== null) {
+      this.stopBubblingFlags = this.stopBubblingFlags || {};
+      this.stopBubblingFlags[eventName] = setValue;
+    }
+
+    return this.stopBubblingFlags ? this.stopBubblingFlags[eventName] : false;
+  }
+
   public isEmpty(): boolean {
-    return Object.getOwnPropertyNames(this.handlers).length === 0;
+    return Object.getOwnPropertyNames(this.handlers).length === 0
+      && (!this.preventDefaultFlags || Object.getOwnPropertyNames(this.preventDefaultFlags).length === 0)
+      && (!this.stopBubblingFlags || Object.getOwnPropertyNames(this.stopBubblingFlags).length === 0);
   }
 }
 
