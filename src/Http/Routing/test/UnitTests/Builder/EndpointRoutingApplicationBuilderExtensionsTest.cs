@@ -295,6 +295,77 @@ namespace Microsoft.AspNetCore.Builder
                 e => Assert.Equal("Test endpoint 4", e.DisplayName));
         }
 
+        [Fact]
+        public void UseEndpoints_CallWithBuilder_SetsEndpointDataSource_WithMapsAndMiddleWareMaps()
+        {
+            // Arrange
+            var matcherEndpointDataSources = new List<EndpointDataSource>();
+            var matcherFactoryMock = new Mock<MatcherFactory>();
+            matcherFactoryMock
+                .Setup(m => m.CreateMatcher(It.IsAny<EndpointDataSource>()))
+                .Callback((EndpointDataSource arg) =>
+                {
+                    matcherEndpointDataSources.Add(arg);
+                })
+                .Returns(new TestMatcher(false));
+
+            var services = CreateServices(matcherFactoryMock.Object);
+
+            var app = new ApplicationBuilder(services);
+
+            // Act
+            app.UseRouting();
+
+            app.Map("/foo", b =>
+            {
+                b.UseRouting();
+                b.UseEndpoints(builder =>
+                {
+                    builder.Map("/1", d => null).WithDisplayName("Test endpoint 1");
+                    builder.Map("/2", d => null).WithDisplayName("Test endpoint 2");
+                    builder.MapMiddleware("/3", d => d.UseMiddleware<MyMiddleware>("Test Middleware 1")).WithDisplayName("Test endpoint 3");
+                });
+            });
+
+            app.UseEndpoints(builder =>
+            {
+                builder.Map("/4", d => null).WithDisplayName("Test endpoint 4");
+                builder.Map("/5", d => null).WithDisplayName("Test endpoint 5");
+                builder.MapMiddleware("/6", d => d.UseMiddleware<MyMiddleware>("Test Middleware 2")).WithDisplayName("Test endpoint 6");
+            });
+
+            // This triggers the middleware to be created and the matcher factory to be called
+            // with the datasource we want to test
+            var requestDelegate = app.Build();
+            requestDelegate(new DefaultHttpContext());
+            requestDelegate(new DefaultHttpContext() { Request = { Path = "/Foo", }, });
+
+            // Assert
+            Assert.Equal(2, matcherEndpointDataSources.Count);
+
+            // Each UseRouter has its own data source
+            Assert.Collection(matcherEndpointDataSources[1].Endpoints, // app.UseRouter
+                e => Assert.Equal("Test endpoint 1", e.DisplayName),
+                e => Assert.Equal("Test endpoint 2", e.DisplayName),
+                e => Assert.Equal("Test endpoint 3", e.DisplayName));
+
+            Assert.Collection(matcherEndpointDataSources[0].Endpoints, // b.UseRouter
+                e => Assert.Equal("Test endpoint 4", e.DisplayName),
+                e => Assert.Equal("Test endpoint 5", e.DisplayName),
+                e => Assert.Equal("Test endpoint 6", e.DisplayName));
+
+            var compositeEndpointBuilder = services.GetRequiredService<EndpointDataSource>();
+
+            // Global middleware has all endpoints
+            Assert.Collection(compositeEndpointBuilder.Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName),
+                e => Assert.Equal("Test endpoint 2", e.DisplayName),
+                e => Assert.Equal("Test endpoint 3", e.DisplayName),
+                e => Assert.Equal("Test endpoint 4", e.DisplayName),
+                e => Assert.Equal("Test endpoint 5", e.DisplayName),
+                e => Assert.Equal("Test endpoint 6", e.DisplayName));
+        }
+
         private IServiceProvider CreateServices()
         {
             return CreateServices(matcherFactory: null);
@@ -320,5 +391,24 @@ namespace Microsoft.AspNetCore.Builder
 
             return serviceProvder;
         }
+
+        private class MyMiddleware
+        {
+            private readonly RequestDelegate _next;
+            private readonly string _body;
+
+            public MyMiddleware(RequestDelegate next, string body)
+            {
+                _next = next;
+                _body = body;
+            }
+
+            public async Task InvokeAsync(HttpContext context)
+            {
+                await context.Response.WriteAsync(_body);
+            }
+        }
     }
+
+
 }

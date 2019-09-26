@@ -187,5 +187,108 @@ namespace Microsoft.AspNetCore.Builder
 
             return dataSource.AddEndpointBuilder(builder);
         }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> for the specified <paramref name="pattern"/>, and
+        /// <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
+        public static IEndpointConventionBuilder MapMiddleware(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            Action<IApplicationBuilder> action)
+        {
+            var nested = builder.CreateApplicationBuilder();
+            action(nested);
+            return builder.Map(pattern, nested.Build());
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that only matches HTTP requests for the given
+        /// <paramref name="httpMethods"/>, <paramref name="pattern"/>, and <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="httpMethods">The HTTP verb allowed by the route.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IEndpointConventionBuilder MapMiddlewareMethods(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            IEnumerable<string> httpMethods,
+            Action<IApplicationBuilder> action)
+        {
+            var nested = builder.CreateApplicationBuilder();
+            action(nested);
+            return builder.MapMethods(pattern, httpMethods, nested.Build());
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that only matches HTTP GET requests for the given
+        /// <paramref name="pattern"/>, and <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IEndpointConventionBuilder MapMiddlewareGet(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            Action<IApplicationBuilder> action)
+        {
+            return builder.MapMiddlewareMethods(pattern, GetVerb, action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that only matches HTTP POST requests for the given
+        /// <paramref name="pattern"/>, and <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IEndpointConventionBuilder MapMiddlewarePost(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            Action<IApplicationBuilder> action)
+        {
+            return builder.MapMiddlewareMethods(pattern, PostVerb, action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that only matches HTTP PUT requests for the given
+        /// <paramref name="pattern"/>, and <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IEndpointConventionBuilder MapMiddlewarePut(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            Action<IApplicationBuilder> action)
+        {
+            return builder.MapMiddlewareMethods(pattern, PutVerb, action);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// <paramref name="pattern"/>, and <paramref name="action"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IEndpointConventionBuilder MapMiddlewareDelete(
+            this IEndpointRouteBuilder builder,
+            string pattern,
+            Action<IApplicationBuilder> action)
+        {
+            return builder.MapMiddlewareMethods(pattern, DeleteVerb , action);
+        }
+
     }
 }
