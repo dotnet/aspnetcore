@@ -31,7 +31,7 @@ export interface OnEventCallback {
 export class EventDelegator {
   private static nextEventDelegatorId = 0;
 
-  private eventsCollectionKey: string;
+  private readonly eventsCollectionKey: string;
 
   private eventInfoStore: EventInfoStore;
 
@@ -42,21 +42,18 @@ export class EventDelegator {
   }
 
   public setListener(element: Element, eventName: string, eventHandlerId: number, renderingComponentId: number) {
-    // Ensure we have a place to store event info for this element
-    let infoForElement: EventHandlerInfosForElement = element[this.eventsCollectionKey];
-    if (!infoForElement) {
-      infoForElement = element[this.eventsCollectionKey] = {};
-    }
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const existingHandler = infoForElement.getHandler(eventName);
 
-    if (infoForElement.hasOwnProperty(eventName)) {
+    if (existingHandler) {
       // We can cheaply update the info on the existing object and don't need any other housekeeping
-      const oldInfo = infoForElement[eventName];
-      this.eventInfoStore.update(oldInfo.eventHandlerId, eventHandlerId);
+      // Note that this also takes care of updating the eventHandlerId on the existing handler object
+      this.eventInfoStore.update(existingHandler.eventHandlerId, eventHandlerId);
     } else {
       // Go through the whole flow which might involve registering a new global handler
       const newInfo = { element, eventName, eventHandlerId, renderingComponentId };
       this.eventInfoStore.add(newInfo);
-      infoForElement[eventName] = newInfo;
+      infoForElement.setHandler(eventName, newInfo);
     }
   }
 
@@ -69,12 +66,10 @@ export class EventDelegator {
       // Looks like this event handler wasn't already disposed
       // Remove the associated data from the DOM element
       const element = info.element;
-      if (element.hasOwnProperty(this.eventsCollectionKey)) {
-        const elementEventInfos: EventHandlerInfosForElement = element[this.eventsCollectionKey];
-        delete elementEventInfos[info.eventName];
-        if (Object.getOwnPropertyNames(elementEventInfos).length === 0) {
-          delete element[this.eventsCollectionKey];
-        }
+      const elementEventInfos = this.getEventHandlerInfosForElement(element, false);
+      if (elementEventInfos) {
+        elementEventInfos.removeHandler(info.eventName);
+        this.cleanEventHandlerInfosForElement(element);
       }
     }
   }
@@ -89,21 +84,38 @@ export class EventDelegator {
     let eventArgs: EventForDotNet<UIEventArgs> | null = null; // Populate lazily
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
     while (candidateElement) {
-      if (candidateElement.hasOwnProperty(this.eventsCollectionKey)) {
-        const handlerInfos: EventHandlerInfosForElement = candidateElement[this.eventsCollectionKey];
-        if (handlerInfos.hasOwnProperty(evt.type)) {
+      const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
+      if (handlerInfos) {
+        const handlerInfo = handlerInfos.getHandler(evt.type);
+        if (handlerInfo) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgs) {
             eventArgs = EventForDotNet.fromDOMEvent(evt);
           }
 
-          const handlerInfo = handlerInfos[evt.type];
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
           this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs, eventFieldInfo);
         }
       }
 
       candidateElement = eventIsNonBubbling ? null : candidateElement.parentElement;
+    }
+  }
+
+  private getEventHandlerInfosForElement(element: Element, createIfNeeded: boolean): EventHandlerInfosForElement | null {
+    if (element.hasOwnProperty(this.eventsCollectionKey)) {
+      return element[this.eventsCollectionKey];
+    } else if (createIfNeeded) {
+      return (element[this.eventsCollectionKey] = new EventHandlerInfosForElement());
+    } else {
+      return null;
+    }
+  }
+
+  private cleanEventHandlerInfosForElement(element: Element) {
+    const existingValue = this.getEventHandlerInfosForElement(element, false);
+    if (existingValue && existingValue.isEmpty()) {
+      delete element[this.eventsCollectionKey];
     }
   }
 }
@@ -168,14 +180,30 @@ class EventInfoStore {
   }
 }
 
-interface EventHandlerInfosForElement {
+class EventHandlerInfosForElement {
   // Although we *could* track multiple event handlers per (element, eventName) pair
   // (since they have distinct eventHandlerId values), there's no point doing so because
   // our programming model is that you declare event handlers as attributes. An element
   // can only have one attribute with a given name, hence only one event handler with
   // that name at any one time.
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
-  [eventName: string]: EventHandlerInfo;
+  private handlers: { [eventName: string]: EventHandlerInfo } = {};
+
+  public getHandler(eventName: string): EventHandlerInfo | null {
+    return this.handlers.hasOwnProperty(eventName) ? this.handlers[eventName] : null;
+  }
+
+  public setHandler(eventName: string, handler: EventHandlerInfo) {
+    this.handlers[eventName] = handler;
+  }
+
+  public removeHandler(eventName: string) {
+    delete this.handlers[eventName];
+  }
+
+  public isEmpty(): boolean {
+    return Object.getOwnPropertyNames(this.handlers).length === 0;
+  }
 }
 
 interface EventHandlerInfo {
