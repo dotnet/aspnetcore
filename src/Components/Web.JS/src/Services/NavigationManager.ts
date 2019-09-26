@@ -1,7 +1,8 @@
 import '@dotnet/jsinterop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { EventDelegator } from '../Rendering/EventDelegator';
 
-let hasRegisteredNavigationInterception = false;
+let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
@@ -28,34 +29,38 @@ function listenForNavigationEvents(callback: (uri: string, intercepted: boolean)
 }
 
 function enableNavigationInterception() {
-  if (hasRegisteredNavigationInterception) {
-    return;
-  }
+  hasEnabledNavigationInterception = true;
+}
 
-  hasRegisteredNavigationInterception = true;
+export function attachToEventDelegator(eventDelegator: EventDelegator) {
+  // We need to participate in EventDelegator's synthetic event bubbling process
+  // (so we can respect stopBubbling/preventDefault), so register with that instead
+  // of using a native JS event
+  eventDelegator.addLinkClickListener((clickEvent, anchorElement) => {
+    if (!hasEnabledNavigationInterception) {
+      return;
+    }
 
-  document.addEventListener('click', event => {
-    if (event.button !== 0 || eventHasSpecialKey(event)) {
+    if (clickEvent.button !== 0 || eventHasSpecialKey(clickEvent)) {
       // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
       return;
     }
 
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
-    const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement;
     const hrefAttributeName = 'href';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
-      const targetAttributeValue = anchorTarget.getAttribute('target');
+    if (anchorElement.hasAttribute(hrefAttributeName)) {
+      const targetAttributeValue = anchorElement.getAttribute('target');
       const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
       if (!opensInSameFrame) {
         return;
       }
 
-      const href = anchorTarget.getAttribute(hrefAttributeName)!;
+      const href = anchorElement.getAttribute(hrefAttributeName)!;
       const absoluteHref = toAbsoluteUri(href);
 
       if (isWithinBaseUriSpace(absoluteHref)) {
-        event.preventDefault();
+        clickEvent.preventDefault();
         performInternalNavigation(absoluteHref, true);
       }
     }

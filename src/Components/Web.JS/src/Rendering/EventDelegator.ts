@@ -25,6 +25,10 @@ export interface OnEventCallback {
   (event: Event, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>, eventFieldInfo: EventFieldInfo | null): void;
 }
 
+export interface OnLinkClickEventCallback {
+  (event: MouseEvent, element: HTMLAnchorElement): void;
+}
+
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
 // calling an EventInfoStore that deals with registering/unregistering the underlying delegated
 // event listeners as required (and also maps actual events back to the given callback).
@@ -32,6 +36,8 @@ export class EventDelegator {
   private static nextEventDelegatorId = 0;
 
   private readonly eventsCollectionKey: string;
+
+  private readonly linkClickListeners: OnLinkClickEventCallback[] = [];
 
   private eventInfoStore: EventInfoStore;
 
@@ -71,6 +77,16 @@ export class EventDelegator {
         elementEventInfos.removeHandler(info.eventName);
       }
     }
+  }
+
+  public addLinkClickListener(listener: OnLinkClickEventCallback) {
+    // This is very special-case. We could implement a full-fledged system for
+    // registering delegated event handlers (e.g., listening for all events that
+    // match a certain pattern, not just on a specific element) but there's no
+    // use case for that currently. Instead, just specifically let callers
+    // register for notifications about link clicks anywhere
+    this.linkClickListeners.push(listener);
+    this.eventInfoStore.addGlobalListener('click');
   }
 
   public setStopBubbling(element: Element, eventName: string, value: boolean) {
@@ -116,6 +132,13 @@ export class EventDelegator {
         }
       }
 
+      // Special case for link clicks for navigation interception
+      if (candidateElement instanceof HTMLAnchorElement && evt instanceof MouseEvent && evt.type === 'click') {
+        if (!evt.defaultPrevented) {
+          this.linkClickListeners.forEach(listener => listener(evt as MouseEvent, candidateElement as HTMLAnchorElement));
+        }
+      }
+
       candidateElement = (eventIsNonBubbling || stopBubblingWasRequested) ? null : candidateElement.parentElement;
     }
   }
@@ -149,7 +172,10 @@ class EventInfoStore {
 
     this.infosByEventHandlerId[info.eventHandlerId] = info;
 
-    const eventName = info.eventName;
+    this.addGlobalListener(info.eventName);
+  }
+
+  public addGlobalListener(eventName: string) {
     if (this.countByEventName.hasOwnProperty(eventName)) {
       this.countByEventName[eventName]++;
     } else {
