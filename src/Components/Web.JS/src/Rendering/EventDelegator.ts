@@ -69,7 +69,6 @@ export class EventDelegator {
       const elementEventInfos = this.getEventHandlerInfosForElement(element, false);
       if (elementEventInfos) {
         elementEventInfos.removeHandler(info.eventName);
-        this.cleanEventHandlerInfosForElement(element);
       }
     }
   }
@@ -119,13 +118,6 @@ export class EventDelegator {
       return (element[this.eventsCollectionKey] = new EventHandlerInfosForElement());
     } else {
       return null;
-    }
-  }
-
-  private cleanEventHandlerInfosForElement(element: Element) {
-    const existingValue = this.getEventHandlerInfosForElement(element, false);
-    if (existingValue && existingValue.isEmpty()) {
-      delete element[this.eventsCollectionKey];
     }
   }
 }
@@ -229,12 +221,6 @@ class EventHandlerInfosForElement {
     }
 
     return this.stopBubblingFlags ? this.stopBubblingFlags[eventName] : false;
-  }
-
-  public isEmpty(): boolean {
-    return Object.getOwnPropertyNames(this.handlers).length === 0
-      && (!this.preventDefaultFlags || Object.getOwnPropertyNames(this.preventDefaultFlags).length === 0)
-      && (!this.stopBubblingFlags || Object.getOwnPropertyNames(this.stopBubblingFlags).length === 0);
   }
 }
 
