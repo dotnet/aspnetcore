@@ -3592,6 +3592,64 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task StreamHubMethodCanAcceptNullableParameter()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.StreamNullableParameter), 5, null).OrTimeout();
+                    // Wait for the stream method to start
+                    var firstArgument = await tcsService.StartedMethod.Task.OrTimeout();
+                    Assert.Equal(5, firstArgument);
+
+                    var secondArgument = await tcsService.EndMethod.Task.OrTimeout();
+                    Assert.Null(secondArgument);
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task StreamHubMethodCanAcceptNullableParameterWithCancellationToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStreamNullableParameter), 5, null).OrTimeout();
+                    // Wait for the stream method to start
+                    var firstArgument = await tcsService.StartedMethod.Task.OrTimeout();
+                    Assert.Equal(5, firstArgument);
+
+                    // Cancel the stream which should trigger the CancellationToken in the hub method
+                    await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
+
+                    var secondArgument = await tcsService.EndMethod.Task.OrTimeout();
+                    Assert.Null(secondArgument);
+                }
+            }
+        }
+
+        [Fact]
         public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
         {
             using (StartVerifiableLog())
