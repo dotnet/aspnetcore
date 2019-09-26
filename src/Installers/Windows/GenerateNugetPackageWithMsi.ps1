@@ -24,7 +24,7 @@ if (-not (Test-Path $NuGetDir)) {
 if (-not (Test-Path $NuGetExe)) {
     # Using 3.5.0 to workaround https://github.com/NuGet/Home/issues/5016
     Write-Output "Downloading nuget.exe to $NuGetExe"
-    wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+    wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
 }
 
 & $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;
