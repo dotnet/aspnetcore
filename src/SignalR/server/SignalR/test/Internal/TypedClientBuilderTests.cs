@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                 send1 =>
                 {
                     Assert.Equal("Method", send1.Method);
-                    Assert.Equal(1, send1.Arguments.Length);
+                    Assert.Single(send1.Arguments);
                     Assert.Collection(send1.Arguments,
                         arg1 => Assert.Equal("foo", arg1));
                     Assert.Equal(cts1.Token, send1.CancellationToken);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                 send2 =>
                 {
                     Assert.Equal("NoArgumentMethod", send2.Method);
-                    Assert.Equal(0, send2.Arguments.Length);
+                    Assert.Empty(send2.Arguments);
                     Assert.Equal(cts2.Token, send2.CancellationToken);
                     send2.Complete();
                 });
