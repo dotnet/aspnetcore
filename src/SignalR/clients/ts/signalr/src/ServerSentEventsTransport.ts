@@ -3,10 +3,9 @@
 
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
-import { VERSION } from "./index";
 import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
-import { Arg, getDataDetail, Platform, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, Platform, sendMessage } from "./Utils";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
@@ -63,7 +62,13 @@ export class ServerSentEventsTransport implements ITransport {
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this.httpClient.getCookieString(url);
-                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers: { Cookie: cookies } } as EventSourceInit);
+                const headers = {
+                    Cookie: cookies,
+                };
+                const [name, value] = getUserAgentHeader();
+                headers[name] = value;
+
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers } as EventSourceInit);
             }
 
             try {
@@ -105,7 +110,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this.eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(VERSION, this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {

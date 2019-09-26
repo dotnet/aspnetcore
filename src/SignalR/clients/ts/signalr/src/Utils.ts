@@ -7,6 +7,10 @@ import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
 
+// Version token that will be replaced by the prepack command
+/** The version of the SignalR client. */
+export const VERSION: string = "0.0.0-DEV_BUILD";
+
 /** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
@@ -80,7 +84,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(version: string, logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
@@ -91,7 +95,8 @@ export async function sendMessage(version: string, logger: ILogger, transportNam
         }
     }
 
-    headers["X-SignalR-UserAgent"] = getUserAgent(version);
+    const [name, value] = getUserAgentHeader();
+    headers[name] = value;
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
@@ -184,13 +189,17 @@ export class ConsoleLogger implements ILogger {
 }
 
 /** @private */
-export function getUserAgent(version: string): string {
-    // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
-    return constructUserAgent(version, getOsName(), getRuntime(), getRuntimeVersion());
+export function getUserAgentHeader(): [string, string] {
+    let userAgentHeaderName = "X-SignalR-UserAgent";
+    if (Platform.isNode) {
+        userAgentHeaderName = "User-Agent";
+    }
+    return [ userAgentHeaderName, constructUserAgent(VERSION, getOsName(), getRuntime(), getRuntimeVersion()) ];
 }
 
 /** @private */
 export function constructUserAgent(version: string, os: string, runtime: string, runtimeVersion: string | undefined): string {
+    // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
     let userAgent: string = "Microsoft SignalR/";
 
     userAgent += version.split("-")[0];

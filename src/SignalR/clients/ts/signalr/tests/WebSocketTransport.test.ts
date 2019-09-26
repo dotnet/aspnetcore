@@ -3,6 +3,7 @@
 
 import { ILogger } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
+import { getUserAgentHeader } from "../src/Utils";
 import { WebSocketTransport } from "../src/WebSocketTransport";
 import { VerifyLogger } from "./Common";
 import { TestMessageEvent } from "./TestEventSource";
@@ -202,6 +203,32 @@ describe("WebSocketTransport", () => {
                 });
             });
         });
+
+    it("sets user agent header on connect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const webSocket = await createAndStartWebSocket(logger);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const [, value] = getUserAgentHeader();
+            expect(TestWebSocket.webSocket.options!.headers[`User-Agent`]).toEqual(value);
+
+            await webSocket.stop();
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBeUndefined();
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
 });
 
 async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat): Promise<WebSocketTransport> {

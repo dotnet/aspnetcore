@@ -12,6 +12,7 @@ export class TestWebSocket {
     public protocol: string;
     public readyState: number = 1;
     public url: string;
+    public options?: any;
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
@@ -67,10 +68,11 @@ export class TestWebSocket {
         throw new Error("Method not implemented.");
     }
 
-    constructor(url: string, protocols?: string | string[]) {
+    constructor(url: string, protocols?: string | string[], options?: any) {
         this.url = url;
         this.protocol = protocols ? (typeof protocols === "string" ? protocols : protocols[0]) : "";
         this.receivedData = [];
+        this.options = options;
 
         TestWebSocket.webSocket = this;
 
