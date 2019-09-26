@@ -89,9 +89,9 @@ export class EventDelegator {
     this.eventInfoStore.addGlobalListener('click');
   }
 
-  public setStopBubbling(element: Element, eventName: string, value: boolean) {
+  public setStopPropagation(element: Element, eventName: string, value: boolean) {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
-    infoForElement.stopBubbling(eventName, value);
+    infoForElement.stopPropagation(eventName, value);
   }
 
   public setPreventDefault(element: Element, eventName: string, value: boolean) {
@@ -108,7 +108,7 @@ export class EventDelegator {
     let candidateElement = evt.target as Element | null;
     let eventArgs: EventForDotNet<UIEventArgs> | null = null; // Populate lazily
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
-    let stopBubblingWasRequested = false;
+    let stopPropagationWasRequested = false;
     while (candidateElement) {
       const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
       if (handlerInfos) {
@@ -123,8 +123,8 @@ export class EventDelegator {
           this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs, eventFieldInfo);
         }
 
-        if (handlerInfos.stopBubbling(evt.type)) {
-          stopBubblingWasRequested = true;
+        if (handlerInfos.stopPropagation(evt.type)) {
+          stopPropagationWasRequested = true;
         }
 
         if (handlerInfos.preventDefault(evt.type)) {
@@ -139,7 +139,7 @@ export class EventDelegator {
         }
       }
 
-      candidateElement = (eventIsNonBubbling || stopBubblingWasRequested) ? null : candidateElement.parentElement;
+      candidateElement = (eventIsNonBubbling || stopPropagationWasRequested) ? null : candidateElement.parentElement;
     }
   }
 
@@ -226,7 +226,7 @@ class EventHandlerInfosForElement {
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
   private handlers: { [eventName: string]: EventHandlerInfo } = {};
   private preventDefaultFlags: { [eventName: string]: boolean } | null = null;
-  private stopBubblingFlags: { [eventName: string]: boolean } | null = null;
+  private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
 
   public getHandler(eventName: string): EventHandlerInfo | null {
     return this.handlers.hasOwnProperty(eventName) ? this.handlers[eventName] : null;
@@ -249,13 +249,13 @@ class EventHandlerInfosForElement {
     return this.preventDefaultFlags ? this.preventDefaultFlags[eventName] : false;
   }
 
-  public stopBubbling(eventName: string, setValue?: boolean): boolean {
+  public stopPropagation(eventName: string, setValue?: boolean): boolean {
     if (setValue !== undefined) {
-      this.stopBubblingFlags = this.stopBubblingFlags || {};
-      this.stopBubblingFlags[eventName] = setValue;
+      this.stopPropagationFlags = this.stopPropagationFlags || {};
+      this.stopPropagationFlags[eventName] = setValue;
     }
 
-    return this.stopBubblingFlags ? this.stopBubblingFlags[eventName] : false;
+    return this.stopPropagationFlags ? this.stopPropagationFlags[eventName] : false;
   }
 }
 
