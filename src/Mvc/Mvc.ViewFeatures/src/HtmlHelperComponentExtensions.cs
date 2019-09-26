@@ -94,11 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         private static async Task<IHtmlContent> PrerenderedServerComponentAsync(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
         {
-            if (parametersCollection.GetEnumerator().MoveNext())
-            {
-                throw new InvalidOperationException("Prerendering server components with parameters is not supported.");
-            }
-
             var serviceProvider = context.RequestServices;
             var prerenderer = serviceProvider.GetRequiredService<StaticComponentRenderer>();
             var invocationSerializer = serviceProvider.GetRequiredService<ServerComponentSerializer>();
@@ -106,6 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var currentInvocation = invocationSerializer.SerializeInvocation(
                 invocationId,
                 type,
+                parametersCollection,
                 prerendered: true);
 
             var result = await prerenderer.PrerenderComponentAsync(
@@ -121,14 +117,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         private static IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
         {
-            if (parametersCollection.GetEnumerator().MoveNext())
-            {
-                throw new InvalidOperationException("Server components with parameters are not supported.");
-            }
-
             var serviceProvider = context.RequestServices;
             var invocationSerializer = serviceProvider.GetRequiredService<ServerComponentSerializer>();
-            var currentInvocation = invocationSerializer.SerializeInvocation(invocationId, type, prerendered: false);
+            var currentInvocation = invocationSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
 
             return new ComponentHtmlContent(invocationSerializer.GetPreamble(currentInvocation));
         }

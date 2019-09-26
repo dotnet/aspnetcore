@@ -27,6 +27,10 @@
                 <p>Some content after</p>
             </div>
         </div>
+        <div id="container">
+            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server, new { Name = "Albert" }))
+            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered, new { Name = "Abraham" }))
+        </div>
     </div>
 
     @*
