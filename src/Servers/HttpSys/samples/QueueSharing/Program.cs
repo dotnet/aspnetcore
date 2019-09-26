@@ -40,7 +40,11 @@ namespace QueueSharing
                 {
                     webHost.UseHttpSys(options =>
                     {
-                        options.UrlPrefixes.Add("http://localhost:5000");
+                        // Skipping this to ensure the server works without any prefixes in attach mode.
+                        if (mode != RequestQueueMode.Attach)
+                        {
+                            options.UrlPrefixes.Add("http://localhost:5002");
+                        }
                         options.RequestQueueName = "QueueName";
                         options.RequestQueueMode = mode;
                         options.MaxAccepts = 1; // Better load rotation between instances.

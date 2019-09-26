@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -623,6 +624,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 await server.StopAsync(default(CancellationToken)).TimeoutAfter(TimeSpan.FromSeconds(10));
             }
+        }
+
+        [ConditionalFact]
+        public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded()
+        {
+            var queueName = Guid.NewGuid().ToString();
+            using var server = Utilities.CreateHttpServer(out var address, httpContext => Task.CompletedTask, options =>
+            {
+                options.RequestQueueName = queueName;
+            });
+            using var attachedServer = Utilities.CreatePump(options =>
+            {
+                options.RequestQueueName = queueName;
+                options.RequestQueueMode = RequestQueueMode.Attach;
+            });
+            await attachedServer.StartAsync(new DummyApplication(context => Task.CompletedTask), default);
+            var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();
+            Assert.Empty(addressesFeature.Addresses);
+            Assert.Empty(attachedServer.Listener.Options.UrlPrefixes);
         }
 
         private async Task<string> SendRequestAsync(string uri)
