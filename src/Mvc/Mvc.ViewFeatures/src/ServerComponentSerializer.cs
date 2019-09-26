@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             var sequence = invocationId.Next();
 
-            var (definitions, values) = ServerComponentParameter.FromParameterView(parameters);
+            var (definitions, values) = ComponentParameter.FromParameterView(parameters);
 
             var serverComponent = new ServerComponent(
                 sequence,

@@ -6,20 +6,20 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal struct ServerComponentParameter
+    internal struct ComponentParameter
     {
         public string Name { get; set; }
         public string TypeName { get; set; }
         public string Assembly { get; set; }
 
-        public static (IList<ServerComponentParameter> parameterDefinitions, IList<object> parameterValues) FromParameterView(ParameterView parameters)
+        public static (IList<ComponentParameter> parameterDefinitions, IList<object> parameterValues) FromParameterView(ParameterView parameters)
         {
-            var parameterDefinitions = new List<ServerComponentParameter>();
+            var parameterDefinitions = new List<ComponentParameter>();
             var parameterValues = new List<object>();
             foreach (var kvp in parameters)
             {
                 var valueType = kvp.Value?.GetType();
-                parameterDefinitions.Add(new ServerComponentParameter
+                parameterDefinitions.Add(new ComponentParameter
                 {
                     Name = kvp.Name,
                     TypeName = valueType?.FullName,

@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _ephemeralDataProtectionProvider,
                 NullLogger<ServerComponentDeserializer>.Instance,
                 new ServerComponentTypeCache(),
-                new ServerComponentParametersTypeCache());
+                new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
         }
 
         private string SerializeMarkers(ServerComponentMarker[] markers) =>

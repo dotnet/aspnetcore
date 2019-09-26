@@ -25,8 +25,12 @@ namespace Microsoft.AspNetCore.Components.Server
     // 'sequence' indicates the order in which this component got rendered on the server.
     // 'assemblyName' the assembly name for the rendered component.
     // 'type' the full type name for the rendered component.
+    // 'parameterDefinitions' a JSON serialized array that contains the definitions for the parameters including their names and types and assemblies.
+    // 'parameterValues' a JSON serialized array containing the parameter values.
     // 'invocationId' a random string that matches all components rendered by as part of a single HTTP response.
     // For example: base64(dataprotection({ "sequence": 1, "assemblyName": "Microsoft.AspNetCore.Components", "type":"Microsoft.AspNetCore.Components.Routing.Router", "invocationId": "<<guid>>"}))
+    // With parameters
+    // For example: base64(dataprotection({ "sequence": 1, "assemblyName": "Microsoft.AspNetCore.Components", "type":"Microsoft.AspNetCore.Components.Routing.Router", "invocationId": "<<guid>>", parameterDefinitions: "[{ \"name\":\"Parameter\", \"typeName\":\"string\", \"assembly\":\"System.Private.CoreLib\"}], parameterValues: [<<string-value>>]}))
 
     // Serialization:
     // For a given response, MVC renders one or more markers in sequence, including a descriptor for each rendered
@@ -55,13 +59,13 @@ namespace Microsoft.AspNetCore.Components.Server
         private readonly IDataProtector _dataProtector;
         private readonly ILogger<ServerComponentDeserializer> _logger;
         private readonly ServerComponentTypeCache _rootComponentTypeCache;
-        private readonly ServerComponentParametersTypeCache _parametersTypeCache;
+        private readonly ComponentParameterDeserializer _parametersDeserializer;
 
         public ServerComponentDeserializer(
             IDataProtectionProvider dataProtectionProvider,
             ILogger<ServerComponentDeserializer> logger,
             ServerComponentTypeCache rootComponentTypeCache,
-            ServerComponentParametersTypeCache parametersTypeCache)
+            ComponentParameterDeserializer parametersDeserializer)
         {
             // When we protect the data we use a time-limited data protector with the
             // limits established in 'ServerComponentSerializationSettings.DataExpiration'
@@ -76,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             _logger = logger;
             _rootComponentTypeCache = rootComponentTypeCache;
-            _parametersTypeCache = parametersTypeCache;
+            _parametersDeserializer = parametersDeserializer;
         }
 
         public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
@@ -179,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return default;
             }
 
-            if (!TryDeserializeParameters(_logger, serverComponent.ParametersDefinitions, serverComponent.ParameterValues, out var parameters))
+            if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParametersDefinitions, serverComponent.ParameterValues, out var parameters))
             {
                 // TryDeserializeParameters does appropriate logging.
                 return default;
@@ -193,100 +197,6 @@ namespace Microsoft.AspNetCore.Components.Server
             };
 
             return (componentDescriptor, serverComponent);
-        }
-
-        private bool TryDeserializeParameters(ILogger<ServerComponentDeserializer> logger, string parametersDefinitions, string parameterValues, out ParameterView parameters)
-        {
-            parameters = default;
-            var definitions = GetParameterDefinitions(parametersDefinitions, logger);
-            if (definitions == null)
-            {
-                return false;
-            }
-
-            var jsonValues = GetParameterValues(parameterValues, logger);
-            if (jsonValues == null)
-            {
-                return false;
-            }
-            if (jsonValues.RootElement.ValueKind !=JsonValueKind.Array)
-            {
-                // Invalid format
-                return false;
-            }
-
-            var parametersDictionary = new Dictionary<string, object>();
-            var valuesEnumerator = jsonValues.RootElement.EnumerateArray();
-            var i = 0;
-            for (; i < definitions.Length && valuesEnumerator.MoveNext(); i++)
-            {
-                var definition = definitions[i];
-                if (definition.TypeName == null && definition.Assembly == null)
-                {
-                    parametersDictionary.Add(definition.Name, null);
-                }
-                else if (definition.TypeName == null || definition.Assembly == null)
-                {
-                    // Invalid parameter descriptor.
-                    return false;
-                }
-                else
-                {
-                    var parameterType = _parametersTypeCache.GetParameterType(definition.Assembly, definition.TypeName);
-                    if (parameterType == null)
-                    {
-                        // Invalid parameter type.
-                        return false;
-                    }
-                    try
-                    {
-                        var parameterValue = JsonSerializer.Deserialize(
-                            valuesEnumerator.Current.GetRawText(),
-                            parameterType,
-                            ServerComponentSerializationSettings.JsonSerializationOptions);
-                        parametersDictionary.Add(definition.Name, parameterValue);
-                    }
-                    catch (Exception)
-                    {
-                        // Invalid parameter value.
-                        return false;
-                    }
-                }
-            }
-            if (i != definitions.Length)
-            {
-                // Mismatched number of definition/parameter values.
-                return false;
-            }
-
-            parameters = ParameterView.FromDictionary(parametersDictionary);
-            return true;
-        }
-
-        private JsonDocument GetParameterValues(string parameterValues, ILogger<ServerComponentDeserializer> logger)
-        {
-            try
-            {
-                return JsonDocument.Parse(parameterValues);
-            }
-            catch (Exception)
-            {
-                // Log exception
-                return null;
-            }
-        }
-
-        private ServerComponentParameter[] GetParameterDefinitions(string parametersDefinitions, ILogger<ServerComponentDeserializer> logger)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<ServerComponentParameter[]>(parametersDefinitions, ServerComponentSerializationSettings.JsonSerializationOptions);
-            }
-            catch (Exception)
-            {
-                // Log exception
-                return null;
-            }
         }
 
         private static class Log
