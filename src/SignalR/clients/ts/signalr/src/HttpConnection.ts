@@ -6,6 +6,7 @@ import { HttpClient } from "./HttpClient";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { ILogger, LogLevel } from "./ILogger";
+import { VERSION } from "./index";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
@@ -312,7 +313,7 @@ export class HttpConnection implements IConnection {
             }
         }
 
-        headers["X-SignalR-UserAgent"] = getUserAgent();
+        headers["X-SignalR-UserAgent"] = getUserAgent(VERSION);
 
         const negotiateUrl = this.resolveNegotiateUrl(url);
         this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);

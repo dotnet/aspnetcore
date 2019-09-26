@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { VERSION } from ".";
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { NullLogger } from "./Loggers";
@@ -81,7 +80,7 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
+export async function sendMessage(version: string, logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
     let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
@@ -92,7 +91,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         }
     }
 
-    headers["X-SignalR-UserAgent"] = getUserAgent(),
+    headers["X-SignalR-UserAgent"] = getUserAgent(version);
 
     logger.log(LogLevel.Trace, `(${transportName} transport) sending data. ${getDataDetail(content, logMessageContent)}.`);
 
@@ -185,9 +184,9 @@ export class ConsoleLogger implements ILogger {
 }
 
 /** @private */
-export function getUserAgent(): string {
+export function getUserAgent(version: string): string {
     // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
-    return constructUserAgent(VERSION, getOsName(), getRuntime(), getRuntimeVersion());
+    return constructUserAgent(version, getOsName(), getRuntime(), getRuntimeVersion());
 }
 
 /** @private */

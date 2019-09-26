@@ -3,6 +3,7 @@
 
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
+import { VERSION } from "./index";
 import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
 import { Arg, getDataDetail, Platform, sendMessage } from "./Utils";
@@ -104,7 +105,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this.eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(VERSION, this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public stop(): Promise<void> {

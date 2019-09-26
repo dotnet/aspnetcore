@@ -5,6 +5,7 @@ import { AbortController } from "./AbortController";
 import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
+import { VERSION } from "./index";
 import { ITransport, TransferFormat } from "./ITransport";
 import { Arg, getDataDetail, getUserAgent, sendMessage } from "./Utils";
 
@@ -61,7 +62,7 @@ export class LongPollingTransport implements ITransport {
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
             headers: {
-                ["X-SignalR-UserAgent"]: `${getUserAgent()}`,
+                ["X-SignalR-UserAgent"]: `${getUserAgent(VERSION)}`,
             },
             timeout: 100000,
         };
@@ -180,7 +181,7 @@ export class LongPollingTransport implements ITransport {
         if (!this.running) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "LongPolling", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
+        return sendMessage(VERSION, this.logger, "LongPolling", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent);
     }
 
     public async stop(): Promise<void> {
