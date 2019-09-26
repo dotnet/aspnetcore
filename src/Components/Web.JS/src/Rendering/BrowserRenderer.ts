@@ -5,6 +5,7 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './RendererEventDispatcher';
+import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -26,6 +27,11 @@ export class BrowserRenderer {
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
       raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
     });
+
+    // We don't yet know whether or not navigation interception will be enabled, but in case it will be,
+    // we wire up the navigation manager to the event delegator so it has the option to participate
+    // in the synthetic event bubbling process later
+    attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
