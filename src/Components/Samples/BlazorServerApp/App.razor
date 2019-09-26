@@ -1,4 +1,4 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
+<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
@@ -8,3 +8,9 @@
         </LayoutView>
     </NotFound>
 </Router>
+if(SayHello){
+    <p>Hello from a prerendered parameter!</p>
+}
+@code{
+    [Parameter] public bool SayHello {get; set;}
+}
