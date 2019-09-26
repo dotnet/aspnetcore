@@ -10,26 +10,26 @@
 </head>
 <body>
     <div id="test-container">
-        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
-        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
-        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Static, new { Name = "John" }))
-        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+        <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" />
+        <component type="typeof(GreeterComponent)" render-mode="Server" />
+        <component type="typeof(GreeterComponent)" render-mode="Static" parameter-name='"John"' />
+        <component type="typeof(GreeterComponent)" render-mode="Server"/>
         <div id="container">
             <p>Some content before</p>
-            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+            <component type="typeof(GreeterComponent)" render-mode="Server"/>
             <p>Some content between</p>
-            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+            <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered"/>
             <p>Some content after</p>
             <div id="nested-an-extra-level">
                 <p>Some content before</p>
-                @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
-                @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+                <component type="typeof(GreeterComponent)" render-mode="Server"/>
+                <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered"/>
                 <p>Some content after</p>
             </div>
         </div>
         <div id="container">
-            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server, new { Name = "Albert" }))
-            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered, new { Name = "Abraham" }))
+            <component type="typeof(GreeterComponent)" render-mode="Server" parameter-name='"Albert"' />
+            <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" parameter-name='"Abraham"' />
         </div>
     </div>
 
