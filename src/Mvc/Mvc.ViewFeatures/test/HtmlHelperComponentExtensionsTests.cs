@@ -175,7 +175,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Null(epilogueMarker.TypeName);
             Assert.Null(epilogueMarker.Type);
             Assert.Null(epilogueMarker.ParameterDefinitions);
-            Assert.Null(epilogueMarker.ParameterValues);        }
+            Assert.Null(epilogueMarker.ParameterValues);
+        }
 
         [Fact]
         public async Task CanRender_ComponentWithParameters_ClientMode()
