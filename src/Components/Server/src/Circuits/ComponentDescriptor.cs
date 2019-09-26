@@ -10,11 +10,9 @@ namespace Microsoft.AspNetCore.Components.Server
         public Type ComponentType { get; set; }
 
         public int Sequence { get; set; }
+        public ParameterView Parameters { get; set; }
 
-        public void Deconstruct(out Type componentType, out int sequence)
-        {
-            componentType = ComponentType;
-            sequence = Sequence;
-        }
+        public void Deconstruct(out Type componentType, out ParameterView parameters, out int sequence) =>
+            (componentType, sequence, parameters) = (ComponentType, Sequence, Parameters);
     }
 }

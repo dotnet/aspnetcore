@@ -8,12 +8,11 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
-    // A cache for root component parameter types
-    internal class ServerComponentTypeCache
+    internal class ServerComponentParametersTypeCache
     {
         private readonly ConcurrentDictionary<Key, Type> _typeToKeyLookUp = new ConcurrentDictionary<Key, Type>();
 
-        public Type GetRootComponent(string assembly, string type)
+        public Type GetParameterType(string assembly, string type)
         {
             var key = new Key(assembly, type);
             if (_typeToKeyLookUp.TryGetValue(key, out var resolvedType))
