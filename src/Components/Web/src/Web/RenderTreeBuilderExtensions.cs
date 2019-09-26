@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Components.Web
     /// </summary>
     public static class RenderTreeBuilderExtensions
     {
-        // The "prevent default" and "stop bubbling" flags behave like attributes, in that:
+        // The "prevent default" and "stop propagation" flags behave like attributes, in that:
         // - you can have multiple of them on a given element (for separate events)
         // - you can add and remove them dynamically
-        // - they are independent of other attributes (e.g., you can "stop bubbling" of a given
+        // - they are independent of other attributes (e.g., you can "stop propagation" of a given
         //   event type on an element that doesn't itself have a handler for that event)
         // As such, they are represented as attributes to give the right diffing behavior.
         //
@@ -39,15 +39,15 @@ namespace Microsoft.AspNetCore.Components.Web
 
         /// <summary>
         /// Appends a frame representing an instruction to stop the specified event from
-        /// bubbling up beyond the current element.
+        /// propagating beyond the current element.
         /// </summary>
         /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="eventName">The name of the event to be affected.</param>
-        /// <param name="value">True if bubbling should stop bubbling here, otherwise false.</param>
-        public static void AddEventStopBubblingAttribute(this RenderTreeBuilder builder, int sequence, string eventName, bool value)
+        /// <param name="value">True if propagation should be stopped here, otherwise false.</param>
+        public static void AddEventStopPropagationAttribute(this RenderTreeBuilder builder, int sequence, string eventName, bool value)
         {
-            builder.AddAttribute(sequence, $"__internal_stopBubbling_{eventName}", value);
+            builder.AddAttribute(sequence, $"__internal_stopPropagation_{eventName}", value);
         }
     }
 }

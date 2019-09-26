@@ -13,7 +13,7 @@ const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
-const eventStopBubblingAttributeNamePrefix = 'stopBubbling_';
+const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
@@ -327,10 +327,10 @@ export class BrowserRenderer {
   private applyInternalAttribute(batch: RenderBatch, element: Element, internalAttributeName: string, attributeFrame: RenderTreeFrame | null) {
     const attributeValue = attributeFrame ? batch.frameReader.attributeValue(attributeFrame) : null;
 
-    if (internalAttributeName.startsWith(eventStopBubblingAttributeNamePrefix)) {
-      // Stop bubbling
-      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopBubblingAttributeNamePrefix.length));
-      this.eventDelegator.setStopBubbling(element, eventName, attributeValue !== null);
+    if (internalAttributeName.startsWith(eventStopPropagationAttributeNamePrefix)) {
+      // Stop propagation
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopPropagationAttributeNamePrefix.length));
+      this.eventDelegator.setStopPropagation(element, eventName, attributeValue !== null);
     } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
       // Prevent default
       const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));

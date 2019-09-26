@@ -34,7 +34,7 @@ function enableNavigationInterception() {
 
 export function attachToEventDelegator(eventDelegator: EventDelegator) {
   // We need to participate in EventDelegator's synthetic event bubbling process
-  // (so we can respect stopBubbling/preventDefault), so register with that instead
+  // (so we can respect stopPropagation/preventDefault), so register with that instead
   // of using a native JS event
   eventDelegator.addLinkClickListener((clickEvent, anchorElement) => {
     if (!hasEnabledNavigationInterception) {
