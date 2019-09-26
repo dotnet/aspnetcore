@@ -92,6 +92,7 @@ export class EventDelegator {
     let candidateElement = evt.target as Element | null;
     let eventArgs: EventForDotNet<UIEventArgs> | null = null; // Populate lazily
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
+    let stopBubblingWasRequested = false;
     while (candidateElement) {
       const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
       if (handlerInfos) {
@@ -105,9 +106,13 @@ export class EventDelegator {
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
           this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs, eventFieldInfo);
         }
+
+        if (handlerInfos.stopBubbling(evt.type)) {
+          stopBubblingWasRequested = true;
+        }
       }
 
-      candidateElement = eventIsNonBubbling ? null : candidateElement.parentElement;
+      candidateElement = (eventIsNonBubbling || stopBubblingWasRequested) ? null : candidateElement.parentElement;
     }
   }
 
@@ -205,8 +210,8 @@ class EventHandlerInfosForElement {
     delete this.handlers[eventName];
   }
 
-  public preventDefault(eventName: string, setValue: boolean | null): boolean {
-    if (setValue !== null) {
+  public preventDefault(eventName: string, setValue?: boolean): boolean {
+    if (setValue !== undefined) {
       this.preventDefaultFlags = this.preventDefaultFlags || {};
       this.preventDefaultFlags[eventName] = setValue;
     }
@@ -214,8 +219,8 @@ class EventHandlerInfosForElement {
     return this.preventDefaultFlags ? this.preventDefaultFlags[eventName] : false;
   }
 
-  public stopBubbling(eventName: string, setValue: boolean | null): boolean {
-    if (setValue !== null) {
+  public stopBubbling(eventName: string, setValue?: boolean): boolean {
+    if (setValue !== undefined) {
       this.stopBubblingFlags = this.stopBubblingFlags || {};
       this.stopBubblingFlags[eventName] = setValue;
     }
