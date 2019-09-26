@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components
             var parameterValues = new List<object>();
             foreach (var kvp in parameters)
             {
-                var valueType = kvp.Value.GetType();
+                var valueType = kvp.Value?.GetType();
                 parameterDefinitions.Add(new ServerComponentParameter
                 {
                     Name = kvp.Name,
