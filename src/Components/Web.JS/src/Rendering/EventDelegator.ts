@@ -110,6 +110,10 @@ export class EventDelegator {
         if (handlerInfos.stopBubbling(evt.type)) {
           stopBubblingWasRequested = true;
         }
+
+        if (handlerInfos.preventDefault(evt.type)) {
+          evt.preventDefault();
+        }
       }
 
       candidateElement = (eventIsNonBubbling || stopBubblingWasRequested) ? null : candidateElement.parentElement;
