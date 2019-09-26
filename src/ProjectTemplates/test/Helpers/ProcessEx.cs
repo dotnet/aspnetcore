@@ -104,7 +104,7 @@ namespace Templates.Test.Helpers
             return new ProcessEx(output, proc);
         }
 
-        public static ProcessEx RunViaShellAsync(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
+        public static ProcessEx RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
         {
             var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? ("cmd", "/c")

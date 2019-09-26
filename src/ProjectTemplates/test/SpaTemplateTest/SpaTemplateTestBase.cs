@@ -63,11 +63,11 @@ namespace Templates.Test.SpaTemplateTest
             using var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
             Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
 
-            using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
+            using var lintResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
             var testcommand = "npm run test" + template == "angular" ? "-- --watch=false" : "";
-            using var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, testcommand);
+            using var testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, testcommand);
             Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
 
             using var publishResult = await Project.RunDotNetPublishAsync();
@@ -157,7 +157,7 @@ namespace Templates.Test.SpaTemplateTest
             {
                 try
                 {
-                    testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npx rimraf ./build");
                     testResultExitCode = testResult.ExitCode;
                     if (testResultExitCode == 0)
                     {
