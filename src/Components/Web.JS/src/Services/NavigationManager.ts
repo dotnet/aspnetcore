@@ -33,34 +33,39 @@ function enableNavigationInterception() {
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator) {
-  // We need to participate in EventDelegator's synthetic event bubbling process
-  // (so we can respect stopPropagation/preventDefault), so register with that instead
-  // of using a native JS event
-  eventDelegator.addLinkClickListener((clickEvent, anchorElement) => {
+  // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
+  // running its simulated bubbling process so that we can respect any preventDefault requests.
+  // So instead of registering our own native event, register using the EventDelegator.
+  eventDelegator.notifyAfterClick(event => {
     if (!hasEnabledNavigationInterception) {
       return;
     }
 
-    if (clickEvent.button !== 0 || eventHasSpecialKey(clickEvent)) {
+    if (event.button !== 0 || eventHasSpecialKey(event)) {
       // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
+      return;
+    }
+
+    if (event.defaultPrevented) {
       return;
     }
 
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
+    const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
     const hrefAttributeName = 'href';
-    if (anchorElement.hasAttribute(hrefAttributeName)) {
-      const targetAttributeValue = anchorElement.getAttribute('target');
+    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
+      const targetAttributeValue = anchorTarget.getAttribute('target');
       const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
       if (!opensInSameFrame) {
         return;
       }
 
-      const href = anchorElement.getAttribute(hrefAttributeName)!;
+      const href = anchorTarget.getAttribute(hrefAttributeName)!;
       const absoluteHref = toAbsoluteUri(href);
 
       if (isWithinBaseUriSpace(absoluteHref)) {
-        clickEvent.preventDefault();
+        event.preventDefault();
         performInternalNavigation(absoluteHref, true);
       }
     }
