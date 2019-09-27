@@ -41,7 +41,7 @@
         </label>
     </p>
     <p>
-        Textbox that can block keystrokes: <input __internal_preventDefault_onkeydown="@preventOnKeyDown" @onkeydown="@(() => LogEvent("Received keydown"))" />
+        Textbox that can block keystrokes: <input id="textbox-that-can-block-keystrokes" __internal_preventDefault_onkeydown="@preventOnKeyDown" @onkeydown="@(() => LogEvent("Received keydown"))" />
     </p>
 </div>
 
@@ -75,6 +75,7 @@
 <h3>Event log</h3>
 
 <textarea readonly @bind="logValue"></textarea>
+<button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
 
 @code {
     bool intermediateStopPropagation;
