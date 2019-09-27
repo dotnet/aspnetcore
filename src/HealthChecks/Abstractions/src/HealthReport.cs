@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         /// <summary>
         /// Gets a <see cref="HealthStatus"/> representing the aggregate status of all the health checks. The value of <see cref="Status"/>
-        /// will be the most servere status reported by a health check. If no checks were executed, the value is always <see cref="HealthStatus.Healthy"/>.
+        /// will be the most severe status reported by a health check. If no checks were executed, the value is always <see cref="HealthStatus.Healthy"/>.
         /// </summary>
         public HealthStatus Status { get; }
 
