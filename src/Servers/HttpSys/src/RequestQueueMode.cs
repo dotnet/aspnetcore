@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    /// <summary>
+    /// Used to indicate if this server instance should create a new Http.Sys request queue
+    /// or attach to an existing one.
+    /// </summary>
     public enum RequestQueueMode
     {
         /// <summary>
@@ -16,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         Attach,
         /// <summary>
         /// Create a queue with the given name if it does not already exist, otherwise attach to the existing queue.
+        /// Most configuration options do not apply when attaching to an existing queue.
         /// </summary>
         CreateOrAttach
     }
