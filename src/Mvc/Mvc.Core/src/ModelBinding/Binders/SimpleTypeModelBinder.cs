@@ -62,7 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             try
             {
-                var value = valueProviderResult.ToString();
+                var value = bindingContext.ModelType == typeof(string)
+                    ? valueProviderResult.FirstValue
+                    : valueProviderResult.ToString();
 
                 object model;
                 if (bindingContext.ModelType == typeof(string))
