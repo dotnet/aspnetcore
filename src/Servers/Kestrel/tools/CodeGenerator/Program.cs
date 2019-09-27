@@ -30,8 +30,13 @@ namespace CodeGenerator
                 Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
                 return 1;
             }
+            else if (args.Length < 5)
+            {
+                Console.Error.WriteLine("Missing path to Http2Connection.Generated.cs");
+                return 1;
+            }
 
-            Run(args[0], args[1], args[2], args[3]);
+            Run(args[0], args[1], args[2], args[3], args[4]);
 
             return 0;
         }
@@ -40,12 +45,14 @@ namespace CodeGenerator
             string knownHeadersPath,
             string httpProtocolFeatureCollectionPath,
             string httpUtilitiesPath,
-            string transportConnectionFeatureCollectionPath)
+            string transportConnectionFeatureCollectionPath,
+            string http2ConnectionPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
             var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GenerateFile();
             var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
             var transportConnectionFeatureCollectionContent = TransportConnectionFeatureCollection.GenerateFile();
+            var http2ConnectionContent = Http2Connection.GenerateFile();
 
             var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";
             if (!string.Equals(knownHeadersContent, existingKnownHeaders))
@@ -69,6 +76,12 @@ namespace CodeGenerator
             if (!string.Equals(transportConnectionFeatureCollectionContent, existingTransportConnectionFeatureCollection))
             {
                 File.WriteAllText(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
+            }
+
+            var existingHttp2Connection = File.Exists(http2ConnectionPath) ? File.ReadAllText(http2ConnectionPath) : "";
+            if (!string.Equals(http2ConnectionContent, existingHttp2Connection))
+            {
+                File.WriteAllText(http2ConnectionPath, http2ConnectionContent);
             }
         }
     }
