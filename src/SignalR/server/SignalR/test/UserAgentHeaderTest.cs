@@ -14,25 +14,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     public class UserAgentHeaderTest
     {
-        [Fact]
-        public void UserAgentHeaderIsAccurate()
-        {
-            var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
-            var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
-            var version = typeof(HttpConnection).Assembly.GetName().Version;
-            var os = RuntimeInformation.OSDescription;
-            var runtime = ".NET";
-            var runtimeVersion = RuntimeInformation.FrameworkDescription;
-            var assemblyVersion = typeof(Constants)
-                .Assembly
-                .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
-                .FirstOrDefault();
-            var userAgent = Constants.UserAgentHeader;
-            var expectedUserAgent = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
-
-            Assert.Equal(expectedUserAgent, userAgent);
-        }
-
         [Theory]
         [MemberData(nameof(UserAgents))]
         public void UserAgentHeaderIsCorrect(Version version, string detailedVersion, string os, string runtime, string runtimeVersion, string expected)
