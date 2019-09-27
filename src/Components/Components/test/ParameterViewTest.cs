@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
-            var parameters = new ParameterView(frames, 0);
+            var parameters = new ParameterView(null, frames, 0);
 
             // Assert
             Assert.Empty(ToEnumerable(parameters));
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1)
             };
-            var parameters = new ParameterView(frames, 0);
+            var parameters = new ParameterView(null, frames, 0);
 
             // Assert
             Assert.Empty(ToEnumerable(parameters));
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components
                 // end of the owner's descendants
                 RenderTreeFrame.Attribute(3, "orphaned attribute", "value")
             };
-            var parameters = new ParameterView(frames, 0);
+            var parameters = new ParameterView(null, frames, 0);
 
             // Assert
             Assert.Collection(ToEnumerable(parameters),
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components
                 RenderTreeFrame.Element(3, "child element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(4, "child attribute", "some value")
             };
-            var parameters = new ParameterView(frames, 0);
+            var parameters = new ParameterView(null, frames, 0);
 
             // Assert
             Assert.Collection(ToEnumerable(parameters),
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components
             var attribute1Value = new object();
             var attribute2Value = new object();
             var attribute3Value = new object();
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components
         public void CanTryGetNonExistingValue()
         {
             // Arrange
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components
         public void CanTryGetExistingValueWithCorrectType()
         {
             // Arrange
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var myEntryValue = new object();
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var myEntryValue = new object();
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components
         public void CanGetValueOrDefault_WithNonExistingValue()
         {
             // Arrange
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var explicitDefaultValue = new DateTime(2018, 3, 20);
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Components
         public void ThrowsIfTryGetExistingValueWithIncorrectType()
         {
             // Arrange
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var entry2Value = new object();
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var myEntryValue = new object();
-            var parameters = new ParameterView(new[]
+            var parameters = new ParameterView(null, new[]
             {
                 RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "unrelated value", new object())
