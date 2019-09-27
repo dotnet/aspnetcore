@@ -455,6 +455,49 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(0, () => BrowserScrollY);
         }
 
+        [Theory]
+        [InlineData("external", "ancestor")]
+        [InlineData("external", "target")]
+        [InlineData("external", "descendant")]
+        [InlineData("internal", "ancestor")]
+        [InlineData("internal", "target")]
+        [InlineData("internal", "descendant")]
+        public void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
+        {
+            SetUrlViaPushState("/PreventDefaultCases");
+            var app = Browser.MountTestComponent<TestRouter>();
+            var preventDefaultToggle = app.FindElement(By.CssSelector($".prevent-default .{whereToPreventDefault}"));
+            var linkElement = app.FindElement(By.Id($"{navigationType}-navigation"));
+            var counterButton = app.FindElement(By.ClassName("counter-button"));
+            if (whereToPreventDefault == "descendant")
+            {
+                // We're testing clicks on the link's descendant element
+                linkElement = linkElement.FindElement(By.TagName("span"));
+            }
+
+            // If preventDefault is on, then navigation does not occur
+            preventDefaultToggle.Click();
+            linkElement.Click();
+
+            // We check that no navigation ocurred by observing that we can still use the counter
+            counterButton.Click();
+            Browser.Equal("Counter: 1", () => counterButton.Text);
+
+            // Now if we toggle preventDefault back off, then navigation will occur
+            preventDefaultToggle.Click();
+            linkElement.Click();
+
+            if (navigationType == "external")
+            {
+                Browser.Equal("about:blank", () => Browser.Url);
+            }
+            else
+            {
+                Browser.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
+                AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+            }
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
