@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack.netstandard2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack.Manual.cs" Condition="Exists('Microsoft.AspNetCore.SignalR.Protocols.MessagePack.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
     <Reference Include="MessagePack"  />
   </ItemGroup>

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.DataProtection.netstandard2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.DataProtection.Manual.cs" Condition="Exists('Microsoft.AspNetCore.DataProtection.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal"  />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
@@ -17,6 +18,7 @@
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.DataProtection.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.DataProtection.Manual.cs" Condition="Exists('Microsoft.AspNetCore.DataProtection.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal"  />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SpaServices.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.SpaServices.Manual.cs" Condition="Exists('Microsoft.AspNetCore.SpaServices.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.NodeServices"  />
     <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers"  />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures"  />

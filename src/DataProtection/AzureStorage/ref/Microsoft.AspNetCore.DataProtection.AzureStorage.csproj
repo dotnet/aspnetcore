@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.DataProtection.AzureStorage.netstandard2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.DataProtection.AzureStorage.Manual.cs" Condition="Exists('Microsoft.AspNetCore.DataProtection.AzureStorage.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.DataProtection"  />
     <Reference Include="Microsoft.Azure.Storage.Blob"  />
     <Reference Include="Microsoft.Data.OData"  />

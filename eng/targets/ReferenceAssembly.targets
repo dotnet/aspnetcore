@@ -47,6 +47,7 @@
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(TargetFramework).cs</_RefSourceFileName>
+      <_ManualRefSourceFileName>$(AssemblyName).Manual.cs</_ManualRefSourceFileName>
       <_RefSourceFileOutputPath>$(_RefSourceOutputPath)$(_RefSourceFileName)</_RefSourceFileOutputPath>
     </PropertyGroup>
 
@@ -80,6 +81,7 @@
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
     <Compile Include="$(_RefSourceFileName)" />
+    <Compile Include="$(_ManualRefSourceFileName)" Condition="Exists('$(_ManualRefSourceFileName)')" />
     @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
   </ItemGroup>
 ]]>

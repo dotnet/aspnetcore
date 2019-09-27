@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault.netstandard2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault.Manual.cs" Condition="Exists('Microsoft.AspNetCore.DataProtection.AzureKeyVault.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.DataProtection"  />
     <Reference Include="Microsoft.Azure.KeyVault"  />
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory"  />

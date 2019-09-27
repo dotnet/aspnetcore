@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Http.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Http.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Http.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.WebUtilities"  />
     <Reference Include="Microsoft.Extensions.ObjectPool"  />

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.OAuth.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Authentication.OAuth.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Authentication.OAuth.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Authentication"  />
   </ItemGroup>
 </Project>
