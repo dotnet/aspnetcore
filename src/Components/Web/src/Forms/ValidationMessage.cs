@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public Expression<Func<TValue>> For { get; set; }
 
+        /// <summary>
+        /// Specifies the tag wrapper for message.
+        /// </summary>
+        [Parameter] public string Tag { get; set; } = "div";
+        
         /// <summary>`
         /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
         /// </summary>
@@ -68,21 +73,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
+        /// make easy for custom validation style
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
             {
-                builder.OpenElement(0, "div");
-                builder.AddMultipleAttributes(1, AdditionalAttributes);
-                builder.AddAttribute(2, "class", "validation-message");
+                builder.OpenElement(0, Tag);
+                builder.AddAttribute(1, "class", "validation-message");
+                builder.AddMultipleAttributes(2, AdditionalAttributes);
                 builder.AddContent(3, message);
                 builder.CloseElement();
             }
-        }
-
-        private void HandleValidationStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
-        {
-            StateHasChanged();
         }
 
         protected virtual void Dispose(bool disposing)
