@@ -10,7 +10,7 @@ RazorDocument - [0..85)::85 - [<script type='text/html'><p><script type='text/ h
                     MarkupTextLiteral - [8..12)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [14..23)::9
                         MarkupLiteralAttributeValue - [14..23)::9 - [text/html]
@@ -18,7 +18,7 @@ RazorDocument - [0..85)::85 - [<script type='text/html'><p><script type='text/ h
                                 Text;[text];
                                 ForwardSlash;[/];
                                 Text;[html];
-                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTagHelperElement - [25..76)::51 - p[StartTagAndEndTag] - ptaghelper
@@ -36,7 +36,7 @@ RazorDocument - [0..85)::85 - [<script type='text/html'><p><script type='text/ h
                             MarkupTextLiteral - [36..40)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[type];
                             Equals;[=];
-                            MarkupTextLiteral - [41..42)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [41..42)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 SingleQuote;['];
                             GenericBlock - [42..52)::10
                                 MarkupLiteralAttributeValue - [42..47)::5 - [text/]
@@ -48,7 +48,7 @@ RazorDocument - [0..85)::85 - [<script type='text/html'><p><script type='text/ h
                                         Whitespace;[ ];
                                     MarkupTextLiteral - [48..52)::4 - [html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Text;[html];
-                            MarkupTextLiteral - [52..53)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [52..53)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 SingleQuote;['];
                         CloseAngle;[>];
                     MarkupTextLiteral - [54..63)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any

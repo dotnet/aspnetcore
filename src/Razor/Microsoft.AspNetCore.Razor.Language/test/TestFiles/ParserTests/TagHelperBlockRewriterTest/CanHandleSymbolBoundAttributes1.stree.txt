@@ -17,12 +17,12 @@ RazorDocument - [0..30)::30 - [<ul bound [item]='items'></ul>]
                         Text;[item];
                         RightBracket;[]];
                     Equals;[=];
-                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [18..23)::5
                         CSharpExpressionLiteral - [18..23)::5 - [items] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Text;[items];
-                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTagHelperEndTag - [25..30)::5 - [</ul>]

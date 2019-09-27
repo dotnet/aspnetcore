@@ -10,12 +10,12 @@ RazorDocument - [0..29)::29 - [<input int-prefix-value='3'/>]
                     MarkupTextLiteral - [7..23)::16 - [int-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[int-prefix-value];
                     Equals;[=];
-                    MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [24..25)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [25..26)::1
                         CSharpExpressionLiteral - [25..26)::1 - [3] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Text;[3];
-                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 ForwardSlash;[/];
                 CloseAngle;[>];

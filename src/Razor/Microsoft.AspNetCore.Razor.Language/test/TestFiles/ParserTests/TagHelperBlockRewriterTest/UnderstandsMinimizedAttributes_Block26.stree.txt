@@ -26,13 +26,13 @@ RazorDocument - [0..43)::43 - [@{<input bound-required-int class='btn' />}]
                                         MarkupTextLiteral - [28..33)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[class];
                                         Equals;[=];
-                                        MarkupTextLiteral - [34..35)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [34..35)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         MarkupTagHelperAttributeValue - [35..38)::3
                                             MarkupLiteralAttributeValue - [35..38)::3 - [btn]
                                                 MarkupTextLiteral - [35..38)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[btn];
-                                        MarkupTextLiteral - [38..39)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [38..39)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [39..40)::1
                                         MarkupTextLiteral - [39..40)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

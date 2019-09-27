@@ -10,13 +10,13 @@ RazorDocument - [0..50)::50 - [<p class="btn">words<strong>and</strong>spaces</p
                     MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [10..13)::3
                         MarkupLiteralAttributeValue - [10..13)::3 - [btn]
                             MarkupTextLiteral - [10..13)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
-                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 CloseAngle;[>];
             MarkupTextLiteral - [15..20)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any

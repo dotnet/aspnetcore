@@ -10,7 +10,7 @@ RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag
                     MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[age];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..27)::14
                         CSharpExpressionLiteral - [13..14)::1 - [1] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
@@ -37,7 +37,7 @@ RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag
                         CSharpExpressionLiteral - [25..27)::2 - [ 2] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Whitespace;[ ];
                             Text;[2];
-                    MarkupTextLiteral - [27..28)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [27..28)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupTagHelperAttribute - [28..86)::58 - birthday - SingleQuotes - Bound - [ birthday='(bool)@Bag["val"] ? @@DateTime : @DateTime.Now']
                     MarkupTextLiteral - [28..29)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -45,7 +45,7 @@ RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag
                     MarkupTextLiteral - [29..37)::8 - [birthday] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[birthday];
                     Equals;[=];
-                    MarkupTextLiteral - [38..39)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [38..39)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [39..85)::46
                         CSharpExpressionLiteral - [39..45)::6 - [(bool)] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
@@ -93,7 +93,7 @@ RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag
                                                 Identifier;[DateTime];
                                                 Dot;[.];
                                                 Identifier;[Now];
-                    MarkupTextLiteral - [85..86)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [85..86)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 ForwardSlash;[/];
                 CloseAngle;[>];

@@ -103,7 +103,7 @@ RazorDocument - [0..352)::352 - [@foreach(var c in db.Categories) {LF           
                                                 MarkupTextLiteral - [195..199)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[href];
                                                 Equals;[=];
-                                                MarkupTextLiteral - [200..201)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [200..201)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     DoubleQuote;["];
                                                 GenericBlock - [201..257)::56
                                                     MarkupDynamicAttributeValue - [201..257)::56 - [@Html.ActionUrl("Products", "Detail", new { id = p.Id })]
@@ -139,7 +139,7 @@ RazorDocument - [0..352)::352 - [@foreach(var c in db.Categories) {LF           
                                                                                 Whitespace;[ ];
                                                                                 RightBrace;[}];
                                                                                 RightParenthesis;[)];
-                                                MarkupTextLiteral - [257..258)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [257..258)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     DoubleQuote;["];
                                             CloseAngle;[>];
                                         MarkupTextLiteral - [259..259)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any

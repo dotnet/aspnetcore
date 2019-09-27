@@ -12,7 +12,7 @@ RazorDocument - [0..67)::67 - [<p class=foo dynamic=@DateTime.Now style=color:re
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [9..12)::3
                         MarkupLiteralAttributeValue - [9..12)::3 - [foo]
-                            MarkupTextLiteral - [9..12)::3 - [foo] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [9..12)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[foo];
                 MarkupTagHelperAttribute - [12..34)::22 - dynamic - DoubleQuotes - Unbound - [ dynamic=@DateTime.Now]
                     MarkupTextLiteral - [12..13)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -41,7 +41,7 @@ RazorDocument - [0..67)::67 - [<p class=foo dynamic=@DateTime.Now style=color:re
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [41..51)::10
                         MarkupLiteralAttributeValue - [41..51)::10 - [color:red;]
-                            MarkupTextLiteral - [41..51)::10 - [color:red;] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [41..51)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[color:red;];
                 CloseAngle;[>];
             MarkupTextLiteral - [52..63)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any

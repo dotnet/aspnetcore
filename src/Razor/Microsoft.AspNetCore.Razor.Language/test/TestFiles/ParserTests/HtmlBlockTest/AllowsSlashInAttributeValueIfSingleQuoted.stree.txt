@@ -26,13 +26,13 @@ RazorDocument - [0..33)::33 - [@{<foo><bar baz='/'></bar></foo>}]
                                             MarkupTextLiteral - [12..15)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 Text;[baz];
                                             Equals;[=];
-                                            MarkupTextLiteral - [16..17)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            MarkupTextLiteral - [16..17)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 SingleQuote;['];
                                             GenericBlock - [17..18)::1
                                                 MarkupLiteralAttributeValue - [17..18)::1 - [/]
                                                     MarkupTextLiteral - [17..18)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                         ForwardSlash;[/];
-                                            MarkupTextLiteral - [18..19)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            MarkupTextLiteral - [18..19)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 SingleQuote;['];
                                         CloseAngle;[>];
                                     MarkupEndTag - [20..26)::6 - [</bar>] - Gen<Markup> - SpanEditHandler;Accepts:None

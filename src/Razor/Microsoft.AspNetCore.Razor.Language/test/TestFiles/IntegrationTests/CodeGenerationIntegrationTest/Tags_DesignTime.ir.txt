@@ -23,8 +23,21 @@ Document -
                     IntermediateToken - (44:1,40 [15] Tags.cshtml) - Html - </script @foo >
                 CSharpCode - (59:1,55 [2] Tags.cshtml)
                     IntermediateToken - (59:1,55 [2] Tags.cshtml) - CSharp - \n
-                HtmlContent - (64:3,0 [20] Tags.cshtml)
+                HtmlContent - (64:3,0 [38] Tags.cshtml)
                     IntermediateToken - (64:3,0 [2] Tags.cshtml) - Html - \n
                     IntermediateToken - (66:4,0 [7] Tags.cshtml) - Html - <script
-                    IntermediateToken - (73:4,7 [1] Tags.cshtml) - Html - >
-                    IntermediateToken - (74:4,8 [10] Tags.cshtml) - Html - </script @
+                    IntermediateToken - (73:4,7 [17] Tags.cshtml) - Html -  type="text/html"
+                    IntermediateToken - (90:4,24 [1] Tags.cshtml) - Html - >
+                    IntermediateToken - (91:4,25 [6] Tags.cshtml) - Html - \n    
+                    IntermediateToken - (97:5,4 [5] Tags.cshtml) - Html - <%var
+                HtmlAttribute - (102:5,9 [4] Tags.cshtml) -  x = - 
+                HtmlAttribute - (106:5,13 [9] Tags.cshtml) -  window = - 
+                HtmlContent - (115:5,22 [41] Tags.cshtml)
+                    IntermediateToken - (115:5,22 [7] Tags.cshtml) - Html - = null%
+                    IntermediateToken - (122:5,29 [1] Tags.cshtml) - Html - >
+                    IntermediateToken - (123:5,30 [2] Tags.cshtml) - Html - \n
+                    IntermediateToken - (125:6,0 [9] Tags.cshtml) - Html - </script>
+                    IntermediateToken - (134:6,9 [4] Tags.cshtml) - Html - \n\n
+                    IntermediateToken - (138:8,0 [7] Tags.cshtml) - Html - <script
+                    IntermediateToken - (145:8,7 [1] Tags.cshtml) - Html - >
+                    IntermediateToken - (146:8,8 [10] Tags.cshtml) - Html - </script @

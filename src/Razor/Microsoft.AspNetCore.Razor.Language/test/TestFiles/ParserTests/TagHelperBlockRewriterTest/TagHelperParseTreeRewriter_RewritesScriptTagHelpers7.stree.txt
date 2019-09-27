@@ -18,7 +18,7 @@ RazorDocument - [0..77)::77 - [<p>Hello <script class="@@foo@bar.com" style="col
                         MarkupTextLiteral - [17..22)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Text;[class];
                         Equals;[=];
-                        MarkupTextLiteral - [23..24)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [23..24)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                         MarkupTagHelperAttributeValue - [24..37)::13
                             MarkupBlock - [24..26)::2
@@ -29,7 +29,7 @@ RazorDocument - [0..77)::77 - [<p>Hello <script class="@@foo@bar.com" style="col
                             MarkupLiteralAttributeValue - [26..37)::11 - [foo@bar.com]
                                 MarkupTextLiteral - [26..37)::11 - [foo@bar.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[foo@bar.com];
-                        MarkupTextLiteral - [37..38)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [37..38)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                     MarkupTagHelperAttribute - [38..57)::19 - style - DoubleQuotes - Unbound - [ style="color:red;"]
                         MarkupTextLiteral - [38..39)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -37,13 +37,13 @@ RazorDocument - [0..77)::77 - [<p>Hello <script class="@@foo@bar.com" style="col
                         MarkupTextLiteral - [39..44)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Text;[style];
                         Equals;[=];
-                        MarkupTextLiteral - [45..46)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [45..46)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                         MarkupTagHelperAttributeValue - [46..56)::10
                             MarkupLiteralAttributeValue - [46..56)::10 - [color:red;]
                                 MarkupTextLiteral - [46..56)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[color:red;];
-                        MarkupTextLiteral - [56..57)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [56..57)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                     CloseAngle;[>];
                 MarkupTagHelperEndTag - [58..67)::9 - [</script>]

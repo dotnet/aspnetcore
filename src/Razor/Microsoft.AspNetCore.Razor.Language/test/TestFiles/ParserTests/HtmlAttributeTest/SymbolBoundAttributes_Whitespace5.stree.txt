@@ -23,13 +23,13 @@ RazorDocument - [0..48)::48 - [@{<a LF  *something='Foo'	LF*something='Bar' />}]
                                         MarkupTextLiteral - [9..19)::10 - [*something] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[*something];
                                         Equals;[=];
-                                        MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [21..24)::3
                                             MarkupLiteralAttributeValue - [21..24)::3 - [Foo]
                                                 MarkupTextLiteral - [21..24)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[Foo];
-                                        MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [24..25)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupAttributeBlock - [25..44)::19 - [	LF*something='Bar']
                                         MarkupTextLiteral - [25..28)::3 - [	LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -38,13 +38,13 @@ RazorDocument - [0..48)::48 - [@{<a LF  *something='Foo'	LF*something='Bar' />}]
                                         MarkupTextLiteral - [28..38)::10 - [*something] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[*something];
                                         Equals;[=];
-                                        MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [39..40)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [40..43)::3
                                             MarkupLiteralAttributeValue - [40..43)::3 - [Bar]
                                                 MarkupTextLiteral - [40..43)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[Bar];
-                                        MarkupTextLiteral - [43..44)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [43..44)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [44..45)::1
                                         MarkupTextLiteral - [44..45)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

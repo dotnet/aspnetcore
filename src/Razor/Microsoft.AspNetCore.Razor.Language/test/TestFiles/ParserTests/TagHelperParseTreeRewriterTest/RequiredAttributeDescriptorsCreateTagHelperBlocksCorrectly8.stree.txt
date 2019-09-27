@@ -10,7 +10,7 @@ RazorDocument - [0..45)::45 - [<p class="@DateTime.Now">words and spaces</p>]
                     MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [10..23)::13
                         MarkupDynamicAttributeValue - [10..23)::13 - [@DateTime.Now]
@@ -25,7 +25,7 @@ RazorDocument - [0..45)::45 - [<p class="@DateTime.Now">words and spaces</p>]
                                                     Identifier;[DateTime];
                                                     Dot;[.];
                                                     Identifier;[Now];
-                    MarkupTextLiteral - [23..24)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..24)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 CloseAngle;[>];
             MarkupTextLiteral - [25..41)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any

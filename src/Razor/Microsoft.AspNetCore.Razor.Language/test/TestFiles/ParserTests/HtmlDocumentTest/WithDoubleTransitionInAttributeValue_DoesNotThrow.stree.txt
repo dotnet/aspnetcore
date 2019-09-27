@@ -12,7 +12,7 @@ RazorDocument - [0..19)::19 - [{<span foo='@@' />}]
                     MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[foo];
                     Equals;[=];
-                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [12..14)::2
                         MarkupBlock - [12..14)::2
@@ -20,7 +20,7 @@ RazorDocument - [0..19)::19 - [{<span foo='@@' />}]
                                 Transition;[@];
                             MarkupEphemeralTextLiteral - [13..14)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                 Transition;[@];
-                    MarkupTextLiteral - [14..15)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [14..15)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [15..16)::1
                     MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
