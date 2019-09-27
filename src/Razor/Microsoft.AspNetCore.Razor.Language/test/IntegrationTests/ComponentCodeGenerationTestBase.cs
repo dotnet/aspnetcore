@@ -1698,6 +1698,44 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void MultipleChildContentMatchingComponentName()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment Header { get; set; }
+
+        [Parameter]
+        public RenderFragment Footer { get; set; }
+    }
+
+    public class Header : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent>
+  <Header>Hi!</Header>
+  <Footer>Bye!</Footer>
+</MyComponent>
+<Header>Hello!</Header>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Directives
@@ -1804,7 +1842,7 @@ namespace Test3
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            var result = CompileToAssembly(generated, throwOnFailure: !DesignTime);
+            var result = CompileToAssembly(generated, throwOnFailure: false);
 
             if (DesignTime)
             {
