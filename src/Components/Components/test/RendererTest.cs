@@ -3701,6 +3701,24 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains("Cannot start a batch when one is already in progress.", ex.Message);
         }
 
+        [Fact]
+        public void CannotAccessParameterViewAfterSynchronousReturn()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new ParameterViewIllegalCapturingComponent();
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.RenderRootComponentAsync(componentId);
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                // TODO: check other types of access too
+                component.CapturedParameterView.TryGetValue<object>("anything", out _);
+            });
+            Assert.Equal("blah", ex.Message);
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -4442,6 +4460,24 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             public new void ProcessPendingRender()
                 => base.ProcessPendingRender();
+        }
+
+        class ParameterViewIllegalCapturingComponent : IComponent
+        {
+            public ParameterView CapturedParameterView { get; private set; }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                CapturedParameterView = parameters;
+
+                // Return a task that never completes to show that access is forbidded
+                // after the synchronous return, not just after the returned task completes
+                return new TaskCompletionSource<object>().Task;
+            }
         }
     }
 }
