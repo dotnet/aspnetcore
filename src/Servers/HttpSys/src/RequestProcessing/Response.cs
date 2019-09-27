@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -417,6 +416,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+                if (responseCloseSet && requestVersion >= Constants.V2 && ComNetOS.SupportsGoAway)
+                {
+                    flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
+                }
             }
 
             Headers.IsReadOnly = true;
