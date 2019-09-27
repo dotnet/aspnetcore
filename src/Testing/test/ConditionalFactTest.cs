@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Testing
             Assert.True(false, "This test should always be skipped.");
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         public void ThisTestMustRunOnCoreCLR()
