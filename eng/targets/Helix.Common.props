@@ -36,7 +36,7 @@
     <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true' AND '$(IsRequiredCheck)' != 'true'>
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true' AND '$(IsRequiredCheck)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
 
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
