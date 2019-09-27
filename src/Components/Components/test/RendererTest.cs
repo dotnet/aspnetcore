@@ -3720,11 +3720,17 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var capturingComponent = (ParameterViewIllegalCapturingComponent)renderer.GetCurrentRenderTreeFrames(rootComponentId).Array[0].Component;
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                // TODO: check other types of access too
-                capturingComponent.CapturedParameterView.TryGetValue<object>("anything", out _);
-            });
+            var parameterView = capturingComponent.CapturedParameterView;
+
+            // All public APIs on capturingComponent should be electrified now
+            // Internal APIs don't have to be, because we won't call them at the wrong time
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
+            Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
+            Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
+
+            // It's enough to assert about one of the messages
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
