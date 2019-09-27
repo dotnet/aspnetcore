@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void NotifyCascadingValueChanged()
         {
             var directParams = _latestDirectParametersSnapshot != null
-                ? new ParameterView(_latestDirectParametersSnapshot.Buffer, 0)
+                ? new ParameterView(null, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);
