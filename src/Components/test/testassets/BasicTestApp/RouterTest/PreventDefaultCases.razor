@@ -9,13 +9,13 @@
 </p>
 
 <p __internal_preventDefault_onclick="@ancestorPreventDefault">
-    <a href="about:blank" __internal_preventDefault_onclick="@targetPreventDefault">
+    <a id="external-navigation" href="about:blank" __internal_preventDefault_onclick="@targetPreventDefault">
         External navigation
         <span __internal_preventDefault_onclick="@descendantPreventDefault">[Descendant element]</span>
     </a>
 </p>
 <p __internal_preventDefault_onclick="@ancestorPreventDefault">
-    <a href="Other" __internal_preventDefault_onclick="@targetPreventDefault">
+    <a id="internal-navigation" href="Other" __internal_preventDefault_onclick="@targetPreventDefault">
         Internal navigation
         <span __internal_preventDefault_onclick="@descendantPreventDefault">[Descendant element]</span>
     </a>
@@ -28,7 +28,7 @@
     <label><input class="descendant" type="checkbox" @bind="descendantPreventDefault" /> Descendant</label>
 
     @* So we can assert that navigation didn't happen *@
-    <button class="counter" @onclick="@(() => counter++)">Counter: @counter</button>
+    <button class="counter-button" @onclick="@(() => counter++)">Counter: @counter</button>
 </fieldset>
 
 @code {
