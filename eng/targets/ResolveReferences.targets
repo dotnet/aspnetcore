@@ -123,7 +123,7 @@
            Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
-  <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences">
+  <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
     <Warning Condition="@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count()) &gt; 1"
              Text="Redundant &lt;FrameworkReference&gt;. If you have an explicit item in the project file, you might be able to remove it. Some SDKs, like Microsoft.NET.Sdk.Web, add this implicitly." />
   </Target>
