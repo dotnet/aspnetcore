@@ -155,7 +155,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </ItemGroup>
 
   <PropertyGroup>
-    <TarCommand Condition="'$(OS)' == 'Windows_NT'">C:\Windows\System32\tar</TarCommand>
+    <TarCommand Condition="'$(OS)' == 'Windows_NT'">C:\Windows\System32\tar.exe</TarCommand>
     <TarCommand Condition="'$(OS)' != 'Windows_NT'">tar</TarCommand>
   </PropertyGroup>
 
