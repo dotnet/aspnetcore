@@ -3706,17 +3706,26 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var component = new ParameterViewIllegalCapturingComponent();
-            var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponentAsync(componentId);
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<ParameterViewIllegalCapturingComponent>(0);
+                builder.AddAttribute(1, nameof(ParameterViewIllegalCapturingComponent.SomeParam), 0);
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+
+            // Note that we're not waiting for the async render to complete, since we want to assert
+            // about the situation immediately after the component yields the thread
+            renderer.RenderRootComponentAsync(rootComponentId);
 
             // Act/Assert
+            var capturingComponent = (ParameterViewIllegalCapturingComponent)renderer.GetCurrentRenderTreeFrames(rootComponentId).Array[0].Component;
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
                 // TODO: check other types of access too
-                component.CapturedParameterView.TryGetValue<object>("anything", out _);
+                capturingComponent.CapturedParameterView.TryGetValue<object>("anything", out _);
             });
-            Assert.Equal("blah", ex.Message);
+            Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
         private class NoOpRenderer : Renderer
@@ -4465,6 +4474,8 @@ namespace Microsoft.AspNetCore.Components.Test
         class ParameterViewIllegalCapturingComponent : IComponent
         {
             public ParameterView CapturedParameterView { get; private set; }
+
+            [Parameter] public int SomeParam { get; set; }
 
             public void Attach(RenderHandle renderHandle)
             {

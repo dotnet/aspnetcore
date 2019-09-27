@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // It's no longer able to access anything in the ParameterView it just received
             var ex = Assert.Throws<InvalidOperationException>(nestedComponent.AttemptIllegalAccessToLastParameterView);
-            Assert.Equal("blah", ex.Message);
+            Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
         private static T FindComponent<T>(CapturedBatch batch, out int componentId)
