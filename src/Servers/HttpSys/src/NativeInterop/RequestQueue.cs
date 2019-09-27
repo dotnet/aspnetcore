@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.HttpSys.Internal;
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
             {
-                // Tried to create, but it already exist so attach to it instead.
+                // Tried to create, but it already exists so attach to it instead.
                 Created = false;
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 statusCode = HttpApi.HttpCreateRequestQueue(
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
-        /// Set true if we created queue instead of attaching to existing
+        /// True if this instace created the queue instead of attaching to an existing one.
         /// </summary>
         internal bool Created { get; }
 
@@ -96,6 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void AttachToUrlGroup()
         {
+            Debug.Assert(Created);
             CheckDisposed();
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
@@ -112,6 +114,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void DetachFromUrlGroup()
         {
+            Debug.Assert(Created);
             CheckDisposed();
             // Break the association between request queue and url group. After this, requests for registered urls 
             // will get 503s.
@@ -132,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The listener must be active for this to work.
         internal unsafe void SetLengthLimit(long length)
         {
+            Debug.Assert(Created);
             CheckDisposed();
 
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,
@@ -147,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The listener must be active for this to work.
         internal unsafe void SetRejectionVerbosity(Http503VerbosityLevel verbosity)
         {
+            Debug.Assert(Created);
             CheckDisposed();
 
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,

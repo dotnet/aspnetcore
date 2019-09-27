@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
         /// use the machine wide setting from the registry. The default value is null.
-        /// This settings do not apply when attaching to an existing queue.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public long? MaxConnections
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         /// <summary>
         /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
-        /// This settings do not apply when attaching to an existing queue.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public long RequestQueueLimit
         {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
                 }
 
-                if (_requestQueue != null && _requestQueue.Created)
+                if (_requestQueue != null)
                 {
                     _requestQueue.SetLengthLimit(_requestQueueLength);
                 }
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Gets or sets a value that controls how http.sys reacts when rejecting requests due to throttling conditions - like when the request
         /// queue limit is reached. The default in http.sys is "Basic" which means http.sys is just resetting the TCP connection. IIS uses Limited
         /// as its default behavior which will result in sending back a 503 - Service Unavailable back to the client.
-        /// These settings do not apply when attaching to an existing queue.
+        /// This settings does not apply when attaching to an existing queue.
         /// </summary>
         public Http503VerbosityLevel Http503Verbosity
         {
