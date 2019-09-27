@@ -154,6 +154,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CreateDirectory Include="$(LocalInstallationOutputPath)" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <TarCommand Condition="'$(OS)' == 'Windows_NT'">C:\Windows\System32\tar</TarCommand>
+    <TarCommand Condition="'$(OS)' != 'Windows_NT'">tar</TarCommand>
+  </PropertyGroup>
+
   <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
   <Target Name="_InstallTargetingPackIntoLocalDotNet"
           DependsOnTargets="_ResolveTargetingPackContent"
@@ -175,7 +180,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true" />
     <!-- Requires Windows 10 version 1803 or newer -->
     <Exec
-      Command="C:\Windows\System32\tar -czf $(TarArchiveOutputPath) ."
+      Command="$(TarCommand) -czf $(TarArchiveOutputPath) ."
       WorkingDirectory="$(TargetingPackLayoutRoot)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
   </Target>

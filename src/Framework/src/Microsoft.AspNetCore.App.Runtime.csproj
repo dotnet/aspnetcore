@@ -363,6 +363,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   Targets related to creating .zip/.tar.gz
   #########################################
   -->
+
+  <PropertyGroup>
+    <TarCommand Condition="'$(OS)' == 'Windows_NT'">C:\Windows\System32\tar</TarCommand>
+    <TarCommand Condition="'$(OS)' != 'Windows_NT'">tar</TarCommand>
+  </PropertyGroup>
+
   <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
@@ -371,7 +377,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
-      Command="C:\Windows\System32\tar -xzf $(DotNetRuntimeArchive) -C $(RedistSharedFrameworkLayoutRoot)" />
+      Command="$(TarCommand) -xzf $(DotNetRuntimeArchive) -C $(RedistSharedFrameworkLayoutRoot)" />
 
     <Unzip Condition="'$(ArchiveExtension)' == '.zip'"
       SourceFiles="$(DotNetRuntimeArchive)"
@@ -436,7 +442,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true"
       Condition="'$(ArchiveExtension)' == '.zip'" />
     <Exec
-      Command="C:\Windows\System32\tar -czf $(InternalArchiveOutputPath) ."
+      Command="$(TarCommand) -czf $(InternalArchiveOutputPath) ."
       WorkingDirectory="$(SharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
@@ -453,7 +459,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true"
       Condition="'$(ArchiveExtension)' == '.zip'" />
     <Exec
-      Command="C:\Windows\System32\tar -czf $(RedistArchiveOutputPath) ."
+      Command="$(TarCommand) -czf $(RedistArchiveOutputPath) ."
       WorkingDirectory="$(RedistSharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
