@@ -130,8 +130,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void SetDirectParameters(ParameterView parameters)
         {
             // Note: We should be careful to ensure that the framework never calls
-            // IComponent.SetParameters directly elsewhere. We should only call it
-            // via ComponentState.SetParameters (or NotifyCascadingValueChanged below).
+            // IComponent.SetParametersAsync directly elsewhere. We should only call it
+            // via ComponentState.SetDirectParameters (or NotifyCascadingValueChanged below).
             // If we bypass this, the component won't receive the cascading parameters nor
             // will it update its snapshot of direct parameters.
 
