@@ -519,8 +519,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // comparisons it wants with the old values. Later we could choose to pass the
             // old parameter values if we wanted. By default, components always rerender
             // after any SetParameters call, which is safe but now always optimal for perf.
-            var oldParameters = new ParameterView(null, oldTree, oldComponentIndex);
-            var newParameters = new ParameterView(diffContext.BatchBuilder, newTree, newComponentIndex);
+            var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
+            var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
+            var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
             if (!newParameters.DefinitelyEquals(oldParameters))
             {
                 componentState.SetDirectParameters(newParameters);
@@ -893,7 +894,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var childComponentState = frame.ComponentState;
 
             // Set initial parameters
-            var initialParameters = new ParameterView(diffContext.BatchBuilder, frames, frameIndex);
+            var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
+            var initialParameters = new ParameterView(initialParametersLifetime, frames, frameIndex);
             childComponentState.SetDirectParameters(initialParameters);
         }
 

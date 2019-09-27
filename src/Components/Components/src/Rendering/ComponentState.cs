@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 _renderTreeBuilderPrevious.GetFrames(),
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
+            batchBuilder.InvalidateParameterViews();
         }
 
         public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, out Exception exception)
@@ -156,10 +157,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
         }
 
-        public void NotifyCascadingValueChanged()
+        public void NotifyCascadingValueChanged(ParameterViewLifetime lifetime)
         {
             var directParams = _latestDirectParametersSnapshot != null
-                ? new ParameterView(null, _latestDirectParametersSnapshot.Buffer, 0)
+                ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);

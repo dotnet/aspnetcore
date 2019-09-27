@@ -21,24 +21,21 @@ namespace Microsoft.AspNetCore.Components
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
 
-        private static readonly ParameterView _empty = new ParameterView(null, _emptyFrames, 0, null);
+        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, null);
 
-        // If a value is provided for this field, then the ParameterView instance is only
-        // valid for as long as the lifetime owner says it is
-        private readonly RenderBatchBuilder _lifetimeOwner;
-
+        private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
 
-        internal ParameterView(RenderBatchBuilder lifetimeOwnerOrNull, RenderTreeFrame[] frames, int ownerIndex)
-            : this(lifetimeOwnerOrNull, frames, ownerIndex, null)
+        internal ParameterView(ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
+            : this(lifetime, frames, ownerIndex, null)
         {
         }
 
-        private ParameterView(RenderBatchBuilder lifetimeOwnerOrNull, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
         {
-            _lifetimeOwner = lifetimeOwnerOrNull;
+            _lifetime = lifetime;
             _frames = frames;
             _ownerIndex = ownerIndex;
             _cascadingParametersOrNull = cascadingParametersOrNull;
@@ -49,12 +46,17 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public static ParameterView Empty => _empty;
 
+        internal ParameterViewLifetime Lifetime => _lifetime;
+
         /// <summary>
         /// Returns an enumerator that iterates through the <see cref="ParameterView"/>.
         /// </summary>
         /// <returns>The enumerator.</returns>
         public Enumerator GetEnumerator()
-            => new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+        {
+            _lifetime.AssertNotExpired();
+            return new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+        }
 
         /// <summary>
         /// Gets the value of the parameter with the specified name.
@@ -114,7 +116,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
-            => new ParameterView(_lifetimeOwner, _frames, _ownerIndex, cascadingParameters);
+            => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
 
         // It's internal because there isn't a known use case for user code comparing
         // ParameterView instances, and even if there was, it's unlikely it should
@@ -221,7 +223,7 @@ namespace Microsoft.AspNetCore.Components
                 frames[++i] = RenderTreeFrame.Attribute(i, kvp.Key, kvp.Value);
             }
 
-            return new ParameterView(null, frames, 0);
+            return new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
         }
 
         /// <summary>
