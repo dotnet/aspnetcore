@@ -4491,7 +4491,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 CapturedParameterView = parameters;
 
-                // Return a task that never completes to show that access is forbidded
+                // Return a task that never completes to show that access is forbidden
                 // after the synchronous return, not just after the returned task completes
                 return new TaskCompletionSource<object>().Task;
             }
