@@ -237,15 +237,17 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     VaryByAncmHostingModel(variants, server, tfm, type, arch, archSkip);
                 }
-
-                variants.Add(new TestVariant()
+                else
                 {
-                    Server = server,
-                    Tfm = tfm,
-                    ApplicationType = type,
-                    Architecture = arch,
-                    Skip = archSkip,
-                });
+                    variants.Add(new TestVariant()
+                    {
+                        Server = server,
+                        Tfm = tfm,
+                        ApplicationType = type,
+                        Architecture = arch,
+                        Skip = archSkip,
+                    });
+                }
             }
         }
 
