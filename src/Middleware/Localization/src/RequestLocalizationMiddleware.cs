@@ -217,9 +217,9 @@ namespace Microsoft.AspNetCore.Localization
                     AvailableCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
                 }
 
-                culture = AvailableCultures.FirstOrDefault(availableCulture => StringSegment.Equals(availableCulture.Name, cultureName, StringComparison.OrdinalIgnoreCase));
+                var parentCulture = AvailableCultures.FirstOrDefault(availableCulture => StringSegment.Equals(availableCulture.Name, cultureName, StringComparison.OrdinalIgnoreCase));
 
-                if (string.IsNullOrEmpty(culture?.Parent?.Name)) {
+                if (string.IsNullOrEmpty(parentCulture?.Parent?.Name)) {
                     var lastIndexOfHyphen = cultureName.LastIndexOf('-');
 
                     if (lastIndexOfHyphen > 0) {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Localization
                         culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
                     }
                 } else {
-                    culture = GetCultureInfo(new StringSegment(culture.Parent.Name), supportedCultures, fallbackToParentCultures, currentDepth + 1);
+                    culture = GetCultureInfo(new StringSegment(parentCulture.Parent.Name), supportedCultures, fallbackToParentCultures, currentDepth + 1);
                 }
             }
 
