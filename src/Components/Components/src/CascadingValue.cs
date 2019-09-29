@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components
             _subscribers.Remove(subscriber);
         }
 
-        private void NotifySubscribers(ParameterViewLifetime lifetime)
+        private void NotifySubscribers(in ParameterViewLifetime lifetime)
         {
             foreach (var subscriber in _subscribers)
             {

@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Components
         private readonly int _ownerIndex;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
 
-        internal ParameterView(ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
+        internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
             : this(lifetime, frames, ownerIndex, null)
         {
         }
 
-        private ParameterView(ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
         {
             _lifetime = lifetime;
             _frames = frames;
