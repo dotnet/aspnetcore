@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Localization
     public class RequestLocalizationMiddleware
     {
         private static readonly int MaxCultureFallbackDepth = 5;
+        private static CultureInfo[] AvailableCultures;
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
@@ -212,14 +213,23 @@ namespace Microsoft.AspNetCore.Localization
 
             if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
             {
-                var lastIndexOfHyphen = cultureName.LastIndexOf('-');
+                if (AvailableCultures == null) {
+                    AvailableCultures = CultureInfo.GetCultures(CultureTypes.AllCultures);
+                }
 
-                if (lastIndexOfHyphen > 0)
-                {
-                    // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                    var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
+                culture = AvailableCultures.FirstOrDefault(availableCulture => StringSegment.Equals(availableCulture.Name, cultureName, StringComparison.OrdinalIgnoreCase));
 
-                    culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
+                if (string.IsNullOrEmpty(culture?.Parent?.Name)) {
+                    var lastIndexOfHyphen = cultureName.LastIndexOf('-');
+
+                    if (lastIndexOfHyphen > 0) {
+                        // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
+                        var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
+
+                        culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
+                    }
+                } else {
+                    culture = GetCultureInfo(new StringSegment(culture.Parent.Name), supportedCultures, fallbackToParentCultures, currentDepth + 1);
                 }
             }
 
