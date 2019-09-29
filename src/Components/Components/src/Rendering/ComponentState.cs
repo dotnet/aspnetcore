@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
         }
 
-        public void NotifyCascadingValueChanged(ParameterViewLifetime lifetime)
+        public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
         {
             var directParams = _latestDirectParametersSnapshot != null
                 ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
