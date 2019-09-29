@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private Connections.Server _server;
 
         public KestrelServer(IOptions<KestrelServerOptions> options, IConnectionListenerFactory transportFactory, ILoggerFactory loggerFactory)
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
@@ -121,30 +123,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                async Task OnBind(ListenOptions options)
+                var serverOptions = new ServerOptions(Options.ApplicationServices);
+
+                Task OnBind(ListenOptions options)
                 {
+                    // Add the connection limit middleware
+                    options.UseConnectionLimit(Options, Trace);
+
                     // Add the HTTP middleware as the terminal connection middleware
                     options.UseHttpServer(ServiceContext, application, options.Protocols);
 
                     var connectionDelegate = options.Build();
 
-                    // Add the connection limit middleware
-                    if (Options.Limits.MaxConcurrentConnections.HasValue)
-                    {
-                        connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
-                    }
+                    serverOptions.Bindings.Add(new ServerBinding(options.EndPoint, connectionDelegate, _transportFactory));
 
-                    var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = await _transportFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
-
-                    // Update the endpoint
-                    options.EndPoint = transport.EndPoint;
-                    var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
-
-                    _transports.Add((transport, acceptLoopTask));
+                    return Task.CompletedTask;
                 }
 
                 await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
+
+                _server = new Connections.Server(NullLoggerFactory.Instance, serverOptions);
+                await _server.StartAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -165,32 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             try
             {
-                var tasks = new Task[_transports.Count];
-                for (int i = 0; i < _transports.Count; i++)
-                {
-                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
-                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
-                }
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-
-                if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    Trace.NotAllConnectionsClosedGracefully();
-
-                    if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
-                    {
-                        Trace.NotAllConnectionsAborted();
-                    }
-                }
-
-                for (int i = 0; i < _transports.Count; i++)
-                {
-                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
-                    tasks[i] = listener.DisposeAsync().AsTask();
-                }
-
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                await _server.StopAsync(cancellationToken);
 
                 ServiceContext.Heartbeat?.Dispose();
             }
