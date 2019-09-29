@@ -322,6 +322,32 @@ namespace Microsoft.AspNetCore.Components
             Assert.Same(myEntryValue, result);
         }
 
+        [Fact]
+        public void CannotReadAfterLifetimeExpiry()
+        {
+            // Arrange
+            var builder = new RenderBatchBuilder();
+            var lifetime = new ParameterViewLifetime(builder);
+            var frames = new[]
+            {
+                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
+            };
+            var parameterView = new ParameterView(lifetime, frames, 0);
+
+            // Act
+            builder.InvalidateParameterViews();
+
+            // Assert
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
+            Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
+            Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
+
+            // It's enough to assert about one of the messages
+            Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
+        }
+
         private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
         {
             return parameter =>
