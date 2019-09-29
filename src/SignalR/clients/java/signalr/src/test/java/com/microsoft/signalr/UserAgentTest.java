@@ -61,7 +61,7 @@ public class UserAgentTest {
     private static Stream<Arguments> UserAgents() {
         return Stream.of(
                 Arguments.of("1.4.5-dev", "Windows NT", "Java", "7.0.1", "Oracle", "Microsoft SignalR/1.4 (1.4.5-dev; Windows NT; Java; 7.0.1; Oracle)"),
-                Arguments.of("3.1.0", "", "Java", "7.0.1", "", "Microsoft SignalR/3.1 (3.1.0; Java; 7.0.1)"),
-                Arguments.of("5.0.2", "macOS", "Java", "1.0.0", "Android", "Microsoft SignalR/5.0 (5.0.2; macOS; Java; 1.0.0; Android)"));
+                Arguments.of("3.1.0", "", "Java", "7.0.1", "", "Microsoft SignalR/3.1 (3.1.0; Unknown OS; Java; 7.0.1; Unknown Vendor)"),
+                Arguments.of("5.0.2", "macOS", "Java", "", "Android", "Microsoft SignalR/5.0 (5.0.2; macOS; Java; Unknown Runtime Version; Android)"));
     }
 }

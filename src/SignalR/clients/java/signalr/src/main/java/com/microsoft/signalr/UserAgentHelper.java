@@ -22,24 +22,28 @@ public class UserAgentHelper {
         agentBuilder.append(" (");
         agentBuilder.append(detailedVersion);
 
+        agentBuilder.append("; ");
         if (!os.isEmpty()) {
-            agentBuilder.append("; ");
             agentBuilder.append(os);
+        } else {
+            agentBuilder.append("Unknown OS");
         }
 
-        if (!runtime.isEmpty()) {
-            agentBuilder.append("; ");
-            agentBuilder.append(runtime);
-        }
+        agentBuilder.append("; ");
+        agentBuilder.append(runtime);
 
+        agentBuilder.append("; ");
         if (!runtimeVersion.isEmpty()) {
-            agentBuilder.append("; ");
             agentBuilder.append(runtimeVersion);
+        } else {
+            agentBuilder.append("Unknown Runtime Version");
         }
 
+        agentBuilder.append("; ");
         if (!vendor.isEmpty()) {
-            agentBuilder.append("; ");
             agentBuilder.append(vendor);
+        } else {
+            agentBuilder.append("Unknown Vendor");
         }
 
         agentBuilder.append(")");

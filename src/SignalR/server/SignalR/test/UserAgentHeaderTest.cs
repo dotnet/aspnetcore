@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public static IEnumerable<object[]> UserAgents()
         {
             yield return new object[] { new Version(1, 4), "1.4.3-preview9", "Windows NT", ".NET", ".NET 4.8.7", "Microsoft SignalR/1.4 (1.4.3-preview9; Windows NT; .NET; .NET 4.8.7)" };
-            yield return new object[] { new Version(3, 1), "3.1.0", "", ".NET", ".NET 4.8.9", "Microsoft SignalR/3.1 (3.1.0; .NET; .NET 4.8.9)" };
-            yield return new object[] { new Version(3, 1), "3.1.0", "", ".NET", "", "Microsoft SignalR/3.1 (3.1.0; .NET)" };
+            yield return new object[] { new Version(3, 1), "3.1.0", "", ".NET", ".NET 4.8.9", "Microsoft SignalR/3.1 (3.1.0; Unknown OS; .NET; .NET 4.8.9)" };
+            yield return new object[] { new Version(3, 1), "3.1.0", "", ".NET", "", "Microsoft SignalR/3.1 (3.1.0; Unknown OS; .NET; Unknown Runtime Version)" };
         }
     }
 }

@@ -57,20 +57,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 userAgent += $"{detailedVersion}";
             }
+            else
+            {
+                userAgent += "Unknown Version";
+            }
 
             if (!string.IsNullOrEmpty(os))
             {
                 userAgent += $"; {os}";
             }
-
-            if (!string.IsNullOrEmpty(runtime))
+            else
             {
-                userAgent += $"; {runtime}";
+                userAgent += "; Unknown OS";
             }
+
+            userAgent += $"; {runtime}";
 
             if (!string.IsNullOrEmpty(runtimeVersion))
             {
                 userAgent += $"; {runtimeVersion}";
+            }
+            else
+            {
+                userAgent += "; Unknown Runtime Version";
             }
 
             userAgent += ")";

@@ -208,12 +208,16 @@ export function constructUserAgent(version: string, os: string, runtime: string,
 
     if (os && os !== "") {
         userAgent += `${os}; `;
+    } else {
+        userAgent += "Unknown OS; ";
     }
 
     userAgent += `${runtime}`;
 
     if (runtimeVersion) {
         userAgent += `; ${runtimeVersion}`;
+    } else {
+        userAgent += "; Unknown Runtime Version";
     }
 
     userAgent += ")";
