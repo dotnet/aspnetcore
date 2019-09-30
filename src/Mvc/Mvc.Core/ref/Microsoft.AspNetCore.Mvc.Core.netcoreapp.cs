@@ -3221,6 +3221,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public partial class ValidationVisitor
     {
         public ValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState) { }
+        [System.ObsoleteAttribute("This property is deprecated and is no longer used by the runtime.")]
         public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected object Container { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
