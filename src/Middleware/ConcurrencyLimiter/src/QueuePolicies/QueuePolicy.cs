@@ -19,15 +19,15 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         public QueuePolicy(IOptions<QueuePolicyOptions> options)
         {
-            QueuePolicyOptions queuePolicyOptions = options.Value;
+            var queuePolicyOptions = options.Value;
 
-            int maxConcurrentRequests = queuePolicyOptions.MaxConcurrentRequests;
+            var maxConcurrentRequests = queuePolicyOptions.MaxConcurrentRequests;
             if (maxConcurrentRequests <= 0)
             {
                 throw new ArgumentException(nameof(maxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
             }
 
-            int requestQueueLimit = queuePolicyOptions.RequestQueueLimit;
+            var requestQueueLimit = queuePolicyOptions.RequestQueueLimit;
             if (requestQueueLimit < 0)
             {
                 throw new ArgumentException(nameof(requestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 return new ValueTask<bool>(true);
             }
 
-            return AwaitSemaphore(task);
+            return SemaphoreAwaited(task);
         }
 
         public void OnExit()
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _serverSemaphore.Dispose();
         }
 
-        private async ValueTask<bool> AwaitSemaphore(Task task)
+        private async ValueTask<bool> SemaphoreAwaited(Task task)
         {
             await task;
 
