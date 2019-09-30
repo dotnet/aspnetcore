@@ -419,7 +419,7 @@ namespace WsProxy {
 
 			var res = await SendCommand("Runtime.evaluate", o, token);
 
-			//if we fail we bubble that to the IDE (and let it panic over it)
+			//if we fail we just bubble that to the IDE (and let it panic over it)
 			if (res.IsErr)
 			{
 				SendResponse(msg_id, res, token);
@@ -475,7 +475,7 @@ namespace WsProxy {
 
 			var res = await SendCommand ("Runtime.evaluate", o, token);
 
-			//if we fail we bubble that to the IDE (and let it panic over it)
+			//if we fail we just bubble that to the IDE (and let it panic over it)
 			if (res.IsErr) {
 				SendResponse (msg_id, res, token);
 				return;

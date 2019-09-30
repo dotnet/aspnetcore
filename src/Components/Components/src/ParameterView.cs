@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components
             // Otherwise be conservative and return false.
             // To make this check cheaper, since parameters are virtually always generated in
             // a deterministic order, we don't bother to account for reordering, so if any
-            // of the names don't match sequentially we return false too.
+            // of the names don't match sequentially we just return false too.
             //
             // The logic here may look kind of epic, and would certainly be simpler if we
             // used ParameterEnumerator.GetEnumerator(), but it's perf-critical and this

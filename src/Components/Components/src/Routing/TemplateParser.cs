@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     // To be more precise these are some things we are scoping out:
     // * We are not doing link generation.
     // * We are not supporting all the route constraint formats supported by ASP.NET server-side routing.
-    // The class in here takes care of parsing a route and extracting
+    // The class in here just takes care of parsing a route and extracting
     // simple parameters from it.
     // Some differences with ASP.NET Core routes are:
     // * We don't support catch all parameter segments.

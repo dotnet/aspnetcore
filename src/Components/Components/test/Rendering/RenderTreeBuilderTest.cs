@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // There won't be any way of doing this from Razor because there's no known use
             // case for it. However it's harder to *not* support it than to support it, and
             // there's no known reason to prevent it, so here's test coverage to show it
-            // works.
+            // just works.
 
             // Arrange
             var builder = new RenderTreeBuilder();
@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // There won't be any way of doing this from Razor because there's no known use
             // case for it. However it's harder to *not* support it than to support it, and
             // there's no known reason to prevent it, so here's test coverage to show it
-            //works.
+            // just works.
 
             // Arrange
             var builder = new RenderTreeBuilder();

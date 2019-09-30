@@ -208,7 +208,7 @@ Finally, run `webpack` on the command line to build `ClientApp/dist/main-server.
 
     <div id="my-spa" asp-prerender-module="ClientApp/dist/main-server"></div>
 
-Webpack is a broad and powerful tool and can do far more than invoke the TypeScript compiler. To learn more, see the [webpack website](https://webpack.github.io/).
+Webpack is a broad and powerful tool and can do far more than just invoke the TypeScript compiler. To learn more, see the [webpack website](https://webpack.github.io/).
 
 
 ### 5(a). Prerendering Angular components
@@ -301,11 +301,11 @@ Supporting asynchronous data loading involves more considerations. Unlike Angula
 
 To make this work, you most likely need some way to know in advance what data your React components will need to use, load it separately from those components, and have some way of transferring information about the loaded data from server to client. If you try to implement this in a generalized way, you'll end up reinventing something like the Flux/Redux pattern.
 
-To avoid inventing your own incomplete version of Flux/Redux, you probably should use [Redux](https://github.com/reactjs/redux). This is at first a very unfamiliar and tricky-looking abstraction, but does solve all the problems around server-side execution of React apps. To get a working starting point for an ASP.NET Core site with React+Redux on the client (and server-side prerendering), see the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+To avoid inventing your own incomplete version of Flux/Redux, you probably should just use [Redux](https://github.com/reactjs/redux). This is at first a very unfamiliar and tricky-looking abstraction, but does solve all the problems around server-side execution of React apps. To get a working starting point for an ASP.NET Core site with React+Redux on the client (and server-side prerendering), see the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
 
 ## Webpack dev middleware
 
-If you're using webpack, the webpack dev middleware feature included in `Microsoft.AspNetCore.SpaServices` will streamline your development process. It intercepts requests that would match files built by webpack, and dynamically builds those files on demand. They don't need to be written to disk - they are held in memory and served directly to the browser.
+If you're using webpack, the webpack dev middleware feature included in `Microsoft.AspNetCore.SpaServices` will streamline your development process. It intercepts requests that would match files built by webpack, and dynamically builds those files on demand. They don't need to be written to disk - they are just held in memory and served directly to the browser.
 
 Benefits:
 
@@ -399,7 +399,7 @@ To make this work, the template has Webpack configured to inject the contents of
 { test: /\.css/, include: /ClientApp/, loader: 'raw-loader' }
 ```
 
-Now if you want to use LESS instead of plain CSS, you need to include a LESS loader. Run the following in a command prompt at your project root:
+Now if you want to use LESS instead of plain CSS, you just need to include a LESS loader. Run the following in a command prompt at your project root:
 
 ```
 npm install --save less-loader less

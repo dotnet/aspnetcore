@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Components
                 task.Status != TaskStatus.Canceled;
 
             // After each event, we synchronously re-render (unless !ShouldRender())
-            // This saves the developer the trouble of putting "StateHasChanged();"
+            // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
             StateHasChanged();
 

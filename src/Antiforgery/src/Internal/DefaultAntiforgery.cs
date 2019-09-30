@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
             catch (Exception ex)
             {
-                // ignore failures since we'll generate a new token
+                // ignore failures since we'll just generate a new token
                 _logger.TokenDeserializeException(ex);
             }
 
