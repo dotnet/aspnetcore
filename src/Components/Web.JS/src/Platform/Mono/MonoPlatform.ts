@@ -25,8 +25,10 @@ export const monoPlatform: Platform = {
       window['Browser'] = {
         init: () => { },
       };
+
       // Emscripten works by expecting the module config to be a global
-      // MacOSX Catalina initializes Module differently so needs a workaround for now.
+      // For compatibility with macOS Catalina, we have to assign a temporary value to window.Module
+      // before we start loading the WebAssembly files
       addGlobalModuleScriptTagsToDocument(() => {
         window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
         addScriptTagsToDocument();
@@ -207,22 +209,19 @@ function addScriptTagsToDocument() {
   document.body.appendChild(scriptElem);
 }
 
-// Make sure we have the Module setup from the page due to a difference in MacOSX Catalina Beta.
-// This may not be necassary in the Catalina release.
+// Due to a strange behavior in macOS Catalina, we have to delay loading the WebAssembly files
+// until after it finishes evaluating a <script> element that assigns a value to window.Module.
+// This may be fixed in a later version of macOS/iOS, or even if not it may be possible to reduce
+// this to a smaller workaround.
 function addGlobalModuleScriptTagsToDocument(callback: () => void) {
-  const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
-  if (!browserSupportsNativeWebAssembly) {
-    throw new Error('This browser does not support WebAssembly.');
-  }
-
   const scriptElem = document.createElement('script');
 
   // This pollutes global but is needed so it can be called from the script.
-  // The callback is put in the global scope so that it can be run after the script is loaded. onload cannot be used in this case
-  // for non-file scripts
-  window["__wasmmodulecallback__"] = callback;
-  scriptElem.type="text/javascript"
-  scriptElem.text = 'var Module = { onRuntimeInitialized: function () {  console.log("Initialized"); }}; window["__wasmmodulecallback__"](); window["__wasmmodulecallback__"] = null;';
+  // The callback is put in the global scope so that it can be run after the script is loaded.
+  // onload cannot be used in this case for non-file scripts.
+  window['__wasmmodulecallback__'] = callback;
+  scriptElem.type = 'text/javascript';
+  scriptElem.text = 'var Module = { onRuntimeInitialized: function () {} }; window["__wasmmodulecallback__"](); delete window["__wasmmodulecallback__"];';
 
   document.body.appendChild(scriptElem);
 }
