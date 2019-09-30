@@ -113,19 +113,20 @@ app {
 
 #error-ui {
     background: lightyellow;
-    position: fixed;
-    border: "1px solid";
+    border: 1px solid;
     border-color: black;
-    width: 100%;
     bottom: 0;
+    display: none;
     left: 0;
+    position: fixed;
+    width: 100%;
     z-index: 1000;
 }
 
 #error-ui .dismiss {
     position: absolute;
     right: 5px;
-    top: 5px;
+    top: 2px;
 }
 
 @media (max-width: 767.98px) {
