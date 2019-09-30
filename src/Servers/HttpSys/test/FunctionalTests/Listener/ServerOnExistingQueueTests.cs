@@ -145,6 +145,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        public async Task Server_LongestPathSplitting()
+        {
+            using var baseServer = Utilities.CreateDynamicHttpServer("/basepath", out var root, out var baseAddress);
+            baseServer.Options.UrlPrefixes.Add(baseAddress + "secondTier");
+            using var server = Utilities.CreateServerOnExistingQueue(baseServer.Options.RequestQueueName);
+            server.Options.UrlPrefixes.Add(baseAddress); // Keep them in sync
+            server.Options.UrlPrefixes.Add(baseAddress + "secondTier");
+
+            var responseTask = SendRequestAsync(root + "/basepath/secondTier/path/thing");
+
+            var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            Assert.Equal("/basepath/secondTier", context.Request.PathBase);
+            Assert.Equal("/path/thing", context.Request.Path);
+            context.Dispose();
+
+            var response = await responseTask;
+            Assert.Equal(string.Empty, response);
+        }
+
+        [ConditionalFact]
         // Changes to the base server are reflected
         public async Task Server_HotAddPrefix_Success()
         {

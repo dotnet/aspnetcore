@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 foreach (var prefix in _prefixes.Values)
                 {
+                    // The scheme, host, port, and start of path must match.
+                    // Note this does not currently handle prefixes with wildcard subdomains.
                     if (isHttps == prefix.IsHttps
                         && string.Equals(host, prefix.HostAndPort, StringComparison.OrdinalIgnoreCase)
                         && originalPathString.StartsWithSegments(new PathString(prefix.PathWithoutTrailingSlash), StringComparison.OrdinalIgnoreCase, out var remainder)
