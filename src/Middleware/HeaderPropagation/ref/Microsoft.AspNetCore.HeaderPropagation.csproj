@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.HeaderPropagation.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.HeaderPropagation.Manual.cs" Condition="Exists('Microsoft.AspNetCore.HeaderPropagation.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http"  />
     <Reference Include="Microsoft.Extensions.Http"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />

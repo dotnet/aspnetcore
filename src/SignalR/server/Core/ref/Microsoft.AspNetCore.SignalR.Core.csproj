@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Core.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.SignalR.Core.Manual.cs" Condition="Exists('Microsoft.AspNetCore.SignalR.Core.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy"  />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json"  />

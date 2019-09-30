@@ -5,12 +5,10 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.netstandard2.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.Manual.cs" Condition="Exists('Microsoft.AspNetCore.SignalR.Protocols.Json.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.SignalR.Protocols.Json.Manual.cs" Condition="Exists('Microsoft.AspNetCore.SignalR.Protocols.Json.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />
   </ItemGroup>
 </Project>

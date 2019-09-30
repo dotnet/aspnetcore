@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Identity.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Identity.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Identity.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies"  />
     <Reference Include="Microsoft.Extensions.Identity.Core"  />
   </ItemGroup>

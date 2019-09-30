@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Components.Server.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Components.Server.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Components.Server.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Components.Web"  />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions"  />

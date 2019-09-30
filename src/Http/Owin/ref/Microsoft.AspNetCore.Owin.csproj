@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Owin.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Owin.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Owin.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http"  />
   </ItemGroup>
 </Project>

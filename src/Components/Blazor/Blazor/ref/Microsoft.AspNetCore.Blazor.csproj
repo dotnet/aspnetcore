@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Blazor.netstandard2.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Blazor.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Blazor.Manual.cs')" />
     <Reference Include="Mono.WebAssembly.Interop"  />
     <Reference Include="Microsoft.AspNetCore.Components.Web"  />
     <Reference Include="Microsoft.Extensions.Options"  />

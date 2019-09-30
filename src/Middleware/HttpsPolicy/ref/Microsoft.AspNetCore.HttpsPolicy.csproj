@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.HttpsPolicy.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.HttpsPolicy.Manual.cs" Condition="Exists('Microsoft.AspNetCore.HttpsPolicy.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http"  />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
     <Reference Include="Microsoft.Extensions.Configuration.Binder"  />

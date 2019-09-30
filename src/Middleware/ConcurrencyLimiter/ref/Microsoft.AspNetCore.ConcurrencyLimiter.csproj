@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.ConcurrencyLimiter.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.ConcurrencyLimiter.Manual.cs" Condition="Exists('Microsoft.AspNetCore.ConcurrencyLimiter.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Options"  />

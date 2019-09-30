@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authorization.Policy.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Authorization.Policy.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Authorization.Policy.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />

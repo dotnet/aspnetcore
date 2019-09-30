@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Hosting.Server.Abstractions.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Hosting.Server.Abstractions.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Hosting.Server.Abstractions.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http.Features"  />
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions"  />
   </ItemGroup>

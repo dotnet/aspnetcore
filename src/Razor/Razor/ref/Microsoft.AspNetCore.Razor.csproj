@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Razor.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Razor.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Razor.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions"  />
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources"  />
   </ItemGroup>

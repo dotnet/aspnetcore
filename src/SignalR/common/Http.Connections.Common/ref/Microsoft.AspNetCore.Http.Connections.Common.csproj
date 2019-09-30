@@ -5,13 +5,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.netstandard2.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Http.Connections.Common.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
     <Reference Include="System.Text.Json"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Http.Connections.Common.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Http.Connections.Common.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
   </ItemGroup>
 </Project>

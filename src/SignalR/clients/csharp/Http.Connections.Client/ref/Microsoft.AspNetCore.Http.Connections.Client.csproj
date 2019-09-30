@@ -5,14 +5,12 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Http.Connections.Client.netstandard2.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Http.Connections.Client.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Http.Connections.Client.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Options"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <Compile Include="Microsoft.AspNetCore.Http.Connections.Client.netstandard2.1.cs" />
-    <Compile Include="Microsoft.AspNetCore.Http.Connections.Client.Manual.cs" Condition="Exists('Microsoft.AspNetCore.Http.Connections.Client.Manual.cs')" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Options"  />
