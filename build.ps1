@@ -307,6 +307,8 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
+# Though VS Code may indicate $nodeReuse, $warnAsError and $msbuildEngine are unused, tools.ps1 uses them.
+
 # Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 $nodeReuse = $false
 $env:MSBUILDDISABLENODEREUSE=1
@@ -328,10 +330,10 @@ if ($CI) {
 }
 
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
-rm variable:global:_BuildTool -ea Ignore
-rm variable:global:_DotNetInstallDir -ea Ignore
-rm variable:global:_ToolsetBuildProj -ea Ignore
-rm variable:global:_MSBuildExe -ea Ignore
+Remove-Item variable:global:_BuildTool -ea Ignore
+Remove-Item variable:global:_DotNetInstallDir -ea Ignore
+Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
+Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
@@ -391,10 +393,10 @@ finally {
     }
 
     # tools.ps1 corrupts global state, so reset these values so they don't carry between invocations of build.ps1
-    rm variable:global:_BuildTool -ea Ignore
-    rm variable:global:_DotNetInstallDir -ea Ignore
-    rm variable:global:_ToolsetBuildProj -ea Ignore
-    rm variable:global:_MSBuildExe -ea Ignore
+    Remove-Item variable:global:_BuildTool -ea Ignore
+    Remove-Item variable:global:_DotNetInstallDir -ea Ignore
+    Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
+    Remove-Item variable:global:_MSBuildExe -ea Ignore
 
     if ($DumpProcesses -or $ci) {
         Stop-Job -Name DumpProcesses
