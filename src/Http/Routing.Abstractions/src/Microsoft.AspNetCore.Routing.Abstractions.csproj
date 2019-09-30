@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
+    <ContainsManualReferenceAssemblyContent>true</ContainsManualReferenceAssemblyContent>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,6 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
+    <ContainsManualReferenceAssemblyContent>true</ContainsManualReferenceAssemblyContent>
   </PropertyGroup>
 
   <ItemGroup>
