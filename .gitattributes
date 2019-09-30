@@ -25,7 +25,7 @@
 # the diff markers are never inserted). Diff markers may cause the following
 # file extensions to fail to load in VS. An alternative would be to treat
 # these files as binary and thus will always conflict and require user
-# intervention with every merge. To do so, just uncomment the entries below
+# intervention with every merge. To do so, uncomment the entries below
 ###############################################################################
 #*.sln       merge=binary
 #*.csproj    merge=binary

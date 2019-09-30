@@ -8,7 +8,7 @@
 ## What's in Open Iconic?
 
 * 223 icons designed to be legible down to 8 pixels
-* Super-light SVG files - 61.8 for the entire set 
+* Super-light SVG files - 61.8 for the entire set
 * SVG sprite&mdash;the modern replacement for icon fonts
 * Webfont (EOT, OTF, SVG, TTF, WOFF), PNG and WebP formats
 * Webfont stylesheets (including versions for Bootstrap and Foundation) in CSS, LESS, SCSS and Stylus formats
@@ -23,7 +23,7 @@
 
 #### Using Open Iconic's SVGs
 
-We like SVGs and we think they're the way to display icons on the web. Since Open Iconic are just basic SVGs, we suggest you display them like you would any other image (don't forget the `alt` attribute).
+We like SVGs and we think they're the way to display icons on the web. Since Open Iconic are basic SVGs, we suggest you display them like you would any other image (don't forget the `alt` attribute).
 
 ```
 <img src="/open-iconic/svg/icon-name.svg" alt="icon name">
@@ -33,7 +33,7 @@ We like SVGs and we think they're the way to display icons on the web. Since Ope
 
 Open Iconic also comes in a SVG sprite which allows you to display all the icons in the set with a single request. It's like an icon font, without being a hack.
 
-Adding an icon from an SVG sprite is a little different than what you're used to, but it's still a piece of cake. *Tip: To make your icons easily style able, we suggest adding a general class to the* `<svg>` *tag and a unique class name for each different icon in the* `<use>` *tag.*  
+Adding an icon from an SVG sprite is a little different than what you're used to, but it's still a piece of cake. *Tip: To make your icons easily style able, we suggest adding a general class to the* `<svg>` *tag and a unique class name for each different icon in the* `<use>` *tag.*
 
 ```
 <svg class="icon">
@@ -41,7 +41,7 @@ Adding an icon from an SVG sprite is a little different than what you're used to
 </svg>
 ```
 
-Sizing icons only needs basic CSS. All the icons are in a square format, so just set the `<svg>` tag with equal width and height dimensions.
+Sizing icons only needs basic CSS. All the icons are in a square format, so set the `<svg>` tag with equal width and height dimensions.
 
 ```
 .icon {

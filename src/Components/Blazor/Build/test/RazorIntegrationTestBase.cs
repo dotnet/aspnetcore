@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             }
             else
             {
-                // For single phase compilation tests just use the base compilation's references.
+                // For single phase compilation tests use the base compilation's references.
                 // This will include the built-in Blazor components.
                 var projectEngine = CreateProjectEngine(BaseCompilation.References.ToArray());
 
