@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.DataProtection
     /// </para>
     /// <para>
     /// Similarly, when a developer modifies the default protected payload cryptographic
-    /// algorithms, it is intended that they also select an explitiy key storage location.
+    /// algorithms, it is intended that the key storage location is explitily set.
     /// A call to <see cref="DataProtectionBuilderExtensions.UseCryptographicAlgorithms(IDataProtectionBuilder,AuthenticatedEncryptorConfiguration)"/>
     /// should therefore generally be paired with a call to <see cref="DataProtectionBuilderExtensions.PersistKeysToFileSystem(IDataProtectionBuilder,DirectoryInfo)"/>,
     /// for example.

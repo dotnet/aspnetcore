@@ -868,7 +868,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
     /*>>webforms*/
     // input features and input types go directly onto the ret object, bypassing the tests loop.
-    // Hold this to execute in a moment.
+    // Hold this guy to execute in a moment.
     function webforms() {
         /*>>input*/
         // Run through HTML5's new input attributes to see if the UA understands any.
