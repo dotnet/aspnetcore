@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        public async Task CheckIsHttp2()
+        public async Task CheckProtocolIsHttp2()
         {
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
