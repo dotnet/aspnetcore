@@ -602,6 +602,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_INITIALIZE_SERVER = 0x00000001,
             HTTP_INITIALIZE_CBT = 0x00000004,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
+            HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
         }
 
         [Flags]
