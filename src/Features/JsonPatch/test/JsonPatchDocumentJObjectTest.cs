@@ -14,28 +14,6 @@ namespace Microsoft.AspNetCore.JsonPatch
     public class JsonPatchDocumentJObjectTest
     {
         [Fact]
-        public void ApplyTo_ExpandoObject_AddAndReplace()
-        {
-            // Arrange
-            var list = new List<string>
-            {
-                "[{ 'op': 'add', 'path': '/customData', 'value': {'bar': 'baz'}}, { 'op': 'replace', 'path': '/customData/bar', 'value': 'bazz' }]"
-            };
-
-            dynamic model = new ExpandoObject();
-
-            // Act
-            foreach (var item in list)
-            {
-                var patch = JsonConvert.DeserializeObject<JsonPatchDocument>(item);
-                patch.ApplyTo(model);
-            }
-
-            // Assert
-            Assert.Equal("bazz", (string)model.customData.bar);
-        }
-
-        [Fact]
         public void ApplyTo_Array_Add()
         {
             // Arrange
