@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
 
         private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
+
+        private static readonly Type[] ParameterTypes = new Type[] { typeof(IClientProxy) };
 
         public static T Build(IClientProxy proxy)
         {
@@ -40,7 +43,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(ClientModuleName);
             var clientType = GenerateInterfaceImplementation(moduleBuilder);
 
-            return proxy => (T)Activator.CreateInstance(clientType, proxy);
+            var ctor = clientType.GetConstructor(ParameterTypes);
+            var proxy = Expression.Parameter(typeof(IClientProxy), "proxy");
+            var ctorCall = Expression.New(ctor, proxy);
+
+            return Expression.Lambda<Func<IClientProxy, T>>(ctorCall, proxy).Compile();
         }
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
