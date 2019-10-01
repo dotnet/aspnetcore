@@ -27,8 +27,19 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Specifies the field for which validation messages should be displayed.
+        /// <para>
+        /// Only one of <see cref="For"/> or <see cref="Model"/> should be specified.
+        /// </para>
         /// </summary>
         [Parameter] public Expression<Func<TValue>> For { get; set; }
+
+        /// <summary>
+        /// Specifies the model for which validation messages should be displayed.
+        /// <para>
+        /// Only one of <see cref="For"/> or <see cref="Model"/> should be specified.
+        /// </para>
+        /// </summary>
+        [Parameter] public TValue Model { get; set; }
 
         /// <summary>`
         /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
@@ -48,15 +59,29 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"an {nameof(EditForm)}.");
             }
 
-            if (For == null) // Not possible except if you manually specify T
+            if (For == null && Model == null)
             {
                 throw new InvalidOperationException($"{GetType()} requires a value for the " +
-                    $"{nameof(For)} parameter.");
+                    $"{nameof(For)} or {nameof(Model)} parameter.");
             }
-            else if (For != _previousFieldAccessor)
+            else if (For != null && Model != null)
             {
-                _fieldIdentifier = FieldIdentifier.Create(For);
-                _previousFieldAccessor = For;
+                throw new InvalidOperationException($"{GetType()} requires a {nameof(For)} " +
+                   $"parameter, or an {nameof(Model)} parameter, but not both.");
+            }
+
+            if (For != null)
+            {
+                if (For != _previousFieldAccessor)
+                {
+                    _fieldIdentifier = FieldIdentifier.Create(For);
+                    _previousFieldAccessor = For;
+                }
+            }
+            else
+            {
+                _previousFieldAccessor = null;
+                _fieldIdentifier = new FieldIdentifier(Model, string.Empty);
             }
 
             if (CurrentEditContext != _previousEditContext)

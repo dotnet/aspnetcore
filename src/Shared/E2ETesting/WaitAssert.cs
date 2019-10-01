@@ -94,6 +94,8 @@ namespace Microsoft.AspNetCore.E2ETesting
                 // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
                 TestRunFailed = true;
 
+                var innerHtml = driver.FindElement(By.CssSelector(":first-child")).GetAttribute("innerHTML");
+
                 var fileId = $"{Guid.NewGuid():N}.png";
                 var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
                 var errors = driver.GetBrowserLogs(LogLevel.All);
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
                     CaptureException(() => assertion());
 
-                throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath);
+                throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath, innerHtml);
             }
 
             return result;

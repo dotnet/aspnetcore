@@ -1,0 +1,77 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" autocomplete="off">
+    <DataAnnotationsValidator />
+
+    <p class="user-name">
+        User name: <InputText @bind-Value="UserName" />
+        <ValidationMessage For="() => UserName" />
+    </p>
+    <p class="password">
+        Password: <InputText @bind-Value="Password" />
+        <ValidationMessage For="() => Password" />
+    </p>
+    <p class="confirm-password">
+        Confirm Password: <InputText @bind-Value="ConfirmPassword" />
+        <span class="text">@ConfirmPassword</span>
+        <ValidationMessage For="() => ConfirmPassword" />
+    </p>
+
+    <p class="model-errors">
+        <ValidationMessage Model="@this" />
+    </p>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@if (lastCallback != null)
+{
+    <span id="last-callback">@lastCallback</span>
+}
+
+@code {
+    string lastCallback;
+
+    [Required(ErrorMessage = "Please choose a username")]
+    public string UserName { get; set; }
+
+    [Required(ErrorMessage = "Please specify a password")]
+    public string Password { get; set; }
+
+    [Compare(nameof(Password), ErrorMessage = "DataAnnotations - Password and confirm password do not match.")]
+    [BlazorCompareAttribute(nameof(Password), ErrorMessage = "Blazor - Password and confirm password do not match.")]
+    public string ConfirmPassword { get; set; }
+
+    void HandleValidSubmit()
+    {
+        lastCallback = "OnValidSubmit";
+    }
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    class BlazorCompareAttribute : ValidationAttribute
+    {
+        public BlazorCompareAttribute(string otherProperty)
+            : base("'{0}' and '{1}' do not match.")
+        {
+            OtherProperty = otherProperty;
+        }
+
+        public string OtherProperty { get; }
+
+        public override bool RequiresValidationContext => true;
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var otherPropertyInfo = validationContext.ObjectType.GetProperty(OtherProperty);
+
+            object otherPropertyValue = otherPropertyInfo.GetValue(validationContext.ObjectInstance, null);
+            if (!Equals(value, otherPropertyValue))
+            {
+
+                return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), new[] { validationContext.MemberName });
+            }
+
+            return null;
+        }
+    }
+}

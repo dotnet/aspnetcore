@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
-using BasicTestApp.FormsTest;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using BasicTestApp.FormsTest;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -374,6 +373,47 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ticketClassInput.SelectByText("(select)");
             Browser.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
             Browser.Equal("Premium", () => selectedTicketClassDisplay.Text);
+        }
+
+        [Fact]
+        public void ValidationMessage_ForModelWorks()
+        {
+            var appElement = Browser.MountTestComponent<ValidattionMessageModelComponent>();
+            var userContainer = appElement.FindElement(By.CssSelector(".user-name"));
+            var userElement = userContainer.FindElement(By.CssSelector("input"));
+            var passwordContainer = appElement.FindElement(By.CssSelector(".password"));
+            var passwordElement = passwordContainer.FindElement(By.CssSelector("input"));
+            var confirmPasswordContainer = appElement.FindElement(By.CssSelector(".confirm-password"));
+            var confirmPasswordElement = confirmPasswordContainer.FindElement(By.CssSelector("input"));
+            var confirmPasswordText = confirmPasswordContainer.FindElement(By.CssSelector(".text"));
+            var modelErrors = appElement.FindElement(By.CssSelector(".model-errors"));
+            var submitButton = appElement.FindElement(By.TagName("button"));
+
+            passwordElement.SendKeys("password-value");
+
+            submitButton.Click();
+
+            Browser.Equal(new[] { "Please choose a username" }, CreateValidationMessagesAccessor(userContainer));
+            Browser.Equal(new[] { "Blazor - Password and confirm password do not match." }, CreateValidationMessagesAccessor(confirmPasswordContainer));
+            Browser.Equal(new[] { "DataAnnotations - Password and confirm password do not match." }, CreateValidationMessagesAccessor(modelErrors));
+
+            userElement.SendKeys("some-user");
+            confirmPasswordElement.SendKeys("different-value\t");
+
+            Browser.Equal("different-value", () => confirmPasswordText.Text);
+            Browser.Empty(CreateValidationMessagesAccessor(userContainer));
+            Browser.Equal(new[] { "Blazor - Password and confirm password do not match.", "DataAnnotations - Password and confirm password do not match." }, CreateValidationMessagesAccessor(confirmPasswordContainer));
+            Browser.Equal(new[] { "DataAnnotations - Password and confirm password do not match." }, CreateValidationMessagesAccessor(modelErrors));
+
+            confirmPasswordElement.Clear();
+            confirmPasswordElement.SendKeys("password-value\t");
+            Browser.Equal("password-value", () => confirmPasswordText.Text);
+            Browser.Empty(CreateValidationMessagesAccessor(confirmPasswordContainer));
+            Browser.Equal(new[] { "DataAnnotations - Password and confirm password do not match." }, CreateValidationMessagesAccessor(modelErrors));
+
+            submitButton.Click();
+            Browser.Empty(CreateValidationMessagesAccessor(modelErrors));
+            Browser.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
