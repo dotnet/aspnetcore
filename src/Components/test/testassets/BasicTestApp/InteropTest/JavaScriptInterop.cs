@@ -462,5 +462,25 @@ namespace BasicTestApp.InteropTest
 
             public DotNetObjectReference<TestDTO> OutgoingByRef { get; set; }
         }
+
+        public class GenericType<TValue>
+        {
+            public TValue Value { get; set; }
+
+            [JSInvokable]
+            public TValue Update(TValue newValue)
+            {
+                var oldValue = Value;
+                Value = newValue;
+                return oldValue;
+            }
+
+            [JSInvokable]
+            public async Task<TValue> UpdateAsync(TValue newValue)
+            {
+                await Task.Yield();
+                return Update(newValue);
+            }
+        }
     }
 }
