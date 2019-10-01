@@ -52,13 +52,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
         {
-            var type = moduleBuilder.DefineType(
-                ClientModuleName + "." + typeof(T).Name + "Impl",
-                TypeAttributes.Public,
-                typeof(Object),
-                new[] { typeof(T) });
+            var name = ClientModuleName + "." + typeof(T).Name + "Impl";
 
-            var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private);
+            var type = moduleBuilder.DefineType(name, TypeAttributes.Public, typeof(object), new[] { typeof(T) });
+
+            var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private | FieldAttributes.InitOnly);
 
             BuildConstructor(type, proxyField);
 
@@ -88,19 +86,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static void BuildConstructor(TypeBuilder type, FieldInfo proxyField)
         {
-            var method = type.DefineMethod(".ctor", System.Reflection.MethodAttributes.Public | System.Reflection.MethodAttributes.HideBySig);
+            var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, ParameterTypes);
 
-            var ctor = typeof(object).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null, new Type[] { }, null);
-
-            method.SetReturnType(typeof(void));
-            method.SetParameters(typeof(IClientProxy));
-
-            var generator = method.GetILGenerator();
+            var generator = ctor.GetILGenerator();
 
             // Call object constructor
             generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Call, ctor);
+            generator.Emit(OpCodes.Call, typeof(object).GetConstructors().Single());
 
             // Assign constructor argument to the proxyField
             generator.Emit(OpCodes.Ldarg_0); // type
@@ -213,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             foreach (var method in interfaceType.GetMethods())
             {
-                VerifyMethod(interfaceType, method);
+                VerifyMethod(method);
             }
 
             foreach (var parent in interfaceType.GetInterfaces())
@@ -222,7 +214,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static void VerifyMethod(Type interfaceType, MethodInfo interfaceMethod)
+        private static void VerifyMethod(MethodInfo interfaceMethod)
         {
             if (interfaceMethod.ReturnType != typeof(Task))
             {
