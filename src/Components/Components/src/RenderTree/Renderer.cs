@@ -178,7 +178,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                 // new work might be added before we check again as a result of waiting for all
                 // the child components to finish executing SetParametersAsync
-                await pendingWork;
+                // There is a race condition on Safari as a result of using TaskCompletionSource that
+                // causes a stack exceeded error being thrown.  See the corresponding modification in
+                // WebAssemblyHttpMessageHandler.   More information can be found here:
+                // https://devblogs.microsoft.com/premier-developer/the-danger-of-taskcompletionsourcet-class/
+                var pendingWorkAsync = Task.Factory.StartNew(
+                    async () => {
+
+                            await pendingWork;
+
+                        },
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                await pendingWorkAsync;
             }
         }
 
