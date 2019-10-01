@@ -11,18 +11,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Minimum support for Windows 7 is assumed.
         internal static readonly bool IsWin8orLater;
 
-        internal static bool SupportsGoAway { get; }
-
         static ComNetOS()
         {
             var win8Version = new Version(6, 2);
 
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-
-            var win1019H2Version = new Version(10, 0, 18363);
-            // Win10 1909 (19H2) or later
-            SupportsGoAway = (Environment.OSVersion.Version >= win1019H2Version);
         }
-
     }
 }
