@@ -6,18 +6,11 @@
     <HelixAvailablePlatform Include="Linux" />
   </ItemGroup>
 
-    <!-- x64 queues -->
+  <!-- required for green PR queues -->
+
+  <!-- x64 queues -->
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'x64'">
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'arm64'">
@@ -29,8 +22,21 @@
     <HelixAvailableTargetQueue Include="(Ubuntu-1804.Arm64.Open)Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-helix-arm64v8-6f28fa9-20190606004102" Platform="Linux" />
     -->
   </ItemGroup>
+  
+  <!-- non required queues -->
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'x64' AND '$(IsRequiredCheck)' != 'true'">
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
+  </ItemGroup>
 
-  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true' AND '$(IsRequiredCheck)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
 
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
@@ -45,4 +51,5 @@
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
+  
 </Project>
