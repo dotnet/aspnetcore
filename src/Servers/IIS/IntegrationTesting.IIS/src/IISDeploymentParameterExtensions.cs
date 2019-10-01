@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                     element.Descendants("access")
                         .Single()
-                        .SetAttributeValue("sslFlags", "Ssl, SslNegotiateCert");
+                        .SetAttributeValue("sslFlags", "None");
                 });
         }
 

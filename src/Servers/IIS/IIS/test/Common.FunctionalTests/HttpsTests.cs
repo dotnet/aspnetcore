@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -79,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
+            deploymentParameters.SetWindowsAuth(false);
             deploymentParameters.AddServerConfigAction(
                 (element, root) => {
                     element.Descendants("site").Single().Element("application").SetAttributeValue("path", "/" + appName);
@@ -87,8 +89,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var client = CreateNonValidatingClient(deploymentResult);
-
             Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName, await client.GetStringAsync($"/{appName}/ServerAddresses"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task CheckIsHttp2()
+        {
+            var port = TestPortHelper.GetNextSSLPort();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
+            deploymentParameters.AddHttpsToServerConfig();
+            deploymentParameters.SetWindowsAuth(false);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var client = CreateNonValidatingClient(deploymentResult);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+
+            Assert.Equal("HTTP/2", await client.GetStringAsync($"/CheckIsHttp2"));
         }
 
         [ConditionalFact]
