@@ -88,7 +88,7 @@ namespace Ignitor
 
         public Task<CapturedRenderBatch> PrepareForNextBatch(TimeSpan? timeout)
         {
-            if (NextBatchReceived?.Completion != null)
+            if (NextBatchReceived != null && !NextBatchReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
@@ -100,7 +100,7 @@ namespace Ignitor
 
         public Task<CapturedJSInteropCall> PrepareForNextJSInterop(TimeSpan? timeout)
         {
-            if (NextJSInteropReceived?.Completion != null)
+            if (NextJSInteropReceived != null && !NextJSInteropReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
@@ -112,7 +112,7 @@ namespace Ignitor
 
         public Task<string> PrepareForNextDotNetInterop(TimeSpan? timeout)
         {
-            if (NextDotNetInteropCompletionReceived?.Completion != null)
+            if (NextDotNetInteropCompletionReceived != null && !NextDotNetInteropCompletionReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
@@ -124,7 +124,7 @@ namespace Ignitor
 
         public Task<string> PrepareForNextCircuitError(TimeSpan? timeout)
         {
-            if (NextErrorReceived?.Completion != null)
+            if (NextErrorReceived != null && !NextErrorReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
@@ -136,7 +136,7 @@ namespace Ignitor
 
         public Task<Exception> PrepareForNextDisconnect(TimeSpan? timeout)
         {
-            if (NextDisconnect?.Completion != null)
+            if (NextDisconnect != null && !NextDisconnect.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
@@ -497,56 +497,6 @@ namespace Ignitor
             }
 
             return element;
-        }
-
-        private class CancellableOperation<TResult>
-        {
-            public CancellableOperation(TimeSpan? timeout)
-            {
-                Timeout = timeout;
-                Initialize();
-            }
-
-            public TimeSpan? Timeout { get; }
-
-            public TaskCompletionSource<TResult> Completion { get; set; }
-
-            public CancellationTokenSource Cancellation { get; set; }
-
-            public CancellationTokenRegistration CancellationRegistration { get; set; }
-
-            private void Initialize()
-            {
-                Completion = new TaskCompletionSource<TResult>(TaskContinuationOptions.RunContinuationsAsynchronously);
-                Completion.Task.ContinueWith(
-                    (task, state) =>
-                    {
-                        var operation = (CancellableOperation<TResult>)state;
-                        operation.Dispose();
-                    },
-                    this,
-                    TaskContinuationOptions.ExecuteSynchronously); // We need to execute synchronously to clean-up before anything else continues
-                if (Timeout != null && Timeout != System.Threading.Timeout.InfiniteTimeSpan && Timeout != TimeSpan.MaxValue)
-                {
-                    Cancellation = new CancellationTokenSource(Timeout.Value);
-                    CancellationRegistration = Cancellation.Token.Register(
-                        (self) =>
-                        {
-                            var operation = (CancellableOperation<TResult>)self;
-                            operation.Completion.TrySetCanceled(operation.Cancellation.Token);
-                            operation.Cancellation.Dispose();
-                            operation.CancellationRegistration.Dispose();
-                        },
-                        this);
-                }
-            }
-
-            private void Dispose()
-            {
-                Completion = null;
-                Cancellation.Dispose();
-                CancellationRegistration.Dispose();
-            }
         }
 
         private string[] ReadMarkers(string content)

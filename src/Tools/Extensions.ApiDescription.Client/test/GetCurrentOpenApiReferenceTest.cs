@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
         public void Execute_ReturnsExpectedItem()
         {
             // Arrange
-            string input = "Identity=../files/azureMonitor.json|ClassName=azureMonitorClient|" +
+            var input = "Identity=../files/azureMonitor.json|ClassName=azureMonitorClient|" +
                 "CodeGenerator=NSwagCSharp|Namespace=ConsoleClient|Options=|OutputPath=" +
                 "C:\\dd\\dnx\\AspNetCore\\artifacts\\obj\\ConsoleClient\\azureMonitorClient.cs|" +
                 "OriginalItemSpec=../files/azureMonitor.json|FirstForGenerator=true";
@@ -22,8 +22,8 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 Input = input,
             };
 
-            string expectedIdentity = "../files/azureMonitor.json";
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedIdentity = "../files/azureMonitor.json";
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", "azureMonitorClient" },
                 { "CodeGenerator", "NSwagCSharp" },
