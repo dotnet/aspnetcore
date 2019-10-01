@@ -6,10 +6,17 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
-    internal interface IAssemblyPartResolver
+    public interface IAssemblyPartResolver
     {
         /// <summary>
-        /// When implementing this interface you should make sure to recursively handle the dependencies which result from referencing a given part
+        /// If your resolver returns true after resolving references through <see cref="GetReferencePaths"/> further implementations of <see cref="IAssemblyPartResolver"/> will not be used for further assembly resolution
+        /// </summary>
+        /// <param name="assemblyPart"></param>
+        /// <returns>true if your resolver entirely resolves dependencies for the given part, false if you want to let other implementations of <see cref="IAssemblyPartResolver"/> handle resolution as well</returns>
+        bool IsFullyResolved(AssemblyPart assemblyPart);
+
+        /// <summary>
+        /// When implementing this method you should make sure to recursively handle the dependencies which result from referencing a given part
         /// </summary>
         /// <param name="assemblyPart"></param>
         /// <returns>All references which are dependencies of this application part.</returns>

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
@@ -12,16 +13,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     /// </summary>
     internal class DependencyContextResolver : IAssemblyPartResolver
     {
+        public bool IsFullyResolved(AssemblyPart assemblyPart)
+        {
+            return false;
+        }
+
         public IEnumerable<string> GetReferencePaths(AssemblyPart assemblyPart)
         {
             try
             {
                 return assemblyPart.GetReferencePaths();
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
                 // DependencyContext was unable to resolve the dependencies because it is unaware of additional references.
-                return Array.Empty<string>();
+
+                throw new Exception($"{nameof(DependencyContextResolver)} failed to resolve the {nameof(AssemblyPart)} {assemblyPart.Assembly.FullName}. " +
+                                    $"One possible resolution to this is providing your own implementation of {nameof(IAssemblyPartResolver)} and add it " +
+                                    $"to {nameof(MvcRazorRuntimeCompilationOptions)}.{nameof(MvcRazorRuntimeCompilationOptions.AssemblyPartResolvers)}.", ex);
             }
         }
     }
@@ -33,6 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         internal CompileOptionsPartResolver(HashSet<string> optionReferences)
         {
             _optionReferences = optionReferences ?? throw new ArgumentNullException(nameof(optionReferences));
+        }
+
+        public bool IsFullyResolved(AssemblyPart assemblyPart)
+        {
+            return false;
         }
 
         public IEnumerable<string> GetReferencePaths(AssemblyPart assemblyPart)
@@ -49,14 +63,28 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         private readonly IAssemblyPartResolver[] _resolvers;
 
-        internal CompositeAssemblyPartResolver(IAssemblyPartResolver[] resolvers)
+        internal CompositeAssemblyPartResolver(IEnumerable<IAssemblyPartResolver> resolvers)
         {
-            _resolvers = resolvers;
+            _resolvers = resolvers.ToArray();
+        }
+
+        public bool IsFullyResolved(AssemblyPart assemblyPart)
+        {
+            return false;
         }
 
         public IEnumerable<string> GetReferencePaths(AssemblyPart assemblyPart)
         {
-            return _resolvers.SelectMany(resolver => resolver.GetReferencePaths(assemblyPart)).ToHashSet();
+            foreach (var resolver in _resolvers)
+            {
+                foreach (var referencePath in resolver.GetReferencePaths(assemblyPart))
+                {
+                    yield return referencePath;
+                }
+
+                if(resolver.IsFullyResolved(assemblyPart))
+                    yield break;
+            }
         }
     }
 }

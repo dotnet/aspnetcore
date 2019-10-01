@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private object _compilationReferencesLock = new object();
         private bool _compilationReferencesInitialized;
         private IReadOnlyList<MetadataReference> _compilationReferences;
-        private readonly IAssemblyPartResolver _assemblyPartResolver;
+        private IReadOnlyList<IAssemblyPartResolver> _assemblyPartResolvers;
 
         public RazorReferenceManager(
             ApplicationPartManager partManager,
@@ -28,14 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             _partManager = partManager;
             _options = options.Value;
-            // In a later release this could be extensible to add more assembly resolvers through options?
-            // For now it would just make sure that compilation of plugins works without breaking the application
-            _assemblyPartResolver = new CompositeAssemblyPartResolver(
-                new IAssemblyPartResolver[]
-                {
-                    new CompileOptionsPartResolver(new HashSet<string>(options.Value.AdditionalReferencePaths, StringComparer.OrdinalIgnoreCase)),
-                    new DependencyContextResolver(), 
-                });
+            _assemblyPartResolvers = CreateAssemblyPartResolvers();
         }
 
         public virtual IReadOnlyList<MetadataReference> CompilationReferences
@@ -48,6 +41,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                     ref _compilationReferencesLock,
                     GetCompilationReferences);
             }
+        }
+
+        private List<IAssemblyPartResolver> CreateAssemblyPartResolvers()
+        {
+            var resolvers = new List<IAssemblyPartResolver>();
+            resolvers.AddRange(_options.AssemblyPartResolvers);
+            resolvers.Add(new CompileOptionsPartResolver(new HashSet<string>(_options.AdditionalReferencePaths,
+                StringComparer.OrdinalIgnoreCase)));
+            resolvers.Add(new DependencyContextResolver());
+            return resolvers;
         }
 
         private IReadOnlyList<MetadataReference> GetCompilationReferences()
@@ -72,13 +75,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 }
                 else if (part is AssemblyPart assemblyPart)
                 {
-                    referencePaths.AddRange(_assemblyPartResolver.GetReferencePaths(assemblyPart));
+                    referencePaths.AddRange(GetAssemblyPartReferences(assemblyPart));
                 }
             }
 
             referencePaths.AddRange(_options.AdditionalReferencePaths);
 
             return referencePaths;
+        }
+
+        private IEnumerable<string> GetAssemblyPartReferences(AssemblyPart assemblyPart)
+        {
+            foreach (var resolver in _assemblyPartResolvers)
+            {
+                foreach (var referencePath in resolver.GetReferencePaths(assemblyPart))
+                {
+                    yield return referencePath;
+                }
+
+                /* In order to gracefully allow resolution failures of the DependencyContextResolver we need to provide an execution path where the developer
+                 * can inject his own resolution ahead of the DependencyContextResolver to prevent compilation exceptions and then abort resolution for a given Assembly part.
+                 * That way DependencyContextResolver compilation crashes can be prevented and the feature of runtime compilation stays intact
+                 */
+
+                if (resolver.IsFullyResolved(assemblyPart))
+                    break;
+            }
         }
 
         private static MetadataReference CreateMetadataReference(string path)

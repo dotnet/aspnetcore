@@ -27,5 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         /// uses to compile a Razor file. This API allows providing additional references to the compiler.
         /// </remarks>
         public IList<string> AdditionalReferencePaths { get; } = new List<string>();
+
+        /// <summary>
+        /// <para>By default this middleware will resolve all project references, system references and nuget references. </para>
+        /// <para>Handling external references such as plugins loaded through dynamic assembly loading might require you to add your own implementation of <see cref="IAssemblyPartResolver"/></para> 
+        /// </summary>
+        public IList<IAssemblyPartResolver> AssemblyPartResolvers { get; } = new List<IAssemblyPartResolver>();
     }
 }
