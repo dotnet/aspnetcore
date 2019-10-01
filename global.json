@@ -12,6 +12,7 @@
         "$(MicrosoftNETCoreAppRuntimeVersion)"
       ]
     },
+    "Git": "2.22.0",
     "jdk": "11.0.3",
     "vs": {
       "version": "16.0",
