@@ -20,18 +20,10 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-#nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-  
-  var myValue = "Expression value";
-
-#line default
-#line hidden
-#nullable disable
             __o = 
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                           myValue
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                 ParentValue
 
 #line default
 #line hidden
@@ -39,6 +31,14 @@ namespace Test
             ;
         }
         #pragma warning restore 1998
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+       
+    public string ParentValue { get; set; } = "hi";
+
+#line default
+#line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

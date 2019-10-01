@@ -23,5 +23,5 @@ Document -
                             IntermediateToken -  - CSharp - __value => person.Name = __value
                 HtmlContent - (39:0,39 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (39:0,39 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n
+            CSharpCode - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n

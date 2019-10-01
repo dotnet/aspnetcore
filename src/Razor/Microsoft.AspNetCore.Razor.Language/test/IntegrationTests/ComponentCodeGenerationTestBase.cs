@@ -184,7 +184,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent 
+<MyComponent
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""
@@ -317,7 +317,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@myValue"" />");
@@ -335,7 +335,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@(myValue)"" />");
@@ -353,7 +353,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <div>@myValue <!-- @myValue --> </div>");
@@ -471,7 +471,7 @@ namespace Test
             var generated = CompileToCSharp(@"
 <InputText @bind-Value=""person.Name"" />
 
-@functions 
+@functions
 {
     Person person = new Person();
 }");
@@ -886,6 +886,37 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <div @bind=""@ParentValue"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElement_WithoutCloseTag()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", null, ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <input @bind=""@ParentValue"">
+</div>
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -2609,6 +2640,28 @@ namespace Test
         }
 
         [Fact]
+        public void EventHandler_OnElement_WithoutCloseTag()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<div>
+  <input @onclick=""OnClick"">
+</div>
+@code {
+    void OnClick() {
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void EventHandler_OnElement_WithEventArgsMethodGroup()
         {
             // Arrange
@@ -2659,7 +2712,7 @@ namespace Test
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    Task OnClick() 
+    Task OnClick()
     {
         return Task.CompletedTask;
     }
@@ -2682,7 +2735,7 @@ namespace Test
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    Task OnClick(MouseEventArgs e) 
+    Task OnClick(MouseEventArgs e)
     {
         return Task.CompletedTask;
     }
@@ -4300,7 +4353,7 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-   
+
 @(""My value"")
 
 <h1>Hello</h1>");

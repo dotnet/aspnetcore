@@ -14,5 +14,5 @@ Document -
                     ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => person.Name = __value
-            CSharpCode - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n
+            CSharpCode - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n

@@ -10,35 +10,34 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
-        #pragma warning disable 219
-        private void __RazorDirectiveTokenHelpers__() {
-        }
-        #pragma warning restore 219
-        #pragma warning disable 0414
-        private static System.Object __o = null;
-        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
+            __builder.OpenElement(0, "div");
+            __builder.AddMarkupContent(1, "\r\n  ");
+            __builder.OpenElement(2, "input");
+            __builder.AddAttribute(3, "@bind", 
 #nullable restore
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-  
-  var myValue = "Expression value";
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                 ParentValue
 
 #line default
 #line hidden
 #nullable disable
-            __o = 
-#nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                           myValue
-
-#line default
-#line hidden
-#nullable disable
-            ;
+            );
+            __builder.CloseElement();
+            __builder.AddMarkupContent(4, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+       
+    public string ParentValue { get; set; } = "hi";
+
+#line default
+#line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

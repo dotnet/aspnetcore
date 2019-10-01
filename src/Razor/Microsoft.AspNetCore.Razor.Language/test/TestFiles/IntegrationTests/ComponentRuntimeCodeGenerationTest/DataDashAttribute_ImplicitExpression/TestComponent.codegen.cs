@@ -15,7 +15,7 @@ namespace Test
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-   
+  
   var myValue = "Expression value";
 
 #line default

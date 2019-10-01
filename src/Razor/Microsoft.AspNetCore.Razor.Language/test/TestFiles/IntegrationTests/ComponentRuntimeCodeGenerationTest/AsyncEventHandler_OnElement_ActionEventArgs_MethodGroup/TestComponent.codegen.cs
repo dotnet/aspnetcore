@@ -42,7 +42,7 @@ using Microsoft.AspNetCore.Components.Web;
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    Task OnClick(MouseEventArgs e) 
+    Task OnClick(MouseEventArgs e)
     {
         return Task.CompletedTask;
     }

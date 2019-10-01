@@ -6,16 +6,10 @@ namespace Test
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-using System.Threading.Tasks;
-
-#line default
-#line hidden
-#nullable disable
-#nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Microsoft.AspNetCore.Components.Web;
 
 #line default
@@ -23,33 +17,30 @@ using Microsoft.AspNetCore.Components.Web;
 #nullable disable
     public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
-        #pragma warning disable 219
-        private void __RazorDirectiveTokenHelpers__() {
-        }
-        #pragma warning restore 219
-        #pragma warning disable 0414
-        private static System.Object __o = null;
-        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+            __builder.OpenElement(0, "div");
+            __builder.AddMarkupContent(1, "\r\n  ");
+            __builder.OpenElement(2, "input");
+            __builder.AddAttribute(3, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-                 OnClick
+                   OnClick
 
 #line default
 #line hidden
 #nullable disable
-            );
+            ));
+            __builder.CloseElement();
+            __builder.AddMarkupContent(4, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    Task OnClick(MouseEventArgs e)
-    {
-        return Task.CompletedTask;
+    void OnClick() {
     }
 
 #line default
