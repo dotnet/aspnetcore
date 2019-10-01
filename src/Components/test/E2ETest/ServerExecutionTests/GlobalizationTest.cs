@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,40 +17,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     // For now this is limited to server-side execution because we don't have the ability to set the
     // culture in client-side Blazor.
-    public class GlobalizationTest : BasicTestAppTestBase
+    public class GlobalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<InternationalizationStartup>>
     {
         public GlobalizationTest(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            BasicTestAppServerSiteFixture<InternationalizationStartup> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+            : base(browserFixture, serverFixture, output)
         {
         }
 
         protected override void InitializeAsyncCore()
         {
-            // On WebAssembly, page reloads are expensive so skip if possible
-            Navigate(ServerPathBase, _serverFixture.ExecutionMode == ExecutionMode.Client);
-            MountTestComponent<CulturePicker>();
-            WaitUntilExists(By.Id("culture-selector"));
+            Navigate(ServerPathBase);
+            Browser.MountTestComponent<CulturePicker>();
+            Browser.Exists(By.Id("culture-selector"));
         }
 
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
-        public void CanSetCultureAndParseCultueSensitiveNumbersAndDates(string culture)
+        public void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("input_type_text_int"));
@@ -77,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             display = Browser.FindElement(By.Id("input_type_text_datetime_value"));
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
 
-            ReplaceText(input, new DateTime(2000, 1, 2).ToString(cultureInfo));
+            input.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
             input.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
 
@@ -86,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             display = Browser.FindElement(By.Id("input_type_text_datetimeoffset_value"));
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
 
-            ReplaceText(input, new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            input.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             input.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
         }
@@ -96,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         // type="number" and type="date" produce fixed-format and culture-invariant input/output via the "value"
         // attribute - the actual input processing is harder to nail down. In practice this is only a problem
         // with dates.
-        // 
+        //
         // For this reason we avoid sending keys directly to the field, and let two-way binding do its thing instead.
         //
         // A brief summary:
@@ -113,16 +103,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("input_type_number_int"));
@@ -155,7 +136,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            ReplaceText(extraInput, new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
@@ -167,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            ReplaceText(extraInput, new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
@@ -179,16 +160,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithFormComponents(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
-
-            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
-            selector.SelectByValue(culture);
-
-            // That should have triggered a redirect, wait for the main test selector to come up.
-            MountTestComponent<GlobalizationBindCases>();
-            WaitUntilExists(By.Id("globalization-cases"));
-
-            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
-            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+            SetCulture(culture);
 
             // int
             var input = Browser.FindElement(By.Id("inputnumber_int"));
@@ -221,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            ReplaceText(extraInput, new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
@@ -233,19 +205,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
-            ReplaceText(extraInput, new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
             extraInput.SendKeys("\t");
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
         }
 
-        // see: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/214
-        //
-        // Calling Clear() can trigger onchange, which will revert the value to its default.
-        private static void ReplaceText(IWebElement element, string text)
+        private void SetCulture(string culture)
         {
-            element.SendKeys(Keys.Control + "a");
-            element.SendKeys(text);
+            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
+            selector.SelectByValue(culture);
+
+            // Click the link to return back to the test page
+            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+
+            // That should have triggered a page load, so wait for the main test selector to come up.
+            Browser.MountTestComponent<GlobalizationBindCases>();
+            Browser.Exists(By.Id("globalization-cases"));
+
+            var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
+            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
         }
     }
 }

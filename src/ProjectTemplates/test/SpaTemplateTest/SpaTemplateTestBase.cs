@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -67,14 +66,15 @@ namespace Templates.Test.SpaTemplateTest
             using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
-            var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
+            var testcommand = "npm run test" + template == "angular" ? "-- --watch=false" : "";
+            var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, testcommand);
             Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
 
             using var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp5.0/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             using var buildResult = await Project.RunDotNetBuildAsync();
@@ -94,6 +94,11 @@ namespace Templates.Test.SpaTemplateTest
                     using var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
                     Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", Project, dbUpdateResult));
                 }
+            }
+
+            if (template == "react" || template == "reactredux")
+            {
+                await CleanupReactClientAppBuildFolder(clientAppSubdirPath);
             }
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
@@ -142,6 +147,35 @@ namespace Templates.Test.SpaTemplateTest
                     BrowserFixture.EnforceSupportedConfigurations();
                 }
             }
+        }
+
+        private async Task CleanupReactClientAppBuildFolder(string clientAppSubdirPath)
+        {
+            ProcessEx testResult = null;
+            int? testResultExitCode = null;
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResultExitCode = testResult.ExitCode;
+                    if (testResultExitCode == 0)
+                    {
+                        return;
+                    }
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    testResult.Dispose();
+                }
+
+                await Task.Delay(3000);
+            }
+
+            Assert.True(testResultExitCode == 0, ErrorMessages.GetFailedProcessMessage("npx rimraf ./build", Project, testResult));
         }
 
         private void ValidatePackageJson(string clientAppSubdirPath)
@@ -237,6 +271,23 @@ namespace Templates.Test.SpaTemplateTest
                     browser.FindElement(By.Name("Input.Password")).SendKeys(password);
                     browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
                     browser.FindElement(By.Id("registerSubmit")).Click();
+
+                    // We will be redirected to the RegisterConfirmation
+                    browser.Contains("/Identity/Account/RegisterConfirmation", () => browser.Url);
+                    browser.FindElement(By.PartialLinkText("Click here to confirm your account")).Click();
+
+                    // We will be redirected to the ConfirmEmail
+                    browser.Contains("/Identity/Account/ConfirmEmail", () => browser.Url);
+
+                    // Now we can login
+                    browser.FindElement(By.PartialLinkText("Login")).Click();
+                    browser.Exists(By.Name("Input.Email"));
+                    browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
+                    browser.FindElement(By.Name("Input.Password")).SendKeys(password);
+                    browser.FindElement(By.Id("login-submit")).Click();
+
+                    // Need to navigate to fetch page
+                    browser.FindElement(By.PartialLinkText("Fetch data")).Click();
                 }
 
                 // Can navigate to the 'fetch data' page
@@ -244,7 +295,7 @@ namespace Templates.Test.SpaTemplateTest
                 browser.Equal("Weather forecast", () => browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                browser.Exists(By.CssSelector("table>tbody>tr"), TimeSpan.FromSeconds(10));
+                browser.Exists(By.CssSelector("table>tbody>tr"));
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
 

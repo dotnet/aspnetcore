@@ -152,6 +152,15 @@ function InitializeDotNetCli {
   # build steps from using anything other than what we've downloaded.
   Write-PipelinePrependPath -path "$dotnet_root"
 
+  # Work around issues with Azure Artifacts credential provider
+  # https://github.com/dotnet/arcade/issues/3932
+  if [[ "$ci" == true ]]; then
+    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
+    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
+  fi
+
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
   Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
 
@@ -208,12 +217,19 @@ function GetDotNetInstallScript {
 
     # Use curl if available, otherwise use wget
     if command -v curl > /dev/null; then
-      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script"
-    else
-      wget -q -O "$install_script" "$install_script_url"
+      curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
+        local exit_code=$?
+        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+        ExitWithExitCode $exit_code
+      }
+    else 
+      wget -q -O "$install_script" "$install_script_url" || {
+        local exit_code=$?
+        Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnet install script (exit code '$exit_code')."
+        ExitWithExitCode $exit_code
+      }
     fi
   fi
-
   # return value
   _GetDotNetInstallScript="$install_script"
 }
@@ -321,6 +337,13 @@ function MSBuild {
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
+
+    # Work around issues with Azure Artifacts credential provider
+    # https://github.com/dotnet/arcade/issues/3932
+    if [[ "$ci" == true ]]; then
+      dotnet nuget locals http-cache -c
+    fi
+
     local toolset_dir="${_InitializeToolset%/*}"
     local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
     args=( "${args[@]}" "-logger:$logger_path" )

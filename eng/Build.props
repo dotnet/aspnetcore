@@ -28,6 +28,7 @@
     <!-- These projects are meant to be executed by tests. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                      $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
@@ -41,6 +42,7 @@
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
+                      $(RepoRoot)src\Components\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;

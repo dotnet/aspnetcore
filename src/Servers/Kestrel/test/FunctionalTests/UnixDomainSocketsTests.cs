@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -27,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #else
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
 #endif
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/14382", Queues = "Windows.10.Amd64.Open")]
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocket()

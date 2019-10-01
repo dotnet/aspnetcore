@@ -265,7 +265,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
                             if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
-                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType()))
+                                (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
+                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType())))
                             {
                                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
@@ -275,7 +276,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             {
                                 if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
                                 {
-                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
                                     arguments[parameterPointer] = cts.Token;
                                 }
                                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             return;
                         }
 
-                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
                         connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
                         var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 
@@ -316,15 +317,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                     }
 
-                    else if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
-                    {
-                        // Send Async, no response expected
-                        invocation = ExecuteHubMethod(methodExecutor, hub, arguments);
-                    }
-
                     else
                     {
-                        // Invoke Async, one reponse expected
+                        // Invoke or Send
                         async Task ExecuteInvocation()
                         {
                             object result;
@@ -350,7 +345,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 }
                             }
 
-                            await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
+                            // No InvocationId - Send Async, no response expected
+                            if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+                            {
+                                // Invoke Async, one reponse expected
+                                await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
+                            }
                         }
                         invocation = ExecuteInvocation();
                     }

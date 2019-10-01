@@ -30,23 +30,23 @@ public class UserAgentTest {
     }
 
     @Test
-    public void verifyJavaVendor(){
+    public void verifyJavaVendor() {
         assertEquals(System.getProperty("java.vendor"), UserAgentHelper.getJavaVendor());
     }
 
     @Test
-    public void verifyJavaVersion(){
+    public void verifyJavaVersion() {
         assertEquals(System.getProperty("java.version"), UserAgentHelper.getJavaVersion());
     }
 
     @Test
-    public void checkUserAgentString(){
+    public void checkUserAgentString() {
         String userAgent = UserAgentHelper.createUserAgentString();
         assertNotNull(userAgent);
 
         String detailedVersion = Version.getDetailedVersion();
         String handMadeUserAgent = "Microsoft SignalR/" + UserAgentHelper.getVersion(detailedVersion) +
-                "; (" + detailedVersion + "; " + UserAgentHelper.getOS() + "; Java; " +
+                " (" + detailedVersion + "; " + UserAgentHelper.getOS() + "; Java; " +
                 UserAgentHelper.getJavaVersion() + "; " + UserAgentHelper.getJavaVendor() + ")";
 
         assertEquals(handMadeUserAgent, userAgent);

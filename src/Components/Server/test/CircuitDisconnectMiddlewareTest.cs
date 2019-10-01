@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             // Arrange
             var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
-            var id = circuitIdFactory.CreateCircuitId();
+            var circuitId = circuitIdFactory.CreateCircuitId();
             var registry = new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
                 NullLogger<CircuitRegistry>.Instance,
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 (ctx) => Task.CompletedTask);
 
             using var memory = new MemoryStream();
-            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = id }).CopyToAsync(memory);
+            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = circuitId.Secret, }).CopyToAsync(memory);
             memory.Seek(0, SeekOrigin.Begin);
 
             var context = new DefaultHttpContext();
@@ -171,8 +171,8 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             // Arrange
             var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
-            var id = circuitIdFactory.CreateCircuitId();
-            var testCircuitHost = TestCircuitHost.Create(id);
+            var circuitId = circuitIdFactory.CreateCircuitId();
+            var testCircuitHost = TestCircuitHost.Create(circuitId);
 
             var registry = new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 (ctx) => Task.CompletedTask);
 
             using var memory = new MemoryStream();
-            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = id }).CopyToAsync(memory);
+            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = circuitId.Secret, }).CopyToAsync(memory);
             memory.Seek(0, SeekOrigin.Begin);
 
             var context = new DefaultHttpContext();
@@ -208,8 +208,8 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             // Arrange
             var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
-            var id = circuitIdFactory.CreateCircuitId();
-            var circuitHost = TestCircuitHost.Create(id);
+            var circuitId = circuitIdFactory.CreateCircuitId();
+            var circuitHost = TestCircuitHost.Create(circuitId);
 
             var registry = new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 (ctx) => Task.CompletedTask);
 
             using var memory = new MemoryStream();
-            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = id }).CopyToAsync(memory);
+            await new FormUrlEncodedContent(new Dictionary<string, string> { ["circuitId"] = circuitId.Secret }).CopyToAsync(memory);
             memory.Seek(0, SeekOrigin.Begin);
 
             var context = new DefaultHttpContext();

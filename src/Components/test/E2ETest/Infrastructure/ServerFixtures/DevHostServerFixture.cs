@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         public string PathBase { get; set; }
         public string ContentRoot { get; private set; }
 
-        protected override IWebHost CreateWebHost()
+        protected override IHost CreateWebHost()
         {
             ContentRoot = FindSampleOrTestSitePath(
                 typeof(TProgram).Assembly.FullName);
@@ -38,29 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 args.Add(Environment);
             }
 
-            return new FakeWebHost(DevHostServerProgram.BuildWebHost(args.ToArray()));
-        }
-
-        private class FakeWebHost : IWebHost
-        {
-            private readonly IHost _realHost;
-
-            public FakeWebHost(IHost realHost)
-            {
-                _realHost = realHost;
-            }
-
-            public IFeatureCollection ServerFeatures => ((IServer)_realHost.Services.GetService(typeof(IServer))).Features;
-
-            public IServiceProvider Services => _realHost.Services;
-
-            public void Dispose() => _realHost.Dispose();
-
-            public void Start() => _realHost.Start();
-
-            public Task StartAsync(CancellationToken cancellationToken = default) => _realHost.StartAsync();
-
-            public Task StopAsync(CancellationToken cancellationToken = default) => _realHost.StopAsync();
+            return DevHostServerProgram.BuildWebHost(args.ToArray());
         }
     }
 }

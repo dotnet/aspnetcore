@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -101,6 +101,71 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).OrTimeout();
 
                     Assert.Equal("Hello World!", result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ServerRejectsClientWithOldProtocol()
+        {
+            bool ExpectedError(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                    writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            var protocol = HubProtocols["json"];
+            using (StartServer<Startup>(out var server, ExpectedError))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/negotiateProtocolVersion12", HttpTransportType.LongPolling);
+                connectionBuilder.Services.AddSingleton(protocol);
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(() => connection.StartAsync()).OrTimeout();
+                    Assert.Equal("The client requested version '1', but the server does not support this version.", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ClientCanConnectToServerWithLowerMinimumProtocol()
+        {
+            var protocol = HubProtocols["json"];
+            using (StartServer<Startup>(out var server))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/negotiateProtocolVersionNegative", HttpTransportType.LongPolling);
+                connectionBuilder.Services.AddSingleton(protocol);
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
                 }
                 catch (Exception ex)
                 {

@@ -5,71 +5,73 @@ VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{ABD364B3-09A1-4CFE-8D26-FF6417DDEC84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{18BE6FD1-1EB1-44AD-A3AE-398C990060F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{18BE6FD1-1EB1-44AD-A3AE-398C990060F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Tests", "Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj", "{CEDC6CD0-0276-4C45-9B57-C222516840B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Tests", "Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj", "{CEDC6CD0-0276-4C45-9B57-C222516840B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureKeyVault", "AzureKeyVault", "{695602EE-F2FD-4B9B-AF84-9208AE552B9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.AzureKeyVault", "AzureKeyVault\src\Microsoft.AspNetCore.DataProtection.AzureKeyVault.csproj", "{DDA72406-95B8-4A67-A994-F1E5F2506126}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureKeyVault", "AzureKeyVault\src\Microsoft.AspNetCore.DataProtection.AzureKeyVault.csproj", "{DDA72406-95B8-4A67-A994-F1E5F2506126}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.AzureKeyVault.Tests", "AzureKeyVault\test\Microsoft.AspNetCore.DataProtection.AzureKeyVault.Tests.csproj", "{0C2EE847-D78B-46FD-AB73-EAB8200C9138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureKeyVault.Tests", "AzureKeyVault\test\Microsoft.AspNetCore.DataProtection.AzureKeyVault.Tests.csproj", "{0C2EE847-D78B-46FD-AB73-EAB8200C9138}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureStorage", "AzureStorage", "{5CD76E65-363F-4CD5-B01D-2DF5DC16CB64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.AzureStorage", "AzureStorage\src\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj", "{22860B07-A42B-4757-9208-7D6BDB2B48F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureStorage", "AzureStorage\src\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj", "{22860B07-A42B-4757-9208-7D6BDB2B48F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.AzureStorage.Tests", "AzureStorage\test\Microsoft.AspNetCore.DataProtection.AzureStorage.Tests.csproj", "{C36DAB08-F641-4C5A-86C0-3CC39FC779D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.AzureStorage.Tests", "AzureStorage\test\Microsoft.AspNetCore.DataProtection.AzureStorage.Tests.csproj", "{C36DAB08-F641-4C5A-86C0-3CC39FC779D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography.Internal", "Cryptography.Internal", "{A5DE8834-6C9B-47A6-9CDC-AAB83C776F19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.Internal", "Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj", "{93B3396D-0234-4D4E-A85B-4A391E0C6FE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.Internal", "Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj", "{93B3396D-0234-4D4E-A85B-4A391E0C6FE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.Internal.Tests", "Cryptography.Internal\test\Microsoft.AspNetCore.Cryptography.Internal.Tests.csproj", "{14FD172E-4134-4712-AE77-524208FFEA1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.Internal.Tests", "Cryptography.Internal\test\Microsoft.AspNetCore.Cryptography.Internal.Tests.csproj", "{14FD172E-4134-4712-AE77-524208FFEA1C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography.KeyDerivation", "Cryptography.KeyDerivation", "{EFADD18C-A0D7-4F51-AEAB-9E3346A208BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation", "Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj", "{A82BAE81-24E3-48DF-96BA-C8A6FEDD274A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation", "Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj", "{A82BAE81-24E3-48DF-96BA-C8A6FEDD274A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests", "Cryptography.KeyDerivation\test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj", "{3121B1B2-92C8-4049-94E7-CB0A8D83A7E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests", "Cryptography.KeyDerivation\test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj", "{3121B1B2-92C8-4049-94E7-CB0A8D83A7E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataProtection", "DataProtection", "{78481E7D-CD56-4700-A2FD-C8EAE9F0B51B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection", "DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{B590E838-37CE-4651-835B-7F83A6C987CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection", "DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{B590E838-37CE-4651-835B-7F83A6C987CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Tests", "DataProtection\test\Microsoft.AspNetCore.DataProtection.Tests.csproj", "{4C48D2E2-789D-4ECF-8FB7-ADC46BC7A463}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Tests", "DataProtection\test\Microsoft.AspNetCore.DataProtection.Tests.csproj", "{4C48D2E2-789D-4ECF-8FB7-ADC46BC7A463}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{361B9ACA-DCA4-4C1B-A071-906348E849C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions", "Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{7A64B793-719C-4EEE-A8FA-87AAABCC29AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions", "Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{7A64B793-719C-4EEE-A8FA-87AAABCC29AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{DC6D371D-200A-40D9-B4BE-C9202C27A863}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{DC6D371D-200A-40D9-B4BE-C9202C27A863}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StackExchangeRedis", "StackExchangeRedis", "{1A2E71DA-8DFE-4DDA-B713-14B5F2B8EBAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{0FEAE8C5-4EAF-4E87-9A07-69FCE19B31D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{0FEAE8C5-4EAF-4E87-9A07-69FCE19B31D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests", "StackExchangeRedis\test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj", "{8A71D3B4-D617-4960-8616-A196FBF351FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests", "StackExchangeRedis\test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj", "{8A71D3B4-D617-4960-8616-A196FBF351FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9DF098B3-C8ED-471C-AE03-52E3196C1811}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureBlob", "samples\AzureBlob\AzureBlob.csproj", "{BB197CC9-04B8-4BC7-BB2E-703798B82FD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlob", "samples\AzureBlob\AzureBlob.csproj", "{BB197CC9-04B8-4BC7-BB2E-703798B82FD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureKeyVault", "samples\AzureKeyVault\AzureKeyVault.csproj", "{D8E4ED57-3D14-4453-A2FE-D36C97AE4273}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureKeyVault", "samples\AzureKeyVault\AzureKeyVault.csproj", "{D8E4ED57-3D14-4453-A2FE-D36C97AE4273}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomEncryptorSample", "samples\CustomEncryptorSample\CustomEncryptorSample.csproj", "{9824655A-4BBF-418E-A7D9-3DA52D98D16D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomEncryptorSample", "samples\CustomEncryptorSample\CustomEncryptorSample.csproj", "{9824655A-4BBF-418E-A7D9-3DA52D98D16D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyManagementSample", "samples\KeyManagementSample\KeyManagementSample.csproj", "{03406538-75CB-4655-B210-643FE11A2B00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyManagementSample", "samples\KeyManagementSample\KeyManagementSample.csproj", "{03406538-75CB-4655-B210-643FE11A2B00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NonDISample", "samples\NonDISample\NonDISample.csproj", "{C5C425C8-5626-409B-9A81-4DC496CE41F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NonDISample", "samples\NonDISample\NonDISample.csproj", "{C5C425C8-5626-409B-9A81-4DC496CE41F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "samples\Redis\Redis.csproj", "{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Redis", "samples\Redis\Redis.csproj", "{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test", "EntityFrameworkCore\test\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj", "{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test", "EntityFrameworkCore\test\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj", "{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCoreSample", "samples\EntityFrameworkCoreSample\EntityFrameworkCoreSample.csproj", "{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,9 +81,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{18BE6FD1-1EB1-44AD-A3AE-398C990060F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -372,6 +371,21 @@ Global
 		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x64.Build.0 = Release|Any CPU
 		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x86.ActiveCfg = Release|Any CPU
 		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC}.Release|x86.Build.0 = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|x64.Build.0 = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{18BE6FD1-1EB1-44AD-A3AE-398C990060F5} = {ABD364B3-09A1-4CFE-8D26-FF6417DDEC84}
@@ -398,5 +412,9 @@ Global
 		{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E} = {9DF098B3-C8ED-471C-AE03-52E3196C1811}
 		{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224} = {64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}
 		{74CE0E8B-DE23-4B53-8D02-69D6FB849ADC} = {64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}
+		{DA4C8B07-05F5-4C59-A578-7438E9BFF79F} = {9DF098B3-C8ED-471C-AE03-52E3196C1811}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA6767C5-D46B-4DE7-AB1A-E5244F122C64}
 	EndGlobalSection
 EndGlobal

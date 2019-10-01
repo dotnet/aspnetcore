@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore
             _output = output;
             _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _sharedFxRoot = Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetSharedFxVersion());
+            _sharedFxRoot = Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"));
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore
 
             var target = $".NETCoreApp,Version=v{TestData.GetSharedFxVersion().Substring(0, 3)}/{_expectedRid}";
             var ridPackageId = $"Microsoft.AspNetCore.App.Runtime.{_expectedRid}";
-            var libraryId = $"{ridPackageId}/{TestData.GetSharedFxVersion()}";
+            var libraryId = $"{ridPackageId}/{TestData.GetTestDataValue("RuntimePackageVersion")}";
 
             AssertEx.FileExists(depsFilePath);
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);
             Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
-            Assert.Equal(TestData.GetSharedFxVersion(), lines[1]);
+            Assert.Equal(TestData.GetTestDataValue("RuntimePackageVersion"), lines[1]);
         }
     }
 }

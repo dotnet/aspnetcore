@@ -121,6 +121,10 @@ export class AuthorizeService {
 
   public async signOut(state: any): Promise<IAuthenticationResult> {
     try {
+      if (this.popUpDisabled) {
+        throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.');
+      }
+
       await this.ensureUserManagerInitialized();
       await this.userManager.signoutPopup(this.createArguments());
       this.userSubject.next(null);
@@ -131,7 +135,7 @@ export class AuthorizeService {
         await this.userManager.signoutRedirect(this.createArguments(state));
         return this.redirect();
       } catch (redirectSignOutError) {
-        console.log('Redirect signout error: ', popupSignOutError);
+        console.log('Redirect signout error: ', redirectSignOutError);
         return this.error(redirectSignOutError);
       }
     }

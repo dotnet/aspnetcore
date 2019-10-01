@@ -24,7 +24,7 @@ parameters:
 
   workspace: ''
 
-# Job base template specific parameters
+  # Job base template specific parameters
   # Optional: Enable installing Microbuild plugin
   #           if 'true', these "variables" must be specified in the variables object or as part of the queue matrix
   #             _TeamName - the name of your team
@@ -150,6 +150,9 @@ jobs:
           TeamName: $(_TeamName)
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: NuGetAuthenticate@0
 
   - ${{ each step in parameters.steps }}:
     - ${{ step }}

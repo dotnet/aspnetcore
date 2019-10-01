@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
-                // Since this is a component, we need to preserve the type of the EventCallabck, so we have
+                // Since this is a component, we need to preserve the type of the EventCallback, so we have
                 // to box.
                 Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
             }

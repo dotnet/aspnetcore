@@ -47,6 +47,8 @@
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
       <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
+      <_RefProjectFileTFM>$(TargetFramework)</_RefProjectFileTFM>
+      <_RefProjectFileTFM Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">%24(DefaultNetCoreTargetFramework)</_RefProjectFileTFM>
 
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(_RefSourceFileTFM).cs</_RefSourceFileName>
@@ -81,7 +83,7 @@
     <PropertyGroup>
       <ReferencesContent>
       <![CDATA[
-  <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
+  <ItemGroup Condition="'%24(TargetFramework)' == '$(_RefProjectFileTFM)'">
     <Compile Include="$(_RefSourceFileName)" />
     @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
   </ItemGroup>
@@ -90,7 +92,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectListContent Include="$(ReferencesContent)" TargetFramework="$(TargetFramework)" />
+      <ProjectListContent Include="$(ReferencesContent)" TargetFramework="$(_RefProjectFileTFM)" />
     </ItemGroup>
   </Target>
 

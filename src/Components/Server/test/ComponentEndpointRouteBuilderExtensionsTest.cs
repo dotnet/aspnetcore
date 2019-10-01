@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
                 .UseRouting()
                 .UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub<MyComponent>("app", dispatchOptions => called = true);
+                endpoints.MapBlazorHub(dispatchOptions => called = true);
             }).Build();
 
             // Assert
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
                 .UseRouting()
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorHub(Mock.Of<IComponent>().GetType(),"app", "_blazor", dispatchOptions => called = true);
+                    endpoints.MapBlazorHub("_blazor", dispatchOptions => called = true);
                 }).Build();
 
             // Assert
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             services.AddServerSideBlazor();
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
-            var serviceProvder = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
-            return new ApplicationBuilder(serviceProvder);
+            return new ApplicationBuilder(serviceProvider);
         }
 
         private class MyComponent : IComponent

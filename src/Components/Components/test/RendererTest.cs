@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -3575,7 +3574,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);
@@ -3791,10 +3790,10 @@ namespace Microsoft.AspNetCore.Components.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            public int IntProperty { get; private set; }
+            public int IntProperty { get; set; }
 
             [Parameter]
-            public string StringProperty { get; private set; }
+            public string StringProperty { get; set; }
 
             [Parameter]
             public object ObjectProperty { get; set; }
@@ -3927,7 +3926,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class ReRendersParentComponent : AutoRenderComponent
         {
             [Parameter]
-            public TestComponent Parent { get; private set; }
+            public TestComponent Parent { get; set; }
 
             private bool _isFirstTime = true;
 
@@ -4057,7 +4056,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public bool Disposed { get; private set; }
 
             [Parameter]
-            public Action DisposeAction { get; private set; }
+            public Action DisposeAction { get; set; }
 
             public void Dispose()
             {

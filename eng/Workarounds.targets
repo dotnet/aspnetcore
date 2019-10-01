@@ -1,5 +1,20 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
+  <!-- Workaround while there is no 5.0 SDK available, suppress unsupported version error -->
+  <PropertyGroup>
+    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
+    <FrameworkReference
+      Update="Microsoft.NETCore.App"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
+      RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      />
+  </ItemGroup>
+
   <!--
     Workaround https://github.com/aspnet/AspNetCore/issues/4257.
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
@@ -20,8 +35,8 @@
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
   <Import Condition="'$(DotNetBuildFromSource)' == 'true'" Project="WorkaroundsImported.targets" />
 
-  <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
-  <ItemGroup>
+  <!-- Workaround for https://github.com/dotnet/arcade/issues/204, not needed in source build -->
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 

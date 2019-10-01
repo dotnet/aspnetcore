@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -21,11 +22,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
         // ports during dynamic port allocation.
-        private const int BasePort = 5001;
-        private const int MaxPort = 8000;
         private const int BaseHttpsPort = 44300;
         private const int MaxHttpsPort = 44399;
-        private static int NextPort = BasePort;
         private static int NextHttpsPort = BaseHttpsPort;
         private static object PortLock = new object();
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
@@ -84,71 +82,51 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            lock (PortLock)
-            {
-                while (NextPort < MaxPort)
+            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
+
+            var builder = new WebHostBuilder()
+                .UseHttpSys(options =>
                 {
-                    var port = NextPort++;
-                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
-                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-                    baseAddress = prefix.ToString();
+                    options.UrlPrefixes.Add(prefix);
+                    configureOptions(options);
+                })
+                .Configure(appBuilder => appBuilder.Run(app));
 
-                    var builder = new WebHostBuilder()
-                        .UseHttpSys(options =>
-                        {
-                            options.UrlPrefixes.Add(prefix);
-                            configureOptions(options);
-                        })
-                        .Configure(appBuilder => appBuilder.Run(app));
+            var host = builder.Build();
 
-                    var host = builder.Build();
+            host.Start();
 
+            var options = host.Services.GetRequiredService<IOptions<HttpSysOptions>>();
+            prefix = options.Value.UrlPrefixes.First(); // Has new port
+            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+            baseAddress = prefix.ToString();
 
-                    try
-                    {
-                        host.Start();
-                        return host;
-                    }
-                    catch (HttpSysException)
-                    {
-                    }
-
-                }
-                NextPort = BasePort;
-            }
-            throw new Exception("Failed to locate a free port.");
+            return host;
         }
 
         internal static MessagePump CreatePump()
             => new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
+        internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions)
+        {
+            var options = new HttpSysOptions();
+            configureOptions(options);
+            return new MessagePump(Options.Create(options), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        }
+
         internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            lock (PortLock)
-            {
-                while (NextPort < MaxPort)
-                {
+            var prefix = UrlPrefix.Create("http", "localhost", "0", basePath);
 
-                    var port = NextPort++;
-                    var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
-                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
-                    baseAddress = prefix.ToString();
+            var server = CreatePump(configureOptions);
+            server.Features.Get<IServerAddressesFeature>().Addresses.Add(prefix.ToString());
+            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
 
-                    var server = CreatePump();
-                    server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
-                    configureOptions(server.Listener.Options);
-                    try
-                    {
-                        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
-                        return server;
-                    }
-                    catch (HttpSysException)
-                    {
-                    }
-                }
-                NextPort = BasePort;
-            }
-            throw new Exception("Failed to locate a free port.");
+            prefix = server.Listener.Options.UrlPrefixes.First(); // Has new port
+            root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+            baseAddress = prefix.ToString();
+
+            return server;
         }
 
         internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app)

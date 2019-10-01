@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -69,6 +68,24 @@ namespace Microsoft.AspNetCore.Components
             // Assert
             Assert.Equal(123, target.IntProp);
             Assert.Equal(456, target.DerivedClassIntProp);
+        }
+
+        [Fact]
+        public void IncomingParameterMatchesOverridenParameter_ThatDoesNotHasAttribute()
+        {
+            // Test for https://github.com/aspnet/AspNetCore/issues/13162
+            // Arrange
+            var parameters = new ParameterViewBuilder
+            {
+                { nameof(DerivedType.VirtualProp), 123 },
+            }.Build();
+            var target = new DerivedType();
+
+            // Act
+            parameters.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal(123, target.VirtualProp);
         }
 
         [Fact]
@@ -170,6 +187,43 @@ namespace Microsoft.AspNetCore.Components
                 $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
                 $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.",
                 ex.Message);
+        }
+
+        [Fact]
+        public void IncomingParameterMatchesPropertyNotPublic_Throws()
+        {
+            // Arrange
+            var target = new HasNonPublicPropertyWithParameterAttribute();
+            var parameters = new ParameterViewBuilder
+            {
+                { nameof(HasNonPublicPropertyWithParameterAttribute.IntProp), 123 },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => parameters.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(default, target.IntProp);
+            Assert.Equal(
+                $"The type '{typeof(HasNonPublicPropertyWithParameterAttribute).FullName}' declares a parameter matching the name '{nameof(HasNonPublicPropertyWithParameterAttribute.IntProp)}' that is not public. Parameters must be public.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void IncomingCascadingParameterMatchesPropertyNotPublic_Works()
+        {
+            // Arrange
+            var target = new HasNonPublicCascadingParameter();
+            var builder = new ParameterViewBuilder();
+            builder.Add("Cascading", "Test", cascading: true);
+            var parameters = builder.Build();
+
+            // Act
+            parameters.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal("Test", target.GetCascadingValue());
         }
 
         [Fact]
@@ -312,7 +366,7 @@ namespace Microsoft.AspNetCore.Components
         public void HasDuplicateCaptureUnmatchedValuesParameters_Throws()
         {
             // Arrange
-            var target = new HasDupliateCaptureUnmatchedValuesProperty();
+            var target = new HasDuplicateCaptureUnmatchedValuesProperty();
             var parameters = new ParameterViewBuilder().Build();
 
             // Act
@@ -320,17 +374,17 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.Equal(
-                $"Multiple properties were found on component type '{typeof(HasDupliateCaptureUnmatchedValuesProperty).FullName}' " +
+                $"Multiple properties were found on component type '{typeof(HasDuplicateCaptureUnmatchedValuesProperty).FullName}' " +
                 $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
                 $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
                 $"Properties:" + Environment.NewLine +
-                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
-                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
+                $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
+                $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
                 ex.Message);
         }
 
         [Fact]
-        public void HasCaptureUnmatchedValuesParameteterWithWrongType_Throws()
+        public void HasCaptureUnmatchedValuesParameterWithWrongType_Throws()
         {
             // Arrange
             var target = new HasWrongTypeCaptureUnmatchedValuesProperty();
@@ -497,13 +551,9 @@ namespace Microsoft.AspNetCore.Components
 
         class HasInstanceProperties
         {
-            // "internal" to show we're not requiring public accessors, but also
-            // to keep the assertions simple in the tests
-
             [Parameter] public int IntProp { get; set; }
             [Parameter] public string StringProp { get; set; }
 
-            // Also a truly private one to show there's nothing special about 'internal'
             [Parameter] public object ObjectProp { get; set; }
 
             public static string ObjectPropName => nameof(ObjectProp);
@@ -521,6 +571,12 @@ namespace Microsoft.AspNetCore.Components
 
         class HasPropertyWithoutParameterAttribute
         {
+            public int IntProp { get; set; }
+        }
+
+        class HasNonPublicPropertyWithParameterAttribute
+        {
+            [Parameter]
             internal int IntProp { get; set; }
         }
 
@@ -537,6 +593,16 @@ namespace Microsoft.AspNetCore.Components
         class HasInheritedProperties : HasInstanceProperties
         {
             [Parameter] public int DerivedClassIntProp { get; set; }
+        }
+
+        class BaseType
+        {
+            [Parameter] public virtual int VirtualProp { get; set; }
+        }
+
+        class DerivedType : BaseType
+        {
+            public override int VirtualProp { get; set; }
         }
 
         class HasParametersVaryingOnlyByCase
@@ -564,7 +630,7 @@ namespace Microsoft.AspNetCore.Components
             [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
         }
 
-        class HasDupliateCaptureUnmatchedValuesProperty
+        class HasDuplicateCaptureUnmatchedValuesProperty
         {
             [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
             [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> CaptureUnmatchedValuesProp2 { get; set; }
@@ -573,6 +639,13 @@ namespace Microsoft.AspNetCore.Components
         class HasWrongTypeCaptureUnmatchedValuesProperty
         {
             [Parameter(CaptureUnmatchedValues = true)] public KeyValuePair<string, object>[] CaptureUnmatchedValuesProp { get; set; }
+        }
+
+        class HasNonPublicCascadingParameter
+        {
+            [CascadingParameter] private string Cascading { get; set; }
+
+            public string GetCascadingValue() => Cascading;
         }
 
         class ParameterViewBuilder : IEnumerable

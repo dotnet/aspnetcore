@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -30,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -251,6 +254,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
 
         public int KeyExchangeStrength { get; private set; }
+
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
+        {
+            get
+            {
+                if (_requestInfo == null)
+                {
+                    _requestInfo = _nativeRequestContext.GetRequestInfo();
+                }
+                return _requestInfo;
+            }
+        }
 
         private void GetTlsHandshakeResults()
         {
