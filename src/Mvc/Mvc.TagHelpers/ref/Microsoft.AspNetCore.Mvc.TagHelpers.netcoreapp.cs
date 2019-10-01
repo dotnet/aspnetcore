@@ -105,13 +105,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public CacheTagHelperOptions() { }
         public long SizeLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("component", Attributes="type")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("component", Attributes="type", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     public partial class ComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public ComponentTagHelper() { }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("type")]
         public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("parameters", DictionaryAttributePrefix="parameter-")]
+        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("params", DictionaryAttributePrefix="param-")]
         public System.Collections.Generic.IDictionary<string, object> Parameters { get { throw null; } set { } }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("render-mode")]
         public Microsoft.AspNetCore.Mvc.Rendering.RenderMode RenderMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
