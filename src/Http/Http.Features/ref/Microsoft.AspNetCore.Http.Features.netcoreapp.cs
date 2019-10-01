@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum SameSiteMode
     {
+        Unspecified = -1,
         None = 0,
         Lax = 1,
         Strict = 2,
