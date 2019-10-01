@@ -25,13 +25,10 @@ $installDir = "$repoRoot\.tools\Git\win-x64"
 $tarCommand = "$installDir\usr\bin\tar.exe"
 $finalCommand = "$repoRoot\.tools\tar.exe"
 
-Write-Host "Windows version and other information, because who knows"
+Write-Host "Windows version and other information..."
 cmd.exe /c ver
 systeminfo.exe
-
 Write-Host "Processor Architecture: $env:PROCESSOR_ARCHITECTURE"
-Write-Host "Dumping environment"
-Get-ChildItem env:\
 
 Write-Host "Checking $env:SystemRoot\System32\tar.exe"
 Get-ChildItem "$env:SystemRoot\System32\ta*.exe"
@@ -68,6 +65,7 @@ else {
     }
 }
 
+New-Item "$repoRoot\.tools\" -ErrorAction SilentlyContinue -ItemType Directory
 Copy-Item "$tarCommand" "$finalCommand" -Verbose
 Write-Host "Tar now available at '$finalCommand'"
 
