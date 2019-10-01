@@ -104,14 +104,14 @@ namespace Templates.Test.Helpers
             return new ProcessEx(output, proc);
         }
 
-        public static async Task<ProcessEx> RunViaShellAsync(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
+        public static ProcessEx RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
         {
             var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? ("cmd", "/c")
                 : ("bash", "-c");
 
             var result = Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"");
-            await result.Exited;
+            result.WaitForExit(assertSuccess: false);
             return result;
         }
 
@@ -168,9 +168,14 @@ namespace Templates.Test.Helpers
             return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
         }
 
-        public void WaitForExit(bool assertSuccess)
+        public void WaitForExit(bool assertSuccess, TimeSpan? timeSpan = null)
         {
-            Exited.Wait();
+            if(!timeSpan.HasValue)
+            {
+                timeSpan = TimeSpan.FromSeconds(480);
+            }
+
+            Exited.Wait(timeSpan.Value);
 
             if (assertSuccess && _process.ExitCode != 0)
             {
