@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("component", Attributes = ComponentTypeName, TagStructure = TagStructure.WithoutEndTag)]
     public class ComponentTagHelper : TagHelper
     {
-        private const string ComponentParameterName = "parameters";
-        private const string ComponentParameterPrefix = "parameter-";
+        private const string ComponentParameterName = "params";
+        private const string ComponentParameterPrefix = "param-";
         private const string ComponentTypeName = "type";
         private const string RenderModeName = "render-mode";
         private IDictionary<string, object> _parameters;

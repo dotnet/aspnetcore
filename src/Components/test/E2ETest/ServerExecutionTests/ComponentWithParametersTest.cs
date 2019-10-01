@@ -26,21 +26,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
-        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
-
-        public override async Task InitializeAsync()
-        {
-            await base.InitializeAsync();
-
-            // Capture the last log timestamp so that we can filter logs when we
-            // check for duplicate connections.
-            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
-            if (lastLog != null)
-            {
-                LastLogTimeStamp = lastLog.Timestamp;
-            }
-        }
-
         [Fact]
         public void PassingParametersToComponentsWorks()
         {
