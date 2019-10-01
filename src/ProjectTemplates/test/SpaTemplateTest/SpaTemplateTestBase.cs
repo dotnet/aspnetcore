@@ -66,7 +66,9 @@ namespace Templates.Test.SpaTemplateTest
             using var lintResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
+            // The default behavior of angular tests is watch mode, which leaves the test process open after it finishes, which leads to delays/hangs.
             var testcommand = "npm run test" + template == "angular" ? "-- --watch=false" : "";
+
             using var testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, testcommand);
             Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
 
