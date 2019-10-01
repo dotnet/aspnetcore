@@ -5,6 +5,6 @@ Generated Location: (320:12,0 [41] )
 
 Source Location: (61:1,17 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |x => { }|
-Generated Location: (1164:32,17 [8] )
+Generated Location: (1172:32,17 [8] )
 |x => { }|
 
