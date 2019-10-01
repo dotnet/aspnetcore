@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Response
     {
-        private static bool? SupportsGoAway;
+        // Support is assumed until we get an error and turn it off.
+        private static bool SupportsGoAway = true;
 
         private ResponseState _responseState;
         private string _reasonPhrase;
@@ -443,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Headers.Append(HttpKnownHeaderNames.Connection, Constants.Close);
                 }
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
-                if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway != false)
+                if (responseCloseSet && requestVersion >= Constants.V2 && SupportsGoAway)
                 {
                     flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_GOAWAY;
                 }
