@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Web
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.
     /// </summary>
-    public static class RenderTreeBuilderExtensions
+    public static class WebRenderTreeBuilderExtensions
     {
         // The "prevent default" and "stop propagation" flags behave like attributes, in that:
         // - you can have multiple of them on a given element (for separate events)
