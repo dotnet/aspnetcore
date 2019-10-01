@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Assert
             Assert.Equal($"{ComponentsApi.ComponentBase.FullTypeName}", visitor.Class.BaseType);
-            Assert.Equal(new[] { "public", }, visitor.Class.Modifiers);
+            Assert.Equal(new[] { "public", "partial" }, visitor.Class.Modifiers);
             Assert.Equal("Test", visitor.Class.ClassName);
         }
 

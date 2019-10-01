@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             @class.ClassName = computedClass;
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
+            @class.Modifiers.Add("partial");
 
             if (FileKinds.IsComponentImport(codeDocument.GetFileKind()))
             {

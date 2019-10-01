@@ -123,10 +123,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="@(_RazorComponentDeclaration)" />
     </ItemGroup>
-
-    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
-      <Compile Include="@(_RazorComponentDeclaration)" />
-    </ItemGroup>
   </Target>
 
   <Target

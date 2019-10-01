@@ -17,7 +17,7 @@ using Test2;
 #nullable disable
     [Microsoft.AspNetCore.Components.RouteAttribute("/MyPage")]
     [Microsoft.AspNetCore.Components.RouteAttribute("/AnotherRoute/{id}")]
-    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
