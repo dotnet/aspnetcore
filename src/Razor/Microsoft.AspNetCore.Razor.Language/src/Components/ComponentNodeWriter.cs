@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal abstract class ComponentNodeWriter : IntermediateNodeWriter, ITemplateTargetExtension
     {
-        protected abstract void BeginWriteAttribute(CodeWriter codeWriter, string key);
+        protected abstract void BeginWriteAttribute(CodeRenderingContext context, string key);
+
+        protected abstract void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode expression);
 
         protected abstract void WriteReferenceCaptureInnards(CodeRenderingContext context, ReferenceCaptureIntermediateNode node, bool shouldTypeCheck);
 

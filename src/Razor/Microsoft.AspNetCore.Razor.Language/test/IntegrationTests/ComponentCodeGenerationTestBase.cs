@@ -1012,6 +1012,64 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElement_WithEventAsExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var x = ""anotherevent""; }
+<div @bind-value=""@ParentValue"" @bind-value:event=""@x"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElement_WithEventAsExplicitExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var x = ""anotherevent""; }
+<div @bind-value=""@ParentValue"" @bind-value:event=""@(x.ToString())"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BuiltIn_BindToInputWithoutType_WritesAttributes()
         {
             // Arrange
