@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -172,6 +173,12 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
                 {
+                    if (ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol))
+                    {
+                        // no subprotocols were specified by client but subprotocol header is present
+                        return;
+                    }
+
                     var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
                     var receiveArray = new byte[1024];
                     while (true)
@@ -232,57 +239,57 @@ namespace Microsoft.AspNetCore.TestHost
             clientSocket.Dispose();
         }
 
-[Fact]
-public async Task WebSocketSubProtocolsWorks()
-{
-    // Arrange
-    RequestDelegate appDelegate = async ctx =>
-    {
-        if (ctx.WebSockets.IsWebSocketRequest)
+        [Fact]
+        public async Task WebSocketSubProtocolsWorks()
         {
-            if (ctx.WebSockets.WebSocketRequestedProtocols.Contains("alpha") &&
-                ctx.WebSockets.WebSocketRequestedProtocols.Contains("bravo"))
+            // Arrange
+            RequestDelegate appDelegate = async ctx =>
             {
-                // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
-                // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
-                // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
-                var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
-                await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
-            }
-            else
-            {
-                var subprotocols = ctx.WebSockets.WebSocketRequestedProtocols.Any()
-                    ? string.Join(", ", ctx.WebSockets.WebSocketRequestedProtocols)
-                    : "<none>";
-                var closeReason = "Unexpected subprotocols: " + subprotocols;
-                var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
-                await websocket.CloseAsync(WebSocketCloseStatus.InternalServerError, closeReason, CancellationToken.None);
-            }
+                if (ctx.WebSockets.IsWebSocketRequest)
+                {
+                    if (ctx.WebSockets.WebSocketRequestedProtocols.Contains("alpha") &&
+                        ctx.WebSockets.WebSocketRequestedProtocols.Contains("bravo"))
+                    {
+                        // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
+                        // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
+                        // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
+                        await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
+                    }
+                    else
+                    {
+                        var subprotocols = ctx.WebSockets.WebSocketRequestedProtocols.Any()
+                            ? string.Join(", ", ctx.WebSockets.WebSocketRequestedProtocols)
+                            : "<none>";
+                        var closeReason = "Unexpected subprotocols: " + subprotocols;
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                        await websocket.CloseAsync(WebSocketCloseStatus.InternalServerError, closeReason, CancellationToken.None);
+                    }
+                }
+            };
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var client = server.CreateWebSocketClient();
+            client.SubProtocols.Add("alpha");
+            client.SubProtocols.Add("bravo");
+            var clientSocket = await client.ConnectAsync(new Uri("wss://localhost"), CancellationToken.None);
+            var buffer = new byte[1024];
+            var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+            Assert.Equal("Normal Closure", result.CloseStatusDescription);
+            Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+            Assert.Equal("charlie", clientSocket.SubProtocol);
+
+            clientSocket.Dispose();
         }
-    };
-    var builder = new WebHostBuilder()
-        .Configure(app =>
-        {
-            app.Run(appDelegate);
-        });
-    var server = new TestServer(builder);
-
-    // Act
-    var client = server.CreateWebSocketClient();
-    client.SubProtocols.Add("alpha");
-    client.SubProtocols.Add("bravo");
-    var clientSocket = await client.ConnectAsync(new Uri("wss://localhost"), CancellationToken.None);
-    var buffer = new byte[1024];
-    var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-    // Assert
-    Assert.Equal(WebSocketMessageType.Close, result.MessageType);
-    Assert.Equal("Normal Closure", result.CloseStatusDescription);
-    Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
-    Assert.Equal("charlie", clientSocket.SubProtocol);
-
-    clientSocket.Dispose();
-}
 
         [ConditionalFact]
         public async Task WebSocketAcceptThrowsWhenCancelled()
