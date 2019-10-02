@@ -78,6 +78,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.8' ">
     <PackagesInPatch>
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.CookiePolicy;
       Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
