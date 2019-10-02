@@ -15,6 +15,7 @@ Directory.Build.props checks this property using the following condition:
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
