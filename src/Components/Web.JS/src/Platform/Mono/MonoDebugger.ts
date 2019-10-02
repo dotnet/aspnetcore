@@ -26,7 +26,7 @@ export function attachDebuggerHotkey(loadAssemblyUrls: string[]) {
       if (!hasReferencedPdbs) {
         console.error('Cannot start debugging, because the application was not compiled with debugging enabled.');
       } else if (!currentBrowserIsChrome) {
-        console.error('Currently, only Chrome is supported for debugging.');
+        console.error('Currently, only Edge(Chromium) or Chrome is supported for debugging.');
       } else {
         launchDebugger();
       }

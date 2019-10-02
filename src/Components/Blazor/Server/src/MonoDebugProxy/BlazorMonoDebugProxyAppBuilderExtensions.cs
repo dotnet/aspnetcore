@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -89,19 +91,26 @@ namespace Microsoft.AspNetCore.Builder
             }
             catch (Exception ex)
             {
-
                 await context.Response.WriteAsync($@"
-    <h1>Unable to find debuggable browser tab</h1>
-    <p>
-        Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
-        Ensure Chrome is running with debugging enabled.
-    </p>
-    <h2>Resolution</h2>
+<h1>Unable to find debuggable browser tab</h1>
+<p>
+    Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
+    Ensure your browser is running with debugging enabled.
+</p>
+<h2>Resolution</h2>
+<p>
+    <h4>If you are using Google Chrome for your development, follow these instructions:</h4>
     {GetLaunchChromeInstructions(appRootUrl)}
-    <p>... then use that new tab for debugging.</p>
-    <h2>Underlying exception:</h2>
-    <pre>{ex}</pre>
-");
+</p>
+<p>
+    <h4>If you are using Microsoft Edge (Chromium) for your development, follow these instructions:</h4>
+    {GetLaunchEdgeInstructions(appRootUrl)}
+</p>
+<strong>This should launch a new browser window with debugging enabled..</p>
+<h2>Underlying exception:</h2>
+<pre>{ex}</pre>
+                ");
+
                 return;
             }
 
@@ -144,20 +153,42 @@ namespace Microsoft.AspNetCore.Builder
 
         private static string GetLaunchChromeInstructions(string appRootUrl)
         {
+            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return $@"<p>Close all Chrome instances, then press Win+R and enter the following:</p>
-                          <p><strong><code>""%programfiles(x86)%\Google\Chrome\Application\chrome.exe"" --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+                return $@"<p>Press Win+R and enter the following:</p>
+                          <p><strong><code>chrome --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return $@"<p>Close all Chrome instances, then in a terminal window execute the following:</p>
-                          <p><strong><code>google-chrome --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+                return $@"<p>In a terminal window execute the following:</p>
+                          <p><strong><code>google-chrome --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return $@"<p>Close all Chrome instances, then in a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+                return $@"<p>Execute the following:</p>
+                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown OS platform");
+            }
+        }
+
+        private static string GetLaunchEdgeInstructions(string appRootUrl)
+        {
+            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return $@"<p>Press Win+R and enter the following:</p>
+                          <p><strong><code>msedge --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return $@"<p>In a terminal window execute the following:</p>
+                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
