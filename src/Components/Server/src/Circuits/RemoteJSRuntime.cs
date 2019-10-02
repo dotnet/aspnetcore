@@ -70,12 +70,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
         {
-            if (!_clientProxy.Connected)
+            if (_clientProxy is null)
             {
-                throw new InvalidOperationException("JavaScript interop calls cannot be issued at this time. This is because the component is being " +
-                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
-                    "Components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not " +
-                    "attempted during prerendering or while the client is disconnected.");
+                throw new InvalidOperationException(
+                    "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
+                    $"statically rendererd. When prerendering is enabled, JavaScript interop calls can only be performed " +
+                    $"during the OnAfterRenderAsync lifecycle method.");
             }
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);

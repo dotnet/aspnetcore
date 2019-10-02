@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Contains(" path=/foo", setCookie1);
             Assert.Contains(" domain=another.com", setCookie1);
             Assert.Contains(" secure", setCookie1);
-            Assert.DoesNotContain(" samesite", setCookie1);
+            Assert.Contains(" samesite=none", setCookie1);
             Assert.Contains(" httponly", setCookie1);
 
             var server2 = CreateServer(o =>

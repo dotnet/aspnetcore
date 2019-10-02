@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public long ApplicationMaxBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData> AuthorizationData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Http.Connections.LongPollingOptions LongPolling { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int MinimumProtocolVersion { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long TransportMaxBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Connections.HttpTransportType Transports { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Connections.WebSocketOptions WebSockets { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

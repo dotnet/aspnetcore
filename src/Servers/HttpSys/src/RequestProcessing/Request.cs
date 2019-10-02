@@ -55,8 +55,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
@@ -66,19 +64,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            // These paths are both unescaped already.
-            else if (originalPath.Length == prefix.Path.Length - 1)
+            else if (requestContext.Server.RequestQueue.Created)
             {
-                // They matched exactly except for the trailing slash.
-                PathBase = originalPath;
-                Path = string.Empty;
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+
+                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                {
+                    // They matched exactly except for the trailing slash.
+                    PathBase = originalPath;
+                    Path = string.Empty;
+                }
+                else
+                {
+                    // url: /base/path, prefix: /base/, base: /base, path: /path
+                    // url: /, prefix: /, base: , path: /
+                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                }
             }
             else
             {
-                // url: /base/path, prefix: /base/, base: /base, path: /path
-                // url: /, prefix: /, base: , path: /
-                PathBase = originalPath.Substring(0, prefix.Path.Length - 1);
-                Path = originalPath.Substring(prefix.Path.Length - 1);
+                // When attaching to an existing queue, the UrlContext hint may not match our configuration. Search manualy.
+                if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                {
+                    PathBase = pathBase;
+                    Path = path;
+                }
+                else
+                {
+                    PathBase = string.Empty;
+                    Path = originalPath;
+                }
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();

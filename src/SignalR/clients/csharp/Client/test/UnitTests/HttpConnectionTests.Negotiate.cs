@@ -37,6 +37,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public Task NegotiateResponseWithNegotiateVersionRequiresConnectionToken()
+            {
+                return RunInvalidNegotiateResponseTest<InvalidDataException>(ResponseUtils.CreateNegotiationContent(negotiateVersion: 1, connectionToken: null), "Invalid negotiation response received.");
+            }
+
+            [Fact]
             public Task ConnectionCannotBeStartedIfNoCommonTransportsBetweenClientAndServer()
             {
                 return RunInvalidNegotiateResponseTest<AggregateException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.ServerSentEvents),
@@ -50,12 +56,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData("http://fakeuri.org/", "http://fakeuri.org/negotiate")]
-            [InlineData("http://fakeuri.org/?q=1/0", "http://fakeuri.org/negotiate?q=1/0")]
-            [InlineData("http://fakeuri.org?q=1/0", "http://fakeuri.org/negotiate?q=1/0")]
-            [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate")]
-            [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate")]
-            [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0")]
+            [InlineData("http://fakeuri.org/", "http://fakeuri.org/negotiate?negotiateVersion=1")]
+            [InlineData("http://fakeuri.org/?q=1/0", "http://fakeuri.org/negotiate?q=1/0&negotiateVersion=1")]
+            [InlineData("http://fakeuri.org?q=1/0", "http://fakeuri.org/negotiate?q=1/0&negotiateVersion=1")]
+            [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
+            [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate?negotiateVersion=1")]
+            [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0&negotiateVersion=1")]
             public async Task CorrectlyHandlesQueryStringWhenAppendingNegotiateToUrl(string requestedUrl, string expectedNegotiate)
             {
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -120,6 +126,124 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public async Task NegotiateCanHaveNewFields()
+            {
+                string connectionId = null;
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    JsonConvert.SerializeObject(new
+                    {
+                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        availableTransports = new object[]
+                        {
+                            new
+                            {
+                                transport = "LongPolling",
+                                transferFormats = new[] { "Text" }
+                            },
+                        },
+                        newField = "ignore this",
+                    })));
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                            connectionId = connection.ConnectionId;
+                        });
+                }
+
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+            }
+
+            [Fact]
+            public async Task ConnectionIdGetsSetWithNegotiateProtocolGreaterThanZero()
+            {
+                string connectionId = null;
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    JsonConvert.SerializeObject(new
+                    {
+                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        negotiateVersion = 1,
+                        connectionToken = "different-id",
+                        availableTransports = new object[]
+                        {
+                            new
+                            {
+                                transport = "LongPolling",
+                                transferFormats = new[] { "Text" }
+                            },
+                        },
+                        newField = "ignore this",
+                    })));
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                            connectionId = connection.ConnectionId;
+                        });
+                }
+
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?id=different-id", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+            }
+
+            [Fact]
+            public async Task ConnectionTokenFieldIsIgnoredForNegotiateIdLessThanOne()
+            {
+                string connectionId = null;
+
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                testHttpHandler.OnNegotiate((request, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                    JsonConvert.SerializeObject(new
+                    {
+                        connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        connectionToken = "different-id",
+                        availableTransports = new object[]
+                        {
+                            new
+                            {
+                                transport = "LongPolling",
+                                transferFormats = new[] { "Text" }
+                            },
+                        },
+                        newField = "ignore this",
+                    })));
+                testHttpHandler.OnLongPoll(cancellationToken => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                            connectionId = connection.ConnectionId;
+                        });
+                }
+
+                Assert.Equal("0rge0d00-0040-0030-0r00-000q00r00e00", connectionId);
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+            }
+
+            [Fact]
             public async Task NegotiateThatReturnsUrlGetFollowed()
             {
                 var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -172,8 +296,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                 }
 
-                Assert.Equal("http://fakeuri.org/negotiate", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat/negotiate", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
                 Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
                 Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
                 Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
@@ -278,11 +402,73 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         });
                 }
 
-                Assert.Equal("http://fakeuri.org/negotiate", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
-                Assert.Equal("https://another.domain.url/chat/negotiate", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
                 Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
                 Assert.Equal("https://another.domain.url/chat?id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
                 // Delete request
+                Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
+            }
+
+            [Fact]
+            public async Task NegotiateThatReturnsRedirectUrlDoesNotAddAnotherNegotiateVersionQueryString()
+            {
+                var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                var negotiateCount = 0;
+                testHttpHandler.OnNegotiate((request, cancellationToken) =>
+                {
+                    negotiateCount++;
+                    if (negotiateCount == 1)
+                    {
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                                JsonConvert.SerializeObject(new
+                                {
+                                    url = "https://another.domain.url/chat?negotiateVersion=1"
+                                }));
+                    }
+                    else
+                    {
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                                JsonConvert.SerializeObject(new
+                                {
+                                    connectionId = "0rge0d00-0040-0030-0r00-000q00r00e00",
+                                    availableTransports = new object[]
+                                    {
+                                        new
+                                        {
+                                            transport = "LongPolling",
+                                            transferFormats = new[] { "Text" }
+                                        },
+                                    }
+                                }));
+                    }
+                });
+
+                testHttpHandler.OnLongPoll((token) =>
+                {
+                    var tcs = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    token.Register(() => tcs.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
+
+                    return tcs.Task;
+                });
+
+                testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+                using (var noErrorScope = new VerifyNoErrorsScope())
+                {
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
+                        async (connection) =>
+                        {
+                            await connection.StartAsync().OrTimeout();
+                        });
+                }
+
+                Assert.Equal("http://fakeuri.org/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[0].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat/negotiate?negotiateVersion=1", testHttpHandler.ReceivedRequests[1].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
+                Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
                 Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
             }
 
