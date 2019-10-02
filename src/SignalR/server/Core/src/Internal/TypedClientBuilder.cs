@@ -56,6 +56,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var ctor = BuildConstructor(type, proxyField);
 
+            // Because a constructor doesn't return anything, it can't be wrapped in a
+            // delegate directly, so we emit a factory method that just takes the IClientProxy,
+            // invokes the constructor (using newobj) and returns the new instance of type T.
             BuildFactoryMethod(type, ctor);
 
             foreach (var method in GetAllInterfaceMethods(typeof(T)))
