@@ -49,8 +49,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBody", new StringContent("test"));
 
-            // IIS returns a 404 instead of a 413...
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+            // IIS either returns a 404 or a 413 based on versions of IIS.
+            // Check for both as we don't know which specific patch version.
+            Assert.True(result.StatusCode == HttpStatusCode.NotFound || result.StatusCode == HttpStatusCode.RequestEntityTooLarge);
         }
 
         [ConditionalFact]
@@ -68,7 +69,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     "Host: localhost",
                     "",
                     "A");
-                await connection.Receive("HTTP/1.1 404 Not Found");
+                var requestLine = await connection.ReadLineAsync();
+                Assert.True(requestLine.Contains("404") || requestLine.Contains("413"));
             }
         }
 
