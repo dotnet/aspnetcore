@@ -2,6 +2,7 @@ import '@dotnet/jsinterop';
 import './GlobalExports';
 import * as signalR from '@aspnet/signalr';
 import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
+import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -102,33 +103,11 @@ async function initializeConnection(options: BlazorOptions, logger: Logger, circ
     renderQueue.processBatch(batchId, batchData, connection);
   });
 
-  const errorUiReloads = document.querySelectorAll<HTMLElement>("#error-ui .reload");
-  errorUiReloads.forEach(reload => {
-    reload.onclick = function (e) {
-      location.reload();
-      e.preventDefault();
-    };
-  });
-
-  let errorUiDismiss = document.querySelectorAll<HTMLElement>("#error-ui .dismiss");
-  errorUiDismiss.forEach(dismiss => {
-    dismiss.onclick = function (e) {
-      const errorUi = document.querySelector<HTMLElement>("#error-ui");
-      if (errorUi) {
-        errorUi.style.display = 'none';
-      }
-      e.preventDefault();
-    };
-  });
-
   connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
   connection.on('JS.Error', error => {
     renderingFailed = true;
     unhandledError(connection, error, logger);
-    let errorUi = document.querySelector("#error-ui") as HTMLElement;
-    if (errorUi) {
-      errorUi.style.display = 'block';
-    }
+    showErrorNotification();
   });
 
   window['Blazor']._internal.forceCloseConnection = () => connection.stop();
