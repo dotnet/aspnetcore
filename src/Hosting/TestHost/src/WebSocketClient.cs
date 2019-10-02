@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.TestHost
                 request.Headers.Add("Upgrade", new string[] { "websocket" });
                 request.Headers.Add("Sec-WebSocket-Version", new string[] { "13" });
                 request.Headers.Add("Sec-WebSocket-Key", new string[] { CreateRequestKey() });
+                request.Headers.Add("Sec-WebSocket-Protocol", SubProtocols.ToArray());
                 request.Body = Stream.Null;
 
                 // WebSocket
