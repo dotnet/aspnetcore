@@ -1870,7 +1870,10 @@ namespace Microsoft.AspNetCore.Mvc
                 detail: detail,
                 instance: instance);
 
-            return new ObjectResult(problemDetails);
+            return new ObjectResult(problemDetails)
+            {
+                StatusCode = statusCode ?? 500,
+            };
         }
 
         /// <summary>

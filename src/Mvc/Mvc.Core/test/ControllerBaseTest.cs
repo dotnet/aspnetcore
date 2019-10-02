@@ -2371,6 +2371,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, actionResult.StatusCode);
             Assert.Equal(500, problemDetails.Status);
             Assert.Equal("An error occured while processing your request.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
@@ -2396,6 +2397,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, actionResult.StatusCode);
             Assert.Equal(500, problemDetails.Status);
             Assert.Equal(title, problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
@@ -2419,6 +2421,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Assert
             var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(422, actionResult.StatusCode);
             Assert.Equal(422, problemDetails.Status);
             Assert.Equal("Unprocessable entity.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
