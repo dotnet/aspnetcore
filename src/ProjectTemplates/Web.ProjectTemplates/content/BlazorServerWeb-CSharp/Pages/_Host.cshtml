@@ -13,7 +13,9 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" />
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
 
     <div id="error-ui">
         <environment include="Staging,Production">
