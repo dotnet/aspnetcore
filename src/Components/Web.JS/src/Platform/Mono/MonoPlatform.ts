@@ -232,7 +232,33 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
-  module.printErr = line => console.error(`WASM: ${line}`);
+
+  const errorUiReloads = document.querySelectorAll<HTMLElement>("#error-ui .reload");
+  errorUiReloads.forEach(reload => {
+    reload.onclick = function (e) {
+      location.reload();
+      e.preventDefault();
+    };
+  });
+
+  let errorUiDismiss = document.querySelectorAll<HTMLElement>("#error-ui .dismiss");
+  errorUiDismiss.forEach(dismiss => {
+    dismiss.onclick = function (e) {
+      const errorUi = document.querySelector<HTMLElement>("#error-ui");
+      if (errorUi) {
+        errorUi.style.display = 'none';
+      }
+      e.preventDefault();
+    };
+  });
+
+  module.printErr = line => {
+    console.error(`WASM: ${line}`);
+    let errorUi = document.querySelector("#error-ui") as HTMLElement;
+    if (errorUi) {
+      errorUi.style.display = 'block';
+    }
+  };
   module.preRun = [];
   module.postRun = [];
   module.preloadPlugins = [];
