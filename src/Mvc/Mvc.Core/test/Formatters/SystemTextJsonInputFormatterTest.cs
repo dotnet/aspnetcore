@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "$.Age";
 
-        internal override string JsonFormatter_EscapedKeys_Expected => "$[0]['It\\u0022s a key']";
+        internal override string JsonFormatter_EscapedKeys_Expected => "$[0]['It\"s a key']";
 
         internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
 

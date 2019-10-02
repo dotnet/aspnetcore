@@ -62,6 +62,7 @@
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
@@ -79,7 +80,7 @@
         <_Parameter1>ArtifactsLogDir</_Parameter1>
         <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log'))</_Parameter2>
       </AssemblyAttribute>
-      
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
         <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>

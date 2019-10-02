@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -74,6 +76,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             var hostingUrlsPresent = _serverAddresses.Addresses.Count > 0;
+            var serverAddressCopy = _serverAddresses.Addresses.ToList();
+            _serverAddresses.Addresses.Clear();
 
             if (_serverAddresses.PreferHostingUrls && hostingUrlsPresent)
             {
@@ -85,10 +89,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Listener.Options.UrlPrefixes.Clear();
                 }
 
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else if (_options.UrlPrefixes.Count > 0)
             {
@@ -100,23 +101,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _serverAddresses.Addresses.Clear();
                 }
 
-                foreach (var prefix in _options.UrlPrefixes)
-                {
-                    _serverAddresses.Addresses.Add(prefix.FullPrefix);
-                }
             }
             else if (hostingUrlsPresent)
             {
-                foreach (var value in _serverAddresses.Addresses)
-                {
-                    Listener.Options.UrlPrefixes.Add(value);
-                }
+                UpdateUrlPrefixes(serverAddressCopy);
             }
             else if (Listener.RequestQueue.Created)
             {
                 LogHelper.LogDebug(_logger, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
-                _serverAddresses.Addresses.Add(Constants.DefaultServerAddress);
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
             // else // Attaching to an existing queue, don't add a default.
@@ -130,6 +123,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Listener.Start();
 
+            // Update server addresses after we start listening as port 0
+            // needs to be selected at the point of binding.
+            foreach (var prefix in _options.UrlPrefixes)
+            {
+                _serverAddresses.Addresses.Add(prefix.FullPrefix);
+            }
+
             ActivateRequestProcessingLimits();
 
             return Task.CompletedTask;
@@ -140,6 +140,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
                 ProcessRequestsWorker();
+            }
+        }
+
+        private void UpdateUrlPrefixes(IList<string> serverAddressCopy)
+        {
+            foreach (var value in serverAddressCopy)
+            {
+                Listener.Options.UrlPrefixes.Add(value);
             }
         }
 

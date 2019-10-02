@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
-        public void CanSetCultureAndParseCultueSensitiveNumbersAndDates(string culture)
+        public void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
             SetCulture(culture);

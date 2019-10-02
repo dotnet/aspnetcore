@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         protected override bool CanReadType(System.Type type) { throw null; }
         protected virtual System.Xml.Serialization.XmlSerializer CreateSerializer(System.Type type) { throw null; }
         protected virtual System.Xml.XmlReader CreateXmlReader(System.IO.Stream readStream, System.Text.Encoding encoding) { throw null; }
+        protected virtual System.Xml.XmlReader CreateXmlReader(System.IO.Stream readStream, System.Text.Encoding encoding, System.Type type) { throw null; }
         protected virtual System.Xml.Serialization.XmlSerializer GetCachedSerializer(System.Type type) { throw null; }
         protected virtual System.Type GetSerializableType(System.Type declaredType) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

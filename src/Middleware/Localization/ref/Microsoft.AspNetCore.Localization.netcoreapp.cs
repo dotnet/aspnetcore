@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     public partial class RequestLocalizationOptions
     {
         public RequestLocalizationOptions() { }
+        public bool ApplyCurrentCultureToResponseHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Localization.RequestCulture DefaultRequestCulture { get { throw null; } set { } }
         public bool FallBackToParentCultures { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool FallBackToParentUICultures { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

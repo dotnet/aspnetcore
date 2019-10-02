@@ -114,7 +114,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 
-                Assert.Equal(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
+                // Trailing slash is added when put in UrlPrefix.
+                Assert.StartsWith(Constants.DefaultServerAddress, server.Features.Get<IServerAddressesFeature>().Addresses.Single());
             }
         }
 

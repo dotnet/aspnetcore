@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Html5DateRenderingMode = htmlHelperOptions.Html5DateRenderingMode;
             ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
             ValidationMessageElement = htmlHelperOptions.ValidationMessageElement;
+            CheckBoxHiddenInputRenderMode = htmlHelperOptions.CheckBoxHiddenInputRenderMode;
         }
 
         /// <summary>
@@ -131,6 +132,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Html5DateRenderingMode = viewContext.Html5DateRenderingMode;
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
             ValidationMessageElement = viewContext.ValidationMessageElement;
+            CheckBoxHiddenInputRenderMode = viewContext.CheckBoxHiddenInputRenderMode;
+
             ExecutingFilePath = viewContext.ExecutingFilePath;
             View = view;
             ViewData = viewData;
@@ -183,6 +186,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// other overloads.
         /// </summary>
         public string ValidationMessageElement { get; set; }
+
+        /// <summary>
+        /// Gets or sets the way hidden inputs are rendered for checkbox tag helpers and html helpers.
+        /// </summary>
+        public CheckBoxHiddenInputRenderMode CheckBoxHiddenInputRenderMode { get; set; }
 
         /// <summary>
         /// Gets the dynamic view bag.

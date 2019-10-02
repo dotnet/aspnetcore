@@ -1848,7 +1848,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
         /// </summary>
-        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />..</param>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
         /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>

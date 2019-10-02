@@ -3,19 +3,18 @@
 
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
-        public static readonly ProductInfoHeaderValue UserAgentHeader;
+        public const string UserAgent = "User-Agent";
+        public static readonly string UserAgentHeader;
 
         static Constants()
         {
-            var userAgent = "Microsoft.AspNetCore.Http.Connections.Client";
-
             var assemblyVersion = typeof(Constants)
                 .Assembly
                 .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
@@ -23,14 +22,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Debug.Assert(assemblyVersion != null);
 
+            var majorVersion = typeof(Constants).Assembly.GetName().Version.Major;
+            var minorVersion = typeof(Constants).Assembly.GetName().Version.Minor;
+            var os = RuntimeInformation.OSDescription;
+            var runtime = ".NET";
+            var runtimeVersion = RuntimeInformation.FrameworkDescription;
+
             // assembly version attribute should always be present
             // but in case it isn't then don't include version in user-agent
             if (assemblyVersion != null)
             {
-                userAgent += "/" + assemblyVersion.InformationalVersion;
+                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
             }
-
-            UserAgentHeader = ProductInfoHeaderValue.Parse(userAgent);
+            else
+            {
+                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({os}; {runtime}; {runtimeVersion})";
+            }
         }
     }
 }

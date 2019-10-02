@@ -76,6 +76,41 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         }
 
         [Fact]
+        public async Task SupportsCancellationToken()
+        {
+            var clientProxy = new MockProxy();
+            var typedProxy = TypedClientBuilder<ICancellationTokenMethod>.Build(clientProxy);
+            CancellationTokenSource cts1 = new CancellationTokenSource();
+            var task1 = typedProxy.Method("foo", cts1.Token);
+            Assert.False(task1.IsCompleted);
+
+            CancellationTokenSource cts2 = new CancellationTokenSource();
+            var task2 = typedProxy.NoArgumentMethod(cts2.Token);
+            Assert.False(task2.IsCompleted);
+
+            Assert.Collection(clientProxy.Sends,
+                send1 =>
+                {
+                    Assert.Equal("Method", send1.Method);
+                    Assert.Single(send1.Arguments);
+                    Assert.Collection(send1.Arguments,
+                        arg1 => Assert.Equal("foo", arg1));
+                    Assert.Equal(cts1.Token, send1.CancellationToken);
+                    send1.Complete();
+                },
+                send2 =>
+                {
+                    Assert.Equal("NoArgumentMethod", send2.Method);
+                    Assert.Empty(send2.Arguments);
+                    Assert.Equal(cts2.Token, send2.CancellationToken);
+                    send2.Complete();
+                });
+
+            await task1.OrTimeout();
+            await task2.OrTimeout();
+        }
+
+        [Fact]
         public void ThrowsIfProvidedAClass()
         {
             var clientProxy = new MockProxy();
@@ -177,6 +212,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         public interface IInheritedClient : ITestClient
         {
             Task SubMethod(string foo);
+        }
+
+        public interface ICancellationTokenMethod
+        {
+            Task Method(string foo, CancellationToken cancellationToken);
+            Task NoArgumentMethod(CancellationToken cancellationToken);
         }
 
         public interface IPropertiesClient

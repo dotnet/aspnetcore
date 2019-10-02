@@ -35,6 +35,12 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
+            // Avoid the F# compiler. See https://github.com/aspnet/AspNetCore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
+
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
