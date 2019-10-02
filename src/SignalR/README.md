@@ -41,6 +41,11 @@ Alternatively, if you don't want to create the .npmrc file run the following com
 npm install @aspnet/signalr --registry https://dotnet.myget.org/f/aspnetcore-dev/npm/
 ```
 
+Or simply include it from a CDN:
+```html
+<script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@3/dist/browser/signalr.min.js"></script>
+```
+
 We also have a MsgPack protocol library which is installed via:
 
 ```bash
