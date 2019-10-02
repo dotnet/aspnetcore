@@ -42,21 +42,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(ClientModuleName);
             var clientType = GenerateInterfaceImplementation(moduleBuilder);
 
-            return GenerateFactoryFunction(clientType);
-        }
-
-        private static Func<IClientProxy, T> GenerateFactoryFunction(Type type)
-        {
-            var ctor = type.GetConstructor(ParameterTypes);
-            var method = new DynamicMethod(nameof(Build), type, ParameterTypes, type);
-
-            var generator = method.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Newobj, ctor);
-            generator.Emit(OpCodes.Ret);
-
-            return (Func<IClientProxy, T>)method.CreateDelegate(typeof(Func<IClientProxy, T>));
+            var factoryMethod = clientType.GetMethod(nameof(Build), BindingFlags.Public | BindingFlags.Static);
+            return (Func<IClientProxy, T>)factoryMethod.CreateDelegate(typeof(Func<IClientProxy, T>));
         }
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
@@ -67,7 +54,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private | FieldAttributes.InitOnly);
 
-            BuildConstructor(type, proxyField);
+            var ctor = BuildConstructor(type, proxyField);
+
+            BuildFactoryMethod(type, ctor);
 
             foreach (var method in GetAllInterfaceMethods(typeof(T)))
             {
@@ -93,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private static void BuildConstructor(TypeBuilder type, FieldInfo proxyField)
+        private static ConstructorInfo BuildConstructor(TypeBuilder type, FieldInfo proxyField)
         {
             var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, ParameterTypes);
 
@@ -108,6 +97,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Ldarg_1); // type proxyfield
             generator.Emit(OpCodes.Stfld, proxyField); // type.proxyField = proxyField
             generator.Emit(OpCodes.Ret);
+
+            return ctor;
         }
 
         private static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, FieldInfo proxyField)
@@ -193,6 +184,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             generator.Emit(OpCodes.Callvirt, invokeMethod);
 
             generator.Emit(OpCodes.Ret); // Return the Task returned by 'invokeMethod'
+        }
+
+        private static void BuildFactoryMethod(TypeBuilder type, ConstructorInfo ctor)
+        {
+            var method = type.DefineMethod(nameof(Build), MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(T), ParameterTypes);
+
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0); // Load the IClientProxy argument onto the stack
+            generator.Emit(OpCodes.Newobj, ctor); // Call the generated constructor with the proxy
+            generator.Emit(OpCodes.Ret); // Return the typed client
         }
 
         private static void VerifyInterface(Type interfaceType)
