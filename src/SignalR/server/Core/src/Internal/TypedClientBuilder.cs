@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
@@ -43,11 +42,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(ClientModuleName);
             var clientType = GenerateInterfaceImplementation(moduleBuilder);
 
-            var ctor = clientType.GetConstructor(ParameterTypes);
-            var proxy = Expression.Parameter(typeof(IClientProxy), "proxy");
-            var ctorCall = Expression.New(ctor, proxy);
+            return GenerateFactoryFunction(clientType);
+        }
 
-            return Expression.Lambda<Func<IClientProxy, T>>(ctorCall, proxy).Compile();
+        private static Func<IClientProxy, T> GenerateFactoryFunction(Type type)
+        {
+            var ctor = type.GetConstructor(ParameterTypes);
+            var method = new DynamicMethod(nameof(Build), type, ParameterTypes, type);
+
+            var generator = method.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Newobj, ctor);
+            generator.Emit(OpCodes.Ret);
+
+            return (Func<IClientProxy, T>)method.CreateDelegate(typeof(Func<IClientProxy, T>));
         }
 
         private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
