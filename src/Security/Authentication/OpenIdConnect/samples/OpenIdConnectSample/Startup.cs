@@ -43,9 +43,32 @@ namespace OpenIdConnectSample
 
         public IHostingEnvironment Environment { get; set; }
 
+        private void CheckSameSite(HttpContext httpContext, CookieOptions options)
+        {
+            if (options.SameSite > (SameSiteMode)(-1))
+            {
+                var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+                // TODO: Use your User Agent library of choice here.
+                if (userAgent.Contains("CPU iPhone OS 12") // Also covers iPod touch
+                    || userAgent.Contains("iPad; CPU OS 12")
+                    // Safari 12 and 13 are both broken on Mojave
+                    || userAgent.Contains("Macintosh; Intel Mac OS X 10_14"))
+                {
+                    options.SameSite = (SameSiteMode)(-1);
+                }
+            }
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = (SameSiteMode)(-1);
+                options.OnAppendCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                options.OnDeleteCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+            });
 
             services.AddAuthentication(sharedOptions =>
             {
@@ -56,9 +79,15 @@ namespace OpenIdConnectSample
                 .AddCookie()
                 .AddOpenIdConnect(o =>
             {
+                /*
                 o.ClientId = Configuration["oidc:clientid"];
                 o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
                 o.Authority = Configuration["oidc:authority"];
+                */
+                // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
+                o.ClientId = "server.hybrid";
+                o.ClientSecret = "secret"; // for code flow
+                o.Authority = "https://demo.identityserver.io/";
 
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 o.SaveTokens = true;
@@ -88,6 +117,7 @@ namespace OpenIdConnectSample
         public void Configure(IApplicationBuilder app, IOptionsMonitor<OpenIdConnectOptions> optionsMonitor)
         {
             app.UseDeveloperExceptionPage();
+            app.UseCookiePolicy(); // Before UseAuthentication or anything else that writes cookies.
             app.UseAuthentication();
 
             app.Run(async context =>
