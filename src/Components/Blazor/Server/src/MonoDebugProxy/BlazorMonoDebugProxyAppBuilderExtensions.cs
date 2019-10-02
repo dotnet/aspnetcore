@@ -89,19 +89,38 @@ namespace Microsoft.AspNetCore.Builder
             }
             catch (Exception ex)
             {
+                var userAgent = context.Request.Headers["User-Agent"].ToString().ToUpperInvariant();
 
-                await context.Response.WriteAsync($@"
-    <h1>Unable to find debuggable browser tab</h1>
-    <p>
-        Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
-        Ensure Chrome is running with debugging enabled.
-    </p>
-    <h2>Resolution</h2>
-    {GetLaunchChromeInstructions(appRootUrl)}
-    <p>... then use that new tab for debugging.</p>
-    <h2>Underlying exception:</h2>
-    <pre>{ex}</pre>
-");
+                if (userAgent.IndexOf("EDG") > -1 && userAgent.IndexOf("EDGE") < 0)
+                {
+                    await context.Response.WriteAsync($@"
+                        <h1>Unable to find debuggable browser tab</h1>
+                        <p>
+                            Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
+                            Ensure Edge is running with debugging enabled.
+                        </p>
+                        <h2>Resolution</h2>
+                        {GetLaunchEdgeInstructions(appRootUrl)}
+                        <p>... then use that new tab for debugging.</p>
+                        <h2>Underlying exception:</h2>
+                        <pre>{ex}</pre>
+                    ");
+                }
+                else
+                {
+                    await context.Response.WriteAsync($@"
+                        <h1>Unable to find debuggable browser tab</h1>
+                        <p>
+                            Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
+                            Ensure Chrome is running with debugging enabled.
+                        </p>
+                        <h2>Resolution</h2>
+                        {GetLaunchChromeInstructions(appRootUrl)}
+                        <p>... then use that new tab for debugging.</p>
+                        <h2>Underlying exception:</h2>
+                        <pre>{ex}</pre>
+                    ");
+                }
                 return;
             }
 
@@ -158,6 +177,24 @@ namespace Microsoft.AspNetCore.Builder
             {
                 return $@"<p>Close all Chrome instances, then in a terminal window execute the following:</p>
                           <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown OS platform");
+            }
+        }
+
+        private static string GetLaunchEdgeInstructions(string appRootUrl)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return $@"<p>Close all Edge instances, then press Win+R and enter the following:</p>
+                          <p><strong><code>""%programfiles(x86)%\Microsoft\Edge Dev\Application\msedge.exe"" --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return $@"<p>Close all Edge instances, then in a terminal window execute the following:</p>
+                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 {appRootUrl}</code></strong></p>";
             }
             else
             {
