@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public AntiforgeryTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public AntiforgeryTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

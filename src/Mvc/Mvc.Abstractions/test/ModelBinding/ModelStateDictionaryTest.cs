@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -481,6 +480,52 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.True(isValid);
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_OfSkippedEntry()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo");
+
+            // Act
+            var validationState = modelState.GetValidationState("foo");
+            var fieldValidationState = modelState.GetFieldValidationState("foo");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Skipped, validationState);
+            Assert.Equal(ModelValidationState.Valid, fieldValidationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_WithSkippedProperty()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo.bar.prop1");
+            modelState.MarkFieldValid("foo.bar.prop2");
+
+            // Act
+            var validationState = modelState.GetFieldValidationState("foo.bar");
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, validationState);
+        }
+
+        [Fact]
+        public void GetFieldValidationState_WithAllSkippedProperties()
+        {
+            // Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.MarkFieldSkipped("foo.bar.prop1");
+            modelState.MarkFieldSkipped("foo.bar.prop2");
+
+            // Act
+            var validationState = modelState.GetFieldValidationState("foo.bar");
+
+            // Assert
             Assert.Equal(ModelValidationState.Valid, validationState);
         }
 

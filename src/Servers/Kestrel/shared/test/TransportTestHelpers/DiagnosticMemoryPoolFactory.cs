@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             lock (_pools)
             {
-                var pool = new DiagnosticMemoryPool(KestrelMemoryPool.CreateSlabMemoryPool(), _allowLateReturn, _rentTracking);
+                var pool = new DiagnosticMemoryPool(new SlabMemoryPool(), _allowLateReturn, _rentTracking);
                 _pools.Add(pool);
                 return pool;
             }

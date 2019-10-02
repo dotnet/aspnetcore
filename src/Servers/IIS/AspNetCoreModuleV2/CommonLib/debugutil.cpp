@@ -123,7 +123,7 @@ void SetDebugFlags(const std::wstring &debugValue)
     }
 }
 
-bool CreateDebugLogFile(const std::wstring &debugOutputFile)
+bool CreateDebugLogFile(const std::filesystem::path &debugOutputFile)
 {
     try
     {
@@ -140,6 +140,11 @@ bool CreateDebugLogFile(const std::wstring &debugOutputFile)
                 CloseHandle(g_logFile);
                 g_logFile = INVALID_HANDLE_VALUE;
             }
+
+            // ignore errors
+            std::error_code ec;
+            create_directories(debugOutputFile.parent_path(), ec);
+
             g_logFile = CreateFileW(debugOutputFile.c_str(),
                 (GENERIC_READ | GENERIC_WRITE),
                 (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
@@ -348,13 +353,13 @@ DebugPrintW(
             WORD eventType;
             switch (dwFlag)
             {
-                case ASPNETCORE_DEBUG_FLAG_ERROR: 
+                case ASPNETCORE_DEBUG_FLAG_ERROR:
                     eventType = EVENTLOG_ERROR_TYPE;
                     break;
-                case ASPNETCORE_DEBUG_FLAG_WARNING: 
+                case ASPNETCORE_DEBUG_FLAG_WARNING:
                     eventType = EVENTLOG_WARNING_TYPE;
                     break;
-                default: 
+                default:
                     eventType = EVENTLOG_INFORMATION_TYPE;
                     break;
             }

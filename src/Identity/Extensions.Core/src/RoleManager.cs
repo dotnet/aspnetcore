@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
         public virtual string NormalizeKey(string key)
         {
-            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
+            return (KeyNormalizer == null) ? key : KeyNormalizer.NormalizeName(key);
         }
 
         /// <summary>

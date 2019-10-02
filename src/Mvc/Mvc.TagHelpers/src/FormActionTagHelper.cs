@@ -98,6 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IUrlHelperFactory"/> used to create an <see cref="IUrlHelper"/> to generate links.
+        /// </summary>
         protected IUrlHelperFactory UrlHelperFactory { get; }
 
         /// <summary>

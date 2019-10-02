@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -15,14 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ProtocolsDefault()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-            Assert.Equal(HttpProtocols.Http1, listenOptions.Protocols);
+            Assert.Equal(HttpProtocols.Http1AndHttp2, listenOptions.Protocols);
         }
 
         [Fact]
         public void LocalHostListenOptionsClonesConnectionMiddleware()
         {
             var localhostListenOptions = new LocalhostListenOptions(1004);
-            localhostListenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
             localhostListenOptions.KestrelServerOptions = new KestrelServerOptions
             {
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(clone.KestrelServerOptions);
             Assert.NotNull(serviceProvider);
             Assert.Same(serviceProvider, clone.ApplicationServices);
-            Assert.Single(clone.ConnectionAdapters);
         }
     }
 }

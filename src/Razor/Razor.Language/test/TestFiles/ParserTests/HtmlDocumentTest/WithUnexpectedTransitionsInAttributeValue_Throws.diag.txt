@@ -1,2 +1,0 @@
-(1,13): Error RZ1003: A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
-(1,15): Error RZ1005: "' />" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{" are valid.

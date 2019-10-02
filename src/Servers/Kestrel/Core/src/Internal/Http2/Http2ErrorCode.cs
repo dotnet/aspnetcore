@@ -4,7 +4,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public enum Http2ErrorCode : uint
+    internal enum Http2ErrorCode : uint
     {
         NO_ERROR = 0x0,
         PROTOCOL_ERROR = 0x1,

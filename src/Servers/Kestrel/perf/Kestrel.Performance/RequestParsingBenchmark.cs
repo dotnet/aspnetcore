@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -19,12 +18,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Pipe Pipe { get; set; }
 
-        public Http1Connection Http1Connection { get; set; }
+        internal Http1Connection Http1Connection { get; set; }
 
         [IterationSetup]
         public void Setup()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 readableBuffer = readableBuffer.Slice(consumed);
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
@@ -196,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }

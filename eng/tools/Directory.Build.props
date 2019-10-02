@@ -1,3 +1,9 @@
 ﻿<Project>
-  <Import Project="..\..\build\sources.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
 </Project>

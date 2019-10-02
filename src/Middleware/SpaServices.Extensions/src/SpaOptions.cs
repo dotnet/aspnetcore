@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SpaServices
         /// <summary>
         /// Gets or sets the <see cref="StaticFileOptions"/> that supplies content
         /// for serving the SPA's default page.
-        /// 
+        ///
         /// If not set, a default file provider will read files from the
         /// <see cref="IHostingEnvironment.WebRootPath"/>, which by default is
         /// the <c>wwwroot</c> directory.
@@ -73,6 +73,6 @@ namespace Microsoft.AspNetCore.SpaServices
         /// Gets or sets the maximum duration that a request will wait for the SPA
         /// to become ready to serve to the client.
         /// </summary>
-        public TimeSpan StartupTimeout { get; set; } = TimeSpan.FromSeconds(50);
+        public TimeSpan StartupTimeout { get; set; } = TimeSpan.FromSeconds(120);
     }
 }

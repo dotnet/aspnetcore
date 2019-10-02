@@ -11,7 +11,7 @@ final class CompletionMessage extends HubMessage {
 
     public CompletionMessage(String invocationId, Object result, String error) {
         if (error != null && result != null) {
-            throw new IllegalArgumentException("Expected either 'error' or 'result' to be provided, but not both");
+            throw new IllegalArgumentException("Expected either 'error' or 'result' to be provided, but not both.");
         }
         this.invocationId = invocationId;
         this.result = result;

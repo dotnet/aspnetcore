@@ -19,19 +19,16 @@ namespace BasicWebSite
 
             services
                 .AddMvc()
+                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
-                var previous = options.InvalidModelStateResponseFactory;
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    var result = (BadRequestObjectResult)previous(context);
-                    if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute))
-                    {
-                        result.ContentTypes.Clear();
-                        result.ContentTypes.Add("application/vnd.error+json");
-                    }
+                    var result = new BadRequestObjectResult(context.ModelState);
+                    result.ContentTypes.Clear();
+                    result.ContentTypes.Add("application/vnd.error+json");
 
                     return result;
                 };
@@ -46,7 +43,12 @@ namespace BasicWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseMvc();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

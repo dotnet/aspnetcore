@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -8,7 +8,11 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public struct ParsedPath
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
+    public readonly struct ParsedPath
     {
         private static readonly string[] Empty = null;
 

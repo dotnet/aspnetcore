@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             app.Command("remove", c => RemoveCommand.Configure(c, options));
             app.Command("list", c => ListCommand.Configure(c, options));
             app.Command("clear", c => ClearCommand.Configure(c, options));
+            app.Command("init", c => InitCommandFactory.Configure(c, options));
 
             // Show help information if no subcommand/option was specified.
             app.OnExecute(() => app.ShowHelp());

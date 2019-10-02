@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
@@ -43,6 +43,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var result = await DeployAsync(parameters);
             await result.AssertStarts();
             return result;
+        }
+
+        protected virtual async Task<string> GetStringAsync(IISDeploymentParameters parameters, string path)
+        {
+            var result = await DeployAsync(parameters);
+            return await result.HttpClient.GetStringAsync(path);
         }
 
         public override void Dispose()

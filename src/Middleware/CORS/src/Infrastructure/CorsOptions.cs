@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
@@ -12,22 +13,18 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     public class CorsOptions
     {
         private string _defaultPolicyName = "__DefaultCorsPolicy";
-        private IDictionary<string, CorsPolicy> PolicyMap { get; } = new Dictionary<string, CorsPolicy>();
+
+        // DefaultCorsPolicyProvider returns a Task<CorsPolicy>. We'll cache the value to be returned alongside
+        // the actual policy instance to have a separate lookup.
+        internal IDictionary<string, (CorsPolicy policy, Task<CorsPolicy> policyTask)> PolicyMap { get; }
+            = new Dictionary<string, (CorsPolicy, Task<CorsPolicy>)>(StringComparer.Ordinal);
 
         public string DefaultPolicyName
         {
-            get
-            {
-                return _defaultPolicyName;
-            }
+            get => _defaultPolicyName;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _defaultPolicyName = value;
+                _defaultPolicyName = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -76,7 +73,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            PolicyMap[name] = policy;
+            PolicyMap[name] = (policy, Task.FromResult(policy));
         }
 
         /// <summary>
@@ -98,7 +95,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             var policyBuilder = new CorsPolicyBuilder();
             configurePolicy(policyBuilder);
-            PolicyMap[name] = policyBuilder.Build();
+            var policy = policyBuilder.Build();
+
+            PolicyMap[name] = (policy, Task.FromResult(policy));
         }
 
         /// <summary>
@@ -113,7 +112,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return PolicyMap.ContainsKey(name) ? PolicyMap[name] : null;
+            if (PolicyMap.TryGetValue(name, out var result))
+            {
+                return result.policy;
+            }
+
+            return null;
         }
     }
 }

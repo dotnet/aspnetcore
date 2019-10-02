@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.ResponseCaching;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {

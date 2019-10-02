@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// Lightweight version of HttpClient implemented on top of an arbitrary Stream.
     /// </summary>
-    public class InMemoryHttpClientSlim
+    internal class InMemoryHttpClientSlim
     {
         private readonly TestServer _inMemoryTestServer;
 

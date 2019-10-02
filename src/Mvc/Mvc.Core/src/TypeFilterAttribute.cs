@@ -34,12 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="type">The <see cref="Type"/> of filter to create.</param>
         public TypeFilterAttribute(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            ImplementationType = type;
+            ImplementationType = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         /// <summary>

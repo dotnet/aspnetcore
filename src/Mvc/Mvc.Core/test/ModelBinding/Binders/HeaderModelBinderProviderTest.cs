@@ -14,55 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public class HeaderModelBinderProviderTest
     {
-        [Theory]
-        [InlineData(typeof(string))]
-        [InlineData(typeof(string[]))]
-        [InlineData(typeof(List<string>))]
-        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForStringTypes_And_CompatVersion_2_0(
-            Type modelType)
-        {
-            // Arrange
-            var provider = new HeaderModelBinderProvider();
-            var testBinder = Mock.Of<IModelBinder>();
-            var context = GetTestModelBinderProviderContext(
-                modelType,
-                allowBindingHeaderValuesToNonStringModelTypes: false);
-            context.BindingInfo.BindingSource = BindingSource.Header;
-
-            // Act
-            var result = provider.GetBinder(context);
-
-            // Assert
-            Assert.IsType<HeaderModelBinder>(result);
-        }
-
-        [Theory]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(int?))]
-        [InlineData(typeof(IEnumerable<int>))]
-        [InlineData(typeof(double))]
-        [InlineData(typeof(double?))]
-        [InlineData(typeof(IEnumerable<double>))]
-        [InlineData(typeof(CarEnumType))]
-        [InlineData(typeof(CarEnumType?))]
-        [InlineData(typeof(IEnumerable<CarEnumType>))]
-        public void Create_WhenBindingSourceIsFromHeader_ReturnsNull_ForNonStringTypes_And_CompatVersion_2_0(
-            Type modelType)
-        {
-            // Arrange
-            var provider = new HeaderModelBinderProvider();
-            var context = GetTestModelBinderProviderContext(
-                modelType,
-                allowBindingHeaderValuesToNonStringModelTypes: false);
-            context.BindingInfo.BindingSource = BindingSource.Header;
-
-            // Act
-            var result = provider.GetBinder(context);
-
-            // Assert
-            Assert.Null(result);
-        }
-
         public static TheoryData<BindingSource> NonHeaderBindingSources
         {
             get
@@ -227,13 +178,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(result);
         }
 
-        private TestModelBinderProviderContext GetTestModelBinderProviderContext(
-            Type modelType,
-            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+        private TestModelBinderProviderContext GetTestModelBinderProviderContext(Type modelType)
         {
             var context = new TestModelBinderProviderContext(modelType);
             var options = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            options.AllowBindingHeaderValuesToNonStringModelTypes = allowBindingHeaderValuesToNonStringModelTypes;
             return context;
         }
 

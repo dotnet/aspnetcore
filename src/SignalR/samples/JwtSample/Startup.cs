@@ -63,14 +63,20 @@ namespace JwtSample
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseFileServer();
-            app.UseSignalR(options => options.MapHub<Broadcaster>("/broadcast"));
 
-            var routeBuilder = new RouteBuilder(app);
-            routeBuilder.MapGet("generatetoken", c => c.Response.WriteAsync(GenerateToken(c)));
-            app.UseRouter(routeBuilder.Build());
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<Broadcaster>("/broadcast");
+                endpoints.MapGet("/generatetoken", context =>
+                {
+                    return context.Response.WriteAsync(GenerateToken(context));
+                });
+            });
         }
 
         private string GenerateToken(HttpContext httpContext)

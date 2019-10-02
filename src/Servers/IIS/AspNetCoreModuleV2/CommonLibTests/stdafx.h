@@ -42,14 +42,12 @@
 #include "hashfn.h"
 
 #include "requesthandler_config.h"
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "config_utility.h"
 #include "environmentvariablehash.h"
 #include "iapplication.h"
 #include "debugutil.h"
 #include "requesthandler.h"
-#include "resources.h"
-#include "aspnetcore_msg.h"
 #include "Helpers.h"
 #include "GlobalVersionUtility.h"
 

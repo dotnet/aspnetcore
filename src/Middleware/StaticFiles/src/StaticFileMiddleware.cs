@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,10 +28,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the StaticFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration options.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
-        public StaticFileMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<StaticFileOptions> options, ILoggerFactory loggerFactory)
+        public StaticFileMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<StaticFileOptions> options, ILoggerFactory loggerFactory)
         {
             if (next == null)
             {
@@ -68,75 +66,85 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
-            var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
-
-            if (!fileContext.ValidateMethod())
+            if (!ValidateNoEndpoint(context))
             {
-                _logger.LogRequestMethodNotSupported(context.Request.Method);
+                _logger.EndpointMatched();
             }
-            else if (!fileContext.ValidatePath())
+            else if (!ValidateMethod(context))
             {
-                _logger.LogPathMismatch(fileContext.SubPath);
+                _logger.RequestMethodNotSupported(context.Request.Method);
             }
-            else if (!fileContext.LookupContentType())
+            else if (!ValidatePath(context, _matchUrl, out var subPath))
             {
-                _logger.LogFileTypeNotSupported(fileContext.SubPath);
+                _logger.PathMismatch(subPath);
             }
-            else if (!fileContext.LookupFileInfo())
+            else if (!LookupContentType(_contentTypeProvider, _options, subPath, out var contentType))
             {
-                _logger.LogFileNotFound(fileContext.SubPath);
+                _logger.FileTypeNotSupported(subPath);
             }
             else
             {
                 // If we get here, we can try to serve the file
-                fileContext.ComprehendRequestHeaders();
-                switch (fileContext.GetPreconditionState())
-                {
-                    case StaticFileContext.PreconditionState.Unspecified:
-                    case StaticFileContext.PreconditionState.ShouldProcess:
-                        if (fileContext.IsHeadMethod)
-                        {
-                            await fileContext.SendStatusAsync(Constants.Status200Ok);
-                            return;
-                        }
-
-                        try
-                        {
-                            if (fileContext.IsRangeRequest)
-                            {
-                                await fileContext.SendRangeAsync();
-                                return;
-                            }
-
-                            await fileContext.SendAsync();
-                            _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
-                            return;
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            context.Response.Clear();
-                        }
-                        break;
-                    case StaticFileContext.PreconditionState.NotModified:
-                        _logger.LogPathNotModified(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status304NotModified);
-                        return;
-
-                    case StaticFileContext.PreconditionState.PreconditionFailed:
-                        _logger.LogPreconditionFailed(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
-                        return;
-
-                    default:
-                        var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
-                        Debug.Fail(exception.ToString());
-                        throw exception;
-                }
+                return TryServeStaticFile(context, contentType, subPath);
             }
 
-            await _next(context);
+            return _next(context);
+        }
+
+        // Return true because we only want to run if there is no endpoint.
+        private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
+
+        private static bool ValidateMethod(HttpContext context)
+        {
+            var method = context.Request.Method;
+            var isValid = false;
+            if (HttpMethods.IsGet(method))
+            {
+                isValid = true;
+            }
+            else if (HttpMethods.IsHead(method))
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+
+        internal static bool ValidatePath(HttpContext context, PathString matchUrl, out PathString subPath) => Helpers.TryMatchPath(context, matchUrl, forDirectory: false, out subPath);
+
+        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string contentType)
+        {
+            if (contentTypeProvider.TryGetContentType(subPath.Value, out contentType))
+            {
+                return true;
+            }
+
+            if (options.ServeUnknownFileTypes)
+            {
+                contentType = options.DefaultContentType;
+                return true;
+            }
+
+            return false;
+        }
+
+        private Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
+        {
+            var fileContext = new StaticFileContext(context, _options, _logger, _fileProvider, contentType, subPath);
+
+            if (!fileContext.LookupFileInfo())
+            {
+                _logger.FileNotFound(fileContext.SubPath);
+            }
+            else
+            {
+                // If we get here, we can try to serve the file
+                return fileContext.ServeStaticFile(context, _next);
+            }
+
+            return _next(context);
         }
     }
 }

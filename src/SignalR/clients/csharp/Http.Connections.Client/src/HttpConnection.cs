@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
-#if !NETCOREAPP2_2
-        private static readonly Version Windows8Version = new Version(6, 2);
-#endif
 
         private readonly ILogger _logger;
 
@@ -99,7 +96,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Initializes a new instance of the <see cref="HttpConnection"/> class.
         /// </summary>
         /// <param name="url">The URL to connect to.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         public HttpConnection(Uri url, HttpTransportType transports)
             : this(url, transports, loggerFactory: null)
         {
@@ -109,7 +106,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Initializes a new instance of the <see cref="HttpConnection"/> class.
         /// </summary>
         /// <param name="url">The URL to connect to.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(Uri url, HttpTransportType transports, ILoggerFactory loggerFactory)
             : this(CreateHttpOptions(url, transports), loggerFactory)
@@ -132,6 +129,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
+            if (httpConnectionOptions == null)
+            {
+                throw new ArgumentNullException(nameof(httpConnectionOptions));
+            }
+
             if (httpConnectionOptions.Url == null)
             {
                 throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
@@ -171,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            return StartAsync(TransferFormat.Binary, cancellationToken);
+            return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
         }
 
         /// <summary>
@@ -188,11 +190,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         {
             using (_logger.BeginScope(_logScope))
             {
-                await StartAsyncCore(transferFormat).ForceAsync();
+                await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
             }
         }
 
-        private async Task StartAsyncCore(TransferFormat transferFormat)
+        private async Task StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -215,7 +217,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 Log.Starting(_logger);
 
-                await SelectAndStartTransport(transferFormat);
+                await SelectAndStartTransport(transferFormat, cancellationToken);
 
                 _started = true;
                 Log.Started(_logger);
@@ -234,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -288,18 +290,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task SelectAndStartTransport(TransferFormat transferFormat)
+        private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             var uri = _httpConnectionOptions.Url;
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
+
+            var transportExceptions = new List<Exception>();
 
             if (_httpConnectionOptions.SkipNegotiation)
             {
                 if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
                 {
                     Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat);
+                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken);
                 }
                 else
                 {
@@ -313,7 +317,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 do
                 {
-                    negotiationResponse = await GetNegotiationResponseAsync(uri);
+                    negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
 
                     if (negotiationResponse.Url != null)
                     {
@@ -349,12 +353,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     if (!Enum.TryParse<HttpTransportType>(transport.Transport, out var transportType))
                     {
                         Log.TransportNotSupported(_logger, transport.Transport);
+                        transportExceptions.Add(new TransportFailedException(transport.Transport, "The transport is not supported by the client."));
                         continue;
                     }
 
                     if (transportType == HttpTransportType.WebSockets && !IsWebSocketsSupported())
                     {
                         Log.WebSocketsNotSupportedByOperatingSystem(_logger);
+                        transportExceptions.Add(new TransportFailedException("WebSockets", "The transport is not supported on this operating system."));
                         continue;
                     }
 
@@ -363,28 +369,33 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         if ((transportType & _httpConnectionOptions.Transports) == 0)
                         {
                             Log.TransportDisabledByClient(_logger, transportType);
+                            transportExceptions.Add(new TransportFailedException(transportType.ToString(), "The transport is disabled by the client."));
                         }
                         else if (!transport.TransferFormats.Contains(transferFormatString, StringComparer.Ordinal))
                         {
                             Log.TransportDoesNotSupportTransferFormat(_logger, transportType, transferFormat);
+                            transportExceptions.Add(new TransportFailedException(transportType.ToString(), $"The transport does not support the '{transferFormat}' transfer format."));
                         }
                         else
                         {
                             // The negotiation response gets cleared in the fallback scenario.
                             if (negotiationResponse == null)
                             {
-                                negotiationResponse = await GetNegotiationResponseAsync(uri);
+                                negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
                                 connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
-                            await StartTransport(connectUrl, transportType, transferFormat);
+                            await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
                             break;
                         }
                     }
                     catch (Exception ex)
                     {
                         Log.TransportFailed(_logger, transportType, ex);
+
+                        transportExceptions.Add(new TransportFailedException(transportType.ToString(), ex.Message, ex));
+
                         // Try the next transport
                         // Clear the negotiation response so we know to re-negotiate.
                         negotiationResponse = null;
@@ -394,11 +405,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             if (_transport == null)
             {
-                throw new InvalidOperationException("Unable to connect to the server with any of the available transports.");
+                if (transportExceptions.Count > 0)
+                {
+                    throw new AggregateException("Unable to connect to the server with any of the available transports.", transportExceptions);
+                }
+                else
+                {
+                    throw new NoTransportSupportedException("None of the transports supported by the client are supported by the server.");
+                }
             }
         }
 
-        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger)
+        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
         {
             try
             {
@@ -420,14 +438,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     // rather than buffer the entire response. This gives a small perf boost.
                     // Note that it is important to dispose of the response when doing this to
                     // avoid leaving the connection open.
-                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
-                        NegotiationResponse negotiateResponse;
-                        using (var responseStream = await response.Content.ReadAsStreamAsync())
-                        {
-                            negotiateResponse = NegotiateProtocol.ParseResponse(responseStream);
-                        }
+                        var responseBuffer = await response.Content.ReadAsByteArrayAsync();
+                        var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {
                             throw new Exception(negotiateResponse.Error);
@@ -454,7 +469,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat)
+        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             // Construct the transport
             var transport = _transportFactory.CreateTransport(transportType);
@@ -462,7 +477,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // Start the transport, giving it one end of the pipe
             try
             {
-                await transport.StartAsync(connectUrl, transferFormat);
+                await transport.StartAsync(connectUrl, transferFormat, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -573,27 +588,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (!isWindows)
+            try
             {
-                // Assume other OSes have websockets
+                new ClientWebSocket().Dispose();
                 return true;
             }
-            else
+            catch
             {
-                // Windows 8 and above has websockets
-                return Environment.OSVersion.Version >= Windows8Version;
+                return false;
             }
 #endif
         }
 
-        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri)
+        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger);
+            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
             _connectionId = negotiationResponse.ConnectionId;
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;

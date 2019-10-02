@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -32,11 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
 
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                var mvcOptions = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return new ComplexTypeModelBinder(
                     propertyBinders,
                     loggerFactory,
-                    mvcOptions.AllowValidatingTopLevelNodes);
+                    allowValidatingTopLevelNodes: true);
             }
 
             return null;

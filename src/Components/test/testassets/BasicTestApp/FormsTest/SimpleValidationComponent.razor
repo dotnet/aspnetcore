@@ -1,0 +1,50 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
+    <DataAnnotationsValidator />
+
+    <p class="user-name">
+        User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />
+    </p>
+    <p class="accepts-terms">
+        Accept terms: <input type="checkbox" @bind="AcceptsTerms" class="@context.FieldCssClass(() => AcceptsTerms)" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    @* Could use <ValidationSummary /> instead, but this shows it can be done manually *@
+    <ul class="validation-errors">
+        @foreach (var message in context.GetValidationMessages())
+        {
+            <li class="validation-message">@message</li>
+        }
+    </ul>
+
+</EditForm>
+
+@if (lastCallback != null)
+{
+    <span id="last-callback">@lastCallback</span>
+}
+
+@code {
+    string lastCallback;
+
+    [Required(ErrorMessage = "Please choose a username")]
+    public string UserName { get; set; }
+
+    [Required]
+    [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms")]
+    public bool AcceptsTerms { get; set; }
+
+    void HandleValidSubmit()
+    {
+        lastCallback = "OnValidSubmit";
+    }
+
+    void HandleInvalidSubmit()
+    {
+        lastCallback = "OnInvalidSubmit";
+    }
+}

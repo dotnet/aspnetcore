@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// The <see cref="Stream"/> for writing the response body.
         /// </summary>
+        [Obsolete("Use IHttpResponseBodyFeature.Stream instead.", error: false)]
         Stream Body { get; set; }
 
         /// <summary>

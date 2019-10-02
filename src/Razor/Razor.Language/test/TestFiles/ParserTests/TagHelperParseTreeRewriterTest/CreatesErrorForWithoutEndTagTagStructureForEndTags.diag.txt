@@ -1,1 +1,0 @@
-(1,3): Error RZ1033: Found an end tag (</input>) for tag helper 'InputTagHelper' with tag structure that disallows an end tag ('WithoutEndTag').

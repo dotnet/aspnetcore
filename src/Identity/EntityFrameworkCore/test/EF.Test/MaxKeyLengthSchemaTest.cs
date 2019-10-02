@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Data.SqlClient;
-using Microsoft.AspNetCore.Builder.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -14,7 +15,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     public class MaxKeyLengthSchemaTest : IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ApplicationBuilder _builder;
-        private const string DatabaseName = nameof(MaxKeyLengthSchemaTest);
 
         public MaxKeyLengthSchemaTest(ScratchDatabaseFixture fixture)
         {
@@ -22,57 +22,70 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
+                .AddDbContext<VerstappenDbContext>(o =>
+                    o.UseSqlite(fixture.Connection)
+                        .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentity<IdentityUser, IdentityRole>(o => o.Stores.MaxLengthForKeys = 128)
-                .AddEntityFrameworkStores<IdentityDbContext>();
+                .AddEntityFrameworkStores<VerstappenDbContext>();
 
             services.AddLogging();
 
-            var provider = services.BuildServiceProvider();
-            _builder = new ApplicationBuilder(provider);
+            _builder = new ApplicationBuilder(services.BuildServiceProvider());
 
-            using (var scoped = provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            using (var db = scoped.ServiceProvider.GetRequiredService<IdentityDbContext>())
+            using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                db.Database.EnsureCreated();
+                scope.ServiceProvider.GetRequiredService<VerstappenDbContext>().Database.EnsureCreated();
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void EnsureDefaultSchema()
+        // Need a different context type here since EF model is changing by having MaxLengthForKeys
+        public class VerstappenDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
         {
-            var db = _builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
-            VerifyDefaultSchema(db);
+            public VerstappenDbContext(DbContextOptions options)
+                : base(options)
+                {
+                }
         }
 
-        private static void VerifyDefaultSchema(IdentityDbContext dbContext)
+        [ConditionalFact]
+        public void EnsureDefaultSchema()
         {
-            var sqlConn = dbContext.Database.GetDbConnection();
-
-            using (var db = new SqlConnection(sqlConn.ConnectionString))
+            using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                db.Open();
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
+                var db = scope.ServiceProvider.GetRequiredService<VerstappenDbContext>();
+
+                VerifyDefaultSchema(db);
+            }
+        }
+
+        private static void VerifyDefaultSchema(VerstappenDbContext dbContext)
+        {
+            var sqlConn = (SqliteConnection)dbContext.Database.GetDbConnection();
+
+            try
+            {
+                sqlConn.Open();
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
                     "EmailConfirmed", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled",
                     "LockoutEnd", "AccessFailedCount", "ConcurrencyStamp", "NormalizedUserName", "NormalizedEmail"));
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
-                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserRoles", "UserId", "RoleId"));
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
+                Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetRoles", 256, "Name", "NormalizedName"));
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetUserLogins", 128, "LoginProvider", "ProviderKey"));
-                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetUserTokens", 128, "LoginProvider", "Name"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetRoles", 256, "Name", "NormalizedName"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUserLogins", 128, "LoginProvider", "ProviderKey"));
+                Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUserTokens", 128, "LoginProvider", "Name"));
 
-                DbUtil.VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
-                DbUtil.VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
-                DbUtil.VerifyIndex(db, "AspNetUsers", "EmailIndex");
-                db.Close();
+                DbUtil.VerifyIndex(sqlConn, "AspNetRoles", "RoleNameIndex", isUnique: true);
+                DbUtil.VerifyIndex(sqlConn, "AspNetUsers", "UserNameIndex", isUnique: true);
+                DbUtil.VerifyIndex(sqlConn, "AspNetUsers", "EmailIndex");
+            }
+            finally
+            {
+                sqlConn.Close();
             }
         }
     }

@@ -1,6 +1,6 @@
-﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Mvc.ViewEngines
-@inject IHostingEnvironment Environment
+@inject IWebHostEnvironment Environment
 @inject ICompositeViewEngine Engine
 <!DOCTYPE html>
 <html>
@@ -53,7 +53,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2017 - @Environment.ApplicationName</p>
+            <p>&copy; 2018 - @Environment.ApplicationName</p>
         </footer>
     </div>
 

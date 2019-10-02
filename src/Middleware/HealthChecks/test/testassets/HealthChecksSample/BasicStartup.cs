@@ -14,7 +14,7 @@ namespace HealthChecksSample
             services.AddHealthChecks();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             // This will register the health checks middleware at the URL /health.
             // 

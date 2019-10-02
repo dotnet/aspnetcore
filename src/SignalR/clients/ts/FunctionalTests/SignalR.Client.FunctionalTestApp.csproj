@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
+
+    <!-- The naming of this file doesn't match repo conventions. This overrides the conventions. -->
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="selenium\run-ci-tests.ts" />
+    <None Remove="selenium\run-tests.ts" />
+    <None Remove="ts\Common.ts" />
+    <None Remove="ts\ConnectionTests.ts" />
+    <None Remove="ts\HubConnectionTests.ts" />
+    <None Remove="ts\index.ts" />
+    <None Remove="ts\TestLogger.ts" />
+    <None Remove="ts\Utils.ts" />
+    <None Remove="ts\WebDriverReporter.ts" />
+    <None Remove="ts\WebSocketTests.ts" />
+    <None Remove="ts\WebWorkerTests.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging.Debug" />
+    <Reference Include="System.Reactive.Linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="selenium\run-ci-tests.ts" />
+    <TypeScriptCompile Include="selenium\run-tests.ts" />
+    <TypeScriptCompile Include="ts\Common.ts" />
+    <TypeScriptCompile Include="ts\ConnectionTests.ts" />
+    <TypeScriptCompile Include="ts\HubConnectionTests.ts" />
+    <TypeScriptCompile Include="ts\index.ts" />
+    <TypeScriptCompile Include="ts\TestLogger.ts" />
+    <TypeScriptCompile Include="ts\Utils.ts" />
+    <TypeScriptCompile Include="ts\WebSocketTests.ts" />
+    <TypeScriptCompile Include="ts\WebWorkerTests.ts" />
+  </ItemGroup>
+
+</Project>

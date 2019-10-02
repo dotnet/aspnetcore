@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication
                 var schemeName = IdentityServerJwtConstants.IdentityServerJwtBearerScheme;
 
                 var localApiDescriptor = sp.GetRequiredService<IIdentityServerJwtDescriptor>();
-                var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                var hostingEnvironment = sp.GetRequiredService<IWebHostEnvironment>();
                 var apiName = hostingEnvironment.ApplicationName + IdentityServerJwtNameSuffix;
 
                 return new IdentityServerJwtBearerOptionsConfiguration(schemeName, apiName, localApiDescriptor);

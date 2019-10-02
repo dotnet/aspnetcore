@@ -3,7 +3,6 @@
 
 #include "inprocesshandler.h"
 #include "inprocessapplication.h"
-#include "IOutputManager.h"
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
 
@@ -59,7 +58,6 @@ IN_PROCESS_HANDLER::AsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
-
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_ASYNC_COMPLETION_START>(m_pW3Context, nullptr);
 
     if (m_fManagedRequestComplete)

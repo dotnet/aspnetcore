@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -75,10 +76,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task CanRotateKeysAndStillFind()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var name = Guid.NewGuid().ToString();
             var user = CreateTestUser(name);
@@ -109,10 +106,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             public InkProtector() { }
 
             public string Unprotect(string keyId, string data)
-                => "ink";
+                => data?.Substring(4);
 
             public string Protect(string keyId, string data)
-                => "ink";
+                => "ink:" + data;
         }
 
         private class CustomUser : IdentityUser
@@ -137,10 +134,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
-                        return reader.GetString(0) == "Default:ink";
+                        var value = reader.GetString(0);
+                        return value.StartsWith("Default:ink:");
                     }
                 }
             }
+            Assert.False(true, "Didn't find user");
             return false;
         }
 
@@ -157,7 +156,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
-                        return reader.GetString(0) == "Default:ink";
+                        var value = reader.GetString(0);
+                        return value.StartsWith("Default:ink:");
                     }
                 }
             }
@@ -168,80 +168,103 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task CustomPersonalDataPropertiesAreProtected(bool protect)
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
+        [Fact]
+        public Task CustomPersonalDataPropertiesCanBeProtected()
+            => CustomPersonalDataPropertiesAreProtected<ProtectedIdentityDbContext>(true);
 
-            using (var scratch = new ScratchDatabaseFixture())
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public Task CustomPersonalDataPropertiesCanBeNotProtected()
+            => CustomPersonalDataPropertiesAreProtected<UnprotectedIdentityDbContext>(false);
+
+        private async Task CustomPersonalDataPropertiesAreProtected<TContext>(bool protect)
+            where TContext : DbContext
+        {
+            using (var connection = new SqliteConnection($"DataSource=D{Guid.NewGuid()}.db"))
             {
                 var services = new ServiceCollection().AddLogging();
                 services.AddIdentity<CustomUser, IdentityRole>(options =>
                 {
                     options.Stores.ProtectPersonalData = protect;
                 })
-                    .AddEntityFrameworkStores<IdentityDbContext<CustomUser>>()
+                    .AddEntityFrameworkStores<TContext>()
                     .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
 
-                var dbOptions = new DbContextOptionsBuilder().UseSqlServer(scratch.ConnectionString)
-                    .UseApplicationServiceProvider(services.BuildServiceProvider())
-                    .Options;
-                var dbContext = new IdentityDbContext<CustomUser>(dbOptions);
-                services.AddSingleton(dbContext);
-                dbContext.Database.EnsureCreated();
+                services.AddDbContext<TContext>(b => b.UseSqlite(connection));
 
-                var sp = services.BuildServiceProvider();
-                var manager = sp.GetService<UserManager<CustomUser>>();
+                var applicationServiceProvider = services.BuildServiceProvider();
 
-                var guid = Guid.NewGuid().ToString();
-                var user = new CustomUser();
-                user.Id = guid;
-                user.UserName = guid;
-                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-                user.Email = "test@test.com";
-                user.PersonalData1 = "p1";
-                user.PersonalData2 = "p2";
-                user.NonPersonalData1 = "np1";
-                user.NonPersonalData2 = "np2";
-                user.SafePersonalData = "safe";
-                user.PhoneNumber = "12345678";
-                IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
+                using (var scope = applicationServiceProvider.CreateScope())
+                { 
+                    var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+                    dbContext.Database.EnsureCreated();
 
-                IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
-                IdentityResultAssert.IsSuccess(await manager.SetAuthenticationTokenAsync(user, "loginProvider", "token", "value"));
+                    var manager = scope.ServiceProvider.GetService<UserManager<CustomUser>>();
 
-                var conn = dbContext.Database.GetDbConnection();
-                conn.Open();
-                if (protect)
-                {
-                    Assert.True(FindInk(conn, "PhoneNumber", guid));
-                    Assert.True(FindInk(conn, "Email", guid));
-                    Assert.True(FindInk(conn, "UserName", guid));
-                    Assert.True(FindInk(conn, "PersonalData1", guid));
-                    Assert.True(FindInk(conn, "PersonalData2", guid));
-                    Assert.True(FindAuthenticatorKeyInk(conn, guid));
-                    Assert.True(FindTokenInk(conn, guid, "loginProvider", "token"));
+                    var guid = Guid.NewGuid().ToString();
+                    var user = new CustomUser();
+                    user.Id = guid;
+                    user.UserName = guid;
+                    IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+                    user.Email = "test@test.com";
+                    user.PersonalData1 = "p1";
+                    user.PersonalData2 = "p2";
+                    user.NonPersonalData1 = "np1";
+                    user.NonPersonalData2 = "np2";
+                    user.SafePersonalData = "safe";
+                    user.PhoneNumber = "12345678";
+                    IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
+
+                    IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
+                    IdentityResultAssert.IsSuccess(await manager.SetAuthenticationTokenAsync(user, "loginProvider", "token", "value"));
+
+                    connection.Open();
+                    if (protect)
+                    {
+                        Assert.True(FindInk(connection, "PhoneNumber", guid));
+                        Assert.True(FindInk(connection, "Email", guid));
+                        Assert.True(FindInk(connection, "UserName", guid));
+                        Assert.True(FindInk(connection, "PersonalData1", guid));
+                        Assert.True(FindInk(connection, "PersonalData2", guid));
+                        Assert.True(FindAuthenticatorKeyInk(connection, guid));
+                        Assert.True(FindTokenInk(connection, guid, "loginProvider", "token"));
+                    }
+                    else
+                    {
+                        Assert.False(FindInk(connection, "PhoneNumber", guid));
+                        Assert.False(FindInk(connection, "Email", guid));
+                        Assert.False(FindInk(connection, "UserName", guid));
+                        Assert.False(FindInk(connection, "PersonalData1", guid));
+                        Assert.False(FindInk(connection, "PersonalData2", guid));
+                        Assert.False(FindAuthenticatorKeyInk(connection, guid));
+                        Assert.False(FindTokenInk(connection, guid, "loginProvider", "token"));
+                    }
+
+                    Assert.False(FindInk(connection, "NonPersonalData1", guid));
+                    Assert.False(FindInk(connection, "NonPersonalData2", guid));
+                    Assert.False(FindInk(connection, "SafePersonalData", guid));
+
+                    connection.Close();
                 }
-                else
-                {
-                    Assert.False(FindInk(conn, "PhoneNumber", guid));
-                    Assert.False(FindInk(conn, "Email", guid));
-                    Assert.False(FindInk(conn, "UserName", guid));
-                    Assert.False(FindInk(conn, "PersonalData1", guid));
-                    Assert.False(FindInk(conn, "PersonalData2", guid));
-                    Assert.False(FindAuthenticatorKeyInk(conn, guid));
-                    Assert.False(FindTokenInk(conn, guid, "loginProvider", "token"));
-                }
-                Assert.False(FindInk(conn, "NonPersonalData1", guid));
-                Assert.False(FindInk(conn, "NonPersonalData2", guid));
-                Assert.False(FindInk(conn, "SafePersonalData", guid));
+            }
+        }
 
-                conn.Close();
+        private class ProtectedIdentityDbContext : IdentityDbContext<CustomUser>
+        {
+            public ProtectedIdentityDbContext(DbContextOptions<ProtectedIdentityDbContext> options)
+                : base(options)
+                {
+                }
+        }
+
+        private class UnprotectedIdentityDbContext : IdentityDbContext<CustomUser>
+        {
+            public UnprotectedIdentityDbContext(DbContextOptions<UnprotectedIdentityDbContext> options)
+                : base(options)
+            {
             }
         }
 
@@ -257,11 +280,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public void ProtectedPersonalDataThrowsOnNonString()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-
             using (var scratch = new ScratchDatabaseFixture())
             {
                 var services = new ServiceCollection().AddLogging();
@@ -271,7 +289,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 })
                     .AddEntityFrameworkStores<IdentityDbContext<CustomUser>>()
                     .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
-                var dbOptions = new DbContextOptionsBuilder().UseSqlServer(scratch.ConnectionString)
+                var dbOptions = new DbContextOptionsBuilder().UseSqlite(scratch.Connection)
                     .UseApplicationServiceProvider(services.BuildServiceProvider())
                     .Options;
                 var dbContext = new IdentityDbContext<InvalidUser>(dbOptions);

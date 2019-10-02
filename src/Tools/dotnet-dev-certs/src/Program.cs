@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue())))
                         {
                             reporter.Error(@"Incompatible set of flags. Sample usages
+'dotnet dev-certs https'
 'dotnet dev-certs https --clean'
 'dotnet dev-certs https --check --trust'
 'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'");
@@ -103,10 +104,10 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 app.HelpOption("-h|--help");
 
                 app.OnExecute(() =>
-                    {
-                        app.ShowHelp();
-                        return Success;
-                    });
+                {
+                    app.ShowHelp();
+                    return Success;
+                });
 
                 return app.Execute(args);
             }
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 }
 
                 manager.CleanupHttpsCertificates();
-                reporter.Verbose("HTTPS development certificates successfully removed from the machine.");
+                reporter.Output("HTTPS development certificates successfully removed from the machine.");
                 return Success;
             }
             catch(Exception e)
@@ -152,12 +153,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             var certificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             if (certificates.Count == 0)
             {
-                reporter.Verbose("No valid certificate found.");
+                reporter.Output("No valid certificate found.");
                 return ErrorNoValidCertificateFound;
             }
             else
             {
-                reporter.Verbose("A valid certificate was found.");
+                reporter.Output("A valid certificate was found.");
             }
 
             if (trust != null && trust.HasValue())
@@ -166,13 +167,13 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
                 if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                 {
-                    reporter.Verbose($@"The following certificates were found, but none of them is trusted:
+                    reporter.Output($@"The following certificates were found, but none of them is trusted:
 {string.Join(Environment.NewLine, certificates.Select(c => $"{c.Subject} - {c.Thumbprint}"))}");
                     return ErrorCertificateNotTrusted;
                 }
                 else
                 {
-                    reporter.Verbose("A trusted certificate was found.");
+                    reporter.Output("A trusted certificate was found.");
                 }
             }
 
@@ -207,7 +208,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 password.HasValue(),
                 password.Value());
 
-            switch (result)
+            reporter.Verbose(string.Join(Environment.NewLine, result.Diagnostics.Messages));
+
+            switch (result.ResultCode)
             {
                 case EnsureCertificateResult.Succeeded:
                     reporter.Output("The HTTPS developer certificate was generated successfully.");

@@ -232,8 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var result = Assert.Single(context.Results);
             var descriptor = Assert.IsType<PageActionDescriptor>(result);
             Assert.Equal(model.RelativePath, descriptor.RelativePath);
-            var actual = Assert.Single(descriptor.EndpointMetadata);
-            Assert.Same(expected, actual);
+            Assert.Single(descriptor.EndpointMetadata, expected);
         }
 
         [Fact]
@@ -372,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
         {
-            return Options.Create(new RazorPagesOptions());
+            return Options.Create(new RazorPagesOptions { Conventions = new PageConventionCollection(Mock.Of<IServiceProvider>()) });
         }
 
         private class TestPageRouteModelProvider : IPageRouteModelProvider

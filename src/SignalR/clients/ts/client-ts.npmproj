@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <!-- The 'build' script for this package just build signalr and signalr-protocol-msgpack, so don't invoke build here. -->
     <IsBuildable>false</IsBuildable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>

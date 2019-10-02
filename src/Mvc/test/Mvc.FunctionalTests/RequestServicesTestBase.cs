@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 // Arrange
                 var requestId = Guid.NewGuid().ToString();
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.TryAddWithoutValidation("RequestId", requestId);
+                request.Headers.TryAddWithoutValidation(HeaderNames.RequestId, requestId);
 
                 // Act
                 var response = await Client.SendAsync(request);
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 var requestId = Guid.NewGuid().ToString();
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.TryAddWithoutValidation("RequestId", requestId);
+                request.Headers.TryAddWithoutValidation(HeaderNames.RequestId, requestId);
 
                 var response = await Client.SendAsync(request);
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Act & Assert
             var requestId1 = "b40f6ec1-8a6b-41c1-b3fe-928f581ebaf5";
             var request1 = new HttpRequestMessage(HttpMethod.Get, url);
-            request1.Headers.TryAddWithoutValidation("RequestId", requestId1);
+            request1.Headers.TryAddWithoutValidation(HeaderNames.RequestId, requestId1);
 
             var response1 = await Client.SendAsync(request1);
 
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             var requestId2 = Guid.NewGuid().ToString();
             var request2 = new HttpRequestMessage(HttpMethod.Get, url);
-            request2.Headers.TryAddWithoutValidation("RequestId", requestId2);
+            request2.Headers.TryAddWithoutValidation(HeaderNames.RequestId, requestId2);
 
             var response2 = await Client.SendAsync(request2);
             Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);

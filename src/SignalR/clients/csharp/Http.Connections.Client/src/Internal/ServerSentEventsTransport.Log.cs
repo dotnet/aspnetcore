@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class ServerSentEventsTransport
+    internal partial class ServerSentEventsTransport
     {
         private static class Log
         {

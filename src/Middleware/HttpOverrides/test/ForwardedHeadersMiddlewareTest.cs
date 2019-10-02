@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -864,6 +865,67 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expectedRemoteIp, context.Connection.RemoteIpAddress.ToString());
+        }
+
+        [Theory]
+        [InlineData(1, "httpa, httpb, httpc", "httpc", "httpa,httpb")]
+        [InlineData(2, "httpa, httpb, httpc", "httpb", "httpa")]
+        public async Task ForwardersWithDIOptionsRunsOnce(int limit, string header, string expectedScheme, string remainingHeader)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.Configure<ForwardedHeadersOptions>(options =>
+                    {
+                        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+                        options.KnownProxies.Clear();
+                        options.KnownNetworks.Clear();
+                        options.ForwardLimit = limit;
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders();
+                    app.UseForwardedHeaders();
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = header;
+            });
+
+            Assert.Equal(expectedScheme, context.Request.Scheme);
+            Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
+        }
+
+        [Theory]
+        [InlineData(1, "httpa, httpb, httpc", "httpb", "httpa")]
+        [InlineData(2, "httpa, httpb, httpc", "httpa", "")]
+        public async Task ForwardersWithDirectOptionsRunsTwice(int limit, string header, string expectedScheme, string remainingHeader)
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    var options = new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                        ForwardLimit = limit,
+                    };
+                    options.KnownProxies.Clear();
+                    options.KnownNetworks.Clear();
+                    app.UseForwardedHeaders(options);
+                    app.UseForwardedHeaders(options);
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = header;
+            });
+
+            Assert.Equal(expectedScheme, context.Request.Scheme);
+            Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
         }
     }
 }

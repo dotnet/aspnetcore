@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     /// <summary>
-    /// The behavior for matching the name of a convention parameter.
+    /// The behavior for matching the type of a convention parameter.
     /// </summary>
     public enum ApiConventionTypeMatchBehavior
     {

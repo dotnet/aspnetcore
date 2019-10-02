@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Performance
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Performance
         [GlobalSetup]
         public void Setup()
         {
-            _server = TestServer.Create(builder => builder.UseMiddleware<PlaintextMiddleware>(), new LoggerFactory()).GetAwaiter().GetResult();
+            _server = TestServer.Create(builder => builder.UseMiddleware<PlaintextMiddleware>(), new LoggerFactory(), new IISServerOptions()).GetAwaiter().GetResult();
             // Recreate client, TestServer.Client has additional logging that can hurt performance
             _client = new HttpClient()
             {

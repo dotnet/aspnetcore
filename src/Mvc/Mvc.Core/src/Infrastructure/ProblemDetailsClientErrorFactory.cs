@@ -2,37 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal class ProblemDetailsClientErrorFactory : IClientErrorFactory
     {
-        private static readonly string TraceIdentifierKey = "traceId";
-        private readonly ApiBehaviorOptions _options;
+        private readonly ProblemDetailsFactory _problemDetailsFactory;
 
-        public ProblemDetailsClientErrorFactory(IOptions<ApiBehaviorOptions> options)
+        public ProblemDetailsClientErrorFactory(ProblemDetailsFactory problemDetailsFactory)
         {
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            _problemDetailsFactory = problemDetailsFactory ?? throw new ArgumentNullException(nameof(problemDetailsFactory));
         }
 
         public IActionResult GetClientError(ActionContext actionContext, IClientErrorActionResult clientError)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Status = clientError.StatusCode,
-                Type = "about:blank",
-            };
-
-            if (clientError.StatusCode is int statusCode &&
-                _options.ClientErrorMapping.TryGetValue(statusCode, out var errorData))
-            {
-                problemDetails.Title = errorData.Title;
-                problemDetails.Type = errorData.Link;
-
-                SetTraceId(actionContext, problemDetails);
-            }
+            var problemDetails = _problemDetailsFactory.CreateProblemDetails(actionContext.HttpContext, clientError.StatusCode);
 
             return new ObjectResult(problemDetails)
             {
@@ -43,12 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     "application/problem+xml",
                 },
             };
-        }
-
-        internal static void SetTraceId(ActionContext actionContext, ProblemDetails problemDetails)
-        {
-            var traceId = Activity.Current?.Id ?? actionContext.HttpContext.TraceIdentifier;
-            problemDetails.Extensions[TraceIdentifierKey] = traceId;
         }
     }
 }

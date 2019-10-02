@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -25,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal abstract partial class IISHttpContext : NativeRequestContext, IDisposable
+    internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
         private const int PauseWriterThreshold = 65536;
@@ -38,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Streams _streams;
 
         private volatile bool _hasResponseStarted;
-        private volatile bool _hasRequestReadingStarted;
 
         private int _statusCode;
         private string _reasonPhrase;
@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
+        protected BadHttpRequestException _requestRejectedException;
+
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IISHttpServer _server;
 
@@ -59,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Task _writeBodyTask;
 
         private bool _wasUpgraded;
-        protected int _requestAborted;
 
         protected Pipe _bodyInputPipe;
         protected OutputProducer _bodyOutput;
@@ -67,7 +68,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
-
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _options = options;
             _server = server;
             _logger = logger;
+
+            ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
 
         public Version HttpVersion { get; set; }
@@ -103,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal WindowsPrincipal WindowsUser { get; set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
+        public PipeWriter ResponsePipeWrapper { get; set; }
 
         protected IAsyncIOEngine AsyncIO { get; set; }
 
@@ -110,6 +113,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public IHeaderDictionary ResponseHeaders { get; set; }
         private HeaderCollection HttpResponseHeaders { get; set; }
         internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+
+        private bool HasStartedConsumingRequestBody { get; set; }
+        public long? MaxRequestBodySize { get; set; }
 
         protected void InitializeContext()
         {
@@ -155,6 +161,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
+            MaxRequestBodySize = _options.MaxRequestBodySize;
+
             ResetFeatureCollection();
 
             if (!_server.IsWebSocketAvailable(_pInProcessHandler))
@@ -180,14 +188,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private string GetOriginalPath()
         {
-            // applicationInitialization request might have trailing \0 character included in the length
-            // check and skip it
             var rawUrlInBytes = GetRawUrlInBytes();
+
+            // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
+            if (rawUrlInBytes.Length == 0)
+            {
+                return GetCookedUrl().GetAbsPath();
+            }
+
+            // ApplicationInitialization request might have trailing \0 character included in the length
+            // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
-                var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
-                Array.Copy(rawUrlInBytes, newRawUrlInBytes, newRawUrlInBytes.Length);
-                rawUrlInBytes = newRawUrlInBytes;
+                rawUrlInBytes = rawUrlInBytes.Slice(0, rawUrlInBytes.Length - 1);
             }
 
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
@@ -254,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // don't leak the exception
                 catch (ConnectionResetException)
                 {
-                    ConnectionReset();
+                    AbortIO(clientDisconnect: true);
                 }
             }
 
@@ -276,9 +289,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private void InitializeRequestIO()
         {
-            Debug.Assert(!_hasRequestReadingStarted);
+            Debug.Assert(!HasStartedConsumingRequestBody);
 
-            _hasRequestReadingStarted = true;
+            if (RequestHeaders.ContentLength > MaxRequestBodySize)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
+
+            HasStartedConsumingRequestBody = true;
 
             EnsureIOInitialized();
 
@@ -302,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         protected Task ProduceEnd()
         {
-            if (_applicationException != null)
+            if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
                 {
@@ -312,6 +330,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 // If the request was rejected, the error state has already been set by SetBadRequestState and
                 // that should take precedence.
+                if (_requestRejectedException != null)
+                {
+                    SetErrorResponseException(_requestRejectedException);
+                }
                 else
                 {
                     // 500 Internal Server Error
@@ -352,9 +374,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             foreach (var headerPair in HttpResponseHeaders)
             {
                 var headerValues = headerPair.Value;
+
+                if (headerPair.Value.Count == 0)
+                {
+                    continue;
+                }
+
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
+                    if (string.IsNullOrEmpty(headerValues[i]))
+                    {
+                        continue;
+                    }
+
                     var isFirst = i == 0;
                     var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                     fixed (byte* pHeaderValue = headerValueBytes)
@@ -455,6 +488,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        public void SetBadRequestState(BadHttpRequestException ex)
+        {
+            Log.ConnectionBadRequest(_logger, RequestConnectionId, ex);
+
+            if (!HasResponseStarted)
+            {
+                SetErrorResponseException(ex);
+            }
+
+            _requestRejectedException = ex;
+        }
+
+        private void SetErrorResponseException(BadHttpRequestException ex)
+        {
+            SetErrorResponseHeaders(ex.StatusCode);
+        }
+
         protected void ReportApplicationError(Exception ex)
         {
             if (_applicationException == null)
@@ -500,7 +550,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     wi.Dispose();
                 }
 
-                _abortedCts?.Dispose();
+                // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
+                CancellationTokenSource localAbortCts = null;
+
+                lock (_abortLock)
+                {
+                    localAbortCts = _abortedCts;
+                    _abortedCts = null;
+                }
+
+                localAbortCts?.Dispose();
 
                 disposedValue = true;
             }
@@ -530,6 +589,40 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
             return null;
+        }
+
+        // Invoked by the thread pool
+        public void Execute()
+        {
+            _ = HandleRequest();
+        }
+
+        private async Task HandleRequest()
+        {
+            bool successfulRequest = false;
+            try
+            {
+                successfulRequest = await ProcessRequestAsync();
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+            }
+            finally
+            {
+                // Post completion after completing the request to resume the state machine
+                PostCompletion(ConvertRequestCompletionResults(successfulRequest));
+
+
+                // Dispose the context
+                Dispose();
+            }
+        }
+
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
+        {
+            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
     }
 }

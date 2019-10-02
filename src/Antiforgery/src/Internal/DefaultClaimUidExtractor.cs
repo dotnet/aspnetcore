@@ -7,12 +7,12 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Default implementation of <see cref="IClaimUidExtractor"/>.
     /// </summary>
-    public class DefaultClaimUidExtractor : IClaimUidExtractor
+    internal class DefaultClaimUidExtractor : IClaimUidExtractor
     {
         private readonly ObjectPool<AntiforgerySerializationContext> _pool;
 

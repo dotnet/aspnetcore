@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -50,12 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             if (!options.SuppressInferBindingSourcesForParameters)
             {
-                var convention = new InferParameterBindingInfoConvention(modelMetadataProvider)
-                {
-                    AllowInferringBindingSourceForCollectionTypesAsFromQuery = options.AllowInferringBindingSourceForCollectionTypesAsFromQuery,
-                };
-
-                ActionModelConventions.Add(convention);
+                ActionModelConventions.Add(new InferParameterBindingInfoConvention(modelMetadataProvider));
             }
         }
 

@@ -8,11 +8,12 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
+
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
 
 namespace FunctionalTests
 {
@@ -26,12 +27,15 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/aspnetcore-internal/issues/2865", FlakyOn.All)]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
-        public async Task RunClientTests()
+        [InlineData("Startup")]
+        [InlineData("StartupWithoutEndpointRouting")]
+        public async Task RunClientTests(string startup)
         {
             using (StartLog(out var loggerFactory))
-            using (var deploymentResult = await CreateDeployments(loggerFactory))
+            using (var deploymentResult = await CreateDeployments(loggerFactory, startup))
             {
                 ProcessStartInfo processStartInfo;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -52,6 +56,9 @@ namespace FunctionalTests
                 }
                 // Disallow the test from downloading \ installing chromium.
                 processStartInfo.Environment["PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"] = "true";
+                processStartInfo.Environment["DESTINATION_PORT"] = deploymentResult.DestinationResult.HttpClient.BaseAddress.Port.ToString();
+                processStartInfo.Environment["ORIGIN_PORT"] = deploymentResult.OriginResult.HttpClient.BaseAddress.Port.ToString();
+                processStartInfo.Environment["SECOND_ORIGIN_PORT"] = deploymentResult.SecondOriginResult.HttpClient.BaseAddress.Port.ToString();
 
                 // Act
                 var result = await ProcessManager.RunProcessAsync(processStartInfo, loggerFactory.CreateLogger("ProcessManager"));
@@ -62,12 +69,12 @@ namespace FunctionalTests
             }
         }
 
-        private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
+        private static async Task<CorsDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
+            // https://github.com/aspnet/AspNetCore/issues/7990
+#pragma warning disable 0618
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
-
-            var runtimeFlavor = GetRuntimeFlavor();
-            var applicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable;
+#pragma warning restore 0618
 
             var configuration =
 #if RELEASE
@@ -76,56 +83,60 @@ namespace FunctionalTests
                 "Debug";
 #endif
 
-            var destinationParameters = new DeploymentParameters
-            {
-                RuntimeFlavor = runtimeFlavor,
-                ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
-                PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
-                Configuration = configuration,
-            };
-
-            var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
-            var destinationDeployment = await destinationFactory.DeployAsync();
-
             var originParameters = new DeploymentParameters
             {
-                RuntimeFlavor = runtimeFlavor,
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleOrigin"),
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestOrigin"),
                 PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
+                ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
             };
 
             var originFactory = ApplicationDeployerFactory.Create(originParameters, loggerFactory);
             var originDeployment = await originFactory.DeployAsync();
 
-            return new SamplesDeploymentResult(originFactory, originDeployment, destinationFactory, destinationDeployment);
+            var secondOriginFactory = ApplicationDeployerFactory.Create(originParameters, loggerFactory);
+            var secondOriginDeployment = await secondOriginFactory.DeployAsync();
+
+            var port = originDeployment.HttpClient.BaseAddress.Port;
+            var destinationParameters = new DeploymentParameters
+            {
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
+                ServerType = ServerType.Kestrel,
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "test", "testassets", "TestDestination"),
+                PublishApplicationBeforeDeployment = false,
+                ApplicationType = ApplicationType.Portable,
+                Configuration = configuration,
+                EnvironmentVariables =
+                {
+                    ["CORS_STARTUP"] = startup,
+                    ["ORIGIN_PORT"] = port.ToString()
+                }
+            };
+
+            var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
+            var destinationDeployment = await destinationFactory.DeployAsync();
+
+            return new CorsDeploymentResult(originFactory, originDeployment, secondOriginFactory, secondOriginDeployment, destinationFactory, destinationDeployment);
         }
 
-        private static RuntimeFlavor GetRuntimeFlavor()
+        private readonly struct CorsDeploymentResult : IDisposable
         {
-#if NET461
-                return RuntimeFlavor.Clr;
-#elif NETCOREAPP2_2
-            return RuntimeFlavor.CoreClr;
-#else
-#error Target frameworks need to be updated
-#endif
-        }
-
-        private readonly struct SamplesDeploymentResult : IDisposable
-        {
-            public SamplesDeploymentResult(
+            public CorsDeploymentResult(
                 ApplicationDeployer originDeployer,
                 DeploymentResult originResult,
+                ApplicationDeployer secondOriginDeployer,
+                DeploymentResult secondOriginResult,
                 ApplicationDeployer destinationDeployer,
                 DeploymentResult destinationResult)
             {
                 OriginDeployer = originDeployer;
                 OriginResult = originResult;
+                SecondOriginDeployer = secondOriginDeployer;
+                SecondOriginResult = secondOriginResult;
                 DestinationDeployer = destinationDeployer;
                 DestinationResult = destinationResult;
             }
@@ -134,6 +145,10 @@ namespace FunctionalTests
 
             public DeploymentResult OriginResult { get; }
 
+            public ApplicationDeployer SecondOriginDeployer { get; }
+
+            public DeploymentResult SecondOriginResult { get; }
+
             public ApplicationDeployer DestinationDeployer { get; }
 
             public DeploymentResult DestinationResult { get; }
@@ -141,6 +156,7 @@ namespace FunctionalTests
             public void Dispose()
             {
                 OriginDeployer.Dispose();
+                SecondOriginDeployer.Dispose();
                 DestinationDeployer.Dispose();
             }
         }

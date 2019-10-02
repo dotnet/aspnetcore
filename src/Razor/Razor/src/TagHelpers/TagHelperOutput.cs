@@ -305,8 +305,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 destination.AppendHtml("<");
                 destination.AppendHtml(TagName);
 
-                // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Attributes.Count; i++)
+                // Perf: Avoid allocating enumerator, cache .Count as it goes via interface
+                var count = Attributes.Count;
+                for (var i = 0; i < count; i++)
                 {
                     var attribute = Attributes[i];
                     destination.AppendHtml(" ");
@@ -356,8 +357,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 destination.AppendHtml("<");
                 destination.AppendHtml(TagName);
 
-                // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Attributes.Count; i++)
+                // Perf: Avoid allocating enumerator, cache .Count as it goes via interface
+                var count = Attributes.Count;
+                for (var i = 0; i < count; i++)
                 {
                     var attribute = Attributes[i];
                     destination.AppendHtml(" ");
@@ -416,8 +418,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 writer.Write("<");
                 writer.Write(TagName);
 
-                // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Attributes.Count; i++)
+                // Perf: Avoid allocating enumerator, cache .Count as it goes via interface
+                var count = Attributes.Count;
+                for (var i = 0; i < count; i++)
                 {
                     var attribute = Attributes[i];
                     writer.Write(" ");

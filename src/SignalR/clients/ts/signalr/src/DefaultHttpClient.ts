@@ -7,11 +7,11 @@ import { ILogger } from "./ILogger";
 import { NodeHttpClient } from "./NodeHttpClient";
 import { XhrHttpClient } from "./XhrHttpClient";
 
-/** Default implementation of {@link @aspnet/signalr.HttpClient}. */
+/** Default implementation of {@link @microsoft/signalr.HttpClient}. */
 export class DefaultHttpClient extends HttpClient {
     private readonly httpClient: HttpClient;
 
-    /** Creates a new instance of the {@link @aspnet/signalr.DefaultHttpClient}, using the provided {@link @aspnet/signalr.ILogger} to log messages. */
+    /** Creates a new instance of the {@link @microsoft/signalr.DefaultHttpClient}, using the provided {@link @microsoft/signalr.ILogger} to log messages. */
     public constructor(logger: ILogger) {
         super();
 

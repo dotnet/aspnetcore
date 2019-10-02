@@ -2,6 +2,7 @@
   "name": "spaservices",
   "version": "1.0.0",
   "description": "This is not really an NPM package and will not be published. This file exists only to reference compilation tools.",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

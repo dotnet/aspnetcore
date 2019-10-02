@@ -135,17 +135,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
             var appPath = Helpers.GetApplicationPath("AutobahnTestApp");
             var configPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Http.config");
-            var targetFramework =
-#if NETCOREAPP2_2
-                "netcoreapp2.2";
-#else
-#error Target frameworks need to be updated
-#endif
             var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 Scheme = (ssl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = targetFramework,
+                TargetFramework = "netcoreapp3.0",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -71,9 +72,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return services.BuildServiceProvider();
         }
 
-        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, ILoggerFactory loggerFactory = null)
+        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, ILoggerFactory loggerFactory = null, Action<ServiceCollection> addServices = null)
         {
-            var serviceProvider = CreateServiceProvider(null, loggerFactory);
+            var serviceProvider = CreateServiceProvider(addServices, loggerFactory);
             return (Connections.ConnectionHandler)serviceProvider.GetService(GetConnectionHandlerType(hubType));
         }
     }
@@ -90,5 +91,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class TrackDispose
     {
         public int DisposeCount = 0;
+    }
+
+    public class AsyncDisposable : IAsyncDisposable
+    {
+        private readonly TrackDispose _trackDispose;
+
+        public AsyncDisposable(TrackDispose trackDispose)
+        {
+            _trackDispose = trackDispose;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _trackDispose.DisposeCount++;
+            return default;
+        }
     }
 }

@@ -13,12 +13,19 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// </summary>
     public sealed class ApiConventionResult
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiConventionResult"/>.
+        /// </summary>
+        /// <param name="responseMetadataProviders">The sequence of <see cref="IApiResponseMetadataProvider"/> that are associated with the action.</param>
         public ApiConventionResult(IReadOnlyList<IApiResponseMetadataProvider> responseMetadataProviders)
         {
             ResponseMetadataProviders = responseMetadataProviders ??
                 throw new ArgumentNullException(nameof(responseMetadataProviders));
         }
 
+        /// <summary>
+        /// Gets the sequence of <see cref="IApiResponseMetadataProvider"/> that are associated with the action.
+        /// </summary>
         public IReadOnlyList<IApiResponseMetadataProvider> ResponseMetadataProviders { get; }
 
         internal static bool TryGetApiConvention(

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private class Address
         {
             [FromHeader(Name = "Header")]
-            [Required]
+            [BindRequired]
             public string Street { get; set; }
         }
 
@@ -33,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_NoData_UsesFullPathAsKeyForModelStateErrors()
         {
             // Arrange
+            var expected = "A value for the 'Header' parameter or property was not provided.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("CustomParameter.Address.Header", key);
             var error = Assert.Single(modelState[key].Errors);
-            Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Street"), error.ErrorMessage);
+            Assert.Equal(expected, error.ErrorMessage);
         }
 
         [Fact]
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = modelType
             };
 
-            Action<HttpRequest> action = r => r.Headers.Add("CustomParameter", new[] { expectedAttemptedValue });
+            void action(HttpRequest r) => r.Headers.Add("CustomParameter", new[] { expectedAttemptedValue });
             var testContext = GetModelBindingTestContext(action);
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 

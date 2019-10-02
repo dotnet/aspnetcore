@@ -7,8 +7,6 @@ using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -149,14 +147,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
             }
 
-            if (selectedFormatter == null)
+            if (selectedFormatter != null)
             {
-                // No formatter supports this.
-                _logger.NoFormatter(context);
-                return null;
+                _logger.FormatterSelected(selectedFormatter, context);
             }
 
-            _logger.FormatterSelected(selectedFormatter, context);
             return selectedFormatter;
         }
 

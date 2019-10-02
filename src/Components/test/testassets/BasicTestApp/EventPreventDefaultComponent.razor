@@ -1,0 +1,39 @@
+<h3>Prevent default</h3>
+
+<p>
+    Currently we don't call <code>preventDefault</code> by default on DOM events in most cases.
+    The one exception is for form submit events: in that case, if you have a C# onsubmit handler,
+    you almost certainly don't really want to perform a server-side post, especially given that
+    it would occur <em>before</em> an async event handler.
+</p>
+<p>
+    Later, it's likely that we'll add a syntax for controlling whether any given event handler
+    triggers a synchronous <code>preventDefault</code> before the event handler runs.
+</p>
+
+<h2>Form with onsubmit handler</h2>
+
+<form action="about:blank" @onsubmit=@(() => { })>
+    <button id="form-1-button" @onclick=HandleClick>Click me</button>
+</form>
+
+<h2>Form without onsubmit handler</h2>
+
+<form action="about:blank">
+    <button id="form-2-button" @onclick=HandleClick>Click me</button>
+</form>
+
+@if (didHandleEvent)
+{
+    <p id="event-handled">Event was handled</p>
+}
+
+@code {
+    bool didHandleEvent;
+
+    async Task HandleClick()
+    {
+        await Task.Delay(250); // To give time for default action if it's going to occur
+        didHandleEvent = true;
+    }
+}

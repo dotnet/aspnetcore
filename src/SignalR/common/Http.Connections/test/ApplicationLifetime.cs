@@ -3,10 +3,11 @@
 
 using System.Threading;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
-    public class TestApplicationLifetime : IApplicationLifetime
+    public class TestApplicationLifetime : IHostApplicationLifetime
     {
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();
@@ -29,8 +30,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
     }
 
-    public class EmptyApplicationLifetime : IApplicationLifetime
-	{
+    public class EmptyApplicationLifetime : IHostApplicationLifetime
+    {
         public CancellationToken ApplicationStarted => CancellationToken.None;
 
         public CancellationToken ApplicationStopping => CancellationToken.None;

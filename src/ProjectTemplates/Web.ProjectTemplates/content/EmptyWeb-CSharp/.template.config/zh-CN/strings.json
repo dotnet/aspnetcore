@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "空",
+    "description": "用于创建 ASP.NET Core 应用程序的空项目模板。此模板中没有任何内容。"
+  }
+}
