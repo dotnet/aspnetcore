@@ -166,9 +166,9 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            return string.Create(length, (this, maxAge), (span, tuple) =>
+            return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
             {
-                var (headerValue, maxAgeValue) = tuple;
+                var (headerValue, maxAgeValue, sameSite) = tuple;
 
                 Append(ref span, headerValue._name);
                 Append(ref span, EqualsToken);
