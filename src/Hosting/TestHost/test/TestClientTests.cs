@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
                 {
-                    if (ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol))
+                    Assert.False(ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol))
                     {
                         // no subprotocols were specified by client but subprotocol header is present
                         return;
