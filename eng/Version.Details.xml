@@ -9,7 +9,7 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.0.0-preview9.19475.4">
+    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.0.0-preview9.19503.2">
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>c606594a0e5ebc36636d36e418ee0e189ce7a012</Sha>
     </Dependency>
