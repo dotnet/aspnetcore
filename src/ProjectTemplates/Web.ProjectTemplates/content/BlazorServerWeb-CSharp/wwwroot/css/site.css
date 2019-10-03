@@ -124,6 +124,7 @@ app {
 }
 
 #error-ui .dismiss {
+    cursor: pointer;
     position: absolute;
     right: 5px;
     top: 2px;
