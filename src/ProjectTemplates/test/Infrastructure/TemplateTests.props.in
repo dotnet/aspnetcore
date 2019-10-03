@@ -12,12 +12,14 @@
   <ItemGroup>
     <KnownFrameworkReference
       Update="Microsoft.NETCore.App"
+      Condition="'%(KnownFrameworkReference.TargetFramework)' == '${DefaultNetCoreTargetFramework}'"
       DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
+      Condition="'%(KnownFrameworkReference.TargetFramework)' == '${DefaultNetCoreTargetFramework}'"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
