@@ -1,6 +1,7 @@
 import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
+import { showErrorNotification } from '../../BootErrors';
 
 const assemblyHandleCache: { [assemblyName: string]: number } = {};
 const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
@@ -233,31 +234,9 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
 
-  const errorUiReloads = document.querySelectorAll<HTMLElement>('#error-ui .reload');
-  errorUiReloads.forEach(reload => {
-    reload.onclick = function (e) {
-      location.reload();
-      e.preventDefault();
-    };
-  });
-
-  let errorUiDismiss = document.querySelectorAll<HTMLElement>('#error-ui .dismiss');
-  errorUiDismiss.forEach(dismiss => {
-    dismiss.onclick = function (e) {
-      const errorUi = document.querySelector<HTMLElement>('#error-ui');
-      if (errorUi) {
-        errorUi.style.display = 'none';
-      }
-      e.preventDefault();
-    };
-  });
-
   module.printErr = line => {
     console.error(`WASM: ${line}`);
-    let errorUi = document.querySelector('#error-ui') as HTMLElement;
-    if (errorUi) {
-      errorUi.style.display = 'block';
-    }
+    showErrorNotification();
   };
   module.preRun = [];
   module.postRun = [];

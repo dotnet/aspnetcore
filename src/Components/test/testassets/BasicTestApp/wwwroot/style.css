@@ -6,6 +6,14 @@
     outline: 1px solid red;
 }
 
+#error-ui {
+    display: none;
+}
+
+    #error-ui dismiss {
+        cursor: pointer;
+    }
+
 .validation-message {
     color: red;
 }

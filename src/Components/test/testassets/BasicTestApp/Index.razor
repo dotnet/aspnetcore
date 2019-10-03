@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Rendering
 <div id="test-selector">
-  Select test:
+    Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
         <option value="none">Choose...</option>
         <option value="BasicTestApp.AddRemoveChildComponents">Add/remove child components</option>
@@ -67,6 +67,7 @@
         <option value="BasicTestApp.SvgWithChildComponent">SVG with child component</option>
         <option value="BasicTestApp.TextOnlyComponent">Plain text</option>
         <option value="BasicTestApp.TouchEventComponent">Touch events</option>
+        <option value="BasicTestApp.ErrorComponent">Error throwing</option>
     </select>
 
     <span id="runtime-info"><code><tt>@System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</tt></code></span>
@@ -81,6 +82,13 @@
 <app>
     @((RenderFragment)RenderSelectedComponent)
 </app>
+
+
+<div id="error-ui">
+    An unhandled error has occurred.
+    <a href class='reload'>Reload</a>
+    <a class='dismiss' style="cursor: pointer;">🗙</a>
+</div>
 
 @code {
     string SelectedComponentTypeName { get; set; } = "none";
