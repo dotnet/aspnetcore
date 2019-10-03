@@ -270,6 +270,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var exceptionDetailProvider = new ExceptionDetailsProvider(
                         hostingEnv.ContentRootFileProvider,
+                        logger,
                         sourceCodeLineCount: 6);
 
                     model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
