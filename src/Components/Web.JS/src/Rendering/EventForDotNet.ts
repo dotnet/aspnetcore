@@ -1,13 +1,19 @@
 export class EventForDotNet<TData extends UIEventArgs> {
-  constructor(public readonly type: EventArgsType, public readonly data: TData) {
+  public constructor(public readonly type: EventArgsType, public readonly data: TData) {
   }
 
-  static fromDOMEvent(event: Event): EventForDotNet<UIEventArgs> {
+  public static fromDOMEvent(event: Event): EventForDotNet<UIEventArgs> {
     const element = event.target as Element;
     switch (event.type) {
 
       case 'input':
       case 'change': {
+
+        if (isTimeBasedInput(element)) {
+          const normalizedValue = normalizeTimeBasedValue(element);
+          return new EventForDotNet<UIChangeEventArgs>('change', { type: event.type, value: normalizedValue });
+        }
+
         const targetIsCheckbox = isCheckbox(element);
         const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
         return new EventForDotNet<UIChangeEventArgs>('change', { type: event.type, value: newValue });
@@ -36,7 +42,7 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'keydown':
       case 'keyup':
       case 'keypress':
-        return new EventForDotNet<UIKeyboardEventArgs>('keyboard', parseKeyboardEvent(<KeyboardEvent>event));
+        return new EventForDotNet<UIKeyboardEventArgs>('keyboard', parseKeyboardEvent(event as KeyboardEvent));
 
       case 'contextmenu':
       case 'click':
@@ -46,10 +52,10 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'mousedown':
       case 'mouseup':
       case 'dblclick':
-        return new EventForDotNet<UIMouseEventArgs>('mouse', parseMouseEvent(<MouseEvent>event));
+        return new EventForDotNet<UIMouseEventArgs>('mouse', parseMouseEvent(event as MouseEvent));
 
       case 'error':
-        return new EventForDotNet<UIErrorEventArgs>('error', parseErrorEvent(<ErrorEvent>event));
+        return new EventForDotNet<UIErrorEventArgs>('error', parseErrorEvent(event as ErrorEvent));
 
       case 'loadstart':
       case 'timeout':
@@ -57,7 +63,7 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'load':
       case 'loadend':
       case 'progress':
-        return new EventForDotNet<UIProgressEventArgs>('progress', parseProgressEvent(<ProgressEvent>event));
+        return new EventForDotNet<UIProgressEventArgs>('progress', parseProgressEvent(event as ProgressEvent));
 
       case 'touchcancel':
       case 'touchend':
@@ -65,7 +71,7 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'touchenter':
       case 'touchleave':
       case 'touchstart':
-        return new EventForDotNet<UITouchEventArgs>('touch', parseTouchEvent(<TouchEvent>event));
+        return new EventForDotNet<UITouchEventArgs>('touch', parseTouchEvent(event as TouchEvent));
 
       case 'gotpointercapture':
       case 'lostpointercapture':
@@ -77,11 +83,11 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'pointerout':
       case 'pointerover':
       case 'pointerup':
-        return new EventForDotNet<UIPointerEventArgs>('pointer', parsePointerEvent(<PointerEvent>event));
+        return new EventForDotNet<UIPointerEventArgs>('pointer', parsePointerEvent(event as PointerEvent));
 
       case 'wheel':
       case 'mousewheel':
-        return new EventForDotNet<UIWheelEventArgs>('wheel', parseWheelEvent(<WheelEvent>event));
+        return new EventForDotNet<UIWheelEventArgs>('wheel', parseWheelEvent(event as WheelEvent));
 
       default:
         return new EventForDotNet<UIEventArgs>('unknown', { type: event.type });
@@ -204,8 +210,38 @@ function parseMouseEvent(event: MouseEvent) {
   };
 }
 
-function isCheckbox(element: Element | null) {
-  return element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
+function isCheckbox(element: Element | null): boolean {
+  return !!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
+}
+
+const timeBasedInputs = [
+  'date',
+  'datetime-local',
+  'month',
+  'time',
+  'week',
+];
+
+function isTimeBasedInput(element: Element): element is HTMLInputElement {
+  return timeBasedInputs.indexOf(element.getAttribute('type')!) !== -1;
+}
+
+function normalizeTimeBasedValue(element: HTMLInputElement): string {
+  const value = element.value;
+  const type = element.type;
+  switch (type) {
+    case 'date':
+    case 'datetime-local':
+    case 'month':
+      return value;
+    case 'time':
+      return value.length === 5 ? value + ':00' : value; // Convert hh:mm to hh:mm:00
+    case 'week':
+      // For now we are not going to normalize input type week as it is not trivial
+      return value;
+  }
+
+  throw new Error(`Invalid element type '${type}'.`);
 }
 
 // The following interfaces must be kept in sync with the UIEventArgs C# classes
