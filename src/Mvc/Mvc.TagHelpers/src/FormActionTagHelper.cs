@@ -179,6 +179,16 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            var url = GetFormActionUrl(context, output);
+
+            if (string.IsNullOrEmpty(url))
+                return;
+
+            output.Attributes.SetAttribute(FormAction, url);
+        }
+
+        protected string GetFormActionUrl(TagHelperContext context, TagHelperOutput output)
+        {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
@@ -190,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             // If "FormAction" is already set, it means the user is attempting to use a normal button or input element.
-            if (output.Attributes.ContainsName(FormAction))
+            if (output.Attributes.TryGetAttribute(FormAction, out var attribute))
             {
                 if (Action != null ||
                     Controller != null ||
@@ -217,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             PageHandlerAttributeName));
                 }
 
-                return;
+                return (string)attribute.Value;
             }
 
             var routeLink = Route != null;
@@ -254,21 +264,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-            string url;
             if (pageLink)
             {
-                url = urlHelper.Page(Page, PageHandler, routeValues, protocol: null, host: null, fragment: Fragment);
+                return urlHelper.Page(Page, PageHandler, routeValues, protocol: null, host: null, fragment: Fragment);
             }
             else if (routeLink)
             {
-                url = urlHelper.RouteUrl(Route, routeValues, protocol: null, host: null, fragment: Fragment);
+                return urlHelper.RouteUrl(Route, routeValues, protocol: null, host: null, fragment: Fragment);
             }
             else
             {
-                url = urlHelper.Action(Action, Controller, routeValues, protocol: null, host: null, fragment: Fragment);
+                return urlHelper.Action(Action, Controller, routeValues, protocol: null, host: null, fragment: Fragment);
             }
-
-            output.Attributes.SetAttribute(FormAction, url);
         }
     }
 }
