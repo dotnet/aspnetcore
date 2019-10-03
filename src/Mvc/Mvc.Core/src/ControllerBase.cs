@@ -1872,7 +1872,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             return new ObjectResult(problemDetails)
             {
-                StatusCode = statusCode ?? 500,
+                StatusCode = problemDetails.Status
             };
         }
 
@@ -1949,7 +1949,10 @@ namespace Microsoft.AspNetCore.Mvc
                 return new BadRequestObjectResult(validationProblem);
             }
 
-            return new ObjectResult(validationProblem);
+            return new ObjectResult(validationProblem)
+            {
+                StatusCode = validationProblem.Status
+            };
         }
 
         /// <summary>

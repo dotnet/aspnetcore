@@ -2311,11 +2311,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             };
 
             // Act
-            var actionResult = controller.ValidationProblem();
+            var actionResult = controller.ValidationProblem() as ObjectResult;
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(400, actionResult.StatusCode);
             Assert.Equal(400, problemDetails.Status);
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
@@ -2346,6 +2347,42 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(title, problemDetails.Title);
             Assert.Equal(type, problemDetails.Type);
             Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_UsesSpecifiedStatusCode()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(statusCode: 405) as ObjectResult;
+
+            // Assert
+            Assert.Equal(405, actionResult.StatusCode);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_StatusCode400_ReturnsBadRequestObjectResultFor2xCompatibility()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(statusCode: 400);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(actionResult);
         }
 
         [Fact]
