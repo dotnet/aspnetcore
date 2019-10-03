@@ -4,6 +4,8 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
+
+    <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
   <ItemGroup>
