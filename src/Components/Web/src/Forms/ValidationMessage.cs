@@ -73,7 +73,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        /// make easy for custom validation style
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
