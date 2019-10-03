@@ -173,12 +173,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
                 {
-                    Assert.False(ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol))
-                    {
-                        // no subprotocols were specified by client but subprotocol header is present
-                        return;
-                    }
-
+                    Assert.False(ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol));
                     var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
                     var receiveArray = new byte[1024];
                     while (true)
