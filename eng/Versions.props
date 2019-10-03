@@ -9,7 +9,6 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
-
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
@@ -30,11 +29,9 @@
       Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them and PatchConfig.props. This also
       gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
     -->
-    <DisableServicingFeatures
-        Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
+    <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
-    <IsServicingBuild
-        Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <IsServicingBuild Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <!-- TargetingPackVersionPrefix is used by projects, like .deb and .rpm, which use slightly different version formats. -->
     <TargetingPackVersionPrefix>$(VersionPrefix)</TargetingPackVersionPrefix>
@@ -174,10 +171,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.1-servicing.19476.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.1-servicing.19476.1</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.1-servicing.19475.6</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.1-servicing.19475.6</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.1-servicing.19475.6</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.1-servicing.19475.6</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.1-servicing.19503.6</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.1-servicing.19503.6</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.1-servicing.19503.6</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.1-servicing.19503.6</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
