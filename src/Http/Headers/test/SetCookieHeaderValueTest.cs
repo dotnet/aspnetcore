@@ -57,7 +57,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     SameSite = SameSiteMode.None,
                 };
-                dataset.Add(header7, "name7=value7");
+                dataset.Add(header7, "name7=value7; samesite=none");
 
 
                 return dataset;
@@ -155,9 +155,20 @@ namespace Microsoft.Net.Http.Headers
                 {
                     SameSite = SameSiteMode.Strict
                 };
-                var string6a = "name6=value6; samesite";
-                var string6b = "name6=value6; samesite=Strict";
-                var string6c = "name6=value6; samesite=invalid";
+                var string6 = "name6=value6; samesite=Strict";
+
+                var header7 = new SetCookieHeaderValue("name7", "value7")
+                {
+                    SameSite = SameSiteMode.None
+                };
+                var string7 = "name7=value7; samesite=None";
+
+                var header8 = new SetCookieHeaderValue("name8", "value8")
+                {
+                    SameSite = (SameSiteMode)(-1) // Unspecified
+                };
+                var string8a = "name8=value8; samesite";
+                var string8b = "name8=value8; samesite=invalid";
 
                 dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
@@ -170,9 +181,10 @@ namespace Microsoft.Net.Http.Headers
                 dataset.Add(new[] { header1, header2, header3, header4 }.ToList(), new[] { string.Join(",", string1, string2, string3, string4) });
                 dataset.Add(new[] { header5 }.ToList(), new[] { string5a });
                 dataset.Add(new[] { header5 }.ToList(), new[] { string5b });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6a });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6b });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6c });
+                dataset.Add(new[] { header6 }.ToList(), new[] { string6 });
+                dataset.Add(new[] { header7 }.ToList(), new[] { string7 });
+                dataset.Add(new[] { header8 }.ToList(), new[] { string8a });
+                dataset.Add(new[] { header8 }.ToList(), new[] { string8b });
 
                 return dataset;
             }
@@ -301,6 +313,28 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(expectedValue, input.ToString());
         }
 
+        [Fact]
+        public void SetCookieHeaderValue_ToString_SameSiteNoneCompat()
+        {
+            SetCookieHeaderValue.SuppressSameSiteNone = true;
+
+            var input = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+
+            Assert.Equal("name=value", input.ToString());
+
+            SetCookieHeaderValue.SuppressSameSiteNone = false;
+
+            var input2 = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+
+            Assert.Equal("name=value; samesite=none", input2.ToString());
+        }
+
         [Theory]
         [MemberData(nameof(SetCookieHeaderDataSet))]
         public void SetCookieHeaderValue_AppendToStringBuilder(SetCookieHeaderValue input, string expectedValue)
@@ -310,6 +344,32 @@ namespace Microsoft.Net.Http.Headers
             input.AppendToStringBuilder(builder);
 
             Assert.Equal(expectedValue, builder.ToString());
+        }
+
+        [Fact]
+        public void SetCookieHeaderValue_AppendToStringBuilder_SameSiteNoneCompat()
+        {
+            SetCookieHeaderValue.SuppressSameSiteNone = true;
+
+            var builder = new StringBuilder();
+            var input = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+
+            input.AppendToStringBuilder(builder);
+            Assert.Equal("name=value", builder.ToString());
+
+            SetCookieHeaderValue.SuppressSameSiteNone = false;
+
+            var builder2 = new StringBuilder();
+            var input2 = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+
+            input2.AppendToStringBuilder(builder2);
+            Assert.Equal("name=value; samesite=none", builder2.ToString());
         }
 
         [Theory]
@@ -322,6 +382,31 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(expectedValue, header.ToString());
         }
 
+        [Fact]
+        public void SetCookieHeaderValue_Parse_AcceptsValidValues_SameSiteNoneCompat()
+        {
+            SetCookieHeaderValue.SuppressSameSiteNone = true;
+            var header = SetCookieHeaderValue.Parse("name=value; samesite=none");
+
+            var cookie = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.Strict,
+            };
+
+            Assert.Equal(cookie, header);
+            Assert.Equal("name=value; samesite=strict", header.ToString());
+            SetCookieHeaderValue.SuppressSameSiteNone = false;
+
+            var header2 = SetCookieHeaderValue.Parse("name=value; samesite=none");
+
+            var cookie2 = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+            Assert.Equal(cookie2, header2);
+            Assert.Equal("name=value; samesite=none", header2.ToString());
+        }
+
         [Theory]
         [MemberData(nameof(SetCookieHeaderDataSet))]
         public void SetCookieHeaderValue_TryParse_AcceptsValidValues(SetCookieHeaderValue cookie, string expectedValue)
@@ -330,6 +415,31 @@ namespace Microsoft.Net.Http.Headers
 
             Assert.Equal(cookie, header);
             Assert.Equal(expectedValue, header.ToString());
+        }
+
+        [Fact]
+        public void SetCookieHeaderValue_TryParse_AcceptsValidValues_SameSiteNoneCompat()
+        {
+            SetCookieHeaderValue.SuppressSameSiteNone = true;
+            Assert.True(SetCookieHeaderValue.TryParse("name=value; samesite=none", out var header));
+            var cookie = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.Strict,
+            };
+
+            Assert.Equal(cookie, header);
+            Assert.Equal("name=value; samesite=strict", header.ToString());
+
+            SetCookieHeaderValue.SuppressSameSiteNone = false;
+
+            Assert.True(SetCookieHeaderValue.TryParse("name=value; samesite=none", out var header2));
+            var cookie2 = new SetCookieHeaderValue("name", "value")
+            {
+                SameSite = SameSiteMode.None,
+            };
+
+            Assert.Equal(cookie2, header2);
+            Assert.Equal("name=value; samesite=none", header2.ToString());
         }
 
         [Theory]
