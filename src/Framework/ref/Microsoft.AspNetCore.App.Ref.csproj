@@ -36,7 +36,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
-    <NoWarn>$(NoWarn);MSB3243</NoWarn>
+    <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
 
     <!-- Platform manifest data -->
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
