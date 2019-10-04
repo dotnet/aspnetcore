@@ -91,7 +91,7 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' == '0' AND '$(DotNetBuildFromSource)' != 'true'">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
