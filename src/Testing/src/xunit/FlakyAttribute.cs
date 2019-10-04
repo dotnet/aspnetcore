@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
     /// to <c>xunit.console.exe</c>. Similarly, it can run only flaky tests using <c>-trait "Flaky:AzP:OS:all=true" -trait "Flaky:AzP:OS:Darwin=true"</c>
     /// </para>
     /// </example>
-    [TraitDiscoverer("Microsoft.AspNetCore.Testing." + nameof(FlakyTestDiscoverer), "Microsoft.AspNetCore.Testing")]
+    [TraitDiscoverer("Microsoft.AspNetCore.Testing." + nameof(FlakyTraitDiscoverer), "Microsoft.AspNetCore.Testing")]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
     public sealed class FlakyAttribute : Attribute, ITraitAttribute
     {
