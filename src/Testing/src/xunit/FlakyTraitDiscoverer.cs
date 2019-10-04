@@ -6,7 +6,7 @@ using Xunit.Sdk;
 // Do not change this namespace without changing the usage in FlakyAttribute
 namespace Microsoft.AspNetCore.Testing
 {
-    public class FlakyTestDiscoverer : ITraitDiscoverer
+    public class FlakyTraitDiscoverer : ITraitDiscoverer
     {
         public IEnumerable<KeyValuePair<string, string>> GetTraits(IAttributeInfo traitAttribute)
         {
