@@ -171,14 +171,26 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="@(RefPackContent)"
           Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
           Condition="'$(IsPackable)' == 'true'">
+    <PropertyGroup>
+      <_TarCommand>tar</_TarCommand>
+      <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">$(RepoRoot).tools\tar.exe</_TarCommand>
+
+      <!-- For the tar packed with git, transform e.g. "C:\root\AspNetCore\File.tar.gz" to "/C/root/AspNetCore/File.tar.gz". -->
+      <_TarArchiveOutputPath>$(TarArchiveOutputPath)</_TarArchiveOutputPath>
+      <_TarArchiveOutputPath
+          Condition="Exists('$(repoRoot)\.tools\tar.fromGit')">/$(TarArchiveOutputPath.Replace('\','/').Replace(':',''))</_TarArchiveOutputPath>
+    </PropertyGroup>
+
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
       DestinationFile="$(ZipArchiveOutputPath)"
       Overwrite="true" />
+
     <!-- Requires Windows 10 version 1803 or newer -->
-    <Exec
-      Command="tar -czf $(TarArchiveOutputPath) ."
-      WorkingDirectory="$(TargetingPackLayoutRoot)" />
+    <Message Importance="High" Text="Executing: $(_TarCommand) -czf $(_TarArchiveOutputPath) ." />
+    <Exec Command="$(_TarCommand) -czf $(_TarArchiveOutputPath) ."
+        WorkingDirectory="$(TargetingPackLayoutRoot)" />
+
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
   </Target>
 

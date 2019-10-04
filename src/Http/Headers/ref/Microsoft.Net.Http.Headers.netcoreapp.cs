@@ -316,6 +316,7 @@ namespace Microsoft.Net.Http.Headers
     }
     public enum SameSiteMode
     {
+        Unspecified = -1,
         None = 0,
         Lax = 1,
         Strict = 2,

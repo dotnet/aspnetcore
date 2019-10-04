@@ -68,9 +68,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var greets = Browser.FindElements(By.CssSelector(".greet-wrapper .greet")).Select(e => e.Text).ToArray();
 
-            Assert.Equal(4, greets.Length); // 1 statically rendered + 3 prerendered
+            Assert.Equal(5, greets.Length); // 1 statically rendered + 3 prerendered + 1 server prerendered
             Assert.Single(greets, "Hello John");
-            Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 prerendered
+            Assert.Single(greets, "Hello Abraham");
+            Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 server prerendered without parameters
             var content = Browser.FindElement(By.Id("test-container")).GetAttribute("innerHTML");
             var markers = ReadMarkers(content);
             var componentSequence = markers.Select(m => m.Item1.PrerenderId != null).ToArray();
@@ -84,6 +85,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 true,
                 false,
                 true,
+                false,
+                true
             };
             Assert.Equal(expectedComponentSequence, componentSequence);
 
@@ -93,6 +96,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Exists(By.CssSelector("h3.interactive"));
             var updatedGreets = Browser.FindElements(By.CssSelector(".greet-wrapper .greet")).Select(e => e.Text).ToArray();
             Assert.Equal(7, updatedGreets.Where(g => string.Equals("Hello Alfred", g)).Count());
+            Assert.Single(updatedGreets.Where(g => string.Equals("Hello Albert", g)));
+            Assert.Single(updatedGreets.Where(g => string.Equals("Hello Abraham", g)));
         }
 
         private (ServerComponentMarker, ServerComponentMarker)[] ReadMarkers(string content)

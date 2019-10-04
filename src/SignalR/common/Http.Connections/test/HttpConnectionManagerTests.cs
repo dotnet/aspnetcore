@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.NotNull(connection.ConnectionId);
 
-                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
                 Assert.Same(newConnection, connection);
             }
         }
@@ -143,13 +143,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-
                 var transport = connection.Transport;
 
                 Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(connection.ConnectionToken);
                 Assert.NotNull(transport);
 
-                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
                 Assert.Same(newConnection, connection);
                 Assert.Same(transport, newConnection.Transport);
             }
@@ -168,12 +168,55 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.NotNull(connection.ConnectionId);
                 Assert.NotNull(transport);
 
-                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
                 Assert.Same(newConnection, connection);
                 Assert.Same(transport, newConnection.Transport);
 
-                connectionManager.RemoveConnection(connection.ConnectionId);
-                Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out newConnection));
+                connectionManager.RemoveConnection(connection.ConnectionToken);
+                Assert.False(connectionManager.TryGetConnection(connection.ConnectionToken, out newConnection));
+            }
+        }
+
+        [Fact]
+        public void ConnectionIdAndConnectionTokenAreTheSameForNegotiateVersionZero()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionManager = CreateConnectionManager(LoggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 0);
+
+                var transport = connection.Transport;
+
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
+
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
+                Assert.Equal(connection.ConnectionId, connection.ConnectionToken);
+
+            }
+        }
+
+        [Fact]
+        public void ConnectionIdAndConnectionTokenAreDifferentForNegotiateVersionOne()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionManager = CreateConnectionManager(LoggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default, negotiateVersion: 1);
+
+                var transport = connection.Transport;
+
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
+
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionToken, out var newConnection));
+                Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out var _));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
+                Assert.NotEqual(connection.ConnectionId, connection.ConnectionToken);
+
             }
         }
 

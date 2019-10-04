@@ -76,6 +76,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task TestingInfrastructure_RedirectHandlerWorksWithInvalidRequestAndContentHeaders()
+        {
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Post, "Testing/RedirectHandler/2")
+            {
+                Content = new ObjectContent<Number>(new Number { Value = 5 }, new JsonMediaTypeFormatter())
+            };
+            request.Headers.Add("X-Pass-Thru", "Some-Value");
+            Assert.True(request.Headers.TryAddWithoutValidation("X-Invalid-Request-Header", "Bearer 1234,5678"));
+            Assert.True(request.Content.Headers.TryAddWithoutValidation("X-Invalid-Content-Header", "Bearer 1234,5678"));
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var xPassThruValue = Assert.Single(response.Headers.GetValues("X-Pass-Thru"));
+            Assert.Equal("Some-Value", xPassThruValue);
+
+            var handlerResponse = await response.Content.ReadAsAsync<RedirectHandlerResponse>();
+            Assert.Equal(5, handlerResponse.Url);
+            Assert.Equal(5, handlerResponse.Body);
+        }
+
+        [Fact]
         public async Task TestingInfrastructure_RedirectHandlerUsesOriginalRequestHeaders()
         {
             // Act

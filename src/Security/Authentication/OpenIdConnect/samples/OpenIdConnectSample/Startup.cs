@@ -32,14 +32,36 @@ namespace OpenIdConnectSample
         public IConfiguration Configuration { get; set; }
         public IWebHostEnvironment Environment { get; }
 
+        private void CheckSameSite(HttpContext httpContext, CookieOptions options)
+        {
+            if (options.SameSite > SameSiteMode.Unspecified)
+            {
+                var userAgent = httpContext.Request.Headers["User-Agent"];
+                // TODO: Use your User Agent library of choice here.
+                if (userAgent.Contains("CPU iPhone OS 12") // Also covers iPod touch
+                    || userAgent.Contains("iPad; CPU OS 12")
+                    // Safari 12 and 13 are both broken on Mojave
+                    || userAgent.Contains("Macintosh; Intel Mac OS X 10_14"))
+                {
+                    options.SameSite = SameSiteMode.Unspecified;
+                }
+            }
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+                options.OnAppendCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                options.OnDeleteCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+            });
+
             services.AddAuthentication(sharedOptions =>
             {
-                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie()
@@ -84,6 +106,7 @@ namespace OpenIdConnectSample
         public void Configure(IApplicationBuilder app, IOptionsMonitor<OpenIdConnectOptions> optionsMonitor)
         {
             app.UseDeveloperExceptionPage();
+            app.UseCookiePolicy(); // Before UseAuthentication or anything else that writes cookies.
             app.UseAuthentication();
 
             app.Run(async context =>

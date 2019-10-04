@@ -172,9 +172,15 @@ namespace Microsoft.AspNetCore.Components.Web
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange", false, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", "value", "value", "onchange", true, "yyyy-MM-dd")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", null, "value", "onchange", true, "yyyy-MM-dd")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("datetime-local", "value", "value", "onchange", true, "yyyy-MM-ddTHH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("datetime-local", null, "value", "onchange", true, "yyyy-MM-ddTHH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("month", "value", "value", "onchange", true, "yyyy-MM")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("month", null, "value", "onchange", true, "yyyy-MM")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", "value", "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", null, "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("time", "value", "value", "onchange", true, "HH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("time", null, "value", "onchange", true, "HH:mm:ss")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange", false, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange", false, null)]
     public static partial class BindAttributes
@@ -408,6 +414,11 @@ namespace Microsoft.AspNetCore.Components.Web
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ProgressEventArgs> Create(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Func<Microsoft.AspNetCore.Components.Web.ProgressEventArgs, System.Threading.Tasks.Task> callback) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.TouchEventArgs> Create(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Func<Microsoft.AspNetCore.Components.Web.TouchEventArgs, System.Threading.Tasks.Task> callback) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.WheelEventArgs> Create(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Func<Microsoft.AspNetCore.Components.Web.WheelEventArgs, System.Threading.Tasks.Task> callback) { throw null; }
+    }
+    public static partial class WebRenderTreeBuilderExtensions
+    {
+        public static void AddEventPreventDefaultAttribute(this Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence, string eventName, bool value) { }
+        public static void AddEventStopPropagationAttribute(this Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence, string eventName, bool value) { }
     }
     public partial class WheelEventArgs : Microsoft.AspNetCore.Components.Web.MouseEventArgs
     {
