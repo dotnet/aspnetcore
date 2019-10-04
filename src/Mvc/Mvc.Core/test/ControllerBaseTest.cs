@@ -2311,12 +2311,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             };
 
             // Act
-            var actionResult = controller.ValidationProblem() as ObjectResult;
+            var actionResult = controller.ValidationProblem();
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            Assert.Equal(400, actionResult.StatusCode);
+            Assert.Equal(400, badRequestResult.StatusCode);
             Assert.Equal(400, problemDetails.Status);
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
@@ -2361,10 +2361,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             };
 
             // Act
-            var actionResult = controller.ValidationProblem(statusCode: 405) as ObjectResult;
+            var actionResult = controller.ValidationProblem(statusCode: 405);
 
             // Assert
-            Assert.Equal(405, actionResult.StatusCode);
+            var objectResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+            Assert.Equal(405, objectResult.StatusCode);
+            Assert.Equal(405, problemDetails.Status);
         }
 
         [Fact]
@@ -2382,7 +2385,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var actionResult = controller.ValidationProblem(statusCode: 400);
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(actionResult);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(400, badRequestResult.StatusCode);
+            Assert.Equal(400, problemDetails.Status);
         }
 
         [Fact]
