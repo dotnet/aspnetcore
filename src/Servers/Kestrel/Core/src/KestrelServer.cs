@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Scheduler = PipeScheduler.ThreadPool,
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
-                UpgradedConnectionCount = GetCounter(serverOptions.Limits.MaxConcurrentConnections),
+                UpgradedConnectionCount = ResourceCounter.Quota(serverOptions.Limits.MaxConcurrentConnections),
                 Heartbeat = heartbeat,
                 ServerOptions = serverOptions,
             };
@@ -199,10 +199,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
             }
         }
-
-        private static ResourceCounter GetCounter(long? number)
-            => number.HasValue
-                ? ResourceCounter.Quota(number.Value)
-                : ResourceCounter.Unlimited;
     }
 }

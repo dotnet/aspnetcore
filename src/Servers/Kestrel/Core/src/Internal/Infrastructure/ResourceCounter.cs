@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public abstract void ReleaseOne();
 
         public static ResourceCounter Unlimited { get; } = new UnlimitedCounter();
-        public static ResourceCounter Quota(long amount) => new FiniteCounter(amount);
+        public static ResourceCounter Quota(long? amount) => amount.HasValue ? new FiniteCounter(amount.Value) : Unlimited;
 
         private class UnlimitedCounter : ResourceCounter
         {
