@@ -124,11 +124,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
       <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
-
-      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
-      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
-      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
-      <RefPackContent Include="$(ReferencePlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
 
     <RepoTasks.GenerateSharedFrameworkDepsFile
@@ -140,6 +135,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RuntimeIdentifier="$(TargetRuntimeIdentifier)"
       RuntimePackageName="$(PackageId)"
       PlatformManifestOutputPath="$(ReferencePlatformManifestOutputPath)" />
+
+    <ItemGroup>
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="GeneratePackageConflictManifest"
