@@ -3,8 +3,14 @@
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Accessor to the <see cref="HttpContext"/>
+    /// </summary>
     public interface IHttpContextAccessor
     {
+        /// <summary>
+        /// Gets or sets the associated <see cref="HttpContext"/>.
+        /// </summary>
         HttpContext HttpContext { get; set; }
     }
 }
