@@ -9,11 +9,13 @@
         <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
+    <icon>packageIcon.png</icon>
   </metadata>
   <files>
     <file src="$OutputBinary$" target="lib\" />
     <file src="$OutputDocumentation$" target="lib\" />
     <file src="$OutputSymbol$" target="lib\" />
+    <file src="$PackageIcon$" target="" />
     <file src="..\..\THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
 </package>

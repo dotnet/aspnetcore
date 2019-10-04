@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "3.0.100-preview8-013656"
+    "version": "3.0.100"
   },
   "tools": {
-    "dotnet": "3.0.100-preview8-013656",
+    "dotnet": "3.0.100",
     "runtimes": {
       "dotnet/x64": [
         "$(MicrosoftNETCoreAppRuntimeVersion)"

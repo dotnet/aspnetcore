@@ -19,6 +19,7 @@
   <ItemGroup>
     <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
     <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 
 </Project>
