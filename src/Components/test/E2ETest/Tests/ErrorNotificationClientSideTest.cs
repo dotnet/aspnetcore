@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -11,6 +12,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
+    [Collection("ErrorNotification")] // When the clientside and serverside tests run together it seems to cause failures, possibly due to connection lose on exception.
     public class ErrorNotificationClientSideTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public ErrorNotificationClientSideTest(
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void ShowsErrorNotificationClientSide_OnError()
+        public void ShowsErroNotification_OnError_Dismiss()
         {
             var errorUi = Browser.FindElement(By.Id("error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
@@ -39,22 +41,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var causeErrorButton = Browser.FindElement(By.TagName("button"));
             causeErrorButton.Click();
 
-            Browser.Exists(By.CssSelector("#error-ui[style='display: block;']"));
+            Browser.Exists(By.CssSelector("#error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
 
             var reload = Browser.FindElement(By.ClassName("reload"));
             reload.Click();
 
-            Browser.MountTestComponent<ErrorComponent>();
-            causeErrorButton = Browser.Exists(By.TagName("button"));
-            errorUi = Browser.FindElement(By.Id("error-ui"));
+            Browser.DoesNotExist(By.TagName("button"));
+        }
+
+        [Fact]
+        public void ShowsErrorNotification_OnError_Reload()
+        {
+            var causeErrorButton = Browser.Exists(By.TagName("button"));
+            var errorUi = Browser.FindElement(By.Id("error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
             causeErrorButton.Click();
-            Assert.Equal("block", errorUi.GetCssValue("display"));
+            Browser.Exists(By.CssSelector("#error-ui[style='display: block;']"));
 
             var dismiss = Browser.FindElement(By.ClassName("dismiss"));
             dismiss.Click();
-            Browser.Exists(By.CssSelector("#error-ui"));
             Browser.Exists(By.CssSelector("#error-ui[style='display: none;']"));
         }
     }
