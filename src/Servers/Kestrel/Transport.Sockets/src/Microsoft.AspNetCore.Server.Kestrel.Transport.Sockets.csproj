@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="http2cat" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Update="SocketsStrings.resx">
       <Generator></Generator>
     </EmbeddedResource>

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client
 {
-    public class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
+    internal class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
     {
         private readonly SocketTransportOptions _options;
         private readonly MemoryPool<byte> _memoryPool;
