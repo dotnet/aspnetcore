@@ -77,15 +77,16 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ManualReferenceAssemblyContent Condition="'$(ContainsManualReferenceAssemblyContent)' == 'true'">
+      <_ManualReferenceAssemblyContent />
+      <_ManualReferenceAssemblyContent Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')">
       <![CDATA[
-    <Compile Include="$(_ManualRefSourceFileName)" Condition="Exists('$(_ManualRefSourceFileName)')" />]]>
-      </ManualReferenceAssemblyContent>
+    <Compile Include="$(_ManualRefSourceFileName)" />]]>
+      </_ManualReferenceAssemblyContent>
 
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
-    <Compile Include="$(_RefSourceFileName)" />]]>$(ManualReferenceAssemblyContent)<![CDATA[
+    <Compile Include="$(_RefSourceFileName)" />]]>$(_ManualReferenceAssemblyContent)<![CDATA[
     @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
   </ItemGroup>
 ]]>

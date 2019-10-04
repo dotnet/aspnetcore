@@ -16,7 +16,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsShippingPackage>false</IsShippingPackage>
-    <ContainsManualReferenceAssemblyContent>true</ContainsManualReferenceAssemblyContent>
   </PropertyGroup>
 
   <ItemGroup>

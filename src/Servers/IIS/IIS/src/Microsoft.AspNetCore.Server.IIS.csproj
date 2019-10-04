@@ -11,7 +11,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
-    <ContainsManualReferenceAssemblyContent>true</ContainsManualReferenceAssemblyContent>
   </PropertyGroup>
 
   <ItemGroup>

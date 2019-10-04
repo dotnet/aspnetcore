@@ -36,7 +36,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
-    <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
+    <!-- We are ignoring MSB3243 warnings since implemenation and reference assemblies are versioned differently. We need both to compose the targeting pack with reference assemblies and xml docs. -->
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages >
 
     <!-- Platform manifest data -->
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
@@ -44,6 +45,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Platform manifest and package override metatdata -->
     <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
+    <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>
     <ReferencePlatformManifestOutputPath>$(ArtifactsObjDir)ref\PlatformManifest.txt</ReferencePlatformManifestOutputPath>
   </PropertyGroup>
 
