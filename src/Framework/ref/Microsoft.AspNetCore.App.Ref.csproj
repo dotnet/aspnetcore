@@ -41,6 +41,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Platform manifest data -->
     <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+
+    <!-- Platform manifest and package override metatdata -->
+    <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>
+    <ReferencePlatformManifestOutputPath>$(ArtifactsObjDir)ref\PlatformManifest.txt</ReferencePlatformManifestOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -122,17 +126,28 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
-      <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(ReferencePlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
+
+    <RepoTasks.GenerateSharedFrameworkDepsFile
+      DepsFilePath="$(ProjectDepsFilePath)"
+      TargetFramework="$(TargetFramework)"
+      FrameworkName="$(TargetingPackName)"
+      FrameworkVersion="$(ReferencePackSharedFxVersion)"
+      References="@(AspNetCoreReferenceAssemblyPath)"
+      RuntimeIdentifier="$(TargetRuntimeIdentifier)"
+      RuntimePackageName="$(PackageId)"
+      PlatformManifestOutputPath="$(ReferencePlatformManifestOutputPath)" />
   </Target>
 
   <Target Name="GeneratePackageConflictManifest"
           DependsOnTargets="ResolveReferences"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
+
     <ItemGroup>
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition=" '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(SharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(ReferencePath.IsReferenceAssembly)' == 'true' " />
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(ReferencePath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
 
     <WriteLinesToFile
