@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
-            if (!ServiceContext.ConnectionManager.UpgradedConnectionCount.TryLockOne())
+            if (!ServiceContext.UpgradedConnectionCount.TryLockOne())
             {
                 throw new InvalidOperationException(CoreStrings.UpgradedConnectionLimitReached);
             }

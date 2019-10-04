@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
             var minRate = new MinDataRate(16384, TimeSpan.FromSeconds(2));
 
             await using (var server = new TestServer(context =>

@@ -30,7 +30,7 @@ namespace System.Threading.Tasks
             }
         }
 
-        public static async Task<bool> TimeoutAfter(this Task task, TimeSpan timeout)
+        public static async Task<bool> ServerTimeoutAfter(this Task task, TimeSpan timeout)
         {
             using var cts = new CancellationTokenSource();
             var delayTask = Task.Delay(timeout, cts.Token);

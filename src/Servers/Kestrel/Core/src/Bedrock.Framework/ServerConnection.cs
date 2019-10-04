@@ -1,21 +1,23 @@
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Bedrock.Framework
 {
-    internal class ServerConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
+    internal class ServerConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature, IReadOnlyList<KeyValuePair<string, object>>
     {
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
 
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
         private bool _completed;
-
+        private string _cachedToString;
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
         public ServerConnection(long id, ConnectionContext connectionContext, ILogger logger)
@@ -145,6 +147,48 @@ namespace Microsoft.AspNetCore.Connections
         public void RequestClose()
         {
             _connectionClosingCts.Cancel();
+        }
+
+        // For logging to get the connection data
+        public KeyValuePair<string, object> this[int index]
+        {
+            get
+            {
+                if (index == 0)
+                {
+                    return new KeyValuePair<string, object>("ConnectionId", TransportConnection.ConnectionId);
+                }
+
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
+        public int Count => 1;
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            for (int i = 0; i < Count; ++i)
+            {
+                yield return this[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            if (_cachedToString == null)
+            {
+                _cachedToString = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "ConnectionId:{0}",
+                    TransportConnection.ConnectionId);
+            }
+
+            return _cachedToString;
         }
     }
 }

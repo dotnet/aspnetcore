@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public static async Task BindAsync(IServerAddressesFeature addresses,
             KestrelServerOptions serverOptions,
             ILogger logger,
-            Func<ListenOptions, Task> createBinding)
+            Func<ListenOptions, Task> bindDelegate)
         {
             var listenOptions = serverOptions.ListenOptions;
             var strategy = CreateStrategy(
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ListenOptions = listenOptions,
                 ServerOptions = serverOptions,
                 Logger = logger,
-                CreateBinding = createBinding
+                BindAsync = bindDelegate
             };
 
             // reset options. The actual used options and addresses will be populated
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             try
             {
-                await context.CreateBinding(endpoint).ConfigureAwait(false);
+                await context.BindAsync(endpoint).ConfigureAwait(false);
             }
             catch (AddressInUseException ex)
             {

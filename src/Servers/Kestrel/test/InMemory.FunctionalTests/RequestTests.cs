@@ -1207,7 +1207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var appEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var delayEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var serviceContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
 
             await using (var server = new TestServer(async context =>
             {

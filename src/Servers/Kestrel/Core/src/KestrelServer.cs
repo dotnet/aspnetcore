@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bedrock.Framework;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private Connections.Server _server;
+        private Bedrock.Framework.Server _server;
 
         public KestrelServer(IOptions<KestrelServerOptions> options, IConnectionListenerFactory transportFactory, ILoggerFactory loggerFactory)
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
@@ -68,11 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var serverOptions = options.Value ?? new KestrelServerOptions();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             var trace = new KestrelTrace(logger);
-            var connectionManager = new ConnectionManager(
-                trace,
-                serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
-            var heartbeatManager = new HeartbeatManager(connectionManager);
+            var heartbeatManager = new HeartbeatManager();
             var dateHeaderValueManager = new DateHeaderValueManager();
             var heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { dateHeaderValueManager, heartbeatManager },
@@ -87,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Scheduler = PipeScheduler.ThreadPool,
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
-                ConnectionManager = connectionManager,
+                UpgradedConnectionCount = GetCounter(serverOptions.Limits.MaxConcurrentConnections),
                 Heartbeat = heartbeat,
                 ServerOptions = serverOptions,
             };
@@ -100,8 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private ServiceContext ServiceContext { get; }
 
         private IKestrelTrace Trace => ServiceContext.Log;
-
-        private ConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -123,9 +119,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                var serverOptions = new ServerOptions(Options.ApplicationServices);
+                var serverBuilder = new ServerBuilder(Options.ApplicationServices);
 
-                Task OnBind(ListenOptions options)
+                Task BindAsync(ListenOptions options)
                 {
                     // Add the connection limit middleware
                     options.UseConnectionLimit(Options, Trace);
@@ -135,14 +131,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                     var connectionDelegate = options.Build();
 
-                    serverOptions.Bindings.Add(new ServerBinding(options.EndPoint, connectionDelegate, _transportFactory));
+                    serverBuilder.Bindings.Add(new ServerBinding(options.EndPoint, connectionDelegate, _transportFactory));
 
                     return Task.CompletedTask;
                 }
 
-                await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
+                await AddressBinder.BindAsync(_serverAddresses, Options, Trace, BindAsync).ConfigureAwait(false);
 
-                _server = new Connections.Server(NullLoggerFactory.Instance, serverOptions);
+                _server = new Bedrock.Framework.Server(serverBuilder);
                 await _server.StartAsync(cancellationToken);
             }
             catch (Exception ex)
@@ -203,5 +199,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
             }
         }
+
+        private static ResourceCounter GetCounter(long? number)
+            => number.HasValue
+                ? ResourceCounter.Quota(number.Value)
+                : ResourceCounter.Unlimited;
     }
 }

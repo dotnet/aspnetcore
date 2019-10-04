@@ -37,7 +37,7 @@ namespace PlaintextApp
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.Listen(IPAddress.Loopback, 0);
+                    options.ListenAnyIP(8005);
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()

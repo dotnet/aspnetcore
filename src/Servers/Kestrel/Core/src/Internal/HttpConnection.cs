@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (_http1Connection?.IsUpgraded == true)
                 {
-                    _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+                    _context.ServiceContext.UpgradedConnectionCount.ReleaseOne();
                 }
             }
         }
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
-            var now = _systemClock.UtcNowUnsynchronized;
+            var now = _systemClock.UtcNow;
             _timeoutControl.Tick(now);
             _requestProcessor.Tick(now);
         }

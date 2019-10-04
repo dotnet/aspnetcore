@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public void InitializeHeartbeat()
         {
-            var heartbeatManager = new HeartbeatManager(ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
             DateHeaderValueManager = new DateHeaderValueManager();
             Heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { DateHeaderValueManager, heartbeatManager },
@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Testing
             MockSystemClock = new MockSystemClock();
             SystemClock = MockSystemClock;
             DateHeaderValueManager = new DateHeaderValueManager();
-            ConnectionManager = new ConnectionManager(Log, ResourceCounter.Unlimited);
             HttpParser = new HttpParser<Http1ParsingHandler>(Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
             {

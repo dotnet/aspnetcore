@@ -4,32 +4,32 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Bedrock.Framework
 {
     public class Server
     {
-        private readonly ServerOptions _serverOptions;
+        private readonly ServerBuilder _builder;
         private readonly ILogger<Server> _logger;
         private readonly List<RunningListener> _listeners = new List<RunningListener>();
         private readonly TaskCompletionSource<object> _shutdownTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TimerAwaitable _timerAwaitable;
         private Task _timerTask = Task.CompletedTask;
 
-        public Server(ILoggerFactory loggerFactory, ServerOptions options)
+        internal Server(ServerBuilder builder)
         {
-            _logger = loggerFactory.CreateLogger<Server>();
-            _serverOptions = options ?? new ServerOptions();
-            _timerAwaitable = new TimerAwaitable(_serverOptions.HeartBeatInterval, _serverOptions.HeartBeatInterval);
+            _logger = builder.ApplicationServices.GetLoggerFactory().CreateLogger<Server>();
+            _builder = builder;
+            _timerAwaitable = new TimerAwaitable(_builder.HeartBeatInterval, _builder.HeartBeatInterval);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            foreach (var binding in _serverOptions.Bindings)
+            foreach (var binding in _builder.Bindings)
             {
                 var listener = await binding.ConnectionListenerFactory.BindAsync(binding.EndPoint, cancellationToken);
-                _logger.LogInformation("Listening on {address}", binding.EndPoint);
                 binding.EndPoint = listener.EndPoint;
 
                 var runningListener = new RunningListener(this, binding.EndPoint, listener, binding.Application);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Connections
 
                     try
                     {
-                        using var scope = BeginConnectionScope(connection);
+                        using var scope = BeginConnectionScope(serverConnection);
 
                         await connectionDelegate(connection);
                     }
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Connections
                     tasks.Add(pair.Value.ExecutionTask);
                 }
 
-                if (!await Task.WhenAll(tasks).TimeoutAfter(_server._serverOptions.GracefulShutdownTimeout))
+                if (!await Task.WhenAll(tasks).ServerTimeoutAfter(_server._builder.ShutdownTimeout))
                 {
                     // Abort all connections still in flight
                     foreach (var pair in _connections)
@@ -205,11 +205,11 @@ namespace Microsoft.AspNetCore.Connections
             }
 
 
-            private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
+            private IDisposable BeginConnectionScope(ServerConnection connection)
             {
                 if (_server._logger.IsEnabled(LogLevel.Critical))
                 {
-                    return _server._logger.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
+                    return _server._logger.BeginScope(connection);
                 }
 
                 return null;

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionAbortedWhenRequestHeadersNotReceivedInTime(string headers)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
 
             await using (var server = CreateServer(testContext))
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RequestHeadersTimeoutCanceledAfterHeadersReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
 
             await using (var server = CreateServer(testContext))
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(string requestLine)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
 
             await using (var server = CreateServer(testContext))
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task TimeoutNotResetOnEachRequestLineCharacterReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
+            var heartbeatManager = new HeartbeatManager();
 
             // Disable response rate, so we can finish the send loop without timing out the response.
             testContext.ServerOptions.Limits.MinResponseDataRate = null;
