@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 Scheduler = PipeScheduler.ThreadPool,
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
-                UpgradedConnectionCount = ResourceCounter.Quota(serverOptions.Limits.MaxConcurrentConnections),
+                UpgradedConnectionCount = ResourceCounter.Quota(serverOptions.Limits.MaxConcurrentUpgradedConnections),
                 Heartbeat = heartbeat,
                 ServerOptions = serverOptions,
             };
