@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bedrock.Framework;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -22,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class ListenOptions : ServerBinding, IConnectionBuilder
     {
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+        private ConnectionDelegate _application;
 
         internal ListenOptions(IPEndPoint endPoint)
         {
@@ -71,6 +71,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
         /// </summary>
         public KestrelServerOptions KestrelServerOptions { get; internal set; }
+
+        public override ConnectionDelegate Application => _application;
 
         /// <summary>
         /// The protocols enabled on this endpoint.
@@ -142,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 app = component(app);
             }
 
-            return Application = app;
+            return _application = app;
         }
 
         internal virtual async Task BindAsync(AddressBindContext context)
@@ -153,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public override async IAsyncEnumerable<IConnectionListener> BindAsync([EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
-            var connectionListener = await ConnectionListenerFactory.BindAsync(EndPoint);
+            var connectionListener = await ConnectionListenerFactory.BindAsync(EndPoint, cancellationToken);
             EndPoint = connectionListener.EndPoint;
             yield return connectionListener;
         }
