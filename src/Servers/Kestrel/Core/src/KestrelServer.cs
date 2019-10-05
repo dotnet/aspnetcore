@@ -16,14 +16,12 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly IConnectionListenerFactory _transportFactory;
 
