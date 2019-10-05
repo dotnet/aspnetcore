@@ -121,25 +121,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 var serverBuilder = new ServerBuilder(Options.ApplicationServices);
 
-                Task BindAsync(ListenOptions options)
+                AddressBinder.ResolveAddresses(_serverAddresses, Options, Trace);
+
+                foreach (var options in Options.ListenOptions)
                 {
-                    // Add the connection limit middleware
                     options.UseConnectionLimit(Options, Trace);
 
-                    // Add the HTTP middleware as the terminal connection middleware
+                    // Add the HTTP middleware
                     options.UseHttpServer(ServiceContext, application, options.Protocols);
 
-                    var connectionDelegate = options.Build();
+                    options.ConnectionListenerFactory = _transportFactory;
 
-                    serverBuilder.Bindings.Add(new ServerBinding(options.EndPoint, connectionDelegate, _transportFactory));
+                    // Build the application
+                    options.Build();
 
-                    return Task.CompletedTask;
+                    serverBuilder.Bindings.Add(options);
                 }
-
-                await AddressBinder.BindAsync(_serverAddresses, Options, Trace, BindAsync).ConfigureAwait(false);
 
                 _server = new Bedrock.Framework.Server(serverBuilder);
                 await _server.StartAsync(cancellationToken);
+
+                foreach (var options in Options.ListenOptions)
+                {
+                    _serverAddresses.Addresses.Add(options.GetDisplayName());
+                }
             }
             catch (Exception ex)
             {

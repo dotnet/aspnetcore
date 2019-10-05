@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -32,6 +36,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);
                 await base.BindAsync(context).ConfigureAwait(false);
             }
+        }
+
+        public override async IAsyncEnumerable<IConnectionListener> BindAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            IConnectionListener connectionListener = null;
+
+            try
+            {
+                connectionListener = await ConnectionListenerFactory.BindAsync(EndPoint, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!(ex is IOException))
+            {
+                // context.Logger.LogDebug(CoreStrings.FormatFallbackToIPv4Any(IPEndPoint.Port));
+
+                // for machines that do not support IPv6
+                EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);
+
+                connectionListener = await ConnectionListenerFactory.BindAsync(EndPoint, cancellationToken).ConfigureAwait(false);
+            }
+
+            EndPoint = connectionListener.EndPoint;
+
+            yield return connectionListener;
         }
     }
 }

@@ -19,6 +19,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBinder
     {
+        public static void ResolveAddresses(IServerAddressesFeature serverAddresses,
+                                            KestrelServerOptions serverOptions,
+                                            IKestrelTrace logger)
+        {
+            var listenOptions = serverOptions.ListenOptions.ToArray();
+            var addresses = serverAddresses.Addresses.ToArray();
+            var preferAddresses = serverAddresses.PreferHostingUrls;
+
+            var hasListenOptions = listenOptions.Length > 0;
+            var hasAddresses = addresses.Length > 0;
+
+            void BindAddresses()
+            {
+                // Clear existing listen options
+                serverOptions.ListenOptions.Clear();
+
+                foreach (var address in addresses)
+                {
+                    var options = ParseAddress(address, out var https);
+                    serverOptions.ApplyEndpointDefaults(options);
+
+                    if (https && !options.IsTls)
+                    {
+                        options.UseHttps();
+                    }
+
+                    serverOptions.ListenOptions.Add(options);
+                }
+            }
+
+            if (preferAddresses && hasAddresses)
+            {
+                if (hasListenOptions)
+                {
+                    var joined = string.Join(", ", addresses);
+                    logger.LogInformation(CoreStrings.OverridingWithPreferHostingUrls, nameof(IServerAddressesFeature.PreferHostingUrls), joined);
+                }
+
+                BindAddresses();
+            }
+            else if (hasListenOptions)
+            {
+                if (hasAddresses)
+                {
+                    var joined = string.Join(", ", addresses);
+                    logger.LogWarning(CoreStrings.OverridingWithKestrelOptions, joined, "UseKestrel()");
+                }
+
+                // This will continue to use the existing endpoints
+            }
+            else if (hasAddresses)
+            {
+                // If no endpoints are configured directly using KestrelServerOptions, use those configured via the IServerAddressesFeature.
+                BindAddresses();
+            }
+            else
+            {
+                // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
+
+                var httpDefault = ParseAddress(Constants.DefaultServerAddress, out _);
+                serverOptions.ApplyEndpointDefaults(httpDefault);
+                serverOptions.ListenOptions.Add(httpDefault);
+
+                // Conditional https default, only if a cert is available
+                var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out _);
+                serverOptions.ApplyEndpointDefaults(httpsDefault);
+
+                if (httpsDefault.IsTls || httpsDefault.TryUseHttps())
+                {
+                    serverOptions.ListenOptions.Add(httpsDefault);
+                    logger.LogDebug(CoreStrings.BindingToDefaultAddresses, Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress);
+                }
+                else
+                {
+                    // No default cert is available, do not bind to the https endpoint.
+                    logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
+                }
+            }
+
+            // We'll resolve these when the final bindings are bound
+            serverAddresses.Addresses.Clear();
+        }
+
         public static async Task BindAsync(IServerAddressesFeature addresses,
             KestrelServerOptions serverOptions,
             ILogger logger,

@@ -5,8 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Bedrock.Framework;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -15,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions : IConnectionBuilder
+    public class ListenOptions : ServerBinding, IConnectionBuilder
     {
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
@@ -40,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         internal EndPoint EndPoint { get; set; }
+
+        internal IConnectionListenerFactory ConnectionListenerFactory { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
@@ -136,13 +142,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 app = component(app);
             }
 
-            return app;
+            return Application = app;
         }
 
         internal virtual async Task BindAsync(AddressBindContext context)
         {
             await AddressBinder.BindEndpointAsync(this, context).ConfigureAwait(false);
             context.Addresses.Add(GetDisplayName());
+        }
+
+        public override async IAsyncEnumerable<IConnectionListener> BindAsync([EnumeratorCancellation]CancellationToken cancellationToken = default)
+        {
+            var connectionListener = await ConnectionListenerFactory.BindAsync(EndPoint);
+            EndPoint = connectionListener.EndPoint;
+            yield return connectionListener;
         }
     }
 }

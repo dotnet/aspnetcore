@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +31,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal override string GetDisplayName()
         {
             return $"{Scheme}://localhost:{IPEndPoint.Port}";
+        }
+
+        public override async IAsyncEnumerable<IConnectionListener> BindAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var exceptions = new List<Exception>();
+
+            IConnectionListener ipv6Listener = null;
+            IConnectionListener ipv4Listener = null;
+
+            try
+            {
+                ipv4Listener = await ConnectionListenerFactory.BindAsync(new IPEndPoint(IPAddress.Loopback, IPEndPoint.Port), cancellationToken);
+            }
+            catch (Exception ex) when (!(ex is IOException))
+            {
+                // context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv4 loopback", ex.Message);
+                exceptions.Add(ex);
+            }
+
+            try
+            {
+                ipv6Listener = await ConnectionListenerFactory.BindAsync(new IPEndPoint(IPAddress.IPv6Loopback, IPEndPoint.Port), cancellationToken);
+            }
+            catch (Exception ex) when (!(ex is IOException))
+            {
+                // context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, GetDisplayName(), "IPv6 loopback", ex.Message);
+                exceptions.Add(ex);
+            }
+
+            if (ipv6Listener != null)
+            {
+                yield return ipv6Listener;
+            }
+
+
+            if (exceptions.Count == 2)
+            {
+                throw new IOException(CoreStrings.FormatAddressBindingFailed(GetDisplayName()), new AggregateException(exceptions));
+            }
+
+            if (ipv4Listener != null)
+            {
+                yield return ipv4Listener;
+            }
         }
 
         internal override async Task BindAsync(AddressBindContext context)

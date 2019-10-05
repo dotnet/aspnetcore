@@ -1,20 +1,14 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 
 namespace Bedrock.Framework
 {
-    public class ServerBinding
+    public abstract class ServerBinding
     {
-        public ServerBinding(EndPoint endPoint, ConnectionDelegate application, IConnectionListenerFactory connectionListenerFactory)
-        {
-            EndPoint = endPoint;
-            Application = application;
-            ConnectionListenerFactory = connectionListenerFactory;
-        }
+        public virtual ConnectionDelegate Application { get; protected set; }
 
-        // Mutable because it can change after binding
-        public EndPoint EndPoint { get; internal set; }
-        public IConnectionListenerFactory ConnectionListenerFactory { get; }
-        public ConnectionDelegate Application { get; }
+        public abstract IAsyncEnumerable<IConnectionListener> BindAsync(CancellationToken cancellationToken = default);
     }
 }

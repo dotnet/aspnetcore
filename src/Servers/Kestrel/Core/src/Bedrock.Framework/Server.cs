@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -29,11 +29,11 @@ namespace Bedrock.Framework
         {
             foreach (var binding in _builder.Bindings)
             {
-                var listener = await binding.ConnectionListenerFactory.BindAsync(binding.EndPoint, cancellationToken);
-                binding.EndPoint = listener.EndPoint;
-
-                var runningListener = new RunningListener(this, binding.EndPoint, listener, binding.Application);
-                _listeners.Add(runningListener);
+                await foreach (var listener in binding.BindAsync(cancellationToken))
+                {
+                    var runningListener = new RunningListener(this, binding, listener);
+                    _listeners.Add(runningListener);
+                }
             }
 
             _timerAwaitable.Start();
@@ -95,11 +95,11 @@ namespace Bedrock.Framework
             private readonly Server _server;
             private readonly ConcurrentDictionary<long, (ServerConnection Connection, Task ExecutionTask)> _connections = new ConcurrentDictionary<long, (ServerConnection, Task)>();
 
-            public RunningListener(Server server, EndPoint endpoint, IConnectionListener listener, ConnectionDelegate connectionDelegate)
+            public RunningListener(Server server, ServerBinding binding, IConnectionListener listener)
             {
                 _server = server;
                 Listener = listener;
-                ExecutionTask = RunListenerAsync(endpoint, listener, connectionDelegate);
+                ExecutionTask = RunListenerAsync(binding.Application, listener);
             }
 
             public IConnectionListener Listener { get; }
@@ -113,7 +113,7 @@ namespace Bedrock.Framework
                 }
             }
 
-            private async Task RunListenerAsync(EndPoint endpoint, IConnectionListener listener, ConnectionDelegate connectionDelegate)
+            private async Task RunListenerAsync(ConnectionDelegate connectionDelegate, IConnectionListener listener)
             {
                 async Task ExecuteConnectionAsync(ServerConnection serverConnection)
                 {
@@ -171,7 +171,7 @@ namespace Bedrock.Framework
                     }
                     catch (Exception ex)
                     {
-                        _server._logger.LogCritical(ex, "Stopped accepting connections on {endpoint}", endpoint);
+                        _server._logger.LogCritical(ex, "Stopped accepting connections on {endpoint}", listener.EndPoint);
                         break;
                     }
 
