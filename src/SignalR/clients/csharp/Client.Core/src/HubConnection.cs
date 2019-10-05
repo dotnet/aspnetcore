@@ -878,7 +878,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
+        private async Task<CloseMessage> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
         {
             Log.ResettingKeepAliveTimer(_logger);
             connectionState.ResetTimeout();
@@ -911,7 +911,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     if (!connectionState.TryGetInvocation(streamItem.InvocationId, out irq))
                     {
                         Log.DroppedStreamMessage(_logger, streamItem.InvocationId);
-                        return (close: false, exception: null);
+                        break;
                     }
                     await DispatchInvocationStreamItemAsync(streamItem, irq);
                     break;
@@ -919,13 +919,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     if (string.IsNullOrEmpty(close.Error))
                     {
                         Log.ReceivedClose(_logger);
-                        return (close: true, exception: null);
                     }
                     else
                     {
                         Log.ReceivedCloseWithError(_logger, close.Error);
-                        return (close: true, exception: new HubException($"The server closed the connection with the following error: {close.Error}"));
                     }
+                    return close;
                 case PingMessage _:
                     Log.ReceivedPing(_logger);
                     // timeout is reset above, on receiving any message
@@ -934,7 +933,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
             }
 
-            return (close: false, exception: null);
+            return null;
         }
 
         private async Task DispatchInvocationAsync(InvocationMessage invocation)
@@ -1150,25 +1149,33 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         {
                             Log.ProcessingMessage(_logger, buffer.Length);
 
-                            var close = false;
+                            CloseMessage closeMessage = null;
 
                             while (_protocol.TryParseMessage(ref buffer, connectionState, out var message))
                             {
-                                Exception exception;
-
                                 // We have data, process it
-                                (close, exception) = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
-                                if (close)
+                                closeMessage = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
+
+                                if (closeMessage != null)
                                 {
                                     // Closing because we got a close frame, possibly with an error in it.
-                                    connectionState.CloseException = exception;
-                                    connectionState.Stopping = true;
+                                    if (closeMessage.Error != null)
+                                    {
+                                        connectionState.CloseException = new HubException($"The server closed the connection with the following error: {closeMessage.Error}");
+                                    }
+
+                                    // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
+                                    if (closeMessage.PreventAutomaticReconnect)
+                                    {
+                                        connectionState.Stopping = true;
+                                    }
+
                                     break;
                                 }
                             }
 
                             // If we're closing stop everything
-                            if (close)
+                            if (closeMessage != null)
                             {
                                 break;
                             }
@@ -1637,6 +1644,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public Exception CloseException { get; set; }
             public CancellationToken UploadStreamToken { get; set; }
 
+            // Indicates the connection is stopping AND the client should NOT attempt to reconnect even if automatic reconnects are enabled.
+            // This means either HubConnection.DisposeAsync/StopAsync was called OR a CloseMessage with AllowAutomaticReconnects set to false was received.
             public bool Stopping
             {
                 get => _stopping;

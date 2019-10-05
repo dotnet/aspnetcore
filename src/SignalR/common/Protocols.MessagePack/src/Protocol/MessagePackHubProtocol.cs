@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 case HubProtocolConstants.PingMessageType:
                     return PingMessage.Instance;
                 case HubProtocolConstants.CloseMessageType:
-                    return CreateCloseMessage(input, ref startOffset);
+                    return CreateCloseMessage(input, ref startOffset, itemCount);
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
                     return null;
@@ -261,10 +261,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
         }
 
-        private static CloseMessage CreateCloseMessage(byte[] input, ref int offset)
+        private static CloseMessage CreateCloseMessage(byte[] input, ref int offset, int itemCount)
         {
             var error = ReadString(input, ref offset, "error");
-            return new CloseMessage(error);
+            var preventAutomaticReconnect = true;
+
+            if (itemCount > 2)
+            {
+                preventAutomaticReconnect = ReadBoolean(input, ref offset, "preventReconnect");
+            }
+
+            // An empty string is still an error
+            if (error == null && preventAutomaticReconnect)
+            {
+                return CloseMessage.Empty;
+            }
+
+            return new CloseMessage(error, preventAutomaticReconnect);
         }
 
         private static Dictionary<string, string> ReadHeaders(byte[] input, ref int offset)
@@ -533,7 +546,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private void WriteCloseMessage(CloseMessage message, Stream packer)
         {
-            MessagePackBinary.WriteArrayHeader(packer, 2);
+            MessagePackBinary.WriteArrayHeader(packer, 3);
             MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CloseMessageType);
             if (string.IsNullOrEmpty(message.Error))
             {
@@ -543,6 +556,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 MessagePackBinary.WriteString(packer, message.Error);
             }
+
+            MessagePackBinary.WriteBoolean(packer, message.PreventAutomaticReconnect);
         }
 
         private void WritePingMessage(PingMessage pingMessage, Stream packer)
@@ -574,6 +589,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static string ReadInvocationId(byte[] input, ref int offset)
         {
             return ReadString(input, ref offset, "invocationId");
+        }
+
+        private static bool ReadBoolean(byte[] input, ref int offset, string field)
+        {
+            Exception msgPackException = null;
+            try
+            {
+                var readBool = MessagePackBinary.ReadBoolean(input, offset, out var readSize);
+                offset += readSize;
+                return readBool;
+            }
+            catch (Exception e)
+            {
+                msgPackException = e;
+            }
+
+            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static int ReadInt32(byte[] input, ref int offset, string field)

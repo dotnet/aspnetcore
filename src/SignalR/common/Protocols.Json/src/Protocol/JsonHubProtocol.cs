@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
         private const string ErrorPropertyName = "error";
         private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
+        private const string PreventAutomaticReconnectPropertyName = "preventReconnect";
+        private static JsonEncodedText PreventAutomaticReconnectPropertyNameBytes = JsonEncodedText.Encode(PreventAutomaticReconnectPropertyName);
         private const string TargetPropertyName = "target";
         private static JsonEncodedText TargetPropertyNameBytes = JsonEncodedText.Encode(TargetPropertyName);
         private const string ArgumentsPropertyName = "arguments";
@@ -132,6 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
+                var preventAutomaticReconnect = true;
 
                 var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -185,6 +188,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
+                            }
+                            else if (reader.ValueTextEquals(PreventAutomaticReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                            {
+                                preventAutomaticReconnect = reader.ReadAsBoolean(PreventAutomaticReconnectPropertyName);
                             }
                             else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -372,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error);
+                        return BindCloseMessage(error, preventAutomaticReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -543,6 +550,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             if (message.Error != null)
             {
                 writer.WriteString(ErrorPropertyNameBytes, message.Error);
+            }
+
+            if (!message.PreventAutomaticReconnect)
+            {
+                writer.WriteBoolean(PreventAutomaticReconnectPropertyNameBytes, false);
             }
         }
 
@@ -722,16 +734,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return arguments ?? Array.Empty<object>();
         }
 
-        private CloseMessage BindCloseMessage(string error)
+        private CloseMessage BindCloseMessage(string error, bool preventAutomaticReconnect)
         {
             // An empty string is still an error
-            if (error == null)
+            if (error == null && preventAutomaticReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            var message = new CloseMessage(error);
-            return message;
+            return new CloseMessage(error, preventAutomaticReconnect);
         }
 
         private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string> headers)
