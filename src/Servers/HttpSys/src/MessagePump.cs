@@ -106,12 +106,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 UpdateUrlPrefixes(serverAddressCopy);
             }
-            else
+            else if (Listener.RequestQueue.Created)
             {
                 LogHelper.LogDebug(_logger, $"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
 
                 Listener.Options.UrlPrefixes.Add(Constants.DefaultServerAddress);
             }
+            // else // Attaching to an existing queue, don't add a default.
 
             // Can't call Start twice
             Contract.Assert(_application == null);

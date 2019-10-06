@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     var count = Descriptors.Count;
                     for (var i = 0; i < count; i++)
                     {
-                        var (componentType, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, sequence.ToString());
+                        var (componentType, parameters, sequence) = Descriptors[i];
+                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString());
                     }
 
                     Log.InitializationSucceeded(_logger);
