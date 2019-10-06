@@ -161,10 +161,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-alpha1.19505.5</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-alpha1.19505.5</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-alpha1.19504.4</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-alpha1.19504.4</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-alpha1.19504.4</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.0-alpha1.19504.4</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-alpha1.19505.7</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-alpha1.19505.7</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-alpha1.19505.7</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.0-alpha1.19505.7</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
