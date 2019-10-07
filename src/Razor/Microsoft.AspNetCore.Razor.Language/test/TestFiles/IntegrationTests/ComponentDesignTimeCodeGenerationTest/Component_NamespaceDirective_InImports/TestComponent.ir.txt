@@ -7,7 +7,7 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         UsingDirective - (1:0,1 [17] x:\dir\subdir\Test\_Imports.razor) - System.Text
         UsingDirective - (21:1,1 [23] x:\dir\subdir\Test\_Imports.razor) - System.Reflection
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
                 DirectiveToken - (57:2,11 [8] x:\dir\subdir\Test\_Imports.razor) - New.Test
             CSharpCode - 

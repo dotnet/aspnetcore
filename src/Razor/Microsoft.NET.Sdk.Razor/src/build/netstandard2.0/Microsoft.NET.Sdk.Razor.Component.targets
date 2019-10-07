@@ -123,10 +123,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="@(_RazorComponentDeclaration)" />
     </ItemGroup>
-
-    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
-      <Compile Include="@(_RazorComponentDeclaration)" />
-    </ItemGroup>
   </Target>
 
   <Target
@@ -198,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          EmitDebugInformation="$(DebugSymbols)"
          EnvironmentVariables="$(CscEnvironment)"
          ErrorEndLocation="$(ErrorEndLocation)"
-         ErrorLog="$(ErrorLog)"
+         ErrorLog="$(RazorComponentErrorLog)"
          ErrorReport="$(ErrorReport)"
          Features="$(Features)"
          FileAlignment="$(FileAlignment)"
@@ -265,10 +261,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <!-- 
+  <!--
     Once RazorCompileComponentDeclaration is completed, we have all the inputs required for code generation of
     RazorComponents and RazorGenerate items. We'll initialize the inputs for RazorGenerate and invoke it.
-    This should result in RazorGenerate \ RazorTagHelper targets no-oping when it get invoked as 
+    This should result in RazorGenerate \ RazorTagHelper targets no-oping when it get invoked as
     part of PrepareForRun \ PrepareForPublish for non-components (.cshtml) files.
    -->
   <Target

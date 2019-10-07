@@ -15,7 +15,7 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                     MarkupTextLiteral - [29..34)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [35..36)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [35..36)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [36..53)::17
                         MarkupDynamicAttributeValue - [36..49)::13 - [@DateTime.Now]
@@ -40,7 +40,7 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                                 Whitespace;[ ];
                             MarkupTextLiteral - [52..53)::1 - [1] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[1];
-                    MarkupTextLiteral - [53..54)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [53..54)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMinimizedTagHelperAttribute - [54..78)::24 - bound-required-string - Minimized - Bound - [   bound-required-string]
                     MarkupTextLiteral - [54..57)::3 - [   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -53,7 +53,7 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                     MarkupTextLiteral - [79..84)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [85..86)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [85..86)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [86..103)::17
                         MarkupDynamicAttributeValue - [86..99)::13 - [@DateTime.Now]
@@ -78,7 +78,7 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                                 Whitespace;[ ];
                             MarkupTextLiteral - [102..103)::1 - [1] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[1];
-                    MarkupTextLiteral - [103..104)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [103..104)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMinimizedTagHelperAttribute - [104..122)::18 - unbound-required - Minimized - Unbound - [  unbound-required]
                     MarkupTextLiteral - [104..106)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any

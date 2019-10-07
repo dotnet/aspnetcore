@@ -21,13 +21,13 @@ RazorDocument - [0..51)::51 - [@{<foo bar="baz"><biz><boz zoop=zork/></biz></foo
                                         MarkupTextLiteral - [7..10)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[bar];
                                         Equals;[=];
-                                        MarkupTextLiteral - [11..12)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [11..12)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                         GenericBlock - [12..15)::3
                                             MarkupLiteralAttributeValue - [12..15)::3 - [baz]
                                                 MarkupTextLiteral - [12..15)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[baz];
-                                        MarkupTextLiteral - [15..16)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [15..16)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                     CloseAngle;[>];
                                 MarkupElement - [17..44)::27
@@ -47,7 +47,7 @@ RazorDocument - [0..51)::51 - [@{<foo bar="baz"><biz><boz zoop=zork/></biz></foo
                                                 Equals;[=];
                                                 GenericBlock - [32..36)::4
                                                     MarkupLiteralAttributeValue - [32..36)::4 - [zork]
-                                                        MarkupTextLiteral - [32..36)::4 - [zork] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                        MarkupTextLiteral - [32..36)::4 - [zork] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                             Text;[zork];
                                             ForwardSlash;[/];
                                             CloseAngle;[>];

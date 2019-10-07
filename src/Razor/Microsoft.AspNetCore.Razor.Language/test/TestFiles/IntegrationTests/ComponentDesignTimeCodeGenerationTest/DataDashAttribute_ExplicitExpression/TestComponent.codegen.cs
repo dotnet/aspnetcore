@@ -8,7 +8,7 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -22,7 +22,7 @@ namespace Test
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-   
+  
   var myValue = "Expression value";
 
 #line default

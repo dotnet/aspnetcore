@@ -29,7 +29,7 @@ RazorDocument - [0..44)::44 - [@section s {<span foo='@DateTime.Now @@' />}]
                                         MarkupTextLiteral - [18..21)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[foo];
                                         Equals;[=];
-                                        MarkupTextLiteral - [22..23)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [22..23)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [23..39)::16
                                             MarkupDynamicAttributeValue - [23..36)::13 - [@DateTime.Now]
@@ -50,7 +50,7 @@ RazorDocument - [0..44)::44 - [@section s {<span foo='@DateTime.Now @@' />}]
                                                     Transition;[@];
                                                 MarkupEphemeralTextLiteral - [38..39)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                                     Transition;[@];
-                                        MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [39..40)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [40..41)::1
                                         MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

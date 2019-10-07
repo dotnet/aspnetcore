@@ -48,20 +48,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!--
-    For now we need to treat component files as if they have a single file generator. This will allow us
-    to trigger a workspace update for the declaration files when they change.
-  -->
-  <ItemGroup>
-    <Content Update="**\*.razor">
-      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
-    </Content>
-
-    <Content Update="$(_RazorComponentInclude)">
-      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
-    </Content>
-  </ItemGroup>
-
-  <!--
     WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.
     Conditinally import these capabilities if the project isn't targeting the WebSdk.
    -->

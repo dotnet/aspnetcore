@@ -1,7 +1,7 @@
 RazorDocument - [0..14)::14 - [<p class=></p>]
     MarkupBlock - [0..14)::14
         MarkupTagHelperElement - [0..14)::14 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..10)::10 - [<p class=>] - Gen<None> - SpanEditHandler;Accepts:Any
+            MarkupTagHelperStartTag - [0..10)::10 - [<p class=>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[p];
                 MarkupTagHelperAttribute - [2..9)::7 - class - DoubleQuotes - Unbound - [ class=]

@@ -10,7 +10,7 @@ RazorDocument - [0..43)::43 - [<script type='text/html'><input /></script>]
                     MarkupTextLiteral - [8..12)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [14..23)::9
                         MarkupLiteralAttributeValue - [14..23)::9 - [text/html]
@@ -18,7 +18,7 @@ RazorDocument - [0..43)::43 - [<script type='text/html'><input /></script>]
                                 Text;[text];
                                 ForwardSlash;[/];
                                 Text;[html];
-                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTagHelperElement - [25..34)::9 - input[SelfClosing] - inputtaghelper

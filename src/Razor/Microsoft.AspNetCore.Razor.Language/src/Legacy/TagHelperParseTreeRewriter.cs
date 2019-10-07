@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (startTag != null)
                 {
                     var tagName = startTag.GetTagNameWithOptionalBang();
-                    if (TryRewriteTagHelperStart(startTag, out tagHelperStart, out tagHelperInfo))
+                    if (TryRewriteTagHelperStart(startTag, node.EndTag, out tagHelperStart, out tagHelperInfo))
                     {
                         // This is a tag helper.
                         if (tagHelperInfo.TagMode == TagMode.SelfClosing || tagHelperInfo.TagMode == TagMode.StartTagOnly)
@@ -215,7 +215,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return base.VisitMarkupTextLiteral(node);
             }
 
-            private bool TryRewriteTagHelperStart(MarkupStartTagSyntax startTag, out MarkupTagHelperStartTagSyntax rewritten, out TagHelperInfo tagHelperInfo)
+            private bool TryRewriteTagHelperStart(
+                MarkupStartTagSyntax startTag,
+                MarkupEndTagSyntax endTag,
+                out MarkupTagHelperStartTagSyntax rewritten,
+                out TagHelperInfo tagHelperInfo)
             {
                 rewritten = null;
                 tagHelperInfo = null;
@@ -278,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     _errorSink,
                     _source);
 
-                var tagMode = TagHelperBlockRewriter.GetTagMode(startTag, tagHelperBinding, _errorSink);
+                var tagMode = TagHelperBlockRewriter.GetTagMode(startTag, endTag, tagHelperBinding);
                 tagHelperInfo = new TagHelperInfo(tagName, tagMode, tagHelperBinding);
                 rewritten = rewrittenStartTag;
 

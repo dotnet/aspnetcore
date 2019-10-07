@@ -11,7 +11,7 @@ RazorDocument - [0..38)::38 - [<!p class='btn1 btn2' class2=btn></!p>]
                     MarkupTextLiteral - [4..9)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [11..20)::9
                         MarkupLiteralAttributeValue - [11..15)::4 - [btn1]
@@ -22,7 +22,7 @@ RazorDocument - [0..38)::38 - [<!p class='btn1 btn2' class2=btn></!p>]
                                 Whitespace;[ ];
                             MarkupTextLiteral - [16..20)::4 - [btn2] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[btn2];
-                    MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [21..32)::11 - [ class2=btn]
                     MarkupTextLiteral - [21..22)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -32,7 +32,7 @@ RazorDocument - [0..38)::38 - [<!p class='btn1 btn2' class2=btn></!p>]
                     Equals;[=];
                     GenericBlock - [29..32)::3
                         MarkupLiteralAttributeValue - [29..32)::3 - [btn]
-                            MarkupTextLiteral - [29..32)::3 - [btn] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [29..32)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
                 CloseAngle;[>];
             MarkupEndTag - [33..38)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

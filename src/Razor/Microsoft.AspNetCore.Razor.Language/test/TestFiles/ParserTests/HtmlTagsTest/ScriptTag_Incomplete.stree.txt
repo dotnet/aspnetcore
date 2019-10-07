@@ -1,7 +1,7 @@
 RazorDocument - [0..13)::13 - [<script type=]
     MarkupBlock - [0..13)::13
         MarkupElement - [0..13)::13
-            MarkupStartTag - [0..13)::13 - [<script type=] - Gen<None> - SpanEditHandler;Accepts:Any
+            MarkupStartTag - [0..13)::13 - [<script type=] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[script];
                 MarkupAttributeBlock - [7..13)::6 - [ type=]

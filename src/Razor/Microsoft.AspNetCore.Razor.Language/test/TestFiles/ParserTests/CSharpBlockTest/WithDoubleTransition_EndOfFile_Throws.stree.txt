@@ -21,7 +21,7 @@ RazorDocument - [0..15)::15 - [@{<span foo='@@]
                                         MarkupTextLiteral - [8..11)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[foo];
                                         Equals;[=];
-                                        MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [13..15)::2
                                             MarkupBlock - [13..15)::2

@@ -7,7 +7,7 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         RouteAttributeExtensionNode -  - /MyPage
         RouteAttributeExtensionNode -  - /AnotherRoute/{id}
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
                 DirectiveToken - (6:0,6 [9] x:\dir\subdir\Test\TestComponent.cshtml) - "/MyPage"
                 DirectiveToken - (23:1,6 [20] x:\dir\subdir\Test\TestComponent.cshtml) - "/AnotherRoute/{id}"

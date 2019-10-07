@@ -42,7 +42,7 @@ RazorDocument - [0..75)::75 - [@{ var foo = bar; Html.ExecuteTemplate(foo, @<p f
                                             MarkupTextLiteral - [48..51)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 Text;[foo];
                                             Equals;[=];
-                                            MarkupTextLiteral - [52..53)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            MarkupTextLiteral - [52..53)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 SingleQuote;['];
                                             GenericBlock - [53..55)::2
                                                 MarkupBlock - [53..55)::2
@@ -50,7 +50,7 @@ RazorDocument - [0..75)::75 - [@{ var foo = bar; Html.ExecuteTemplate(foo, @<p f
                                                         Transition;[@];
                                                     MarkupEphemeralTextLiteral - [54..55)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                                         Transition;[@];
-                                            MarkupTextLiteral - [55..56)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            MarkupTextLiteral - [55..56)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                 SingleQuote;['];
                                         CloseAngle;[>];
                                     MarkupTextLiteral - [57..62)::5 - [Foo #] - Gen<Markup> - SpanEditHandler;Accepts:Any

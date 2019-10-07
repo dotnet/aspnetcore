@@ -7,7 +7,7 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         UsingDirective - (1:0,1 [32] x:\dir\subdir\Test\TestComponent.cshtml) - static Test2.SomeComponent
         UsingDirective - (36:1,1 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Foo = Test3
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
