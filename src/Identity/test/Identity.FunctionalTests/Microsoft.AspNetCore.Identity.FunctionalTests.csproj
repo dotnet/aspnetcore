@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
+    <ProjectReference Include="..\..\testassets\Identity.DefaultUI.Globbing\Identity.DefaultUI.Globbing.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />

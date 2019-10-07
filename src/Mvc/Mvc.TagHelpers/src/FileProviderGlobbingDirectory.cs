@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private readonly IFileInfo _fileInfo;
         private readonly FileProviderGlobbingDirectory _parent;
         private readonly bool _isRoot;
+        private string _relativePath;
 
         public FileProviderGlobbingDirectory(
             IFileProvider fileProvider,
@@ -48,7 +49,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
         }
 
-        public string RelativePath { get; }
+        public string RelativePath {
+            // We have to do this because some file providers will fail if givien a path that doesn't start with "/"
+            get
+            {
+                return _relativePath.StartsWith("/") ? _relativePath : "/" + _relativePath;    
+            }
+            set
+            {
+                _relativePath = value;
+            }
+        }
 
         public override string FullName
         {
