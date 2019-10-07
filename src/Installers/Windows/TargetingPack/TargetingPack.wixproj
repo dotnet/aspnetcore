@@ -9,6 +9,7 @@
     <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <IsShipping>true</IsShipping>
+    <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>

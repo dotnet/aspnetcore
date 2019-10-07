@@ -49,7 +49,9 @@
 
     <!-- Build SharedFx Bundle Deb package -->
 
-    <Exec Command="$(DebianBuildScript) -i '$(IntermediateOutputPath)' -o '$(IntermediateOutputPath)out/' -C '$(PackageContentRoot)'" />
+    <Exec 
+      Condition="'$(IsTargetingPackBuilding)' != 'false'"
+      Command="$(DebianBuildScript) -i '$(IntermediateOutputPath)' -o '$(IntermediateOutputPath)out/' -C '$(PackageContentRoot)'" />
 
     <PropertyGroup>
       <BuildScriptOutputFileName>$(PackageId)_$(DebPackageVersion)-$(PackageRevision)_$(DebianPackageArch).deb</BuildScriptOutputFileName>
