@@ -174,6 +174,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
             Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
+            // long
+            input = Browser.FindElement(By.Id("inputnumber_long"));
+            display = Browser.FindElement(By.Id("inputnumber_long_value"));
+            Browser.Equal(4200.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(4200.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            input.Clear();
+            input.SendKeys(90000000000.ToString(CultureInfo.InvariantCulture));
+            input.SendKeys("\t");
+            Browser.Equal(90000000000.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(90000000000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
             // decimal
             input = Browser.FindElement(By.Id("inputnumber_decimal"));
             display = Browser.FindElement(By.Id("inputnumber_decimal_value"));
