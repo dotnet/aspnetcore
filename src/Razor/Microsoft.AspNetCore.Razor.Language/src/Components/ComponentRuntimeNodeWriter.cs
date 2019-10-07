@@ -509,10 +509,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
+            var addAttributeMethod = node.Annotations[ComponentMetadata.Common.AddAttributeMethodName] as string ?? ComponentsApi.RenderTreeBuilder.AddAttribute;
+
             // _builder.AddAttribute(1, "Foo", 42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
-            context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.AddAttribute);
+            context.CodeWriter.Write(addAttributeMethod);
             context.CodeWriter.Write("(");
             context.CodeWriter.Write((_sourceSequence++).ToString());
             context.CodeWriter.Write(", ");

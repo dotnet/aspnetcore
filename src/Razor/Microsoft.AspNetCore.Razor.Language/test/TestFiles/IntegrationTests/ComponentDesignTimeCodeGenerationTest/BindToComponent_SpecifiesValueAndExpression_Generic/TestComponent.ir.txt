@@ -15,13 +15,13 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [45] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - SomeParam - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - SomeParamChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
-                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamExpression - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamExpression - SomeParamExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
                 HtmlContent - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml)

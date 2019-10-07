@@ -8,12 +8,12 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [93] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute -  - AttributeBefore - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - AttributeBefore -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (30:0,30 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (30:0,30 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     Splat - (51:0,51 [15] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (52:0,52 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - someAttributes
-                    ComponentAttribute -  - AttributeAfter - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - AttributeAfter -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (84:0,84 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (84:0,84 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
             CSharpCode - (104:2,7 [93] x:\dir\subdir\Test\TestComponent.cshtml)

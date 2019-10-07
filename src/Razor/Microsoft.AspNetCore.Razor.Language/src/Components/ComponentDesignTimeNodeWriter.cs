@@ -700,10 +700,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
+            static bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
             {
-                return n.BoundAttribute != null && !n.BoundAttribute.IsWeaklyTyped();
-            }   
+                // Weakly typed attributes will have their TypeName set to null.
+                return n.BoundAttribute != null && n.TypeName != null;
+            }
         }
 
         private IReadOnlyList<IntermediateToken> GetCSharpTokens(IntermediateNode node)

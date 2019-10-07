@@ -13,7 +13,7 @@ Document -
                             IntermediateToken - (46:0,46 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
                         MarkupBlock -  - <el>further</el> content\n
                     ReferenceCapture - (19:0,19 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
-                    ComponentAttribute -  - SomeProp - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - SomeProp -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (41:0,41 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (41:0,41 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
             CSharpCode - (108:4,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)

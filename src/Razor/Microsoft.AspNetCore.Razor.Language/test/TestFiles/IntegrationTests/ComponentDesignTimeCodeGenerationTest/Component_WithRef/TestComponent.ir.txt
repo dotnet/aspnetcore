@@ -15,11 +15,11 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute -  - ParamBefore - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - ParamBefore -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
                     ReferenceCapture - (40:0,40 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
-                    ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - ParamAfter -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (73:0,73 [4] x:\dir\subdir\Test\TestComponent.cshtml)

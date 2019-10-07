@@ -88,6 +88,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
+        public ComponentAttributeIntermediateNode(TagHelperDirectiveAttributeParameterIntermediateNode directiveAttributeParameterNode)
+        {
+            if (directiveAttributeParameterNode == null)
+            {
+                throw new ArgumentNullException(nameof(directiveAttributeParameterNode));
+            }
+
+            AttributeName = directiveAttributeParameterNode.AttributeNameWithoutParameter;
+            AttributeStructure = directiveAttributeParameterNode.AttributeStructure;
+            BoundAttribute = directiveAttributeParameterNode.BoundAttribute;
+            PropertyName = directiveAttributeParameterNode.BoundAttributeParameter.GetPropertyName();
+            Source = directiveAttributeParameterNode.Source;
+            TagHelper = directiveAttributeParameterNode.TagHelper;
+            TypeName = directiveAttributeParameterNode.BoundAttributeParameter.TypeName;
+
+            for (var i = 0; i < directiveAttributeParameterNode.Children.Count; i++)
+            {
+                Children.Add(directiveAttributeParameterNode.Children[i]);
+            }
+
+            for (var i = 0; i < directiveAttributeParameterNode.Diagnostics.Count; i++)
+            {
+                Diagnostics.Add(directiveAttributeParameterNode.Diagnostics[i]);
+            }
+        }
+
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string AttributeName { get; set; }

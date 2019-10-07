@@ -83,11 +83,21 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     if (Equals(attribute.AttributeClass, eventHandlerAttribute))
                     {
+                        var enablePreventDefault = false;
+                        var enableStopPropagation = false;
+                        if (attribute.ConstructorArguments.Length == 4)
+                        {
+                            enablePreventDefault = (bool)attribute.ConstructorArguments[2].Value;
+                            enableStopPropagation = (bool)attribute.ConstructorArguments[3].Value;
+                        }
+
                         results.Add(new EventHandlerData(
                             type.ContainingAssembly.Name,
                             type.ToDisplayString(),
                             (string)attribute.ConstructorArguments[0].Value,
-                            (INamedTypeSymbol)attribute.ConstructorArguments[1].Value));
+                            (INamedTypeSymbol)attribute.ConstructorArguments[1].Value,
+                            enablePreventDefault,
+                            enableStopPropagation));
                     }
                 }
             }
@@ -133,6 +143,36 @@ namespace Microsoft.CodeAnalysis.Razor
                     });
                 });
 
+                if (entry.EnablePreventDefault)
+                {
+                    builder.TagMatchingRule(rule =>
+                    {
+                        rule.TagName = "*";
+
+                        rule.Attribute(a =>
+                        {
+                            a.Name = attributeName + ":preventDefault";
+                            a.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                            a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                        });
+                    });
+                }
+
+                if (entry.EnableStopPropagation)
+                {
+                    builder.TagMatchingRule(rule =>
+                    {
+                        rule.TagName = "*";
+
+                        rule.Attribute(a =>
+                        {
+                            a.Name = attributeName + ":stopPropagation";
+                            a.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                            a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                        });
+                    });
+                }
+
                 builder.BindAttribute(a =>
                 {
                     a.Documentation = string.Format(
@@ -154,6 +194,30 @@ namespace Microsoft.CodeAnalysis.Razor
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the tooltips.
                     a.SetPropertyName(entry.Attribute);
+
+                    if (entry.EnablePreventDefault)
+                    {
+                        a.BindAttributeParameter(parameter =>
+                        {
+                            parameter.Name = "preventDefault";
+                            parameter.TypeName = typeof(bool).FullName;
+                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_PreventDefault_Documentation, attributeName);
+
+                            parameter.SetPropertyName("PreventDefault");
+                        });
+                    }
+
+                    if (entry.EnableStopPropagation)
+                    {
+                        a.BindAttributeParameter(parameter =>
+                        {
+                            parameter.Name = "stopPropagation";
+                            parameter.TypeName = typeof(bool).FullName;
+                            parameter.Documentation = string.Format(ComponentResources.EventHandlerTagHelper_StopPropagation_Documentation, attributeName);
+
+                            parameter.SetPropertyName("StopPropagation");
+                        });
+                    }
                 });
 
                 results.Add(builder.Build());
@@ -168,12 +232,16 @@ namespace Microsoft.CodeAnalysis.Razor
                 string assembly,
                 string typeName,
                 string element,
-                INamedTypeSymbol eventArgsType)
+                INamedTypeSymbol eventArgsType,
+                bool enablePreventDefault,
+                bool enableStopPropagation)
             {
                 Assembly = assembly;
                 TypeName = typeName;
                 Attribute = element;
                 EventArgsType = eventArgsType;
+                EnablePreventDefault = enablePreventDefault;
+                EnableStopPropagation = enableStopPropagation;
             }
 
             public string Assembly { get; }
@@ -183,6 +251,10 @@ namespace Microsoft.CodeAnalysis.Razor
             public string Attribute { get; }
 
             public INamedTypeSymbol EventArgsType { get; }
+
+            public bool EnablePreventDefault { get; }
+
+            public bool EnableStopPropagation { get; }
         }
 
         private class EventHandlerDataVisitor : SymbolVisitor

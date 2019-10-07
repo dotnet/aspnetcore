@@ -24,7 +24,7 @@ Document -
                         HtmlContent - (73:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (73:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
                     ReferenceCapture - (19:0,19 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
-                    ComponentAttribute -  - SomeProp - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - SomeProp -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (41:0,41 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (41:0,41 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
                 HtmlContent - (97:2,14 [4] x:\dir\subdir\Test\TestComponent.cshtml)

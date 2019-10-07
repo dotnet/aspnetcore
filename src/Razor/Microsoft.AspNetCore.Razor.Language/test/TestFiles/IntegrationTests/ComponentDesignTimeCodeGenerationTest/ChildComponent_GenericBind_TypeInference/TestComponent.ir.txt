@@ -15,19 +15,19 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (33:1,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (64:1,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)

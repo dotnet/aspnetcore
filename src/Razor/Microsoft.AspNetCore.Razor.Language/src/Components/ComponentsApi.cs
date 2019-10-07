@@ -97,6 +97,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string SetKey = nameof(SetKey);
 
             public static readonly string SetUpdatesAttributeName = nameof(SetUpdatesAttributeName);
+
+            public static readonly string AddEventPreventDefaultAttribute = nameof(AddEventPreventDefaultAttribute);
+
+            public static readonly string AddEventStopPropagationAttribute = nameof(AddEventStopPropagationAttribute);
         }
 
         public static class RuntimeHelpers

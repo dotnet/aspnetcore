@@ -14,6 +14,6 @@ Document -
                 CSharpCode - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (45:0,45 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
                 Component - (50:1,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute -  - Person - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - Person -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - (71:1,21 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (72:1,22 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

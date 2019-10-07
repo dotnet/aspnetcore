@@ -9,7 +9,7 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (44:1,0 [37] x:\dir\subdir\Test\TestComponent.cshtml) - DynamicElement
-                    ComponentAttribute - (70:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml) - onclick - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (70:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml) - onclick - onclick - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
                             IntermediateToken - (70:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick

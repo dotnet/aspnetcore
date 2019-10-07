@@ -15,10 +15,10 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
-                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
-                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => y = __value, y)
                 HtmlContent - (23:0,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)

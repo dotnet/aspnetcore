@@ -2848,6 +2848,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""x => { }"" />");
 
             // Assert
@@ -2889,6 +2890,78 @@ namespace Test
     void OnClick(MouseEventArgs e) {
     }
 }");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_StopPropagation_Minimized()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onclick:preventDefault @onclick:stopPropagation />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_StopPropagation()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onfocus:preventDefault=""true"" @onclick:stopPropagation=""Foo"" @onfocus:stopPropagation=""false"" />
+@code {
+    bool Foo { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_WithDelegate_PreventDefault()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onfocus=""OnFocus"" @onfocus:preventDefault=""ShouldPreventDefault()"" />
+@code {
+    void OnFocus(FocusEventArgs e) { }
+
+    bool ShouldPreventDefault() { return false; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_Duplicates()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onclick:preventDefault=""true"" @onclick:preventDefault />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

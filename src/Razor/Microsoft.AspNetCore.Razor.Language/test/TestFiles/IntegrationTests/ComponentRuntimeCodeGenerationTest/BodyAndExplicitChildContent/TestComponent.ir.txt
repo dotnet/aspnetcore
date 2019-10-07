@@ -22,6 +22,6 @@ Document -
                     ComponentChildContent - (169:3,2 [21] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - context
                         HtmlContent - (177:3,10 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (177:3,10 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Bye!
-                    ComponentAttribute - (112:1,20 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Header - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (112:1,20 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Header - Header - AttributeStructure.DoubleQuotes
                         CSharpExpression - (113:1,21 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (113:1,21 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - header

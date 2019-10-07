@@ -8,7 +8,7 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (19:0,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
                     SetKey - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
             CSharpCode - (51:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)

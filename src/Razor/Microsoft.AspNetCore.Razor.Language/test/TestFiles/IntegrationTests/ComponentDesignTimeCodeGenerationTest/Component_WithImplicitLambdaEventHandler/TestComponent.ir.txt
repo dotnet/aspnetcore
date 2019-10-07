@@ -15,7 +15,7 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute -  - @onclick - AttributeStructure.DoubleQuotes
+                    ComponentAttribute -  - @onclick -  - AttributeStructure.DoubleQuotes
                         HtmlContent - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (23:0,23 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - () => Increment()
                 HtmlContent - (43:0,43 [4] x:\dir\subdir\Test\TestComponent.cshtml)

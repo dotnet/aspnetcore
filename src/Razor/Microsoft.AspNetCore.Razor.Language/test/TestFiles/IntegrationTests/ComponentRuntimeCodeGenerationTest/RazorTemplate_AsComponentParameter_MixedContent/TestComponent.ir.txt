@@ -22,6 +22,6 @@ Document -
                 CSharpCode - (107:0,107 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (107:0,107 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
                 Component - (112:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (135:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (135:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - Template - AttributeStructure.DoubleQuotes
                         CSharpExpression - (136:1,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (136:1,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

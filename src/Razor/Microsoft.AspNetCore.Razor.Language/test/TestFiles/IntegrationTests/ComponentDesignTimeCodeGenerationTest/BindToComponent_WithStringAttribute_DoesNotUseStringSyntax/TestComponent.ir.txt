@@ -15,10 +15,10 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [39] x:\dir\subdir\Test\TestComponent.cshtml) - InputText
-                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
-                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => person.Name = __value
                 HtmlContent - (39:0,39 [4] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -8,10 +8,10 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
-                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
-                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged -  - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => y = __value, y)
             CSharpCode - (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)

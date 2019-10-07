@@ -9,7 +9,7 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (44:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (66:1,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (66:1,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (67:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
             CSharpCode - (90:3,7 [139] x:\dir\subdir\Test\TestComponent.cshtml)
