@@ -17,6 +17,10 @@ Directory.Build.props checks this property using the following condition:
     <PackagesInPatch>
       Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
       @microsoft/signalr;
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.Http.Abstractions;
+      Microsoft.AspNetCore.Http.Features;
+      Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
