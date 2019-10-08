@@ -53,9 +53,8 @@
   <ItemGroup>
     <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
     <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
-    <NuspecProperty Include="OutputBinary=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).dll" />
-    <NuspecProperty Include="OutputSymbol=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).pdb" />
-    <NuspecProperty Include="OutputDocumentation=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).xml" />
+    <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
+    <NuspecProperty Include="OutputPath=$(OutputPath)" />
     <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 

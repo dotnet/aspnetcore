@@ -101,6 +101,7 @@
                       '$(_GeneratedPackageVersion)' ^
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
-                      '$(AspNetCoreMinorVersion)'" />
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageIconFullPath)'" />
   </Target>
 </Project>

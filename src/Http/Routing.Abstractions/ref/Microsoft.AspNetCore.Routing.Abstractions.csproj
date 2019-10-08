@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Routing.Abstractions.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Routing.Abstractions.Manual.cs" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
   </ItemGroup>
 </Project>

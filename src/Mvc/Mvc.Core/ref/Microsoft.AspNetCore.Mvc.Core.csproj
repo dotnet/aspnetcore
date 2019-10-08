@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.Core.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.Core.Manual.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core"  />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy"  />
