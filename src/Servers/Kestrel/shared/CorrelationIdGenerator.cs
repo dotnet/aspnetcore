@@ -25,42 +25,42 @@ namespace Microsoft.AspNetCore.Connections
         {
             return string.Create(13, id, (buffer, value) =>
             {
-                Span<byte> targetBytes = MemoryMarshal.Cast<char, byte>(buffer);
+                Span<byte> bufferBytes = MemoryMarshal.Cast<char, byte>(buffer);
 
                 // ReadOnlySpan<byte> doesn't support long index, have to use pointer to avoid cast long to int.
-                fixed (byte* bp = s_encode32Bytes)
+                fixed (byte* encode32Bytes = s_encode32Bytes)
                 {
                     if (BitConverter.IsLittleEndian)
                     {
-                        targetBytes[24] = bp[value & 31];
-                        targetBytes[22] = bp[(value >> 5) & 31];
-                        targetBytes[20] = bp[(value >> 10) & 31];
-                        targetBytes[18] = bp[(value >> 15) & 31];
-                        targetBytes[16] = bp[(value >> 20) & 31];
-                        targetBytes[14] = bp[(value >> 25) & 31];
-                        targetBytes[12] = bp[(value >> 30) & 31];
-                        targetBytes[10] = bp[(value >> 35) & 31];
-                        targetBytes[8] = bp[(value >> 40) & 31];
-                        targetBytes[6] = bp[(value >> 45) & 31];
-                        targetBytes[4] = bp[(value >> 50) & 31];
-                        targetBytes[2] = bp[(value >> 55) & 31];
-                        targetBytes[0] = bp[(value >> 60) & 31];
+                        bufferBytes[24] = encode32Bytes[value & 31];
+                        bufferBytes[22] = encode32Bytes[(value >> 5) & 31];
+                        bufferBytes[20] = encode32Bytes[(value >> 10) & 31];
+                        bufferBytes[18] = encode32Bytes[(value >> 15) & 31];
+                        bufferBytes[16] = encode32Bytes[(value >> 20) & 31];
+                        bufferBytes[14] = encode32Bytes[(value >> 25) & 31];
+                        bufferBytes[12] = encode32Bytes[(value >> 30) & 31];
+                        bufferBytes[10] = encode32Bytes[(value >> 35) & 31];
+                        bufferBytes[8] = encode32Bytes[(value >> 40) & 31];
+                        bufferBytes[6] = encode32Bytes[(value >> 45) & 31];
+                        bufferBytes[4] = encode32Bytes[(value >> 50) & 31];
+                        bufferBytes[2] = encode32Bytes[(value >> 55) & 31];
+                        bufferBytes[0] = encode32Bytes[(value >> 60) & 31];
                     }
                     else
                     {
-                        targetBytes[25] = bp[value & 31];
-                        targetBytes[23] = bp[(value >> 5) & 31];
-                        targetBytes[21] = bp[(value >> 10) & 31];
-                        targetBytes[19] = bp[(value >> 15) & 31];
-                        targetBytes[17] = bp[(value >> 20) & 31];
-                        targetBytes[15] = bp[(value >> 25) & 31];
-                        targetBytes[13] = bp[(value >> 30) & 31];
-                        targetBytes[11] = bp[(value >> 35) & 31];
-                        targetBytes[9] = bp[(value >> 40) & 31];
-                        targetBytes[7] = bp[(value >> 45) & 31];
-                        targetBytes[5] = bp[(value >> 50) & 31];
-                        targetBytes[3] = bp[(value >> 55) & 31];
-                        targetBytes[1] = bp[(value >> 60) & 31];
+                        bufferBytes[25] = encode32Bytes[value & 31];
+                        bufferBytes[23] = encode32Bytes[(value >> 5) & 31];
+                        bufferBytes[21] = encode32Bytes[(value >> 10) & 31];
+                        bufferBytes[19] = encode32Bytes[(value >> 15) & 31];
+                        bufferBytes[17] = encode32Bytes[(value >> 20) & 31];
+                        bufferBytes[15] = encode32Bytes[(value >> 25) & 31];
+                        bufferBytes[13] = encode32Bytes[(value >> 30) & 31];
+                        bufferBytes[11] = encode32Bytes[(value >> 35) & 31];
+                        bufferBytes[9] = encode32Bytes[(value >> 40) & 31];
+                        bufferBytes[7] = encode32Bytes[(value >> 45) & 31];
+                        bufferBytes[5] = encode32Bytes[(value >> 50) & 31];
+                        bufferBytes[3] = encode32Bytes[(value >> 55) & 31];
+                        bufferBytes[1] = encode32Bytes[(value >> 60) & 31];
                     }
                 }
             });
