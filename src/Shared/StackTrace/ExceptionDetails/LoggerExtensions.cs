@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         {
             _failedToReadStackFrameInfo = LoggerMessage.Define(
                 logLevel: LogLevel.Debug,
-                eventId: new EventId(1, "FailedToReadStackTraceInfo"),
+                eventId: new EventId(0, "FailedToReadStackTraceInfo"),
                 formatString: "Failed to read stack trace information for exception.");
         }
 
