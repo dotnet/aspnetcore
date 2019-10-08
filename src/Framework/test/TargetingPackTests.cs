@@ -55,8 +55,7 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Fact]
-        [Skip]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
         public void PlatformManifestListsAllFiles()
         {
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
