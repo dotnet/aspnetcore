@@ -19,20 +19,20 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     /// </summary>
     public class SecretsStore
     {
-        private readonly string _secretsFilePath;
+        public readonly string SecretsFilePath;
         private IDictionary<string, string> _secrets;
 
         public SecretsStore(string userSecretsId, IReporter reporter)
         {
             Ensure.NotNull(userSecretsId, nameof(userSecretsId));
 
-            _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+            SecretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 
             // workaround bug in configuration
-            var secretDir = Path.GetDirectoryName(_secretsFilePath);
+            var secretDir = Path.GetDirectoryName(SecretsFilePath);
             Directory.CreateDirectory(secretDir);
 
-            reporter.Verbose(Resources.FormatMessage_Secret_File_Path(_secretsFilePath));
+            reporter.Verbose(Resources.FormatMessage_Secret_File_Path(SecretsFilePath));
             _secrets = Load(userSecretsId);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
         public virtual void Save()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(SecretsFilePath));
 
             var contents = new JObject();
             if (_secrets != null)
@@ -75,13 +75,13 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 }
             }
 
-            File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
+            File.WriteAllText(SecretsFilePath, contents.ToString(), Encoding.UTF8);
         }
 
         protected virtual IDictionary<string, string> Load(string userSecretsId)
         {
             return new ConfigurationBuilder()
-                .AddJsonFile(_secretsFilePath, optional: true)
+                .AddJsonFile(SecretsFilePath, optional: true)
                 .Build()
                 .AsEnumerable()
                 .Where(i => i.Value != null)
