@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         Negotiate = 8,
         Kerberos = 16,
     }
+    public enum ClientCertificateMode
+    {
+        NoCertificate = 0,
+        AllowCertificate = 1,
+        DynamicCertificate = 2,
+    }
     public enum Http503VerbosityLevel : long
     {
         Basic = (long)0,
@@ -46,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public HttpSysOptions() { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager Authentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMode ClientCertificateMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool EnableResponseCaching { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel Http503Verbosity { get { throw null; } set { } }
         public int MaxAccepts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
