@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
 
+        private static readonly ConstructorInfo ObjectConstructor = typeof(object).GetConstructors().Single();
+
         private static readonly Type[] ParameterTypes = new Type[] { typeof(IClientProxy) };
 
         public static T Build(IClientProxy proxy)
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             // Call object constructor
             generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Call, typeof(object).GetConstructors().Single());
+            generator.Emit(OpCodes.Call, ObjectConstructor);
 
             // Assign constructor argument to the proxyField
             generator.Emit(OpCodes.Ldarg_0); // type
