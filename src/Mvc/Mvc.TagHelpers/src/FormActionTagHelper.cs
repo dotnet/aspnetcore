@@ -182,6 +182,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var url = GetFormActionUrl(context, output);
 
             if (string.IsNullOrEmpty(url))
+            {
+                return;
+            }
                 return;
 
             output.Attributes.SetAttribute(FormAction, url);
