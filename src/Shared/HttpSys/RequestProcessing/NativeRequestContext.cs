@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.Extensions.Primitives;
 
@@ -517,6 +518,50 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
 
             return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
+        }
+
+        internal X509Certificate2 GetClientCertificate()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetClientCertificate(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        // Throws CryptographicException
+        private X509Certificate2 GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var request = nativeRequest->Request;
+            long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+            if (request.pSslInfo == null)
+            {
+                return null;
+            }
+
+            var sslInfo = (HttpApiTypes.HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
+            if (sslInfo->SslClientCertNegotiated == 0 || sslInfo->pClientCertInfo == null)
+            {
+                return null;
+            }
+
+            var clientCertInfo = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
+            if (clientCertInfo->pCertEncoded == null)
+            {
+                return null;
+            }
+
+            var clientCert = clientCertInfo->pCertEncoded + fixup;
+            byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
+            Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
+            return new X509Certificate2(certEncoded);
         }
     }
 }
