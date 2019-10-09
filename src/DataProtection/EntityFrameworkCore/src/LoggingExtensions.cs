@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,11 +13,11 @@ namespace Microsoft.Extensions.Logging
         static LoggingExtensions()
         {
             _anExceptionOccurredWhileParsingKeyXml = LoggerMessage.Define<string>(
-                eventId: 1,
+                eventId: new EventId(1, "AnExceptionOccurredWhileParsingKeyXml"),
                 logLevel: LogLevel.Warning,
                 formatString: "An exception occurred while parsing the key xml '{Xml}'.");
             _savingKeyToDbContext = LoggerMessage.Define<string, string>(
-                eventId: 2,
+                eventId: new EventId(2, "SavingKeyToDbContext"),
                 logLevel: LogLevel.Debug,
                 formatString: "Saving key '{FriendlyName}' to '{DbContext}'.");
         }
