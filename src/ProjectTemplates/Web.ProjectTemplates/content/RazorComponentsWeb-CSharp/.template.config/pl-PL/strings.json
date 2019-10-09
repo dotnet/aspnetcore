@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplikacja serwera Blazor",
+    "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej po stronie serwera wewnątrz aplikacji platformy ASP.NET Core. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników."
+  }
+}

@@ -4,16 +4,15 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWith21Compat>
+    public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpointRouting>
     {
-        public RoutingTests(MvcTestFixture<RoutingWebSite.StartupWith21Compat> fixture)
+        public RoutingTests(MvcTestFixture<RoutingWebSite.StartupWithoutEndpointRouting> fixture)
             : base(fixture)
         {
         }
@@ -31,48 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<bool>(body);
 
             Assert.False(result);
-        }
-
-        // Legacy routing supports linking to actions that don't exist
-        [Fact]
-        public async Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
-        {
-            // Arrange
-            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
-                .To(new { action = "Contact", controller = "Home", });
-
-            // Act
-            var response = await Client.GetAsync(url);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
-
-            Assert.Equal("Rail", result.Controller);
-            Assert.Equal("Index", result.Action);
-
-            Assert.Equal("/Travel/Home/Contact", result.Link);
-        }
-
-        [Fact]
-        public async Task ConventionalRoutedAction_InArea_StaysInArea()
-        {
-            // Arrange
-            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
-
-            // Act
-            var response = await Client.GetAsync(url);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var body = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
-
-            Assert.Equal("Flight", result.Controller);
-            Assert.Equal("Index", result.Action);
-
-            Assert.Equal("/Travel/Home/Contact", result.Link);
         }
 
         // Legacy routing returns 404 when an action does not support a HTTP method.
@@ -106,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 {
                     typeof(RouteCollection).FullName,
                     typeof(Route).FullName,
-                    typeof(MvcRouteHandler).FullName,
+                    "Microsoft.AspNetCore.Mvc.Routing.MvcRouteHandler",
                 },
                 result.Routers);
         }
@@ -126,8 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new string[]
                 {
                     typeof(RouteCollection).FullName,
-                    typeof(AttributeRoute).FullName,
-                    typeof(MvcAttributeRouteHandler).FullName,
+                    "Microsoft.AspNetCore.Mvc.Routing.AttributeRoute",
+                    "Microsoft.AspNetCore.Mvc.Routing.MvcAttributeRouteHandler",
                 },
                 result.Routers);
         }

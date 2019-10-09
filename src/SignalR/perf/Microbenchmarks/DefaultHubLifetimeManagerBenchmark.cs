@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _groupNames = new List<string>();
             _userIdentifiers = new List<string>();
 
-            var jsonHubProtocol = new JsonHubProtocol();
+            var jsonHubProtocol = new NewtonsoftJsonHubProtocol();
 
             for (int i = 0; i < 100; i++)
             {
@@ -51,7 +51,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     ConnectionId = connectionId,
                     Transport = new TestDuplexPipe(ForceAsync)
                 };
-                var hubConnectionContext = new HubConnectionContext(connectionContext, TimeSpan.Zero, NullLoggerFactory.Instance);
+                var contextOptions = new HubConnectionContextOptions()
+                {
+                    KeepAliveInterval = TimeSpan.Zero,
+                };
+                var hubConnectionContext = new HubConnectionContext(connectionContext, contextOptions, NullLoggerFactory.Instance);
                 hubConnectionContext.UserIdentifier = userIdentifier;
                 hubConnectionContext.Protocol = jsonHubProtocol;
 

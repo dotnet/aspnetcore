@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public static class ParsingHelpers
+    internal static class ParsingHelpers
     {
         public static StringValues GetHeader(IHeaderDictionary headers, string key)
         {
@@ -19,11 +18,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
-            return new StringValues(GetHeaderSplitImplementation(values).ToArray());
-        }
 
-        private static IEnumerable<string> GetHeaderSplitImplementation(StringValues values)
-        {
+            StringValues result = default;
+
             foreach (var segment in new HeaderSegmentCollection(values))
             {
                 if (!StringSegment.IsNullOrEmpty(segment.Data))
@@ -31,10 +28,12 @@ namespace Microsoft.AspNetCore.Http.Internal
                     var value = DeQuote(segment.Data.Value);
                     if (!string.IsNullOrEmpty(value))
                     {
-                        yield return value;
+                        result = StringValues.Concat(in result, value);
                     }
                 }
             }
+
+            return result;
         }
 
         public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
@@ -103,13 +102,13 @@ namespace Microsoft.AspNetCore.Http.Internal
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            if (!values.HasValue || StringValues.IsNullOrEmpty(values.Value))
+            if (!values.HasValue || StringValues.IsNullOrEmpty(values.GetValueOrDefault()))
             {
                 headers.Remove(key);
             }
             else
             {
-                headers[key] = values.Value;
+                headers[key] = values.GetValueOrDefault();
             }
         }
 

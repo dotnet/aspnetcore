@@ -590,6 +590,83 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     },
                     "Home/Index/{id}"
                 };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[action]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[Index]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[action]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[Index]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[[action]]]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[[Index]]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[action]]]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[Index]]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[[action]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[[Index]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[action]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[Index]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[[action]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[[Index]/{id}"
+                };
             }
         }
 
@@ -654,6 +731,61 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     "[]",
                     new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                     "An empty replacement token ('[]') is not allowed.",
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[action]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Token delimiters ('[', ']') are imbalanced.",
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[action]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Token delimiters ('[', ']') are imbalanced.",
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[action]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Token delimiters ('[', ']') are imbalanced.",
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[[action]]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Token delimiters ('[', ']') are imbalanced.",
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[action]]]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Token delimiters ('[', ']') are imbalanced.",
                 };
             }
         }

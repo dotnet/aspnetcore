@@ -1,0 +1,19 @@
+@page "/error"
+@using Microsoft.AspNetCore.Components
+<h1>Error</h1>
+@if(ShouldCauseError)
+{
+    throw new InvalidOperationException("Exception while rendering");
+}
+else
+{
+    <button id="cause-error" @onclick="CauseError">Cause error</button>
+}
+@code {
+    public bool ShouldCauseError { get; set; }
+
+    void CauseError()
+    {
+        ShouldCauseError = true;
+    }
+}

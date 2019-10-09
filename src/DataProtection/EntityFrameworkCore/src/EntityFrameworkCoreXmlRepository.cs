@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
         {
             using (var scope = _services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<TContext>();	
+                var context = scope.ServiceProvider.GetRequiredService<TContext>();
+
                 // Put logger in a local such that `this` isn't captured.
                 var logger = _logger;
                 return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, logger)).ToList().AsReadOnly();

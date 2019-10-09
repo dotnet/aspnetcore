@@ -3,55 +3,21 @@
 
 #include "stdafx.h"
 #include "LoggingHelpers.h"
-#include "FileOutputManager.h"
-#include "PipeOutputManager.h"
-#include "NullOutputManager.h"
-#include "debugutil.h"
-#include <Windows.h>
-#include <io.h>
-#include "ntassert.h"
+#include "StandardStreamRedirection.h"
 #include "exceptions.h"
-#include "EventLog.h"
-#include "BaseOutputManager.h"
 
-HRESULT
-LoggingHelpers::CreateLoggingProvider(
-    bool fIsLoggingEnabled,
-    bool fEnableNativeLogging,
-    PCWSTR pwzStdOutFileName,
-    PCWSTR pwzApplicationPath,
-    std::unique_ptr<BaseOutputManager>& outputManager
-)
+std::shared_ptr<RedirectionOutput> LoggingHelpers::CreateOutputs(
+    bool enableFileLogging,
+    std::wstring outputFileName,
+    std::wstring applicationPath,
+    std::shared_ptr<RedirectionOutput> stringStreamOutput)
 {
-    HRESULT hr = S_OK;
-
-    DBG_ASSERT(outputManager != NULL);
-
-    try
+    auto stdOutOutput = std::make_shared<StandardOutputRedirectionOutput>();
+    std::shared_ptr<RedirectionOutput> fileOutput;
+    if (enableFileLogging)
     {
-        // Check if there is an existing active console window before redirecting
-        // Window == IISExpress with active console window, don't redirect to a pipe
-        // if true.
-        CONSOLE_SCREEN_BUFFER_INFO dummy;
-
-        if (fIsLoggingEnabled)
-        {
-            auto manager = std::make_unique<FileOutputManager>(pwzStdOutFileName, pwzApplicationPath, fEnableNativeLogging);
-            outputManager = std::move(manager);
-        }
-        else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
-        {
-            outputManager = std::make_unique<PipeOutputManager>(fEnableNativeLogging);
-        }
-        else
-        {
-            outputManager = std::make_unique<NullOutputManager>();
-        }
-    }
-    catch (std::bad_alloc&)
-    {
-        hr = E_OUTOFMEMORY;
+        fileOutput = std::make_shared<FileRedirectionOutput>(applicationPath, outputFileName);
     }
 
-    return hr;
+    return std::make_shared<AggregateRedirectionOutput>(std::move(fileOutput), std::move(stdOutOutput), std::move(stringStreamOutput));
 }

@@ -1,2 +1,0 @@
-Code span at (12:0,12 [0] ) (Accepts:AnyExceptNewline) - Parent: Tag block at (0:0,0 [25] )
-Markup span at (19:0,19 [2] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [25] )

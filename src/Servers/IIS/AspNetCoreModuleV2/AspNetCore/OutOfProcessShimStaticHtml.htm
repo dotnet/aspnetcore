@@ -2,7 +2,7 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title> HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure </title>
+        <title> HTTP Error %d.%d - %s </title>
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
@@ -58,13 +58,11 @@
         </style>
     </head>
     <body>
-        <h1> HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure </h1>
+        <h1> HTTP Error %d.%d - %s </h1>
 
-        <h2> Common causes of this issue: </h2>
-        <ul>
-            <li>The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.</li>
-            <li> Could not read configuration correctly. Check the application's associated web.config.</li>
-        </ul>
+        %s
+
+        %s
 
         <h2> Troubleshooting steps: </h2>
         <ul>

@@ -1,7 +1,11 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -10,32 +14,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace JwtBearerSample
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration config)
         {
-            Environment = env;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath);
-
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = config;
         }
 
         public IConfiguration Configuration { get; set; }
-
-        public IHostingEnvironment Environment { get; set; }
 
         // Shared between users in memory
         public IList<Todo> Todos { get; } = new List<Todo>();
@@ -93,19 +82,38 @@ namespace JwtBearerSample
                     {
                         var reader = new StreamReader(context.Request.Body);
                         var body = await reader.ReadToEndAsync();
-                        var obj = JObject.Parse(body);
-                        var todo = new Todo() { Description = obj["Description"].Value<string>(), Owner = context.User.Identity.Name };
-                        Todos.Add(todo);
+                        using (var json = JsonDocument.Parse(body))
+                        {
+                            var obj = json.RootElement;
+                            var todo = new Todo() { Description = obj.GetProperty("Description").GetString(), Owner = context.User.Identity.Name };
+                            Todos.Add(todo);
+                        }
                     }
                     else
                     {
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
-                        var json = JToken.FromObject(Todos);
-                        await response.WriteAsync(json.ToString());
+                        await response.StartAsync();
+                        Serialize(Todos, response.BodyWriter);
+                        await response.BodyWriter.FlushAsync();
                     }
                 });
             });
+        }
+
+        private void Serialize(IList<Todo> todos, IBufferWriter<byte> output)
+        {
+            using var writer = new Utf8JsonWriter(output);
+            writer.WriteStartArray();
+            foreach (var todo in todos)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("Description", todo.Description);
+                writer.WriteString("Owner", todo.Owner);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            writer.Flush();
         }
     }
 }

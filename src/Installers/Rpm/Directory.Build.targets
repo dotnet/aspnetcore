@@ -1,0 +1,77 @@
+<!--
+  Common targets for building RPM.
+-->
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <!-- Output paths -->
+  <PropertyGroup>
+    <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
+  </PropertyGroup>
+
+  <Target Name="GetTargetPath" Returns="$(TargetPath)" />
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+
+    <Error Text="Currently only linux-x64 is supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' " />
+
+    <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
+    <Error Text="Missing required property: PackageContentRoot" Condition=" '$(PackageContentRoot)' == '' " />
+  </Target>
+
+  <PropertyGroup>
+    <RpmBuildDependsOn>
+      $(RpmBuildDependsOn);
+      PrepareForBuild;
+      ResolveProjectReferences;
+      GetTargetPath;
+    </RpmBuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Build" DependsOnTargets="RpmBuild" />
+  <Target Name="Pack" />
+
+  <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
+    <!-- Create layout: Create changelog -->
+    <PropertyGroup>
+      <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_NAME=$(Authors)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_EMAIL=$(MaintainerEmail)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(PackageVersion)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(PackageRevision)</ChangeLogProps>
+
+      <GeneratedChangeLog>$(IntermediateOutputPath)changelog</GeneratedChangeLog>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)changelog.in" OutputPath="$(GeneratedChangeLog)" Properties="$(ChangeLogProps)" />
+
+    <!-- Run fpm -->
+    <PropertyGroup>
+      <RpmArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</RpmArch>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <FpmArgs Include="--verbose" />
+      <FpmArgs Include="--input-type=dir" />
+      <FpmArgs Include="--output-type=rpm" />
+      <FpmArgs Include="--name=$(PackageId)" />
+      <FpmArgs Include="--package=$(TargetPath)" />
+      <FpmArgs Include="--version=$(PackageVersion)" />
+      <FpmArgs Include="--iteration=$(PackageRevision)" />
+      <FpmArgs Include="--architecture=$(RpmArch)" />
+      <FpmArgs Include="--depends=&quot;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)&quot;" Condition=" '%(RpmDependency.Identity)' != '' "  />
+      <FpmArgs Include="--rpm-changelog=&quot;$(GeneratedChangeLog)&quot;" />
+      <FpmArgs Include="--rpm-summary=&quot;$(PackageSummary)&quot;" />
+      <FpmArgs Include="--description=&quot;$(PackageDescription)&quot;" />
+      <FpmArgs Include="--maintainer=&quot;$(Authors) &lt;$(MaintainerEmail)&gt;&quot;" />
+      <FpmArgs Include="--vendor=&quot;$(Company)&quot;" />
+      <FpmArgs Include="--license=$(PackageLicenseExpression)" />
+      <FpmArgs Include="--url=$(PackageProjectUrl)" />
+      <FpmArgs Include="--directories=&quot;%(InstallerOwnedDirectory.Identity)&quot;" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
+      <FpmArgs Include="&quot;$(PackageContentRoot)=$(RpmPackageInstallRoot)&quot;" />
+    </ItemGroup>
+
+    <Exec Command="fpm @(FpmArgs,' ')" />
+  </Target>
+</Project>

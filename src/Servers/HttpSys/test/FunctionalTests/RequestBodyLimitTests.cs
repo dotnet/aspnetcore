@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthEqualsLimit_ReadSync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 httpContext.Response.ContentLength = read;
                 httpContext.Response.Body.Write(input, 0, read);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthEqualsLimit_ReadAsync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthEqualsLimit_ReadBeginEnd_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 httpContext.Response.ContentLength = read;
                 httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedEqualsLimit_ReadSync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 httpContext.Response.ContentLength = read;
                 httpContext.Response.Body.Write(input, 0, read);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal("Hello World", response);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedEqualsLimit_ReadAsync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal("Hello World", response);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedEqualsLimit_ReadBeginEnd_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 httpContext.Response.ContentLength = read;
                 httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal("Hello World", response);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthExceedsLimit_ReadSync_ThrowsImmediately()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ex = Assert.Throws<IOException>(() => httpContext.Request.Body.Read(input, 0, input.Length));
                 Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal(string.Empty, response);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthExceedsLimit_ReadAsync_ThrowsImmediately()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ex = Assert.Throws<IOException>(() => { var t = httpContext.Request.Body.ReadAsync(input, 0, input.Length); });
                 Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal(string.Empty, response);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ContentLengthExceedsLimit_ReadBeginEnd_ThrowsImmediately()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ex = Assert.Throws<IOException>(() => httpContext.Request.Body.BeginRead(input, 0, input.Length, null, null));
                 Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal(string.Empty, response);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedExceedsLimit_ReadSync_ThrowsAtLimit()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ex = Assert.Throws<IOException>(() => httpContext.Request.Body.Read(input, 0, input.Length));
                 Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal(string.Empty, response);
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedExceedsLimit_ReadAsync_ThrowsAtLimit()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
                 ex = await Assert.ThrowsAsync<IOException>(() => httpContext.Request.Body.ReadAsync(input, 0, input.Length));
                 Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal(string.Empty, response);
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ChunkedExceedsLimit_ReadBeginEnd_ThrowsAtLimit()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ex = Assert.Throws<IOException>(() => body.EndRead(body.BeginRead(input, 0, input.Length, null, null)));
                 Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 var response = await SendRequestAsync(address, "Hello World", chunked: true);
                 Assert.Equal(string.Empty, response);
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             var content = new StaggardContent();
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var ex = Assert.Throws<IOException>(() => httpContext.Request.Body.Read(input, 0, input.Length));
                 Assert.Equal("The total number of bytes read 20 has exceeded the request body size limit 10.", ex.Message);
                 return Task.FromResult(0);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 string response = await SendRequestAsync(address, content, chunked: true);
                 Assert.Equal(string.Empty, response);
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             var content = new StaggardContent();
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 content.Block.Release();
                 var ex = await Assert.ThrowsAsync<IOException>(() => httpContext.Request.Body.ReadAsync(input, 0, input.Length));
                 Assert.Equal("The total number of bytes read 20 has exceeded the request body size limit 10.", ex.Message);
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 string response = await SendRequestAsync(address, content, chunked: true);
                 Assert.Equal(string.Empty, response);
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task AdjustLimitPerRequest_ContentLength_ReadAsync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.True(feature.IsReadOnly);
                 httpContext.Response.ContentLength = read;
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World!");
                 Assert.Equal("Hello World!", response);
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task AdjustLimitPerRequest_Chunked_ReadAsync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.True(feature.IsReadOnly);
                 httpContext.Response.ContentLength = read;
                 await httpContext.Response.Body.WriteAsync(input, 0, read);
-            }))
+            }, options => options.MaxRequestBodySize = 11))
             {
                 var response = await SendRequestAsync(address, "Hello World!", chunked: true);
                 Assert.Equal("Hello World!", response);

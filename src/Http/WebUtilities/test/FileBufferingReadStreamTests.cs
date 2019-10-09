@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -286,6 +288,64 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
                 Assert.False(File.Exists(tempFileName));
+            }
+
+            Assert.False(File.Exists(tempFileName));
+        }
+
+        [Fact]
+        public void FileBufferingReadStream_UsingMemoryStream_RentsAndReturnsRentedBuffer_WhenCopyingFromMemoryStreamDuringRead()
+        {
+            var inner = MakeStream(1024 * 1024 + 25);
+            string tempFileName;
+            var arrayPool = new Mock<ArrayPool<byte>>();
+            arrayPool.Setup(p => p.Rent(It.IsAny<int>()))
+                .Returns((int m) => ArrayPool<byte>.Shared.Rent(m));
+            arrayPool.Setup(p => p.Return(It.IsAny<byte[]>(), It.IsAny<bool>()))
+                .Callback((byte[] bytes, bool clear) => ArrayPool<byte>.Shared.Return(bytes, clear));
+
+            using (var stream = new FileBufferingReadStream(inner, 1024 * 1024 + 1, 2 * 1024 * 1024, GetCurrentDirectory(), arrayPool.Object))
+            {
+                arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Never());
+
+                stream.Read(new byte[1024 * 1024]);
+                Assert.False(File.Exists(stream.TempFileName), "tempFile should not be created as yet");
+
+                stream.Read(new byte[4]);
+                Assert.True(File.Exists(stream.TempFileName), "tempFile should be created");
+                tempFileName = stream.TempFileName;
+
+                arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Once());
+                arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), It.IsAny<bool>()), Times.Once());
+            }
+
+            Assert.False(File.Exists(tempFileName));
+        }
+
+        [Fact]
+        public async Task FileBufferingReadStream_UsingMemoryStream_RentsAndReturnsRentedBuffer_WhenCopyingFromMemoryStreamDuringReadAsync()
+        {
+            var inner = MakeStream(1024 * 1024 + 25);
+            string tempFileName;
+            var arrayPool = new Mock<ArrayPool<byte>>();
+            arrayPool.Setup(p => p.Rent(It.IsAny<int>()))
+                .Returns((int m) => ArrayPool<byte>.Shared.Rent(m));
+            arrayPool.Setup(p => p.Return(It.IsAny<byte[]>(), It.IsAny<bool>()))
+                .Callback((byte[] bytes, bool clear) => ArrayPool<byte>.Shared.Return(bytes, clear));
+
+            using (var stream = new FileBufferingReadStream(inner, 1024 * 1024 + 1, 2 * 1024 * 1024, GetCurrentDirectory(), arrayPool.Object))
+            {
+                arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Never());
+
+                await stream.ReadAsync(new byte[1024 * 1024]);
+                Assert.False(File.Exists(stream.TempFileName), "tempFile should not be created as yet");
+
+                await stream.ReadAsync(new byte[4]);
+                Assert.True(File.Exists(stream.TempFileName), "tempFile should be created");
+                tempFileName = stream.TempFileName;
+
+                arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Once());
+                arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), It.IsAny<bool>()), Times.Once());
             }
 
             Assert.False(File.Exists(tempFileName));

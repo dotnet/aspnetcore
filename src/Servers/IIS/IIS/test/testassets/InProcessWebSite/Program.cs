@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace TestSite
@@ -64,6 +65,18 @@ namespace TestSite
                         Thread.Sleep(Timeout.Infinite);
                     }
                     break;
+                case "IncreaseShutdownLimit":
+                    {
+                        var host = new WebHostBuilder()
+                           .UseIIS()
+                           .UseShutdownTimeout(TimeSpan.FromSeconds(120))
+                           .UseStartup<Startup>()
+                           .Build();
+
+                        host.Run();
+                    }
+
+                    break;
                 case "CheckConsoleFunctions":
                     // Call a bunch of console functions and make sure none return invalid handle.
                     Console.OutputEncoding = Encoding.UTF8;
@@ -72,6 +85,13 @@ namespace TestSite
                     Console.BackgroundColor = ConsoleColor.Blue;
                     Console.WriteLine("彡⾔");
                     break;
+                case "ConsoleWriteSingle":
+                    Console.WriteLine("Wow!");
+                    return 0;
+                case "ConsoleWrite30Kb":
+                    // Write over 30kb to make sure logs are truncated.
+                    Console.WriteLine(new string('a', 40000));
+                    return 0;
                 case "OverriddenServer":
                     {
                         var host = new WebHostBuilder()
@@ -88,6 +108,62 @@ namespace TestSite
                 case "ConsoleWriteStartServer":
                     Console.WriteLine("TEST MESSAGE");
                     return StartServer();
+#if !FORWARDCOMPAT
+                case "DecreaseRequestLimit":
+                    {
+                        var host = new WebHostBuilder()
+                            .ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .ConfigureServices(services =>
+                            {
+                                services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
+                            })
+                            .UseStartup<Startup>()
+                            .Build();
+
+                        host.Run();
+                        break;
+                    }
+#endif
+                case "ThrowInStartup":
+                    {
+                        var host = new WebHostBuilder()
+                                       .ConfigureLogging((_, factory) =>
+                                       {
+                                           factory.AddConsole();
+                                           factory.AddFilter("Console", level => level >= LogLevel.Information);
+                                       })
+                                       .UseIIS()
+                                       .UseStartup<ThrowingStartup>()
+                                       .Build();
+
+                        host.Run();
+                    }
+
+                    return 0;
+                case "ThrowInStartupGenericHost":
+                    {
+#if !FORWARDCOMPAT
+                        var host = new HostBuilder().ConfigureWebHost((c) =>
+                        {
+                            c.ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .UseStartup<ThrowingStartup>();
+                        });
+                                   
+
+                        host.Build().Run();
+#endif
+                    }
+                    return 0;
                 default:
                     return StartServer();
 
@@ -103,7 +179,9 @@ namespace TestSite
                     factory.AddConsole();
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
+                .UseKestrel()
                 .UseIIS()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

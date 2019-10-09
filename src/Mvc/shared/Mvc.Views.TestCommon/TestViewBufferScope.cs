@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 {
     public class TestViewBufferScope : IViewBufferScope
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             ReturnedBuffers.Add(segment);
         }
 
-        public PagedBufferedTextWriter CreateWriter(TextWriter writer)
+        public TextWriter CreateWriter(TextWriter writer)
         {
             return new PagedBufferedTextWriter(ArrayPool<char>.Shared, writer);
         }

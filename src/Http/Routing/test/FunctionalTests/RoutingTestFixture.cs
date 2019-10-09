@@ -25,6 +25,14 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
         public HttpClient Client { get; }
 
+        public HttpClient CreateClient(string baseAddress)
+        {
+            var client = _server.CreateClient();
+            client.BaseAddress = new Uri(baseAddress);
+
+            return client;
+        }
+
         public void Dispose()
         {
             Client.Dispose();

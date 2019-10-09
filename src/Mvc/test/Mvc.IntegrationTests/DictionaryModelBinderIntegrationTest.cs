@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -1128,6 +1129,245 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, modelState.ErrorCount);
         }
 
+        [Fact]
+        public async Task DictionaryModelBinder_ThrowsOn1025Items_AtTopLevel()
+        {
+            // Arrange
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(KeyValuePair<SuccessfulModel, SuccessfulModel>)}'. For example, this type may have a " +
+                $"property with a model binder that always succeeds. See the " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} documentation for more " +
+                $"information.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<SuccessfulModel, SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public async Task DictionaryModelBinder_DictionaryOfSimpleType_NullValue_DoesNotResultInRequiredValidation()
+        {
+            // Regression test for https://github.com/aspnet/AspNetCore/issues/13512
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, string>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[key0]=");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, string>>(modelBindingResult.Model);
+            Assert.Collection(
+                model.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    Assert.Null(kvp.Value);
+                });
+
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("parameter[key0]", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
+            Assert.Equal(0, modelState.ErrorCount);
+            Assert.True(modelState.IsValid);
+        }
+
+#nullable enable
+        public class NonNullPerson
+        {
+            public int Age { get; set; }
+
+            // This should be implicitly required
+            public string Name { get; set; } = default!;
+        }
+#nullable restore
+
+        [Fact]
+        public async Task DictionaryModelBinder_ValuesIsNonNullableType_AppliesImplicitRequired()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, NonNullPerson>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[key0].Age=&parameter[key0].Name=name0&parameter[key1].Age=27&parameter[key1].Name=");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, NonNullPerson>>(modelBindingResult.Model);
+            Assert.Collection(
+                model.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    var person = kvp.Value;
+                    Assert.Equal(0, person.Age);
+                    Assert.Equal("name0", person.Name);
+                },
+                kvp =>
+                {
+                    Assert.Equal("key1", kvp.Key);
+                    var person = kvp.Value;
+                    Assert.Equal(27, person.Age);
+                    Assert.Null(person.Name);
+                });
+
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("parameter[key0].Age", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    Assert.Equal("The value '' is invalid.", Assert.Single(kvp.Value.Errors).ErrorMessage);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key0].Name", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key1].Age", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key1].Name", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    Assert.Equal("The Name field is required.", Assert.Single(kvp.Value.Errors).ErrorMessage);
+                });
+            Assert.Equal(2, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+        }
+
+#nullable enable
+        public class NonNullPersonWithRequiredProperties
+        {
+            public int Age { get; set; }
+
+            [Required]
+            public string? Name { get; set; }
+        }
+#nullable restore
+
+        [Fact]
+        public async Task DictionaryModelBinder_ValuesNullableTypeWithRequiredAttributes_AppliesValidation()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<string, NonNullPersonWithRequiredProperties>)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?parameter[key0].Age=&parameter[key0].Name=name0&parameter[key1].Age=27&parameter[key1].Name=");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Dictionary<string, NonNullPersonWithRequiredProperties>>(modelBindingResult.Model);
+            Assert.Collection(
+                model.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    var person = kvp.Value;
+                    Assert.Equal(0, person.Age);
+                    Assert.Equal("name0", person.Name);
+                },
+                kvp =>
+                {
+                    Assert.Equal("key1", kvp.Key);
+                    var person = kvp.Value;
+                    Assert.Equal(27, person.Age);
+                    Assert.Null(person.Name);
+                });
+
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("parameter[key0].Age", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    Assert.Equal("The value '' is invalid.", Assert.Single(kvp.Value.Errors).ErrorMessage);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key0].Name", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key1].Age", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter[key1].Name", kvp.Key);
+                    Assert.Equal(ModelValidationState.Invalid, kvp.Value.ValidationState);
+                    Assert.Equal("The Name field is required.", Assert.Single(kvp.Value.Errors).ErrorMessage);
+                });
+            Assert.Equal(2, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+        }
+
         private class ClosedGenericDictionary : Dictionary<string, string>
         {
         }
@@ -1138,7 +1378,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitClosedGenericDictionary : IDictionary<string, string>
         {
-            private IDictionary<string, string> _data = new Dictionary<string, string>();
+            private readonly IDictionary<string, string> _data = new Dictionary<string, string>();
 
             string IDictionary<string, string>.this[string key]
             {
@@ -1243,7 +1483,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         {
-            private IDictionary<TKey, TValue> _data = new Dictionary<TKey, TValue>();
+            private readonly IDictionary<TKey, TValue> _data = new Dictionary<TKey, TValue>();
 
             TValue IDictionary<TKey, TValue>.this[TKey key]
             {

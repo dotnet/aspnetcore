@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -20,10 +20,9 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions()
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp30)
+                .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 
@@ -32,7 +31,9 @@ namespace ServerComparison.FunctionalTests
         public async Task HelloWorld(TestVariant variant)
         {
             var testName = $"HelloWorld_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
-            using (StartLog(out var loggerFactory, testName))
+            using (StartLog(out var loggerFactory,
+                variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
+                testName))
             {
                 var logger = loggerFactory.CreateLogger("HelloWorld");
 

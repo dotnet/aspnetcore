@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
                                                     LocalizationFile="thm.wxl"/>
+            <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
+
+        <!-- Ensure upgrades from 3.0.0 preview 1, 2, and 3. Conditioned for the 3.0.0 family. -->
+        <?if $(var.Version)=3.0.0.0?>
+        <?if $(var.Platform)=x86?>
+        <RelatedBundle Action="Upgrade" Id="{EC5CFEAE-D169-3A4A-AA09-F446BBC39AD9}"/>
+        <RelatedBundle Action="Upgrade" Id="{1D6E2BA3-B920-3C74-8F3E-F38E6097A297}"/>
+        <RelatedBundle Action="Upgrade" Id="{D73B587E-7C85-3418-9B07-6A8469CF7E94}"/>
+        <?elseif $(var.Platform)=x64?>
+        <RelatedBundle Action="Upgrade" Id="{F5C19B0F-77DF-3353-96D9-3F398FA38CF7}"/>
+        <RelatedBundle Action="Upgrade" Id="{DFC9DEC7-307D-39B5-AF9C-4E8CE923B1BA}"/>
+        <RelatedBundle Action="Upgrade" Id="{FDCA5106-C69E-34BB-A3B8-A24ADD0B4769}"/>
+        <?endif?>
+        <?endif?>
+
+        <PayloadGroup Id="PG_Resources">
+            <?foreach lcid in 2052;1028;1029;1031;3082;1036;1040;1041;1042;1045;1046;1049;1055?>
+            <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
+            <?endforeach?>
+        </PayloadGroup>
 
         <!-- Customizations of the default BA -->
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />

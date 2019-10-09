@@ -1,5 +1,0 @@
-Code span at (13:0,13 [2] ) (Accepts:AnyExceptNewline) - Parent: Tag block at (0:0,0 [73] )
-Code span at (27:0,27 [12] ) (Accepts:AnyExceptNewline) - Parent: Tag block at (0:0,0 [73] )
-Markup span at (47:0,47 [1] ) (Accepts:None) - Parent: Markup block at (47:0,47 [2] )
-Markup span at (48:0,48 [1] ) (Accepts:None) - Parent: Markup block at (47:0,47 [2] )
-Markup span at (49:0,49 [20] ) (Accepts:Any) - Parent: Markup block at (47:0,47 [22] )

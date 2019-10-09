@@ -7,6 +7,7 @@ using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 
 namespace BasicWebSite.Controllers.ContentNegotiation
@@ -14,7 +15,7 @@ namespace BasicWebSite.Controllers.ContentNegotiation
     public class NormalController : Controller
     {
         private static readonly JsonSerializerSettings _indentedSettings;
-        private readonly JsonOutputFormatter _indentingFormatter;
+        private readonly NewtonsoftJsonOutputFormatter _indentingFormatter;
 
         static NormalController()
         {
@@ -24,7 +25,7 @@ namespace BasicWebSite.Controllers.ContentNegotiation
 
         public NormalController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new JsonOutputFormatter(_indentedSettings, charPool);
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
         }
 
         public override void OnActionExecuted(ActionExecutedContext context)

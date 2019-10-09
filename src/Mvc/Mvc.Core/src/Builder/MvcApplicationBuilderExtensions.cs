@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -19,9 +17,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class MvcApplicationBuilderExtensions
     {
-        // Property key set in routing package by UseEndpointRouting to indicate middleware is registered
-        private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
-
         /// <summary>
         /// Adds MVC to the <see cref="IApplicationBuilder"/> request execution pipeline.
         /// </summary>
@@ -89,61 +84,23 @@ namespace Microsoft.AspNetCore.Builder
 
             if (options.Value.EnableEndpointRouting)
             {
-                var mvcEndpointDataSource = app.ApplicationServices
-                    .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                    .OfType<MvcEndpointDataSource>()
-                    .First();
-                var parameterPolicyFactory = app.ApplicationServices
-                    .GetRequiredService<ParameterPolicyFactory>();
-
-                var endpointRouteBuilder = new EndpointRouteBuilder(app);
-
-                configureRoutes(endpointRouteBuilder);
-
-                foreach (var router in endpointRouteBuilder.Routes)
-                {
-                    // Only accept Microsoft.AspNetCore.Routing.Route when converting to endpoint
-                    // Sub-types could have additional customization that we can't knowingly convert
-                    if (router is Route route && router.GetType() == typeof(Route))
-                    {
-                        var endpointInfo = new MvcEndpointInfo(
-                            route.Name,
-                            route.RouteTemplate,
-                            route.Defaults,
-                            route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
-                            route.DataTokens,
-                            parameterPolicyFactory);
-
-                        mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Endpoint Routing.");
-                    }
-                }
-
-                if (!app.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
-                {
-                    // Matching middleware has not been registered yet
-                    // For back-compat register middleware so an endpoint is matched and then immediately used
-                    app.UseEndpointRouting();
-                }
-
-                return app.UseEndpoint();
+                var message =
+                    "Endpoint Routing does not support 'IApplicationBuilder.UseMvc(...)'. To use " +
+                    "'IApplicationBuilder.UseMvc' set 'MvcOptions.EnableEndpointRouting = false' inside " +
+                    "'ConfigureServices(...).";
+                throw new InvalidOperationException(message);
             }
-            else
+
+            var routes = new RouteBuilder(app)
             {
-                var routes = new RouteBuilder(app)
-                {
-                    DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),
-                };
+                DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>(),
+            };
 
-                configureRoutes(routes);
+            configureRoutes(routes);
 
-                routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
+            routes.Routes.Insert(0, AttributeRouting.CreateAttributeMegaRoute(app.ApplicationServices));
 
-                return app.UseRouter(routes.Build());
-            }
+            return app.UseRouter(routes.Build());
         }
 
         private class EndpointRouteBuilder : IRouteBuilder

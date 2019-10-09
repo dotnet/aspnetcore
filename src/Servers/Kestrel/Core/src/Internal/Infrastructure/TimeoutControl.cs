@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeature
+    internal class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeature
     {
         private readonly ITimeoutHandler _timeoutHandler;
 
@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
 
-        public void Initialize(DateTimeOffset now)
+        internal void Initialize(long nowTicks)
         {
-            _lastTimestamp = now.Ticks;
+            _lastTimestamp = nowTicks;
         }
 
         public void Tick(DateTimeOffset now)

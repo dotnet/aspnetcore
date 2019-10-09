@@ -5,9 +5,7 @@ using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -19,19 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly NumberStyles _supportedStyles;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Initializes a new instance of <see cref="FloatModelBinder"/>.</para>
-        /// </summary>
-        /// <param name="supportedStyles">The <see cref="NumberStyles"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public FloatModelBinder(NumberStyles supportedStyles)
-            : this(supportedStyles, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FloatModelBinder"/>.

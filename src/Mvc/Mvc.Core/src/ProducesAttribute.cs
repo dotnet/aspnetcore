@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -26,13 +25,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
         public ProducesAttribute(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+        {   
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             ContentTypes = new MediaTypeCollection();
         }
 

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -16,19 +17,21 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext : IFeatureCollection,
                                             IHttpRequestFeature,
                                             IHttpResponseFeature,
+                                            IHttpResponseBodyFeature,
                                             IHttpUpgradeFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature,
-                                            IHttpBufferingFeature,
                                             ITlsConnectionFeature,
-                                            IHttpBodyControlFeature
+                                            IHttpBodyControlFeature,
+                                            IHttpMaxRequestBodySizeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -183,6 +186,48 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
+        Stream IHttpResponseBodyFeature.Stream => ResponseBody;
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (ResponsePipeWrapper == null)
+                {
+                    ResponsePipeWrapper = PipeWriter.Create(ResponseBody, new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return ResponsePipeWrapper;
+            }
+        }
+
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (!HasResponseStarted)
+            {
+                return InitializeResponse(flushHeaders: false);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+            => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
+
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
+
+        // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
+        // any unflushed data gets flushed.
+        protected Task CompleteResponseBodyAsync()
+        {
+            if (ResponsePipeWrapper != null)
+            {
+                return ResponsePipeWrapper.CompleteAsync().AsTask();
+            }
+
+            return Task.CompletedTask;
+        }
+
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;
 
         bool IFeatureCollection.IsReadOnly => false;
@@ -194,8 +239,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             get => User;
             set => User = value;
         }
-
-        public IAuthenticationHandler Handler { get; set; }
 
         string IServerVariablesFeature.this[string variableName]
         {
@@ -269,6 +312,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
+            MaxRequestBodySize = null;
             _wasUpgraded = true;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
@@ -279,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             Debug.Assert(_readBodyTask == null || _readBodyTask.IsCompleted);
 
             // Reset reading status to allow restarting with new IO
-            _hasRequestReadingStarted = false;
+            HasStartedConsumingRequestBody = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
             AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _pInProcessHandler);
@@ -322,13 +366,38 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
-        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; } = true;
+        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; }
 
-        void IHttpBufferingFeature.DisableRequestBuffering()
+        bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || _wasUpgraded;
+
+        long? IHttpMaxRequestBodySizeFeature.MaxRequestBodySize
         {
+            get => MaxRequestBodySize;
+            set
+            {
+                if (HasStartedConsumingRequestBody)
+                {
+                    throw new InvalidOperationException(CoreStrings.MaxRequestBodySizeCannotBeModifiedAfterRead);
+                }
+                if (_wasUpgraded)
+                {
+                    throw new InvalidOperationException(CoreStrings.MaxRequestBodySizeCannotBeModifiedForUpgradedRequests);
+                }
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
+                }
+
+                if (value > _options.IisMaxRequestSizeLimit)
+                {
+                    _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
+                }
+
+                MaxRequestBodySize = value;
+            }
         }
 
-        void IHttpBufferingFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
             NativeMethods.HttpDisableBuffering(_pInProcessHandler);
             DisableCompression();

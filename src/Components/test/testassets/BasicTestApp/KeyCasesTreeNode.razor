@@ -1,0 +1,53 @@
+<div class="node">
+    <strong class="label">@Data.Label</strong>
+    &nbsp;&nbsp;[
+    Instance: @instanceId;
+
+    Is new:
+    @if (firstCreatedOnUpdateCount == RenderContext.UpdateCount)
+    {
+        <strong class="is-new">true</strong>
+    }
+    else
+    {
+        <span class="is-new">false</span>
+    }
+    ]
+
+    @if (Data.Children?.Any() ?? false)
+    {
+        <div class="children">@{
+            foreach (var child in Data.Children)
+            {
+                if (child.Key != null)
+                {
+                    <KeyCasesTreeNode @key="@child.Key" Data="@child" />
+                }
+                else
+                {
+                    <KeyCasesTreeNode Data="@child" />
+                }
+            }
+        }</div>
+    }
+</div>
+
+@code {
+    public class Node
+    {
+        public string Key { get; set; }
+        public string Label { get; set; }
+        public List<Node> Children { get; set; }
+    }
+
+    string instanceId = Guid.NewGuid().ToString("D").Substring(0, 6);
+    int firstCreatedOnUpdateCount;
+
+    [Parameter] public Node Data { get; set; }
+    [CascadingParameter] KeyCasesComponent.RenderContext RenderContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        firstCreatedOnUpdateCount = RenderContext.UpdateCount;
+    }
+}

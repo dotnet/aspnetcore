@@ -1,3 +1,0 @@
-(1,12): Error RZ2009: The parent <strong> tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) 'strong' are allowed.
-(1,28): Error RZ2010: The <br> tag is not allowed by parent <p> tag helper. Only child tags with name(s) 'strong' are allowed.
-(1,33): Error RZ2009: The parent <p> tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) 'strong' are allowed.

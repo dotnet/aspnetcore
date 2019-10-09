@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 Items[key] = value;
             }
-            else if (Items.ContainsKey(key))
+            else
             {
                 Items.Remove(key);
             }
@@ -169,9 +169,9 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (value.HasValue)
             {
-                Items[key] = value.Value.ToString();
+                Items[key] = value.GetValueOrDefault().ToString();
             }
-            else if (Items.ContainsKey(key))
+            else
             {
                 Items.Remove(key);
             }
@@ -201,9 +201,9 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (value.HasValue)
             {
-                Items[key] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+                Items[key] = value.GetValueOrDefault().ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
             }
-            else if (Items.ContainsKey(key))
+            else
             {
                 Items.Remove(key);
             }

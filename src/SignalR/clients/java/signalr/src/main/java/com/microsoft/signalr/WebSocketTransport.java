@@ -15,16 +15,14 @@ class WebSocketTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
     private TransportOnClosedCallback onClose;
     private String url;
-    private final HttpClient client;
-    private final Map<String, String> headers;
-
+    private HttpClient client;
+    private Map<String, String> headers;
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
 
     private static final String HTTP = "http";
     private static final String HTTPS = "https";
     private static final String WS = "ws";
     private static final String WSS = "wss";
-
 
     public WebSocketTransport(Map<String, String> headers, HttpClient client) {
         this.client = client;

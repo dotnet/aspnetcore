@@ -9,12 +9,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    internal class ConsumesMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
+    internal class ConsumesMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
         internal const string AnyContentType = "*/*";
@@ -24,14 +22,133 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         public IComparer<Endpoint> Comparer { get; } = new ConsumesMetadataEndpointComparer();
 
-        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
+            if (ContainsDynamicEndpoints(endpoints))
+            {
+                return false;
+            }
+
+            return AppliesToEndpointsCore(endpoints);
+        }
+
+        bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            // When the node contains dynamic endpoints we can't make any assumptions.
+            return ContainsDynamicEndpoints(endpoints);
+        }
+
+        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        {
             return endpoints.Any(e => e.Metadata.GetMetadata<IConsumesMetadata>()?.ContentTypes.Count > 0);
+        }
+
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (candidates == null)
+            {
+                throw new ArgumentNullException(nameof(candidates));
+            }
+
+            // We want to return a 415 iff we eliminated ALL of the currently valid endpoints due to content type
+            // mismatch.
+            bool? needs415Endpoint = null;
+
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                // We do this check first for consistency with how 415 is implemented for the graph version
+                // of this code. We still want to know if any endpoints in this set require an a ContentType
+                // even if those endpoints are already invalid - hence the null check.
+                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IConsumesMetadata>();
+                if (metadata == null || metadata.ContentTypes.Count == 0)
+                {
+                    // Can match any content type.
+                    needs415Endpoint = false;
+                    continue;
+                }
+
+                // Saw a valid endpoint.
+                needs415Endpoint = needs415Endpoint ?? true;
+
+                if (!candidates.IsValidCandidate(i))
+                {
+                    // If the candidate is already invalid, then do a search to see if it has a wildcard content type.
+                    //
+                    // We don't want to return a 415 if any content type could be accepted depending on other parameters.
+                    if (metadata != null)
+                    {
+                        for (var j = 0; j < metadata.ContentTypes.Count; j++)
+                        {
+                            if (string.Equals("*/*", metadata.ContentTypes[j], StringComparison.Ordinal))
+                            {
+                                needs415Endpoint = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    continue;
+                }
+
+                var contentType = httpContext.Request.ContentType;
+                var mediaType = string.IsNullOrEmpty(contentType) ? (MediaType?)null : new MediaType(contentType);
+
+                var matched = false;
+                for (var j = 0; j < metadata.ContentTypes.Count; j++)
+                {
+                    var candidateMediaType = new MediaType(metadata.ContentTypes[j]);
+                    if (candidateMediaType.MatchesAllTypes)
+                    {
+                        // We don't need a 415 response because there's an endpoint that would accept any type.
+                        needs415Endpoint = false;
+                    }
+
+                    // If there's no ContentType, then then can only matched by a wildcard `*/*`.
+                    if (mediaType == null && !candidateMediaType.MatchesAllTypes)
+                    {
+                        continue;
+                    }
+
+                    // We have a ContentType but it's not a match.
+                    else if (mediaType != null && !mediaType.Value.IsSubsetOf(candidateMediaType))
+                    {
+                        continue;
+                    }
+
+                    // We have a ContentType and we accept any value OR we have a ContentType and it's a match.
+                    matched = true;
+                    needs415Endpoint = false;
+                    break;
+                }
+
+                if (!matched)
+                {
+                    candidates.SetValidity(i, false);
+                }
+            }
+
+            if (needs415Endpoint == true)
+            {
+                // We saw some endpoints coming in, and we eliminated them all.
+                httpContext.SetEndpoint(CreateRejectionEndpoint());
+            }
+
+            return Task.CompletedTask;
         }
 
         public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
@@ -103,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                             var mediaType = new MediaType(contentType);
 
                             // Example: 'application/json' is subset of 'application/*'
-                            // 
+                            //
                             // This means that when the request has content-type 'application/json' an endpoint
                             // what consumes 'application/*' should match.
                             if (edgeKey.IsSubsetOf(mediaType))

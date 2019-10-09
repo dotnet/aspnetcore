@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
@@ -23,13 +21,14 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
             UserInformationEndpoint = MicrosoftAccountDefaults.UserInformationEndpoint;
+            UsePkce = true;
             Scope.Add("https://graph.microsoft.com/user.read");
 
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
             ClaimActions.MapJsonKey(ClaimTypes.Name, "displayName");
             ClaimActions.MapJsonKey(ClaimTypes.GivenName, "givenName");
             ClaimActions.MapJsonKey(ClaimTypes.Surname, "surname");
-            ClaimActions.MapCustomJson(ClaimTypes.Email, user => user.Value<string>("mail") ?? user.Value<string>("userPrincipalName"));
+            ClaimActions.MapCustomJson(ClaimTypes.Email, user => user.GetString("mail") ?? user.GetString("userPrincipalName"));
         }
     }
 }

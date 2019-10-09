@@ -6,8 +6,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -22,16 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly MvcOptions _options;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes an instance of <see cref="FormatFilter"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public FormatFilter(IOptions<MvcOptions> options)
-            : this(options, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes an instance of <see cref="FormatFilter"/>.

@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>Components.E2ETests</TestGroupName>
+
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    
+    <!-- Run on platforms where we support Selenium -->
+    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <BaseOutputPath />
+    
+    <OutputPath />
+
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Blazor\testassets\Microsoft.AspNetCore.Blazor.E2EPerformance\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
+    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testassets\Ignitor\Ignitor.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
+  </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+
+  <ItemGroup>
+    <!-- Shared descriptor infrastructure with MVC -->
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+  </ItemGroup>
+
+</Project>

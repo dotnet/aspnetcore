@@ -3,9 +3,9 @@
 
 using System;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class SkipIfDebugAttribute : Attribute, ITestCondition
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public bool IsMet =>
         #if DEBUG
             false;
-        #else 
+        #else
             true;
         #endif
 

@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             builder.UseStartup<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>();
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_SetInResponse_OnGrantingConsent()
         {
             // Arrange
@@ -62,6 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_NotSetInResponse_OnNoConsent()
         {
             // Arrange

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplicativo Web",
+    "description": "Um modelo de projeto para criar um aplicativo ASP.NET Core com conteúdo de Razor Pages do ASP.NET Core de exemplo."
+  }
+}

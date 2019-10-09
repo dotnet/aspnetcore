@@ -1,0 +1,96 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <p class="name">
+        Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
+    </p>
+    <p class="email">
+        Email: <InputText @bind-Value="person.Email" />
+        <ValidationMessage For="@(() => person.Email)" />
+    </p>
+    <p class="age">
+        Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
+    </p>
+    <p class="height">
+        Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
+    </p>
+    <p class="description">
+        Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
+    </p>
+    <p class="renewal-date">
+        Renewal date: <InputDate @bind-Value="person.RenewalDate" placeholder="Enter the date" />
+    </p>
+    <p class="expiry-date">
+        Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
+    </p>
+    <p class="ticket-class">
+        Ticket class:
+        <InputSelect @bind-Value="person.TicketClass" size="4">
+            <option>(select)</option>
+            <option value="@TicketClass.Economy">Economy class</option>
+            <option value="@TicketClass.Premium">Premium class</option>
+            <option value="@TicketClass.First">First class</option>
+        </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
+    </p>
+    <p class="accepts-terms">
+        Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
+    </p>
+    <p class="is-evil">
+        Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    <ValidationSummary />
+</EditForm>
+
+<ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
+
+@code {
+    Person person = new Person();
+
+    // Usually this would be in a different file
+    class Person
+    {
+        [Required(ErrorMessage = "Enter a name"), StringLength(10, ErrorMessage = "That name is too long")]
+        public string Name { get; set; }
+
+        [EmailAddress(ErrorMessage = "That doesn't look like a real email address")]
+        [StringLength(10, ErrorMessage = "We only accept very short email addresses (max 10 chars)")]
+        public string Email { get; set; }
+
+        [Range(0, 200, ErrorMessage = "Nobody is that old")]
+        public int AgeInYears { get; set; }
+
+        public float? OptionalHeight { get; set; }
+
+        public DateTime RenewalDate { get; set; } = DateTime.Now;
+
+        public DateTimeOffset? OptionalExpiryDate { get; set; }
+
+        [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
+        public bool AcceptsTerms { get; set; }
+
+        [Required, Range(typeof(bool), "false", "false", ErrorMessage = "Must not be evil")]
+        public bool IsEvil { get; set; } = true;
+
+        [Required, StringLength(20, ErrorMessage = "Description is max 20 chars")]
+        public string Description { get; set; }
+
+        [Required, EnumDataType(typeof(TicketClass))]
+        public TicketClass TicketClass { get; set; }
+    }
+
+    enum TicketClass { Economy, Premium, First }
+
+    List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
+
+    void HandleValidSubmit()
+    {
+        submissionLog.Add("OnValidSubmit");
+    }
+}

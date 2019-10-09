@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -153,9 +152,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -174,12 +173,12 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
-            environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -197,11 +196,11 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName();
             var applicationName = assemblyName.FullName;
             environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -266,13 +265,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(IPostConfigureOptions<ApiBehaviorOptions>),
-                        new Type[]
-                        {
-                            typeof(ApiBehaviorOptionsSetup),
-                        }
-                    },
-                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {
@@ -316,13 +308,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(EndpointDataSource),
-                        new Type[]
-                        {
-                            typeof(MvcEndpointDataSource),
-                        }
-                    },
-                    {
                         typeof(IStartupFilter),
                         new Type[]
                         {
@@ -335,6 +320,7 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(ConsumesMatcherPolicy),
                             typeof(ActionConstraintMatcherPolicy),
+                            typeof(DynamicControllerEndpointMatcherPolicy),
                         }
                     },
                 };

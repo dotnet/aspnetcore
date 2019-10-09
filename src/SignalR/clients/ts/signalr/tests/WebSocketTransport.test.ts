@@ -53,7 +53,7 @@ describe("WebSocketTransport", () => {
                 connectComplete = true;
             })();
 
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             expect(connectComplete).toBe(false);
 
@@ -61,8 +61,35 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toBeNull();
+                .toThrow("There was an error with the transport.");
             expect(connectComplete).toBe(false);
+        });
+    });
+
+    it("connect failure does not call onclose handler", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestErrorEvent;
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
+            let closeCalled = false;
+            webSocket.onclose = () => closeCalled = true;
+
+            let connectComplete: boolean = false;
+            const connectPromise = (async () => {
+                await webSocket.connect("http://example.com", TransferFormat.Text);
+                connectComplete = true;
+            })();
+
+            await TestWebSocket.webSocket.closeSet;
+
+            expect(connectComplete).toBe(false);
+
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await expect(connectPromise)
+                .rejects
+                .toThrow("There was an error with the transport.");
+            expect(connectComplete).toBe(false);
+            expect(closeCalled).toBe(false);
         });
     });
 

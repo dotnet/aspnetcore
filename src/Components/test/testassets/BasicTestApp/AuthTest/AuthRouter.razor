@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager NavigationManager
+
+@*
+    This router is independent of any other router that may exist within the same project.
+    It exists so that (1) we can easily have multiple test cases that depend on the
+    CascadingAuthenticationState, and (2) we can test the integration between the router
+    and @page authorization rules.
+*@
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AuthRouterLayout)">
+            <Authorizing>Authorizing...</Authorizing>
+            <NotAuthorized>
+                <div id="auth-failure">
+                    Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
+                </div>
+            </NotAuthorized>
+        </AuthorizeRouteView>
+    </Found>
+    <NotFound>
+        <p>There's nothing here</p>
+    </NotFound>
+</Router>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Start at AuthHome, not at any other component in the same app that happens to
+        // register itself for the route ""
+        var absoluteUriPath = new Uri(NavigationManager.Uri).GetLeftPart(UriPartial.Path);
+        var relativeUri = NavigationManager.ToBaseRelativePath(absoluteUriPath);
+        if (relativeUri == string.Empty)
+        {
+            NavigationManager.NavigateTo("AuthHome");
+        }
+    }
+}

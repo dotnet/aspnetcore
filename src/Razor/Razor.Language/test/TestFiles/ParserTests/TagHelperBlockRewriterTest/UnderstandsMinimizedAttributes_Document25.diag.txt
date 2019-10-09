@@ -1,1 +1,0 @@
-(1,20): Error RZ2008: Attribute 'bound-required-string' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.String' cannot be empty or contain only whitespace.

@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerMethods = new List<PageHandlerModel>();
             HandlerProperties = new List<PagePropertyModel>();
             HandlerTypeAttributes = handlerAttributes;
+            EndpointMetadata = new List<object>(ActionDescriptor.EndpointMetadata ?? Array.Empty<object>());
         }
 
         /// <summary>
@@ -71,6 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerMethods = new List<PageHandlerModel>(other.HandlerMethods.Select(m => new PageHandlerModel(m)));
             HandlerProperties = new List<PagePropertyModel>(other.HandlerProperties.Select(p => new PagePropertyModel(p)));
             HandlerTypeAttributes = other.HandlerTypeAttributes;
+            EndpointMetadata = new List<object>(other.EndpointMetadata);
         }
 
         /// <summary>
@@ -154,5 +156,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Gets the sequence of <see cref="PagePropertyModel"/> instances on <see cref="PageHandlerModel"/>.
         /// </summary>
         public IList<PagePropertyModel> HandlerProperties { get; }
+
+        /// <summary>
+        /// Gets the endpoint metadata for this action.
+        /// </summary>
+        public IList<object> EndpointMetadata { get; }
     }
 }

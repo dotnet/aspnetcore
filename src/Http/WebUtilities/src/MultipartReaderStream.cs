@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    internal class MultipartReaderStream : Stream
+    internal sealed class MultipartReaderStream : Stream
     {
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
@@ -151,9 +151,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             if (_observedLength < _position)
             {
                 _observedLength = _position;
-                if (LengthLimit.HasValue && _observedLength > LengthLimit.Value)
+                if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
                 {
-                    throw new InvalidDataException($"Multipart body length limit {LengthLimit.Value} exceeded.");
+                    throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
                 }
             }
             return read;

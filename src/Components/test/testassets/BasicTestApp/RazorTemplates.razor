@@ -1,0 +1,10 @@
+@{
+    var items = new string[] { "A", "B", "c", };
+}
+
+<div id="codeblocktemplate">
+    @{
+        RenderFragment<OrderedList<string>.Context> template = (context) => @<li>#@context.Index - @context.Item.ToLower()</li>;
+    }
+    <OrderedList Items="@items" Template="@template" />
+</div>

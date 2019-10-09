@@ -19,17 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly RazorPageBase _page;
         private readonly Type _modelType;
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public RazorPageAdapter(RazorPageBase page)
-        {
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            _page = page;
-        }
-
         public RazorPageAdapter(RazorPageBase page, Type modelType)
         {
             _page = page ?? throw new ArgumentNullException(nameof(page));

@@ -9,25 +9,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class KestrelServerOptionsTests
     {
         [Fact]
-        public void NoDelayDefaultsToTrue()
-        {
-            var o1 = new KestrelServerOptions();
-            o1.Listen(IPAddress.Loopback, 0);
-            o1.Listen(IPAddress.Loopback, 0, d =>
-            {
-                d.NoDelay = false;
-            });
-
-            Assert.True(o1.ListenOptions[0].NoDelay);
-            Assert.False(o1.ListenOptions[1].NoDelay);
-        }
-
-        [Fact]
-        public void AllowSynchronousIODefaultsToTrue()
+        public void AllowSynchronousIODefaultsToFalse()
         {
             var options = new KestrelServerOptions();
 
-            Assert.True(options.AllowSynchronousIO);
+            Assert.False(options.AllowSynchronousIO);
         }
 
         [Fact]
@@ -36,33 +22,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var options = new KestrelServerOptions();
             options.ListenLocalhost(5000);
 
-            Assert.True(options.ListenOptions[0].NoDelay);
+            Assert.Equal(HttpProtocols.Http1AndHttp2, options.ListenOptions[0].Protocols);
 
             options.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
+                opt.Protocols = HttpProtocols.Http1;
             });
 
             options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), opt =>
             {
                 // ConfigureEndpointDefaults runs before this callback
-                Assert.False(opt.NoDelay);
+                Assert.Equal(HttpProtocols.Http1, opt.Protocols);
             });
-            Assert.False(options.ListenOptions[1].NoDelay);
+            Assert.Equal(HttpProtocols.Http1, options.ListenOptions[1].Protocols);
 
             options.ListenLocalhost(5000, opt =>
             {
-                Assert.False(opt.NoDelay);
-                opt.NoDelay = true; // Can be overriden
+                Assert.Equal(HttpProtocols.Http1, opt.Protocols);
+                opt.Protocols = HttpProtocols.Http2; // Can be overriden
             });
-            Assert.True(options.ListenOptions[2].NoDelay);
-
+            Assert.Equal(HttpProtocols.Http2, options.ListenOptions[2].Protocols);
 
             options.ListenAnyIP(5000, opt =>
             {
-                Assert.False(opt.NoDelay);
+                opt.Protocols = HttpProtocols.Http2;
             });
-            Assert.False(options.ListenOptions[3].NoDelay);
+            Assert.Equal(HttpProtocols.Http2, options.ListenOptions[3].Protocols);
         }
     }
 }

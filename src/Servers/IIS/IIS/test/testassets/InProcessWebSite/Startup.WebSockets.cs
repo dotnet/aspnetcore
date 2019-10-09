@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace TestSite
@@ -46,8 +47,11 @@ namespace TestSite
             app.Run(async context =>
             {
                 var ws = await Upgrade(context);
-
-                var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+#if FORWARDCOMPAT
+                var appLifetime = app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
+                var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+#endif
 
                 await Echo(ws, appLifetime.ApplicationStopping);
             });
@@ -94,9 +98,10 @@ namespace TestSite
 
             // Upgrade the connection
             Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
+            Assert.Null(context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize);
 
             // Get the WebSocket object
-            var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
+            var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
             return ws;
         }
 

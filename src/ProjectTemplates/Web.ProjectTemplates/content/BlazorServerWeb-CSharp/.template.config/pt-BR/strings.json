@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplicativo de Servidor Blazor",
+    "description": "Um modelo de projeto para criar um aplicativo para servidores Blazor que é executado do lado do servidor em um aplicativo ASP.NET Core e manipula as interações com o usuário em uma conexão SignalR. Esse modelo pode ser usado para aplicativos Web com UIs (interfaces do usuário) completas e dinâmicas."
+  }
+}

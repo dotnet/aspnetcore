@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc
                 //
                 // Requests without a content type do not return a 415. It is a common pattern to place [Consumes] on
                 // a controller and have GET actions
-                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
+                if (!string.IsNullOrEmpty(requestContentType) && !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc
             // In case there is a single candidate with a constraint it should be selected.
             // If there are multiple actions with consumes action constraints this should result in ambiguous exception
             // unless there is another action without a consumes constraint.
-            if (requestContentType == null)
+            if (string.IsNullOrEmpty(requestContentType))
             {
                 var isActionWithoutConsumeConstraintPresent = context.Candidates.Any(
                     candidate => candidate.Constraints == null ||

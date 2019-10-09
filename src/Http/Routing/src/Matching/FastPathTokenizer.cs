@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public static int Tokenize(string path, Span<PathSegment> segments)
         {
             // This can happen in test scenarios.
-            if (path == string.Empty)
+            if (string.IsNullOrEmpty(path))
             {
                 return 0;
             }

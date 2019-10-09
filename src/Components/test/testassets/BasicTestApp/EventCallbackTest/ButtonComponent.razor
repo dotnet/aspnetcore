@@ -1,0 +1,14 @@
+
+<button @onclick="OnClick">@Text</button>
+
+@code {
+    [Parameter] public int Count { get; set; }
+    [Parameter] public EventCallback<int> CountChanged { get; set; }
+    [Parameter] public string Text { get; set; }
+
+    Task OnClick(MouseEventArgs e)
+    {
+        Count++;
+        return CountChanged.InvokeAsync(Count);
+    }
+}

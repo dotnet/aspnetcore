@@ -6,9 +6,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConfigureBuilder
+    internal class ConfigureBuilder
     {
         public ConfigureBuilder(MethodInfo configure)
         {
@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                         }
                     }
                 }
-                MethodInfo.Invoke(instance, parameters);
+
+                MethodInfo.InvokeWithoutWrappingExceptions(instance, parameters);
             }
         }
     }

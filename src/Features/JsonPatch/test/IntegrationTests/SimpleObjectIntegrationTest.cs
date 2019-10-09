@@ -47,6 +47,26 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
         }
 
         [Fact]
+        public void CopyNullStringProperty_ToAnotherStringProperty()
+        {
+            // Arrange
+            var targetObject = new SimpleObject()
+            {
+                StringProperty = null,
+                AnotherStringProperty = "B"
+            };
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Copy("StringProperty", "AnotherStringProperty");
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.Null(targetObject.AnotherStringProperty);
+        }
+
+        [Fact]
         public void MoveIntegerProperty_ToAnotherIntegerProperty()
         {
             // Arrange

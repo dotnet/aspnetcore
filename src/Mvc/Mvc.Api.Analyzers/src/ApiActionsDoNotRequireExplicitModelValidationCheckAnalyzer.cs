@@ -23,8 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
-                var symbolCache = new ApiControllerSymbolCache(compilationStartAnalysisContext.Compilation);
-                if (symbolCache.ApiConventionTypeAttribute == null || symbolCache.ApiConventionTypeAttribute.TypeKind == TypeKind.Error)
+                if (!ApiControllerSymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var symbolCache))
                 {
                     // No-op if we can't find types we care about.
                     return;
@@ -55,12 +54,18 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 var parent = ifOperation.Parent;
-                if (parent?.Kind == OperationKind.Block)
+                if (parent == null)
                 {
-                    parent = parent?.Parent;
+                    // No parent, nothing to do
+                    return;
                 }
 
-                if (parent?.Kind != OperationKind.MethodBodyOperation)
+                if (parent.Kind == OperationKind.Block && parent.Parent != null)
+                {
+                    parent = parent.Parent;
+                }
+
+                if (parent.Kind != OperationKind.MethodBodyOperation)
                 {
                     // Only support top-level ModelState IsValid checks.
                     return;

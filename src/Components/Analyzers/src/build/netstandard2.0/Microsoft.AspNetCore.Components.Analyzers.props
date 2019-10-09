@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <DisableImplicitComponentsAnalyzers>true</DisableImplicitComponentsAnalyzers>
+  </PropertyGroup>
+</Project>

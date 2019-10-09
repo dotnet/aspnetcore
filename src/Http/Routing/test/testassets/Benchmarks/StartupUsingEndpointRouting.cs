@@ -1,13 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Benchmarks
 {
@@ -18,8 +17,15 @@ namespace Benchmarks
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+        }
 
-            var endpointDataSource = new DefaultEndpointDataSource(new[]
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
                     new RouteEndpoint(
                         requestDelegate: (httpContext) =>
@@ -37,14 +43,8 @@ namespace Benchmarks
                         displayName: "Plaintext"),
                 });
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
-        }
-
-        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
-        {
-            app.UseEndpointRouting();
-
-            app.UseEndpoint();
+                endpoints.DataSources.Add(endpointDataSource);
+            });
         }
     }
 }

@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Template;
@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly MvcOptions _mvcOptions;
-        private readonly IActionResultTypeMapper _mapper;
         private readonly ApiResponseTypeProvider _responseTypeProvider;
         private readonly RouteOptions _routeOptions;
         private readonly IInlineConstraintResolver _constraintResolver;
@@ -37,46 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public DefaultApiDescriptionProvider(
-            IOptions<MvcOptions> optionsAccessor,
-            IInlineConstraintResolver constraintResolver,
-            IModelMetadataProvider modelMetadataProvider)
-            : this(optionsAccessor, constraintResolver, modelMetadataProvider, null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
-        /// </summary>
-        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
-        /// constraints.</param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public DefaultApiDescriptionProvider(
-            IOptions<MvcOptions> optionsAccessor,
-            IInlineConstraintResolver constraintResolver,
-            IModelMetadataProvider modelMetadataProvider,
-            IActionResultTypeMapper mapper)
-        {
-            _mvcOptions = optionsAccessor.Value;
-            _constraintResolver = constraintResolver;
-            _modelMetadataProvider = modelMetadataProvider;
-            _mapper = mapper;
-            _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
-        /// </summary>
-        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
-        /// constraints.</param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>.</param>
         /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
+        /// <remarks>The <paramref name="mapper"/> parameter is currently ignored.</remarks>
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
@@ -87,7 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _mvcOptions = optionsAccessor.Value;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
-            _mapper = mapper;
             _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
             _routeOptions = routeOptions.Value;
         }
@@ -122,6 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
+        /// <inheritdoc />
         public void OnProvidersExecuted(ApiDescriptionProviderContext context)
         {
         }
@@ -202,8 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
 
                     ModelMetadata metadata;
-                    if (_mvcOptions.AllowValidatingTopLevelNodes &&
-                        actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
+                    if (actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
                         _modelMetadataProvider is ModelMetadataProvider provider)
                     {
                         // The default model metadata provider derives from ModelMetadataProvider
@@ -608,9 +569,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     newContainerName = GetName(containerName, bindingContext);
                 }
 
-                for (var i = 0; i < modelMetadata.Properties.Count; i++)
+                var metadataProperties = modelMetadata.Properties;
+                var metadataPropertiesCount = metadataProperties.Count;
+                for (var i = 0; i < metadataPropertiesCount; i++)
                 {
-                    var propertyMetadata = modelMetadata.Properties[i];
+                    var propertyMetadata = metadataProperties[i];
                     var key = new PropertyKey(propertyMetadata, source);
                     var bindingInfo = BindingInfo.GetBindingInfo(Enumerable.Empty<object>(), propertyMetadata);
 
@@ -622,6 +585,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     if (Visited.Add(key))
                     {
                         Visit(propertyContext, source ?? ambientSource, newContainerName);
+                        Visited.Remove(key);
                     }
                     else
                     {

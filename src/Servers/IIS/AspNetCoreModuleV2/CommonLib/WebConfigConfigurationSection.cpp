@@ -50,43 +50,38 @@ std::optional<DWORD> WebConfigConfigurationSection::GetTimespan(const std::wstri
     return std::make_optional(static_cast<DWORD>(result / 10000ull));
 }
 
-std::vector<std::pair<std::wstring, std::wstring>> WebConfigConfigurationSection::GetKeyValuePairs(const std::wstring& name) const
+std::optional<std::shared_ptr<ConfigurationSection>> WebConfigConfigurationSection::GetSection(const std::wstring& name) const
 {
-    std::vector<std::pair<std::wstring, std::wstring>> pairs;
+    CComPtr<IAppHostElement> element = nullptr;
+
+    if (FAILED_LOG(GetElementChildByName(m_element, name.c_str(), &element)))
+    {
+        return std::nullopt;
+    }
+
+    return std::make_optional(std::make_shared<WebConfigConfigurationSection>(element.Detach()));
+}
+
+std::vector<std::shared_ptr<ConfigurationSection>> WebConfigConfigurationSection::GetCollection() const
+{
+    std::vector<std::shared_ptr<ConfigurationSection>> elements;
     HRESULT findElementResult;
-    CComPtr<IAppHostElement>           element = nullptr;
     CComPtr<IAppHostElementCollection> elementCollection = nullptr;
     CComPtr<IAppHostElement>           collectionEntry = nullptr;
     ENUM_INDEX                         index{};
 
-    if (FAILED_LOG(GetElementChildByName(m_element, name.c_str(), &element)))
-    {
-        return pairs;
-    }
-
-    THROW_IF_FAILED(element->get_Collection(&elementCollection));
+    THROW_IF_FAILED(m_element->get_Collection(&elementCollection));
     THROW_IF_FAILED(findElementResult = FindFirstElement(elementCollection, &index, &collectionEntry));
 
     while (findElementResult != S_FALSE)
     {
-        CComBSTR strHandlerName;
-        if (LOG_IF_FAILED(GetElementStringProperty(collectionEntry, CS_ASPNETCORE_COLLECTION_ITEM_NAME, &strHandlerName.m_str)))
-        {
-            ThrowRequiredException(CS_ASPNETCORE_COLLECTION_ITEM_NAME);
-        }
 
-        CComBSTR strHandlerValue;
-        if (LOG_IF_FAILED(GetElementStringProperty(collectionEntry, CS_ASPNETCORE_COLLECTION_ITEM_VALUE, &strHandlerValue.m_str)))
-        {
-            ThrowRequiredException(CS_ASPNETCORE_COLLECTION_ITEM_VALUE);
-        }
-
-        pairs.emplace_back(strHandlerName, strHandlerValue);
+        elements.emplace_back(std::make_shared<WebConfigConfigurationSection>(collectionEntry.Detach()));
 
         collectionEntry.Release();
 
         THROW_IF_FAILED(findElementResult = FindNextElement(elementCollection, &index, &collectionEntry));
     }
 
-    return pairs;
+    return elements;
 }

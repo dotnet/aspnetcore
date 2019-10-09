@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,6 +56,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             dynamicTable.Insert(_header2.Name, _header2.Value);
 
             VerifyTableEntries(dynamicTable, _header2, _header1);
+        }
+
+        [Fact]
+        public void WrapsAroundBuffer()
+        {
+            var header3 = new HeaderField(Encoding.ASCII.GetBytes("header-3"), Encoding.ASCII.GetBytes("value3"));
+            var header4 = new HeaderField(Encoding.ASCII.GetBytes("header-4"), Encoding.ASCII.GetBytes("value4"));
+
+            // Make the table small enough that the circular buffer kicks in.
+            var dynamicTable = new DynamicTable(HeaderField.RfcOverhead * 3);
+            dynamicTable.Insert(header4.Name, header4.Value);
+            dynamicTable.Insert(header3.Name, header3.Value);
+            dynamicTable.Insert(_header2.Name, _header2.Value);
+            dynamicTable.Insert(_header1.Name, _header1.Value);
+
+            VerifyTableEntries(dynamicTable, _header1, _header2);
         }
 
         [Fact]

@@ -224,6 +224,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <returns>The constructed <see cref="CorsPolicy"/>.</returns>
         public CorsPolicy Build()
         {
+            if (_policy.AllowAnyOrigin && _policy.SupportsCredentials)
+            {
+                throw new InvalidOperationException(Resources.InsecureConfiguration);
+            }
+
             return _policy;
         }
 
