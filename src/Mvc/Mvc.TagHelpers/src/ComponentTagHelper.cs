@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// A <see cref="TagHelper"/> that renders a Razor component.
     /// </summary>
     [HtmlTargetElement("component", Attributes = ComponentTypeName, TagStructure = TagStructure.WithoutEndTag)]
-    public class ComponentTagHelper : TagHelper
+    public sealed class ComponentTagHelper : TagHelper
     {
         private const string ComponentParameterName = "params";
         private const string ComponentParameterPrefix = "param-";

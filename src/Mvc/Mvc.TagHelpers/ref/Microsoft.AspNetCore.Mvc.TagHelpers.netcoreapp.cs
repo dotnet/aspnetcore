@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public long SizeLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("component", Attributes="type", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    public partial class ComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
+    public sealed partial class ComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public ComponentTagHelper() { }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("type")]
