@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="build\$(DefaultNetCoreTargetFramework)\*" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)" />
+    <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
+    <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
   </ItemGroup>
 </Project>
