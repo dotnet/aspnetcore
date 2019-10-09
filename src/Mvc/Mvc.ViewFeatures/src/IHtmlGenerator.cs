@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object htmlAttributes);
 
         /// <summary>
-        /// 
+        /// Generate a &lt;label&gt; element
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object htmlAttributes);
 
         /// <summary>
-        /// 
+        /// Generate a &lt;input type="password"&gt; element
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object htmlAttributes);
 
         /// <summary>
-        /// 
+        /// Generate a &lt;input type="radio"&gt; element
         /// </summary>
         /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
