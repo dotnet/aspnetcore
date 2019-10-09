@@ -20,8 +20,14 @@ namespace Microsoft.Net.Http.Headers
         private const string SecureToken = "secure";
         // RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
         private const string SameSiteToken = "samesite";
+        private static readonly string SameSiteNoneToken = SameSiteMode.None.ToString().ToLower();
         private static readonly string SameSiteLaxToken = SameSiteMode.Lax.ToString().ToLower();
         private static readonly string SameSiteStrictToken = SameSiteMode.Strict.ToString().ToLower();
+
+        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
+        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
+        internal static bool SuppressSameSiteNone;
+
         private const string HttpOnlyToken = "httponly";
         private const string SeparatorToken = "; ";
         private const string EqualsToken = "=";
@@ -35,6 +41,14 @@ namespace Microsoft.Net.Http.Headers
 
         private StringSegment _name;
         private StringSegment _value;
+
+        static SetCookieHeaderValue()
+        {
+            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
+            {
+                SuppressSameSiteNone = enabled;
+            }
+        }
 
         private SetCookieHeaderValue()
         {
@@ -92,16 +106,17 @@ namespace Microsoft.Net.Http.Headers
 
         public bool Secure { get; set; }
 
-        public SameSiteMode SameSite { get; set; }
+        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : (SameSiteMode)(-1); // Unspecified
 
         public bool HttpOnly { get; set; }
 
-        // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={Strict|Lax}; httponly
+        // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
         public override string ToString()
         {
             var length = _name.Length + EqualsToken.Length + _value.Length;
 
             string maxAge = null;
+            string sameSite = null;
 
             if (Expires.HasValue)
             {
@@ -129,9 +144,20 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + SecureToken.Length;
             }
 
-            if (SameSite != SameSiteMode.None)
+            // Allow for Unspecified (-1) to skip SameSite
+            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
             {
-                var sameSite = SameSite == SameSiteMode.Lax ? SameSiteLaxToken : SameSiteStrictToken;
+                sameSite = SameSiteNoneToken;
+                length += SeparatorToken.Length + SameSiteToken.Length + EqualsToken.Length + sameSite.Length;
+            }
+            else if (SameSite == SameSiteMode.Lax)
+            {
+                sameSite = SameSiteLaxToken;
+                length += SeparatorToken.Length + SameSiteToken.Length + EqualsToken.Length + sameSite.Length;
+            }
+            else if (SameSite == SameSiteMode.Strict)
+            {
+                sameSite = SameSiteStrictToken;
                 length += SeparatorToken.Length + SameSiteToken.Length + EqualsToken.Length + sameSite.Length;
             }
 
@@ -140,9 +166,9 @@ namespace Microsoft.Net.Http.Headers
                 length += SeparatorToken.Length + HttpOnlyToken.Length;
             }
 
-            return string.Create(length, (this, maxAge), (span, tuple) =>
+            return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
             {
-                var (headerValue, maxAgeValue) = tuple;
+                var (headerValue, maxAgeValue, sameSite) = tuple;
 
                 Append(ref span, headerValue._name);
                 Append(ref span, EqualsToken);
@@ -180,9 +206,9 @@ namespace Microsoft.Net.Http.Headers
                     AppendSegment(ref span, SecureToken, null);
                 }
 
-                if (headerValue.SameSite != SameSiteMode.None)
+                if (sameSite != null)
                 {
-                    AppendSegment(ref span, SameSiteToken, headerValue.SameSite == SameSiteMode.Lax ? SameSiteLaxToken : SameSiteStrictToken);
+                    AppendSegment(ref span, SameSiteToken, sameSite);
                 }
 
                 if (headerValue.HttpOnly)
@@ -248,9 +274,18 @@ namespace Microsoft.Net.Http.Headers
                 AppendSegment(builder, SecureToken, null);
             }
 
-            if (SameSite != SameSiteMode.None)
+            // Allow for Unspecified (-1) to skip SameSite
+            if (SameSite == SameSiteMode.None && !SuppressSameSiteNone)
             {
-                AppendSegment(builder, SameSiteToken, SameSite == SameSiteMode.Lax ? SameSiteLaxToken : SameSiteStrictToken);
+                AppendSegment(builder, SameSiteToken, SameSiteNoneToken);
+            }
+            else if (SameSite == SameSiteMode.Lax)
+            {
+                AppendSegment(builder, SameSiteToken, SameSiteLaxToken);
+            }
+            else if (SameSite == SameSiteMode.Strict)
+            {
+                AppendSegment(builder, SameSiteToken, SameSiteStrictToken);
             }
 
             if (HttpOnly)
@@ -302,7 +337,7 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        // name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={Strict|Lax}; httponly
+        // name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={Strict|Lax|None}; httponly
         private static int GetSetCookieLength(StringSegment input, int startIndex, out SetCookieHeaderValue parsedValue)
         {
             Contract.Requires(startIndex >= 0);
@@ -437,25 +472,34 @@ namespace Microsoft.Net.Http.Headers
                 {
                     result.Secure = true;
                 }
-                // samesite-av = "SameSite" / "SameSite=" samesite-value
-                // samesite-value = "Strict" / "Lax"
+                // samesite-av = "SameSite=" samesite-value
+                // samesite-value = "Strict" / "Lax" / "None"
                 else if (StringSegment.Equals(token, SameSiteToken, StringComparison.OrdinalIgnoreCase))
                 {
                     if (!ReadEqualsSign(input, ref offset))
                     {
-                        result.SameSite = SameSiteMode.Strict;
+                        result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
                     }
                     else
                     {
                         var enforcementMode = ReadToSemicolonOrEnd(input, ref offset);
 
-                        if (StringSegment.Equals(enforcementMode, SameSiteLaxToken, StringComparison.OrdinalIgnoreCase))
+                        if (StringSegment.Equals(enforcementMode, SameSiteStrictToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.SameSite = SameSiteMode.Strict;
+                        }
+                        else if (StringSegment.Equals(enforcementMode, SameSiteLaxToken, StringComparison.OrdinalIgnoreCase))
                         {
                             result.SameSite = SameSiteMode.Lax;
                         }
+                        else if (!SuppressSameSiteNone
+                            && StringSegment.Equals(enforcementMode, SameSiteNoneToken, StringComparison.OrdinalIgnoreCase))
+                        {
+                            result.SameSite = SameSiteMode.None;
+                        }
                         else
                         {
-                            result.SameSite = SameSiteMode.Strict;
+                            result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
                         }
                     }
                 }
