@@ -21,14 +21,5 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
-
-        protected override void InitializeAsyncCore()
-        {
-            // On WebAssembly, page reloads are expensive so skip if possible
-            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Server);
-            Browser.MountTestComponent<ErrorComponent>();
-            Browser.Exists(By.Id("error-ui"));
-            Browser.Exists(By.TagName("button"));
-        }
     }
 }

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void ShowsErroNotification_OnError_Dismiss()
+        public void ShowsErrorNotification_OnError_Dismiss()
         {
             var errorUi = Browser.FindElement(By.Id("error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
