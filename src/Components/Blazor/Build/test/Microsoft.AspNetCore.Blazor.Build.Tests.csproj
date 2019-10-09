@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Exclude the TestFiles directory from default wildcards -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embed test files so they can be referenced in tests -->
+    <EmbeddedResource Include="TestFiles\**" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(GenerateBaselines)'=='true'">
+    <DefineConstants>GENERATE_BASELINES;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Build" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
+  </ItemGroup>
+
+  <!-- A bit of msbuild magic to support reference resolver tests -->
+  <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
+    <ItemGroup>
+      <_BclDirectory Include="$(MonoBaseClassLibraryPath)" />
+      <_BclDirectory Include="$(MonoBaseClassLibraryFacadesPath)" />
+    </ItemGroup>
+
+    <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+    <WriteLinesToFile Lines="@(_BclDirectory)" File="$(TargetDir)bclLocations.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+  </Target>
+
+</Project>

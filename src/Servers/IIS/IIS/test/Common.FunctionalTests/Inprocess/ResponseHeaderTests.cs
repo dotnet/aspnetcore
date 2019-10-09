@@ -6,11 +6,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(IISTestSiteCollection.Name)]
     public class ResponseHeaders
@@ -20,6 +20,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public ResponseHeaders(IISTestSiteFixture fixture)
         {
             _fixture = fixture;
+        }
+
+        [ConditionalFact]
+        public async Task AddEmptyHeaderSkipped()
+        {
+            var response = await _fixture.Client.GetAsync("ResponseEmptyHeaders");
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.False(response.Headers.TryGetValues("EmptyHeader", out var headerValues));
         }
 
         [ConditionalFact]

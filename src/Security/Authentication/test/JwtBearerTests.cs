@@ -239,12 +239,12 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Theory]
-        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience is invalid")]
-        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience '(null)' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer '(null)' is invalid")]
         [InlineData(typeof(SecurityTokenNoExpirationException), "The token has no expiration")]
-        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid")]
-        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid yet")]
-        [InlineData(typeof(SecurityTokenExpiredException), "The token is expired")]
+        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '(null)', Expires: '(null)'")]
+        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/01/0001 00:00:00'")]
+        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '01/01/0001 00:00:00'")]
         [InlineData(typeof(SecurityTokenInvalidSignatureException), "The signature is invalid")]
         [InlineData(typeof(SecurityTokenSignatureKeyNotFoundException), "The signature key was not found")]
         public async Task ExceptionReportedInHeaderForAuthenticationFailures(Type errorType, string message)
@@ -253,6 +253,26 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             {
                 options.SecurityTokenValidators.Clear();
                 options.SecurityTokenValidators.Add(new InvalidTokenValidator(errorType));
+            });
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal($"Bearer error=\"invalid_token\", error_description=\"{message}\"", response.Response.Headers.WwwAuthenticate.First().ToString());
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Theory]
+        [InlineData(typeof(SecurityTokenInvalidAudienceException), "The audience 'Bad Audience' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidIssuerException), "The issuer 'Bad Issuer' is invalid")]
+        [InlineData(typeof(SecurityTokenInvalidLifetimeException), "The token lifetime is invalid; NotBefore: '01/15/2001 00:00:00', Expires: '02/20/2000 00:00:00'")]
+        [InlineData(typeof(SecurityTokenNotYetValidException), "The token is not valid before '01/15/2045 00:00:00'")]
+        [InlineData(typeof(SecurityTokenExpiredException), "The token expired at '02/20/2000 00:00:00'")]
+        public async Task ExceptionReportedInHeaderWithDetailsForAuthenticationFailures(Type errorType, string message)
+        {
+            var server = CreateServer(options =>
+            {
+                options.SecurityTokenValidators.Clear();
+                options.SecurityTokenValidators.Add(new DetailedInvalidTokenValidator(errorType));
             });
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
@@ -289,7 +309,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
-            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience is invalid; The signature key was not found\"",
+            Assert.Equal("Bearer error=\"invalid_token\", error_description=\"The audience '(null)' is invalid; The signature key was not found\"",
                 response.Response.Headers.WwwAuthenticate.First().ToString());
             Assert.Equal("", response.ResponseText);
         }
@@ -659,6 +679,77 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Assert.Equal(string.Empty, response.ResponseText);
         }
 
+        [Fact]
+        public async Task EventOnForbidden_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbiddenSkip_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbidden_ResponseModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        context.Response.StatusCode = 418;
+                        return context.Response.WriteAsync("You Shall Not Pass");
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(418, (int)response.Response.StatusCode);
+            Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+        }
+
         class InvalidTokenValidator : ISecurityTokenValidator
         {
             public InvalidTokenValidator()
@@ -688,6 +779,69 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 var constructor = ExceptionType.GetTypeInfo().GetConstructor(new[] { typeof(string) });
                 var exception = (Exception)constructor.Invoke(new[] { ExceptionType.Name });
                 throw exception;
+            }
+        }
+
+        class DetailedInvalidTokenValidator : ISecurityTokenValidator
+        {
+            public DetailedInvalidTokenValidator()
+            {
+                ExceptionType = typeof(SecurityTokenException);
+            }
+
+            public DetailedInvalidTokenValidator(Type exceptionType)
+            {
+                ExceptionType = exceptionType;
+            }
+
+            public Type ExceptionType { get; set; }
+
+            public bool CanValidateToken => true;
+
+            public int MaximumTokenSizeInBytes
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
+            public bool CanReadToken(string securityToken) => true;
+
+            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+            {
+                if (ExceptionType == typeof(SecurityTokenInvalidAudienceException))
+                {
+                    throw new SecurityTokenInvalidAudienceException("SecurityTokenInvalidAudienceException") { InvalidAudience = "Bad Audience" };
+                }
+                if (ExceptionType == typeof(SecurityTokenInvalidIssuerException))
+                {
+                    throw new SecurityTokenInvalidIssuerException("SecurityTokenInvalidIssuerException") { InvalidIssuer = "Bad Issuer" };
+                }
+                if (ExceptionType == typeof(SecurityTokenInvalidLifetimeException))
+                {
+                    throw new SecurityTokenInvalidLifetimeException("SecurityTokenInvalidLifetimeException")
+                    {
+                        NotBefore = new DateTime(2001, 1, 15),
+                        Expires = new DateTime(2000, 2, 20),
+                    };
+                }
+                if (ExceptionType == typeof(SecurityTokenNotYetValidException))
+                {
+                    throw new SecurityTokenNotYetValidException("SecurityTokenNotYetValidException")
+                    {
+                        NotBefore = new DateTime(2045, 1, 15),
+                    };
+                }
+                if (ExceptionType == typeof(SecurityTokenExpiredException))
+                {
+                    throw new SecurityTokenExpiredException("SecurityTokenExpiredException")
+                    {
+                        Expires = new DateTime(2000, 2, 20),
+                    };
+                }
+                else
+                {
+                    throw new NotImplementedException(ExceptionType.Name);
+                }
             }
         }
 
@@ -796,6 +950,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                             await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                         }
+                        else if (context.Request.Path == new PathString("/forbidden"))
+                        {
+                            // Simulate Forbidden
+                            await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                        }
                         else if (context.Request.Path == new PathString("/signIn"))
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
@@ -840,6 +999,27 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             return transaction;
+        }
+
+        private static (string tokenText, SymmetricSecurityKey key) CreateStandardTokenAndKey()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+            return (tokenText, key);
         }
     }
 }

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common primitives for ASP.NET Connection Handlers and clients</Description>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ReusableUtf8JsonWriter.cs" Link="Internal\ReusableUtf8JsonWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+    <Reference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '5.0'">
+    <!-- This dependency was replaced by System.Text.Json between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
+    <SuppressBaselineReference Include="Newtonsoft.Json" />
+
+    <!-- System.Text.Json (for .NET Standard 2.0) and ShardFx bring System.Buffers in (transitively). No need for both here. -->
+    <SuppressBaselineReference Include="System.Buffers" />
+  </ItemGroup>
+
+</Project>

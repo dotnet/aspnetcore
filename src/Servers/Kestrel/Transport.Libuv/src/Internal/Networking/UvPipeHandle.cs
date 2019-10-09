@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvPipeHandle : UvStreamHandle
+    internal class UvPipeHandle : UvStreamHandle
     {
         public UvPipeHandle(ILibuvTrace logger) : base(logger)
         {

@@ -1,0 +1,125 @@
+<Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
+
+  <!-- Version of this SDK is set in global.json -->
+  <Sdk Name="Yarn.MSBuild" />
+
+  <PropertyGroup>
+    <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
+    <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
+    <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
+    <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
+    <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
+    <BuildDependsOn>
+      PrepareForBuild;
+      ResolveProjectReferences;
+      _Build;
+    </BuildDependsOn>
+    <NpmBuildArgs Condition="'$(NpmBuildArgs)' == ''">run build</NpmBuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TSFiles Include="src\**\*.ts" />
+    <TSFiles Include="test\**\*.ts" />
+    <TSFiles Include="package.json" />
+    <TSFiles Include="*.npmproj" />
+
+    <BuildOutputFiles Include="$(BaseIntermediateOutputPath)\build-sentinel" />
+    <BuildOutputFiles Include="dist\**\*.js" />
+  </ItemGroup>
+
+  <Target Name="_CheckForInvalidConfiguration">
+    <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
+
+    <Exec ContinueOnError="true" Command="node -v" StandardOutputImportance="Low">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    </Exec>
+
+    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with /p:BuildNodeJs=false. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
+  </Target>
+
+  <Target Name="Restore">
+    <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
+  </Target>
+
+  <Target Name="ResolveProjectReferences">
+    <MSBuild Projects="@(ProjectReference)"
+             BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <CallTarget Targets="_Pack" Condition="'$(PackOnBuild)' == 'true'" />
+  </Target>
+
+  <Target Name="GetBuildInputCacheFile">
+    <Hash ItemsToHash="@(TSFiles)">
+      <Output TaskParameter="HashResult" PropertyName="_TSFileHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_TSFileHash)"
+      File="$(BaseIntermediateOutputPath)tsfiles.cache"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+  </Target>
+
+  <Target Name="_Build"
+    Condition="'$(IsBuildable)' != 'false'"
+    DependsOnTargets="GetBuildInputCacheFile"
+    Inputs="@(TSFiles);$(BaseIntermediateOutputPath)tsfiles.cache"
+    Outputs="@(BuildOutputFiles)">
+    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
+  </Target>
+
+  <PropertyGroup>
+    <PackDependsOn>
+      $(PackDependsOn);
+      PrepareForBuild
+    </PackDependsOn>
+    <PackDependsOn Condition="'$(NoBuild)' != 'true'">
+      $(PackDependsOn);
+      Build;
+      _Pack
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_Pack" Condition="'$(IsPackable)' == 'true'"
+      Inputs="@(TSFiles)"
+      Outputs="$(PackageOutputPath)\$(PackageFileName)">
+
+    <PropertyGroup>
+      <_PackageTargetPath>$(MSBuildProjectDirectory)\$(PackageFileName)</_PackageTargetPath>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
+
+    <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js $(PackageJson) $(PackageVersion)" />
+    <Yarn Command="pack --filename $(PackageFileName)" />
+
+    <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
+
+    <CallTarget Targets="_RestoreBackupPackageJsonFile" />
+    <OnError ExecuteTargets="_RestoreBackupPackageJsonFile" />
+  </Target>
+
+  <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)" />
+
+  <Target Name="_RestoreBackupPackageJsonFile">
+    <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
+  </Target>
+
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+    <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
+    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+
+</Project>

@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         // ANCM specifics...
         public HostingModel HostingModel { get; set; }
-        public AncmVersion AncmVersion { get; set; }
 
         public override string ToString()
         {
@@ -24,8 +23,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var description = $"Server: {Server}, TFM: {Tfm}, Type: {ApplicationType}, Arch: {Architecture}";
             if (Server == ServerType.IISExpress || Server == ServerType.IIS)
             {
-                var version = AncmVersion == AncmVersion.AspNetCoreModule ? "V1" : "V2";
-                description += $", ANCM: {version}, Host: {HostingModel}";
+                description += $", Host: {HostingModel}";
             }
             return description;
         }
@@ -38,7 +36,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             info.AddValue(nameof(ApplicationType), ApplicationType, typeof(ApplicationType));
             info.AddValue(nameof(Architecture), Architecture, typeof(RuntimeArchitecture));
             info.AddValue(nameof(HostingModel), HostingModel, typeof(HostingModel));
-            info.AddValue(nameof(AncmVersion), AncmVersion, typeof(AncmVersion));
         }
 
         public void Deserialize(IXunitSerializationInfo info)
@@ -49,7 +46,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             ApplicationType = info.GetValue<ApplicationType>(nameof(ApplicationType));
             Architecture = info.GetValue<RuntimeArchitecture>(nameof(Architecture));
             HostingModel = info.GetValue<HostingModel>(nameof(HostingModel));
-            AncmVersion = info.GetValue<AncmVersion>(nameof(AncmVersion));
         }
     }
 }

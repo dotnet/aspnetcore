@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 
@@ -17,16 +18,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
-            { typeof(IHttpSendFileFeature), _identityFunc },
+            { typeof(IHttpResponseBodyFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-            // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/HttpSysServer/issues/231
-            { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
+            { typeof(IHttpSysRequestInfoFeature), _identityFunc },
         };
 
         private readonly FeatureContext _featureContext;
@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // SignalR uses the presence of the feature to detect feature support.
                 // https://github.com/aspnet/HttpSysServer/issues/427
                 _featureFuncLookup[typeof(IHttpUpgradeFeature)] = _identityFunc;
+                // Win8+
+                _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
             }
         }
 

@@ -1,0 +1,21 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <PackageId>@microsoft/signalr-protocol-msgpack</PackageId>
+    <IsPackable>true</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <IsShippingPackage>true</IsShippingPackage>
+    <PackOnBuild>true</PackOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\signalr\signalr.npmproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\browser\signalr-protocol-msgpack.js" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

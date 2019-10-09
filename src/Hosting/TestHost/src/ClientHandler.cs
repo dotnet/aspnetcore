@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
         /// <summary>
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="pathBase">The base path.</param>
         /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
-        public ClientHandler(PathString pathBase, IHttpApplication<Context> application)
+        internal ClientHandler(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
@@ -42,6 +41,10 @@ namespace Microsoft.AspNetCore.TestHost
             }
             _pathBase = pathBase;
         }
+
+        internal bool AllowSynchronousIO { get; set; }
+
+        internal bool PreserveExecutionContext { get; set; }
 
         /// <summary>
         /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
@@ -59,16 +62,23 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var contextBuilder = new HttpContextBuilder(_application);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
 
-            Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
             contextBuilder.Configure(context =>
             {
                 var req = context.Request;
 
-                req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                if (request.Version == HttpVersion.Version20)
+                {
+                    // https://tools.ietf.org/html/rfc7540
+                    req.Protocol = "HTTP/2";
+                }
+                else
+                {
+                    req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                }
                 req.Method = request.Method.ToString();
 
                 req.Scheme = request.RequestUri.Scheme;
@@ -78,7 +88,7 @@ namespace Microsoft.AspNetCore.TestHost
                     req.Headers.Append(header.Key, header.Value.ToArray());
                 }
 
-                if (req.Host == null || !req.Host.HasValue)
+                if (!req.Host.HasValue)
                 {
                     // If Host wasn't explicitly set as a header, let's infer it from the Uri
                     req.Host = HostString.FromUriComponent(request.RequestUri);
@@ -110,19 +120,30 @@ namespace Microsoft.AspNetCore.TestHost
                     // This body may have been consumed before, rewind it.
                     body.Seek(0, SeekOrigin.Begin);
                 }
-                req.Body = body;
+                req.Body = new AsyncStreamWrapper(body, () => contextBuilder.AllowSynchronousIO);
+            });
 
-                responseBody = context.Response.Body;
+            var response = new HttpResponseMessage();
+
+            // Copy trailers to the response message when the response stream is complete
+            contextBuilder.RegisterResponseReadCompleteCallback(context =>
+            {
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                foreach (var trailer in responseTrailersFeature.Trailers)
+                {
+                    bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
+                    Contract.Assert(success, "Bad trailer");
+                }
             });
 
             var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
-            var response = new HttpResponseMessage();
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
 
-            response.Content = new StreamContent(responseBody);
+            response.Content = new StreamContent(httpContext.Response.Body);
 
             foreach (var header in httpContext.Response.Headers)
             {

@@ -3,11 +3,14 @@
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
     <TargetFramework>net461</TargetFramework>
+    <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+    <Reference Include="Microsoft.Web.Xdt" />
   </ItemGroup>
 
 </Project>

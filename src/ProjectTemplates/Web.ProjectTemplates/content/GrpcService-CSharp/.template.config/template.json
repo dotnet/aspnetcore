@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "gRPC"
+  ],
+  "name": "ASP.NET Core gRPC Service",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project template for creating a gRPC ASP.NET Core service.",
+  "groupIdentity": "Microsoft.Web.Grpc",
+  "precedence": "6000",
+  "identity": "Microsoft.Grpc.Service.CSharp.3.1",
+  "shortName": "grpc",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "GrpcService-CSharp",
+  "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp5.0",
+          "description": "Target netcoreapp5.0"
+        }
+      ],
+      "defaultValue": "netcoreapp5.0"
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "GrpcService-CSharp.csproj"
+    }
+  ],
+  "defaultName": "GrpcService",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

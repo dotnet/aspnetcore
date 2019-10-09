@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -16,10 +16,9 @@ namespace E2ETests
     public class SmokeTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6170*/ ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
                 .WithAllHostingModels();
 
         [ConditionalTheory]

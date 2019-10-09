@@ -4,7 +4,7 @@
       "AdxVerificationCompositeRule"
     ],
     "packages": {
-      "Microsoft.AspNetCore.Components.Build": {
+      "Microsoft.AspNetCore.Blazor.Build": {
         "Exclusions": {
           "ASSEMBLY_COMPANY": {
             "tools/Mono.Cecil.dll": "External package",
@@ -128,16 +128,6 @@
             "tools/System.Runtime.CompilerServices.Unsafe.dll": "External package",
             "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "External package",
             "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "External package"
-          }
-        }
-      },
-      "Microsoft.AspNetCore.Blazor.Cli": {
-        "Exclusions": {
-          "SIGN_STRONGNAME": {
-            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
-          },
-          "WRONG_PUBLICKEYTOKEN": {
-            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
           }
         }
       },

@@ -119,6 +119,15 @@ namespace RoutingWebSite
                 values: values);
         }
 
+        public string LinkToRouteWithNoMvcParameters(int? custom = null)
+        {
+            return _linkGenerator.GetUriByRouteValues(
+                scheme: "https",
+                host: new HostString("www.example.com"),
+                routeName: "routewithnomvcparameters",
+                values: new { custom = custom, });
+        }
+
         private static RouteValueDictionary QueryToRouteValues(IQueryCollection query)
         {
             return new RouteValueDictionary(query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString()));

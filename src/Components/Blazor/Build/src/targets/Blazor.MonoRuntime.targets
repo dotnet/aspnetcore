@@ -1,0 +1,659 @@
+<Project>
+
+  <Target
+    Name="_BlazorCopyFilesToOutputDirectory"
+    DependsOnTargets="PrepareBlazorOutputs"
+    Inputs="@(BlazorItemOutput)"
+    Outputs="@(BlazorItemOutput->'%(TargetOutputPath)')"
+    AfterTargets="CopyFilesToOutputDirectory"
+    Condition="'$(OutputType.ToLowerInvariant())'=='exe'">
+
+    <!-- Copy the blazor output files  -->
+    <Copy
+      SourceFiles="@(BlazorItemOutput)"
+      DestinationFiles="@(BlazorItemOutput->'%(TargetOutputPath)')"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+      Condition="'@(BlazorItemOutput)' != '' and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
+    </Copy>
+
+    <ItemGroup>
+      <FileWrites Include="@(BlazorItemOutput->'%(TargetOutputPath)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BlazorTrackResolveReferencesDidRun" AfterTargets="ResolveReferences">
+    <PropertyGroup>
+      <!-- So we know we can trust @(ReferenceCopyLocalPaths) later -->
+      <_BlazorResolveReferencesDidRun>true</_BlazorResolveReferencesDidRun>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_BlazorBuildReport"
+          AfterTargets="_BlazorCopyFilesToOutputDirectory">
+
+    <ItemGroup>
+      <_BlazorStatisticsOutput Include="@(BlazorItemOutput->'%(TargetOutputPath)')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_BlazorStatisticsReportImportance Condition="'$(BlazorOutputStatistics)' == ''">normal</_BlazorStatisticsReportImportance>
+      <_BlazorStatisticsReportImportance Condition="'$(BlazorOutputStatistics)' != ''">high</_BlazorStatisticsReportImportance>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Blazor Build result -> @(_BlazorStatisticsOutput->Distinct()->Count()) files in $(TargetDir)dist" />
+    <Message Importance="$(_BlazorStatisticsReportImportance)" Text="%(_BlazorStatisticsOutput.Identity)" />
+  </Target>
+
+  <!-- Preparing blazor files for output:
+    PrepareBlazorOutputs
+      _PrepareBlazorOutputConfiguration
+      _DefineBlazorCommonInputs
+      _BlazorResolveOutputBinaries
+        When link on build:
+          _GenerateLinkerDescriptor
+          _CollectBlazorLinkerDescriptors
+          _LinkBlazorApplication
+          _CollectLinkerOutputs
+        When don't link on build:
+          _CollectResolvedAssemblies
+            _ResolveBlazorApplicationAssemblies
+            _ReadResolvedBlazorApplicationAssemblies
+            _IntermediateCopyBlazorApplicationAssemblies
+            _TouchBlazorApplicationAssemblies
+      _GenerateBlazorBootJson
+    _BlazorCopyFilesToOutputDirectory
+
+    The process for doing builds goes as follows:
+    Produce a hash file with the Hash SDK task and write that hash to a marker file.
+    Produce a marker file that saves whether we are linking or not in this build so that we can take that as
+    input in future builds and do the correct thing for incremental builds.
+    We only produce marker files when the input changes, if the input doesn't change the marker stays the
+    same.
+
+    If we are linking on this build the process is as follows:
+    1) We determine if there are linker descriptors available, if not generate one.
+    2) Collect the list of linker descriptors and create a marker for the linker if it doesn't exist or changed
+       from a previous build.
+    3) Run the linker in case the linker inputs marker is newer than the linker result file.
+    4) Collect the outputs from the linker.
+
+    If we are not linking in this build the process is as follows:
+    1) Resolve the assemblies for the application only if the inputs marker is newer than the resolved assemblies
+       result file.
+    2) Read the result file with the resolved assemblies.
+    3) Copy the resolved assemblies to an intermediate folder.
+    4) In case we are switching from linking to not linking, touch the files in the intermediate folder to ensure
+       that updated versions of the files get copied to the output folder.
+
+    Once the binary outputs are resolved:
+    1) Create a marker file with the resolved assemblies and the boot json data as inputs.
+    2) If the marker file is newer than the boot json in the output folder, regenerate the
+       boot json
+
+    Once all the outputs are resolved (static content + binary outputs + boot json)
+    Copy all the files to the output folder.
+    -->
+
+  <PropertyGroup>
+    <PrepareBlazorOutputs>
+      _PrepareBlazorOutputConfiguration;
+      _DefineBlazorCommonInputs;
+      _BlazorResolveOutputBinaries;
+      _GenerateBlazorBootJson;
+    </PrepareBlazorOutputs>
+  </PropertyGroup>
+
+  <Target Name="PrepareBlazorOutputs" DependsOnTargets="$(PrepareBlazorOutputs)" />
+
+  <!--
+  Prepare blazor outputs preamble:
+  * Creates updated marker files (if necessary) for incremental builds.
+  * Computes intermediate and final output paths.
+  * Computes the list of static items to copy to the output folder.
+  -->
+
+  <Target Name="_PrepareBlazorOutputConfiguration">
+    <!--
+    This task produces all the "final" paths for all the files we need to produce the final output.
+
+    The final folder is something like bin/<<Configuration>>/<<TargetFramework>>/dist
+    /_framework/_bin <- This will contain either the BCL + app assemblies or the result of linking the app.
+    /_framework/wasm <- This will contain the wsm runtime copied from the nuget package.
+    /_framework/blazor.js <- This is the blazor.js file copied from the nuget package.
+    /_framework/blazor.boot.json <- This is the boot json file
+
+    This task also defines some intermediate paths that we will use:
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker <- This will be used to create the output from the linker.
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linked.assemblies.txt <- This will be used to save the output files from
+    the linker and use that as marker to identify whether or not we need to run the linker.
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker.descriptor.xml <- This will be used to generate an XML descriptor
+    for the mono linker.
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.basic.cache <- This is the marker file to track the inputs common
+    inputs to the output generation process.
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.copylocal.txt <- Paths to all the copy-local referenced assemblies found
+    during the build process (i.e., the @(ReferenceCopyLocalPaths) values). We need this because when publishing, the build doesn't
+    necessarily also run so this is the only way we know which assemblies to include in linking/resolveassemblies.
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.linkerswitch.cache <- This is the marker file to track the
+    switch from linking to not linking and viceversa.
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.linker.cache <- This is the marker file to track the inputs
+    to the linker.
+    /obj/<<configuration>>/<<targetframework>>/blazor/resolvedassemblies/ <- This will be used to store the resolved assemblies
+    before copying them to the output when linking is not enabled.
+    /obj/<<configuration>>/<<targetframework>>/blazor/resolved.assemblies.txt <- This keeps track of all the resolved assemblies.
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor.boot.json <- The generated boot json file
+    /obj/<<configuration>>/<<targetframework>>/blazor/inputs.bootjson.cache <- The marker file that track whether boot json needs to
+    be regenerated.
+    -->
+
+    <PropertyGroup Label="Build properties">
+      <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'false'"></_BlazorShouldLinkApplicationAssemblies>
+      <_BlazorShouldLinkApplicationAssemblies Condition="$(BlazorLinkOnBuild) == 'true'">true</_BlazorShouldLinkApplicationAssemblies>
+      <_BlazorBuiltInBclLinkerDescriptor>$(MSBuildThisFileDirectory)BuiltInBclLinkerDescriptor.xml</_BlazorBuiltInBclLinkerDescriptor>
+    </PropertyGroup>
+
+    <ItemGroup Label="Static content to copy to the output folder">
+      <MonoWasmFile Include="$(MonoWasmRuntimePath)**/*.*" />
+      <BlazorJsFile Include="$(BlazorJsPath)" />
+      <BlazorItemOutput Include="@(MonoWasmFile)">
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>WebAssembly</Type>
+        <IsStatic>true</IsStatic>
+      </BlazorItemOutput>
+      <BlazorItemOutput Include="@(BlazorJsFile)">
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorJsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>BlazorRuntime</Type>
+        <IsStatic>true</IsStatic>
+      </BlazorItemOutput>
+    </ItemGroup>
+
+    <Error Condition="'@(BlazorJsFile->Count())' == '0'" Text="No JS files found in '$(BlazorJsPath)'" />
+
+    <ItemGroup Label="Static content supplied by NuGet packages">
+      <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
+        <TargetOutputPath>$(TargetDir)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_BlazorPackageContentOutput>
+      <BlazorItemOutput Include="@(_BlazorPackageContentOutput)" />
+    </ItemGroup>
+
+    <PropertyGroup Label="Intermediate output paths">
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor -->
+      <BlazorIntermediateOutputPath>$(IntermediateOutputPath)$(BaseBlazorIntermediateOutputPath)</BlazorIntermediateOutputPath>
+      <BlazorIntermediateOutputPath Condition="! $([System.IO.Path]::IsPathRooted($(BlazorIntermediateOutputPath)))">$([MSBuild]::Escape($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(BlazorIntermediateOutputPath)'))'))))</BlazorIntermediateOutputPath>
+
+      <!-- Common marker files paths -->
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.basic.cache -->
+      <BlazorBuildCommonInputsCache>$(BlazorIntermediateOutputPath)inputs.basic.cache</BlazorBuildCommonInputsCache>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.copylocal.txt -->
+      <BlazorLocalReferencesOutputPath>$(BlazorIntermediateOutputPath)inputs.copylocal.txt</BlazorLocalReferencesOutputPath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.linkerswitch.cache -->
+      <BlazorBuildLinkerSwitchInputsCache>$(BlazorIntermediateOutputPath)inputs.linkerswitch.cache</BlazorBuildLinkerSwitchInputsCache>
+
+      <!-- Linker paths and marker files -->
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.linker.cache -->
+      <BlazorBuildLinkerInputsCache>$(BlazorIntermediateOutputPath)inputs.linker.cache</BlazorBuildLinkerInputsCache>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/linker.descriptor.xml -->
+      <GeneratedBlazorLinkerDescriptor>$(BlazorIntermediateOutputPath)linker.descriptor.xml</GeneratedBlazorLinkerDescriptor>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/linker/ -->
+      <BlazorIntermediateLinkerOutputPath>$(BlazorIntermediateOutputPath)linker/</BlazorIntermediateLinkerOutputPath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/linked.assemblies.txt -->
+      <BlazorIntermediateLinkerResultFilePath>$(BlazorIntermediateOutputPath)linked.assemblies.txt</BlazorIntermediateLinkerResultFilePath>
+
+      <!-- Resolved assemblies paths and marker files -->
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolvedassemblies/ -->
+      <BlazorIntermediateResolvedApplicationAssembliesOutputPath>$(BlazorIntermediateOutputPath)resolvedassemblies/</BlazorIntermediateResolvedApplicationAssembliesOutputPath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolved.assemblies.txt -->
+      <BlazorResolvedAssembliesOutputPath>$(BlazorIntermediateOutputPath)resolved.assemblies.txt</BlazorResolvedAssembliesOutputPath>
+
+      <!-- boot json related paths and markers -->
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/ -->
+      <BlazorBootJsonIntermediateOutputDir>$(BlazorIntermediateOutputPath)</BlazorBootJsonIntermediateOutputDir>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/blazor.boot.json -->
+      <BlazorBootJsonIntermediateOutputPath>$(BlazorBootJsonIntermediateOutputDir)$(BlazorBootJsonName)</BlazorBootJsonIntermediateOutputPath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/inputs.bootjson.cache -->
+      <BlazorBuildBootJsonInputsCache>$(BlazorIntermediateOutputPath)inputs.bootjson.cache</BlazorBuildBootJsonInputsCache>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/resolve-dependencies.txt -->
+      <BlazorResolveDependenciesFilePath>$(BlazorIntermediateOutputPath)resolve-dependencies.txt</BlazorResolveDependenciesFilePath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/bootjson-references.txt -->
+      <BlazorBootJsonReferencesFilePath>$(BlazorIntermediateOutputPath)bootjson-references.txt</BlazorBootJsonReferencesFilePath>
+
+      <!-- /obj/<<configuration>>/<<targetframework>>/blazor/embedded.resources.txt -->
+      <BlazorEmbeddedResourcesConfigFilePath>$(BlazorIntermediateOutputPath)embedded.resources.txt</BlazorEmbeddedResourcesConfigFilePath>
+
+    </PropertyGroup>
+
+    <PropertyGroup Label="Final output paths">
+      <BlazorRuntimeBinOutputPath>$(TargetDir)$(BaseBlazorRuntimeBinOutputPath)</BlazorRuntimeBinOutputPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(BlazorIntermediateOutputPath)" />
+
+  </Target>
+
+  <Target Name="_DefineBlazorCommonInputs">
+    <!-- If ResolveReferences hasn't yet run, we must be inside a VS publish process
+         that doesn't also do a build, so use the stored information. -->
+    <ReadLinesFromFile
+      Condition="'$(_BlazorResolveReferencesDidRun)'!='true'"
+      File="$(BlazorLocalReferencesOutputPath)">
+      <Output TaskParameter="Lines" ItemName="_BlazorDependencyInput"/>
+    </ReadLinesFromFile>
+    <ItemGroup Condition="'$(_BlazorResolveReferencesDidRun)'=='true'">
+      <!-- ... otherwise we can get the fresh info from @(ReferenceCopyLocalPaths) -->
+      <_BlazorDependencyInput Include="@(ReferenceCopyLocalPaths->WithMetadataValue('Extension','.dll')->'%(FullPath)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_BlazorCommonInput Include="@(IntermediateAssembly)" />
+      <_BlazorCommonInput Include="@(_BlazorDependencyInput)" />
+      <_BlazorCommonInput Include="$(_BlazorShouldLinkApplicationAssemblies)" />
+      <_BlazorCommonInput Include="$(BlazorEnableDebugging)" />
+      <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''" Include="false" />
+      <_BlazorLinkingOption Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''" Include="true" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_BlazorCommonInput)">
+      <Output TaskParameter="HashResult" PropertyName="_BlazorBuildBasicInputHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_BlazorBuildBasicInputHash)"
+      File="$(BlazorBuildCommonInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <WriteLinesToFile
+      Lines="@(_BlazorDependencyInput)"
+      File="$(BlazorLocalReferencesOutputPath)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <!-- Switch to detect when we switch from linking to not linking and viceversa -->
+    <WriteLinesToFile
+      Lines="@(_BlazorLinkingOption)"
+      File="$(BlazorBuildLinkerSwitchInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(BlazorBuildLinkerSwitchInputsCache)" />
+      <FileWrites Include="$(BlazorBuildCommonInputsCache)" />
+      <FileWrites Include="$(BlazorLocalReferencesOutputPath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_BlazorResolveOutputBinaries" DependsOnTargets="_CollectLinkerOutputs;_CollectResolvedAssemblies" />
+
+  <!--
+  Linker enabled part of the pipeline:
+
+  * If there are no descriptors defined, generate a new linker descriptor.
+  * Collect the list of descriptors and produce a marker file to determine when the
+    inputs to the linker change in future builds.
+  * Invoke the linker if the linker inputs marker file is newer than the linker outputs.
+  * Read the outputs from the linker and add them to the list of blazor outputs.
+  -->
+
+  <PropertyGroup>
+    <_CollectLinkerOutputsDependsOn>
+      _GenerateLinkerDescriptor;
+      _CollectBlazorLinkerDescriptors;
+      _LinkBlazorApplication
+    </_CollectLinkerOutputsDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="_CollectLinkerOutputs"
+    Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''"
+    DependsOnTargets="$(_CollectLinkerOutputsDependsOn)">
+    <!--
+    Read the outputs from the linker (from this run or a previous run) and set them in an item group for
+    later use.
+    -->
+    <ReadLinesFromFile File="$(BlazorIntermediateLinkerResultFilePath)">
+      <Output TaskParameter="Lines" ItemName="_OptimizedFiles"/>
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <BlazorItemOutput Include="@(_OptimizedFiles->WithMetadataValue('Extension','.dll'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Assembly</Type>
+        <PrimaryOutput Condition="'%(FileName)' == @(IntermediateAssembly->'%(FileName)')">true</PrimaryOutput>
+      </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_OptimizedFiles->WithMetadataValue('Extension','.pdb'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Pdb</Type>
+      </BlazorItemOutput>
+      <FileWrites Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(TargetOutputPath)')" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_GenerateLinkerDescriptor"
+          Inputs="$(BlazorBuildCommonInputsCache)"
+          Outputs="$(GeneratedBlazorLinkerDescriptor)"
+          Condition="$(_BlazorShouldLinkApplicationAssemblies) != '' and '@(BlazorLinkerDescriptor)' == ''">
+
+    <ItemGroup>
+      <_PrepareLinkerDescriptorAssemblyLine Include="@(IntermediateAssembly->'%(FileName)')" />
+      <_GeneratedLinkerDescriptorLine Include="&lt;linker&gt;" />
+      <_GeneratedLinkerDescriptorLine Include="@(_PrepareLinkerDescriptorAssemblyLine->'&lt;assembly fullname=&quot;%(Identity)&quot; /&gt;')" />
+      <_GeneratedLinkerDescriptorLine Include="&lt;/linker&gt;" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      Lines="@(_GeneratedLinkerDescriptorLine)"
+      File="$(GeneratedBlazorLinkerDescriptor)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="True" />
+
+  </Target>
+
+  <Target Name="_CollectBlazorLinkerDescriptors">
+
+    <ItemGroup Condition="@(BlazorLinkerDescriptor) == ''">
+      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
+      <BlazorLinkerDescriptor Include="$(GeneratedBlazorLinkerDescriptor)" />
+      <FileWrites Include="$(GeneratedBlazorLinkerDescriptor)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_BlazorLinkerInput Include="@(IntermediateAssembly)" />
+      <_BlazorLinkerInput Include="@(_BlazorDependencyInput)" />
+      <_BlazorLinkerInput Include="@(BlazorLinkerDescriptor)" />
+      <_BlazorLinkerInput Include="$(AdditionalMonoLinkerOptions)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_BlazorLinkerInput)">
+      <Output TaskParameter="HashResult" PropertyName="_BlazorLinkerInputHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_BlazorLinkerInputHash)"
+      File="$(BlazorBuildLinkerInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(BlazorBuildLinkerInputsCache)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+      Name="_LinkBlazorApplication"
+      Condition="$(_BlazorShouldLinkApplicationAssemblies) != ''"
+      Inputs="$(BlazorBuildLinkerInputsCache);
+              @(IntermediateAssembly);
+              @(_BlazorDependencyInput);
+              @(BlazorLinkerDescriptor)"
+      Outputs="$(BlazorIntermediateLinkerResultFilePath)"
+    >
+    <!--
+    At this point we have decided to run the mono linker on the Blazor assembly and its dependencies.
+    The steps to run the mono linker are the following:
+    1) Clear the linker output directory if not clean before hand, as we don't know what the outputs of
+    the linker will be.
+    2) Run the linker on the main assembly, its dependencies and pass in the BCL folders to do the lookup
+    for framework assemblies.
+    3) Once we've run the linker we need to capture the produced output and generate a marker file containing
+    the list of produced files. This file will act as a marker to skip running the linker if none of the inputs
+    has changed.
+    4) Add the file we just created to the list of file writes, to support incremental builds.
+    -->
+    <ItemGroup>
+      <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath)" />
+      <_BlazorAssembliesToLink Include="@(_BlazorDependencyInput->'-a &quot;%(Identity)&quot;')" />
+      <_BlazorAssembliesToLink Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
+      <_BlazorFolderLookupPaths Include="@(_MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
+      <_BlazorAssemblyDescriptorFiles
+        Include="@(BlazorLinkerDescriptor->'-x &quot;%(FullPath)&quot;')" Condition="'@(BlazorLinkerDescriptor)' != ''" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
+    </PropertyGroup>
+
+    <!-- Clear the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
+    <Delete Files="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+	
+	
+	<PropertyGroup>
+	  <_MonoLinkerDotNetPath>$(DOTNET_HOST_PATH)</_MonoLinkerDotNetPath>
+	  <_MonoLinkerDotNetPath Condition="'$(_MonoLinkerDotNetPath)' == ''">dotnet</_MonoLinkerDotNetPath>
+	</PropertyGroup>
+
+    <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
+    <Exec Command="$(_MonoLinkerDotNetPath) &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
+
+    <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
+    <ItemGroup>
+      <_BlazorLinkerOutput Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_BlazorLinkerOutput Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" />
+    </ItemGroup>
+
+    <!--
+    Write the list of files in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ into
+    /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linked.assemblies.txt
+    -->
+    <WriteLinesToFile
+      File="$(BlazorIntermediateLinkerResultFilePath)"
+      Lines="@(_BlazorLinkerOutput)"
+      Overwrite="true" />
+
+    <!-- Add /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linked.assemblies.txt to the list of written files. -->
+    <!-- Add /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/*.dll to the list of written files. -->
+    <ItemGroup>
+      <FileWrites Include="$(BlazorIntermediateLinkerResultFilePath)" />
+      <FileWrites Include="@(_BlazorLinkerOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  Linker disabled part of the pipeline:
+
+  * Run a CLI tool to produce the transitive closure of application references using the main application
+    as entry point.
+  * Read the list of resolved application references from the file produced by the previous step.
+  * Copy the resolved application references into an intermediate folder.
+  * If we are switching from linking to not linking
+    Touch the files in the intermediate folder to ensure they are copied to the output and replace
+    the linked versions with the same name.
+  * Collect the list of resolved assemblies in the intermediate output folder and prepare them to be
+    copied to their final destination in the output folder.
+  -->
+
+  <PropertyGroup>
+    <_CollectResolvedAssembliesDependsOn>
+      _ResolveBlazorApplicationAssemblies;
+      _ReadResolvedBlazorApplicationAssemblies;
+      _IntermediateCopyBlazorApplicationAssemblies;
+      _TouchBlazorApplicationAssemblies
+    </_CollectResolvedAssembliesDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="_CollectResolvedAssemblies"
+    DependsOnTargets="$(_CollectResolvedAssembliesDependsOn)"
+    Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''">
+
+    <!--
+    At this point we have decided not to run the linker and instead to just copy the assemblies
+    from the BCL referenced by the app the nuget package into the _framework/_bin folder.
+    The only thing we need to do here is collect the list of items that will go into _framework/_bin.
+    -->
+
+    <ItemGroup>
+      <BlazorItemOutput Include="@(_IntermediateResolvedRuntimeDependencies->WithMetadataValue('Extension','.dll'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Assembly</Type>
+        <PrimaryOutput Condition="'%(FileName)' == @(IntermediateAssembly->'%(FileName)')">true</PrimaryOutput>
+      </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_IntermediateResolvedRuntimeDependencies->WithMetadataValue('Extension','.pdb'))">
+        <TargetOutputPath>$(BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+        <Type>Pdb</Type>
+      </BlazorItemOutput>
+      <FileWrites Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(TargetOutputPath)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_ResolveBlazorApplicationAssemblies"
+    Condition="'$(_BlazorShouldLinkApplicationAssemblies)' == ''"
+    Inputs="$(BlazorBuildCommonInputsCache);
+            @(IntermediateAssembly);
+            @(_BlazorDependencyInput)"
+    Outputs="$(BlazorResolvedAssembliesOutputPath)"
+  >
+
+    <PropertyGroup>
+      <_ReferencesArg Condition="'@(_BlazorDependencyInput)' != ''">--references &quot;$(BlazorResolveDependenciesFilePath)&quot;</_ReferencesArg>
+      <_BclParameter>--base-class-library &quot;$(MonoBaseClassLibraryPath)&quot; --base-class-library &quot;$(MonoBaseClassLibraryFacadesPath)&quot;</_BclParameter>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+          File="$(BlazorResolveDependenciesFilePath)"
+          Lines="@(_BlazorDependencyInput)"
+          Overwrite="true" />
+
+    <Exec Command="$(BlazorBuildExe) resolve-dependencies &quot;@(IntermediateAssembly->'%(FullPath)')&quot; $(_ReferencesArg) $(_BclParameter) --output &quot;$(BlazorResolvedAssembliesOutputPath)&quot;" />
+
+  </Target>
+
+  <Target Name="_ReadResolvedBlazorApplicationAssemblies">
+
+    <ReadLinesFromFile File="$(BlazorResolvedAssembliesOutputPath)">
+      <Output TaskParameter="Lines" ItemName="_BlazorResolvedRuntimeDependencies"/>
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <_IntermediateResolvedRuntimeDependencies Include="@(_BlazorResolvedRuntimeDependencies->'$(BlazorIntermediateResolvedApplicationAssembliesOutputPath)%(FileName)%(Extension)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FileWrites Include="$(BlazorResolvedAssembliesOutputPath)" />
+      <FileWrites Include="@(_IntermediateResolvedRuntimeDependencies)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="_IntermediateCopyBlazorApplicationAssemblies"
+    Inputs="@(_BlazorResolvedRuntimeDependencies)"
+    Outputs="@(_BlazorResolvedRuntimeDependencies->'$(BlazorIntermediateResolvedApplicationAssembliesOutputPath)%(FileName)%(Extension)')">
+
+    <Copy
+      SourceFiles="@(_BlazorResolvedRuntimeDependencies)"
+      DestinationFiles="@(_BlazorResolvedRuntimeDependencies->'$(BlazorIntermediateResolvedApplicationAssembliesOutputPath)%(FileName)%(Extension)')"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)" />
+
+  </Target>
+
+  <Target
+    Name="_TouchBlazorApplicationAssemblies"
+    Inputs="$(BlazorBuildLinkerSwitchInputsCache)"
+    Outputs="@(_IntermediateResolvedRuntimeDependencies)">
+
+    <Touch Files="@(_IntermediateResolvedRuntimeDependencies)" ForceTouch="true" />
+
+  </Target>
+
+  <!--
+  Final part of the build pipeline:
+
+  * Collect the blazor application assemblies to be copied to the output and create a marker file.
+  * Call our CLI tool to generate the boot json if the list of assemblies has changed.
+  -->
+
+  <Target Name="_ResolveBlazorBootJsonInputs">
+    <ItemGroup>
+      <BlazorBootJsonInput Include="$(Configuration)" />
+      <BlazorBootJsonInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FullPath)')" />
+      <BlazorBootJsonInput Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FullPath)')" />
+      <BlazorBootJsonInput Include="@(_BlazorLinkingOption)" />
+      <BlazorBootJsonInput Include="$(BlazorEnableDebugging)" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(BlazorBuildBootJsonInputsCache)"
+      Lines="@(BlazorBootJsonInput)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(BlazorBuildBootJsonInputsCache)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="_GenerateBlazorBootJson"
+    DependsOnTargets="_ResolveBlazorBootJsonInputs"
+    Inputs="$(BlazorBuildBootJsonInputsCache);@(_BlazorDependencyInput)"
+    Outputs="$(BlazorBootJsonIntermediateOutputPath)">
+    <ItemGroup>
+      <_UnlinkedAppReferencesPaths Include="@(_BlazorDependencyInput)" />
+      <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
+      <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FileName)%(Extension)')" Condition="'$(BlazorEnableDebugging)' == 'true'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
+      <_ReferencesArg Condition="'@(_AppReferences)' != ''">--references &quot;$(BlazorBootJsonReferencesFilePath)&quot;</_ReferencesArg>
+      <_EmbeddedResourcesArg Condition="'@(_UnlinkedAppReferencesPaths)' != ''">--embedded-resources &quot;$(BlazorEmbeddedResourcesConfigFilePath)&quot;</_EmbeddedResourcesArg>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(BlazorBootJsonReferencesFilePath)"
+      Lines="@(_AppReferences)"
+      Overwrite="true" />
+
+    <WriteLinesToFile
+      Condition="'@(_UnlinkedAppReferencesPaths)' != ''"
+      File="$(BlazorEmbeddedResourcesConfigFilePath)"
+      Lines="@(_UnlinkedAppReferencesPaths)"
+      Overwrite="true" />
+
+    <Exec Command="$(BlazorBuildExe) write-boot-json &quot;@(IntermediateAssembly)&quot; $(_ReferencesArg) $(_EmbeddedResourcesArg) $(_LinkerEnabledFlag) --output &quot;$(BlazorBootJsonIntermediateOutputPath)&quot;" />
+
+    <ItemGroup Condition="Exists('$(BlazorBootJsonIntermediateOutputPath)')">
+      <_BlazorBootJson Include="$(BlazorBootJsonIntermediateOutputPath)" />
+      <_BlazorBootJsonEmbeddedContentFile Include="$(BlazorBootJsonIntermediateOutputDir)_content\**\*.*" />
+      <BlazorItemOutput Include="@(_BlazorBootJson)">
+        <TargetOutputPath>$(TargetDir)$(BlazorBootJsonOutputPath)</TargetOutputPath>
+        <Type>BootJson</Type>
+      </BlazorItemOutput>
+      <BlazorItemOutput Include="@(_BlazorBootJsonEmbeddedContentFile)">
+        <TargetOutputPath>$(TargetDir)dist/_content/%(RecursiveDir)%(FileName)%(Extension)</TargetOutputPath>
+      </BlazorItemOutput>
+      <FileWrites Include="$(BlazorBootJsonIntermediateOutputPath)" />
+      <FileWrites Include="@(_BlazorBootJsonEmbeddedContentFile)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

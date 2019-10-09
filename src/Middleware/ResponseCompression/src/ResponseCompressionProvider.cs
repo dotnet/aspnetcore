@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.ResponseCompression.Internal;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -170,6 +170,17 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <inheritdoc />
         public virtual bool ShouldCompressResponse(HttpContext context)
         {
+            var httpsMode = context.Features.Get<IHttpsCompressionFeature>()?.Mode ?? HttpsCompressionMode.Default;
+
+            // Check if the app has opted into or out of compression over HTTPS
+            if (context.Request.IsHttps
+                && (httpsMode == HttpsCompressionMode.DoNotCompress
+                    || !(_enableForHttps || httpsMode == HttpsCompressionMode.Compress)))
+            {
+                _logger.NoCompressionForHttps();
+                return false;
+            }
+
             if (context.Response.Headers.ContainsKey(HeaderNames.ContentRange))
             {
                 _logger.NoCompressionDueToHeader(HeaderNames.ContentRange);
@@ -215,12 +226,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <inheritdoc />
         public bool CheckRequestAcceptsCompression(HttpContext context)
         {
-            if (context.Request.IsHttps && !_enableForHttps)
-            {
-                _logger.NoCompressionForHttps();
-                return false;
-            }
-
             if (string.IsNullOrEmpty(context.Request.Headers[HeaderNames.AcceptEncoding]))
             {
                 _logger.NoAcceptEncoding();

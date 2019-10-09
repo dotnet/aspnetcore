@@ -10,11 +10,39 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Interop.FunctionalTests
 {
     public static class H2SpecCommands
     {
+        #region chmod
+        // user permissions
+        const int S_IRUSR = 0x100;
+        const int S_IWUSR = 0x80;
+        const int S_IXUSR = 0x40;
+
+        // group permission
+        const int S_IRGRP = 0x20;
+        const int S_IWGRP = 0x10;
+        const int S_IXGRP = 0x8;
+
+        // other permissions
+        const int S_IROTH = 0x4;
+        const int S_IWOTH = 0x2;
+        const int S_IXOTH = 0x1;
+
+        const int _0755 =
+            S_IRUSR | S_IXUSR | S_IWUSR
+            | S_IRGRP | S_IXGRP
+            | S_IROTH | S_IXOTH;
+
+        [DllImport("libc", SetLastError = true)]
+        private static extern int chmod(string pathname, int mode);
+
+        private static int chmod755(string pathname) => chmod(pathname, _0755);
+        #endregion
+
         private const int TimeoutSeconds = 15;
 
         private static string GetToolLocation()
@@ -26,11 +54,15 @@ namespace Interop.FunctionalTests
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return Path.Combine(root, "linux", "h2spec");
+                var toolPath = Path.Combine(root, "linux", "h2spec");
+                chmod755(toolPath);
+                return toolPath;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return Path.Combine(root, "darwin", "h2spec");
+                var toolPath = Path.Combine(root, "darwin", "h2spec");
+                chmod755(toolPath);
+                return toolPath;
             }
             throw new NotImplementedException("Invalid OS");
         }
@@ -172,27 +204,54 @@ namespace Interop.FunctionalTests
         public static async Task RunTest(string testId, int port, bool https, ILogger logger)
         {
             var tempFile = Path.GetTempPath() + Guid.NewGuid() + ".xml";
-            var processOptions = new ProcessStartInfo
+            using (var process = new Process())
             {
-                FileName = GetToolLocation(),
-                RedirectStandardOutput = true,
-                Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -j {tempFile} --timeout {TimeoutSeconds}"
-                    + (https ? " --tls --insecure" : ""),
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true,
-            };
+                process.StartInfo.FileName = GetToolLocation();
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -v -j {tempFile} --timeout {TimeoutSeconds}"
+                    + (https ? " --tls --insecure" : "");
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                process.StartInfo.CreateNoWindow = true;
 
-            using (var process = Process.Start(processOptions))
-            {
-                var dataTask = process.StandardOutput.ReadToEndAsync();
-
-                if (await Task.WhenAny(dataTask, Task.Delay(TimeSpan.FromSeconds(TimeoutSeconds * 2))) != dataTask)
+                process.OutputDataReceived += (_, args) =>
                 {
+                    if (!string.IsNullOrEmpty(args.Data))
+                    {
+                        logger.LogDebug(args.Data);
+                    }
+                };
+                process.ErrorDataReceived += (_, args) =>
+                {
+                    if (!string.IsNullOrEmpty(args.Data))
+                    {
+                        logger.LogError(args.Data);
+                    }
+                };
+                var exitedTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                process.EnableRaisingEvents = true; // Enables Exited
+                process.Exited += (_, args) =>
+                {
+                    logger.LogDebug("H2spec has exited.");
+                    exitedTcs.TrySetResult(0);
+                };
+
+                Assert.True(process.Start());
+                process.BeginOutputReadLine(); // Starts OutputDataReceived
+                process.BeginErrorReadLine(); // Starts ErrorDataReceived
+
+                if (await Task.WhenAny(exitedTcs.Task, Task.Delay(TimeSpan.FromSeconds(TimeoutSeconds * 2))) != exitedTcs.Task)
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.", ex);
+                    }
                     throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.");
                 }
-
-                var data = await dataTask;
-                logger.LogDebug(data);
 
                 var results = File.ReadAllText(tempFile);
                 File.Delete(tempFile);

@@ -5,7 +5,7 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
-import { Arg, getDataDetail } from "./Utils";
+import { Arg, getDataDetail, Platform } from "./Utils";
 
 /** @private */
 export class WebSocketTransport implements ITransport {
@@ -50,7 +50,7 @@ export class WebSocketTransport implements ITransport {
             let webSocket: WebSocket | undefined;
             const cookies = this.httpClient.getCookieString(url);
 
-            if (typeof window === "undefined" && cookies) {
+            if (Platform.isNode && cookies) {
                 // Only pass cookies when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
                     headers: {
@@ -80,7 +80,10 @@ export class WebSocketTransport implements ITransport {
                 // ErrorEvent is a browser only type we need to check if the type exists before using it
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
+                } else {
+                    error = new Error("There was an error with the transport.");
                 }
+
                 reject(error);
             };
 

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
             var header = Assert.Single(cookieHeaders);
-            Assert.Equal($"Cookie=Chocolate%20Chip; expires={HeaderUtilities.FormatDate(now.AddMinutes(1440))}; domain=contoso.com; path=/recipes; secure; samesite=lax; httponly", header);
+            Assert.Equal($"Cookie=Chocolate%20Chip; expires={HeaderUtilities.FormatDate(now.AddMinutes(1440))}; domain=contoso.com; path=/recipes; secure; httponly", header);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
             var header = Assert.Single(cookieHeaders);
-            Assert.Equal($"Cookie=Chocolate%20Chip; samesite=lax", header);
+            Assert.Equal($"Cookie=Chocolate%20Chip", header);
         }
 
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
 
             var cookieHeaders = context.HttpContext.Response.Headers[HeaderNames.SetCookie];
             var header = Assert.Single(cookieHeaders);
-            Assert.Equal($"Cookie=; samesite=lax", header);
+            Assert.Equal($"Cookie=", header);
         }
     }
 }

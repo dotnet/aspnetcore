@@ -12,9 +12,9 @@ namespace FilesWebSite
 {
     public class DownloadFilesController : Controller
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public DownloadFilesController(IHostingEnvironment hostingEnvironment)
+        public DownloadFilesController(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }

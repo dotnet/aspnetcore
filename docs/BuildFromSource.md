@@ -3,8 +3,6 @@ Build ASP.NET Core from Source
 
 Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-:warning: We are currently in the middle of restructing our source code. These instructions will likely change rapidly during November and December 2018.
-
 See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
 
 ## Install pre-requistes
@@ -13,19 +11,23 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 Building ASP.NET Core on Windows requires:
 
-* Windows 7 or higher
+* Windows 10, version 1803 or newer
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
-* Visual Studio 2017. <https://visualstudio.com>
-    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1). This will use VS2017.
+* Visual Studio 2019. <https://visualstudio.com>
+    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
         ```ps1
-        PS> ./eng/scripts/InstallVisualStudio.ps1 -Edition Community
+        PS> ./eng/scripts/InstallVisualStudio.ps1
         ```
 * Git. <https://git-scm.org>
-* (Optional) some optional components, like the SignalR Java client, may require
-    * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
-    * Java Development Kit 10 or newer. Either:
-        * OpenJDK <http://jdk.java.net/10/>
-        * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
+* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
+* Java Development Kit 11 or newer. Either:
+    * OpenJDK <https://jdk.java.net/>
+    * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
+    * To install a version of the JDK that will only be used by this repo, run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1)
+        ```ps1
+        PS> ./eng/scripts/InstallJdk.ps1
+        ```
+* Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from [https://www.google.com/chrome]
 
 ### macOS/Linux
 
@@ -35,11 +37,10 @@ Building ASP.NET Core on macOS or Linux requires:
 * If using Linux, you need a machine with all .NET Core Linux prerequisites: <https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites>
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Git <https://git-scm.org>
-* (Optional) some optional components, like the SignalR Java client, may require
-    * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
-    * Java Development Kit 10 or newer. Either:
-        * OpenJDK <http://jdk.java.net/10/>
-        * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
+* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
+* Java Development Kit 11 or newer. Either:
+    * OpenJDK <https://jdk.java.net/>
+    * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
 ## Clone the source code
 
@@ -55,7 +56,7 @@ To update an existing copy, run:
 git submodule update --init --recursive
 ```
 
-## Building in Visual Studio / Code
+## Building in Visual Studio
 
 Before opening our .sln files in Visual Studio or VS Code, you need to perform the following actions.
 
@@ -81,43 +82,48 @@ Instead, we have many .sln files which include a sub-set of projects. These prin
 
 > :bulb: Pro tip: `dotnet new sln` and `dotnet sln` are one of the easiest ways to create and modify solutions.
 
-### Known issue: NU1105
+### Common error: CS0006
 
-Opening solution files may produce an error code NU1105 with a message such
+Opening solution files and building may produce an error code CS0006 with a message such
 
-> Unable to find project information for 'C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.
+> Error CS0006 Metadata file 'C:\src\aspnet\AspNetCore\artifacts\bin\Microsoft.AspNetCore.Metadata\Debug\netstandard2.0\Microsoft.AspNetCore.Metadata.dll' could not be found
 
-This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
+The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project. In some cases, it is sometimes the intended behavior of the .sln which has been crafted to only include a subset of projects.
 
-**The workaround** for now is to add all projects to the solution.
+**You can fix this in one of two ways**
+1. Build the project on command line. In most cases, running `build.cmd` on command line solve this problem.
+2. Update the solution to include the missing project. You can either do this one by one using `dotnet sln`
+   ```
+   dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
+   ```
 
-    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
+### Common error: Unable to locate the .NET Core SDK
 
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
 
-#### PATH
+> error : Unable to locate the .NET Core SDK. Check that it is installed and that the version specified in global.json (if any) matches the installed version.
+> error MSB4236: The SDK 'Microsoft.NET.Sdk' specified could not be found.
 
-For VS Code and Visual Studio and `dotnet` commands to work correctly, you must place the following location in your PATH.
-Use the following commands to update the PATH variable in a command line window.
+In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
 
-Windows (Command Prompt)
+## Building with Visual Studio Code
 
-```batch
-set PATH=%USERPROFILE%\.dotnet\x64;%PATH%
-```
+Using Visual Studio Code with this repo requires setting environment variables on command line first.
+Use these command to launch VS Code with the right settings.
 
-Windows (Powershell)
-
+On Windows (requires PowerShell):
 ```ps1
-$env:PATH="$env:USERPROFILE\.dotnet\x64;$env:PATH"
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
+code .
 ```
 
-Linux/macOS:
-
-```sh
-export PATH="$HOME/.dotnet:$PATH"
+On macOS/Linux:
 ```
-
-On Windows, we recommend using the `startvs.cmd` command to launch Visual Studio.
+source activate.sh
+code .
+```
 
 ## Building on command-line
 
@@ -131,6 +137,26 @@ On Windows:
 On macOS/Linux:
 ```
 ./build.sh
+```
+
+By default, all of the C# projects are built. Some C# projects requires NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify /p:BuildNodeJs=false on the command line.
+
+### Using `dotnet` on command line in this repo
+
+Because we are using pre-release versions of .NET Core, you have to set a handful of environment variables
+to make the .NET Core command line tool work well. You can set these environment variables like this
+
+On Windows (requires PowerShell):
+
+```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
+```
+
+On macOS/Linux:
+```bash
+source ./activate.sh
 ```
 
 ## Running tests on command-line
@@ -164,16 +190,16 @@ Common properties include:
 
 Property                 | Description
 -------------------------|-------------------------------------------------------------------------------------------------------------
-BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
-SharedFxRID              | The runtime identifier of the shared framework.
+TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
+TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
 
 ## Use the result of your build
 
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
-- Run the installers produced in `artifacts/{Debug, Release}/installers/` for your platform.
+- Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
@@ -181,7 +207,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
   <configuration>
       <packageSources>
           <clear />
-          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\Debug\packages\product\" />
+          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\packages\Debug\Shipping\" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>
@@ -192,7 +218,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
   ```xml
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-preview-0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-dev" />
   </ItemGroup>
   ```
 

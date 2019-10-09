@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -421,6 +420,50 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("/custom-denied-page?rurl=http%3A%2F%2Fwww.google.com%2F", transaction.Response.Headers.GetValues("Location").First());
         }
 
+        [Fact]
+        public async Task ReplyPathWithAccessDeniedErrorAndNoAccessDeniedPath_FallsBackToRemoteError()
+        {
+            var accessDeniedCalled = false;
+            var remoteFailureCalled = false;
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = new TestStateDataFormat();
+                o.Events = new OAuthEvents()
+                {
+                    OnAccessDenied = ctx =>
+                    {
+                        Assert.Null(ctx.AccessDeniedPath.Value);
+                        Assert.Equal("http://testhost/redirect", ctx.ReturnUrl);
+                        Assert.Equal("ReturnUrl", ctx.ReturnUrlParameter);
+                        accessDeniedCalled = true;
+                        return Task.FromResult(0);
+                    },
+                    OnRemoteFailure = ctx =>
+                    {
+                        var ex = ctx.Failure;
+                        Assert.True(ex.Data.Contains("error"), "error");
+                        Assert.True(ex.Data.Contains("error_description"), "error_description");
+                        Assert.True(ex.Data.Contains("error_uri"), "error_uri");
+                        Assert.Equal("access_denied", ex.Data["error"]);
+                        Assert.Equal("whyitfailed", ex.Data["error_description"]);
+                        Assert.Equal("https://example.com/fail", ex.Data["error_uri"]);
+                        remoteFailureCalled = true;
+                        ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
+                        ctx.HandleResponse();
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var transaction = await server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
+                ".AspNetCore.Correlation.Google.correlationId=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.StartsWith("/error?FailureMessage=", transaction.Response.Headers.GetValues("Location").First());
+            Assert.True(accessDeniedCalled);
+            Assert.True(remoteFailureCalled);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -435,24 +478,31 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnRemoteFailure = ctx =>
                     {
+                        var ex = ctx.Failure;
+                        Assert.True(ex.Data.Contains("error"), "error");
+                        Assert.True(ex.Data.Contains("error_description"), "error_description");
+                        Assert.True(ex.Data.Contains("error_uri"), "error_uri");
+                        Assert.Equal("itfailed", ex.Data["error"]);
+                        Assert.Equal("whyitfailed", ex.Data["error_description"]);
+                        Assert.Equal("https://example.com/fail", ex.Data["error_uri"]);
                         ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
                 } : new OAuthEvents();
             });
-            var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar&state=protected_state",
+            var sendTask = server.SendAsync("https://example.com/signin-google?error=itfailed&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
                 ".AspNetCore.Correlation.Google.correlationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?FailureMessage=OMG" + UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("/error?FailureMessage=itfailed" + UrlEncoder.Default.Encode(";Description=whyitfailed;Uri=https://example.com/fail"), transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
                 var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
-                Assert.Equal("OMG;Description=SoBad;Uri=foobar", error.GetBaseException().Message);
+                Assert.Equal("itfailed;Description=whyitfailed;Uri=https://example.com/fail", error.GetBaseException().Message);
             }
         }
 
@@ -472,45 +522,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     o.ClaimsIssuer = claimsIssuer;
                 }
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                {
-                                    new
-                                    {
-                                        value = "Test email",
-                                        type = "account"
-                                    }
-                                }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
             });
 
             var properties = new AuthenticationProperties();
@@ -662,46 +674,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
                 o.StateDataFormat = stateFormat;
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
                 o.Events = new OAuthEvents
                 {
                     OnCreatingTicket = context =>
@@ -742,46 +715,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
                 o.StateDataFormat = stateFormat;
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
                 o.Events = new OAuthEvents
                 {
                     OnTicketReceived = context =>
@@ -820,7 +754,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnCreatingTicket = context =>
                     {
-                        Assert.NotNull(context.User);
                         Assert.Equal("Test Access Token", context.AccessToken);
                         Assert.Equal("Test Refresh Token", context.RefreshToken);
                         Assert.Equal(TimeSpan.FromSeconds(3600), context.ExpiresIn);
@@ -832,46 +765,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         return Task.FromResult(0);
                     }
                 };
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
             });
 
             var properties = new AuthenticationProperties();
@@ -1102,29 +996,20 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             access_token = "Test Access Token",
                             expires_in = 3600,
-                            token_type = "Bearer"
+                            token_type = "Bearer",
+                            refresh_token = "Test Refresh Token"
                         });
                     }
-                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
+                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/oauth2/v2/userinfo")
                     {
                         return ReturnJsonResponse(new
                         {
                             id = "Test User ID",
-                            displayName = "Test Name",
-                            name = new
-                            {
-                                familyName = "Test Family Name",
-                                givenName = "Test Given Name"
-                            },
-                            url = "Profile link",
-                            emails = new[]
-                            {
-                                new
-                                {
-                                    value = "Test email",
-                                    type = "account"
-                                }
-                            }
+                            name = "Test Name",
+                            given_name = "Test Given Name",
+                            family_name = "Test Family Name",
+                            link = "Profile link",
+                            email = "Test email",
                         });
                     }
 
@@ -1136,7 +1021,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
         {
             var res = new HttpResponseMessage(code);
-            var text = JsonConvert.SerializeObject(content);
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(content);
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }
@@ -1177,26 +1062,26 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
                             var tokens = result.Properties.GetTokens();
-                            res.Describe(tokens);
+                            await res.DescribeAsync(tokens);
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            res.Describe(context.User);
+                            await res.DescribeAsync(context.User);
                         }
                         else if (req.Path == new PathString("/authenticate"))
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
-                            res.Describe(result.Principal);
+                            await res.DescribeAsync(result.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateGoogle"))
                         {
                             var result = await context.AuthenticateAsync("Google");
-                            res.Describe(result?.Principal);
+                            await res.DescribeAsync(result?.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateFacebook"))
                         {
                             var result = await context.AuthenticateAsync("Facebook");
-                            res.Describe(result?.Principal);
+                            await res.DescribeAsync(result?.Principal);
                         }
                         else if (req.Path == new PathString("/unauthorized"))
                         {

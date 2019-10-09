@@ -10,36 +10,43 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class DefaultHttpRequest : HttpRequest
+    internal sealed class DefaultHttpRequest : HttpRequest
     {
+        private const string Http = "http";
+        private const string Https = "https";
+
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
         private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
-        private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
+        private readonly static Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
         private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
         private readonly static Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
-        private HttpContext _context;
+        private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
-        public DefaultHttpRequest(HttpContext context)
-        {
-            Initialize(context);
-        }
-
-        public virtual void Initialize(HttpContext context)
+        public DefaultHttpRequest(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(context.Features);
+            _features.Initalize(context.Features);
         }
 
-        public virtual void Uninitialize()
+        public void Initialize()
         {
-            _context = null;
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features.Initalize(_context.Features);
+        }
+
+        public void Initialize(int revision)
+        {
+            _features.Initalize(_context.Features, revision);
+        }
+
+        public void Uninitialize()
+        {
+            _features = default;
         }
 
         public override HttpContext HttpContext => _context;
@@ -106,14 +113,14 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override bool IsHttps
         {
-            get { return string.Equals(Constants.Https, Scheme, StringComparison.OrdinalIgnoreCase); }
-            set { Scheme = value ? Constants.Https : Constants.Http; }
+            get { return string.Equals(Https, Scheme, StringComparison.OrdinalIgnoreCase); }
+            set { Scheme = value ? Https : Http; }
         }
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"]); }
-            set { Headers["Host"] = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
+            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -167,10 +174,9 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { RouteValuesFeature.RouteValues = value; }
         }
 
-        public override PipeReader BodyPipe
+        public override PipeReader BodyReader
         {
-            get { return RequestBodyPipeFeature.RequestBodyPipe; }
-            set { RequestBodyPipeFeature.RequestBodyPipe = value; }
+            get { return RequestBodyPipeFeature.Reader; }
         }
 
         struct FeatureInterfaces

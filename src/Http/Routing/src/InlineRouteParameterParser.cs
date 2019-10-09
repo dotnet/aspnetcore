@@ -218,11 +218,7 @@ namespace Microsoft.AspNetCore.Routing
 
             } while (state != ParseState.End);
 
-            return new ConstraintParseResults
-            {
-                CurrentIndex = currentIndex,
-                Constraints = inlineConstraints
-            };
+            return new ConstraintParseResults(currentIndex, inlineConstraints);
         }
 
         private enum ParseState
@@ -233,11 +229,17 @@ namespace Microsoft.AspNetCore.Routing
             End
         }
 
-        private struct ConstraintParseResults
+        private readonly struct ConstraintParseResults
         {
-            public int CurrentIndex;
+            public readonly int CurrentIndex;
 
-            public IEnumerable<InlineConstraint> Constraints;
+            public readonly IEnumerable<InlineConstraint> Constraints;
+
+            public ConstraintParseResults(int currentIndex, IEnumerable<InlineConstraint> constraints)
+            {
+                CurrentIndex = currentIndex;
+                Constraints = constraints;
+            }
         }
     }
 }

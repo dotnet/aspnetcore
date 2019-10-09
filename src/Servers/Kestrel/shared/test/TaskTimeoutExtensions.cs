@@ -7,6 +7,16 @@ namespace System.Threading.Tasks
 {
     public static class TaskTimeoutExtensions
     {
+        public static Task<T> DefaultTimeout<T>(this ValueTask<T> task)
+        {
+            return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
+        }
+
+        public static Task DefaultTimeout(this ValueTask task)
+        {
+            return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
+        }
+
         public static Task<T> DefaultTimeout<T>(this Task<T> task)
         {
             return task.TimeoutAfter(TestConstants.DefaultTimeout);

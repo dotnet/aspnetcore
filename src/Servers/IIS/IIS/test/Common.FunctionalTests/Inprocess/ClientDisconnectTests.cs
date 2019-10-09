@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(IISTestSiteCollection.Name)]
     public class ClientDisconnectTests: FixtureLoggedTest
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await _fixture.Client.RetryRequestAsync("/WaitingRequestCount", async message => await message.Content.ReadAsStringAsync() == "0");
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/4512")]
+        [ConditionalFact]
         public async Task ClientDisconnectCallbackStress()
         {
             // Fixture initialization fails if inside of the Task.Run, so send an
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             for (var j = 0; j < 20; j++)
             {
                 // Windows has a max connection limit of 10 for the IIS server,
-                // so setting limit fairly low. 
+                // so setting limit fairly low.
                 const int numRequests = 5;
                 async Task RunRequests()
                 {

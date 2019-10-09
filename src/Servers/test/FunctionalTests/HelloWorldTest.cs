@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -20,10 +20,9 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithApplicationTypes(ApplicationType.Portable)
-                .WithAllAncmVersions()
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 

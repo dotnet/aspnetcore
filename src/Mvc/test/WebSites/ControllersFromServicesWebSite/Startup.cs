@@ -22,7 +22,7 @@ namespace ControllersFromServicesWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             var builder = services
-                .AddMvc()
+                .AddControllersWithViews()
                 .ConfigureApplicationPartManager(manager => manager.ApplicationParts.Clear())
                 .AddApplicationPart(typeof(TimeScheduleController).GetTypeInfo().Assembly)
                 .ConfigureApplicationPartManager(manager =>
@@ -64,9 +64,10 @@ namespace ControllersFromServicesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("default", "{controller}/{action}/{id}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

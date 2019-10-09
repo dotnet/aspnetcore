@@ -19,15 +19,42 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
     public class HealthCheckEndpointRouteBuilderExtensionsTest
     {
         [Fact]
+        public void ThrowFriendlyErrorWhenServicesNotRegistered()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapHealthChecks("/healthz");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddRouting();
+                });
+
+            var ex = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+
+            Assert.Equal(
+                "Unable to find the required services. Please add all the required services by calling " +
+                "'IServiceCollection.AddHealthChecks' inside the call to 'ConfigureServices(...)' " +
+                "in the application startup code.",
+                ex.Message);
+        }
+
+        [Fact]
         public async Task MapHealthChecks_ReturnsOk()
         {
             // Arrange
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapHealthChecks("/healthz");
+                        endpoints.MapHealthChecks("/healthz");
                     });
                 })
                 .ConfigureServices(services =>
@@ -54,9 +81,10 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapHealthChecks("/healthz", new HealthCheckOptions
+                        endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
                         {
                             ResponseWriter = async (context, report) =>
                             {

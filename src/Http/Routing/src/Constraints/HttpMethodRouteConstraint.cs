@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                     // the HTTP GET-specific route will be used for URI generation, which might have undesired behavior.
                     //
                     // To prevent this, a user might call GetVirtualPath(..., { httpMethod = "POST" }) to
-                    // signal that he is generating a URI that will be used for an HTTP POST, so he wants the URI
+                    // signal that they are generating a URI that will be used for an HTTP POST, so they want the URI
                     // generation to be performed by the (b) route instead of the (a) route, consistent with what would
                     // happen on incoming requests.
                     if (!values.TryGetValue(routeKey, out var obj))

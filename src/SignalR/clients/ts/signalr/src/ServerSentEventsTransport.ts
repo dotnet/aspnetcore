@@ -5,7 +5,7 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
+import { Arg, getDataDetail, Platform, sendMessage } from "./Utils";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
@@ -57,7 +57,7 @@ export class ServerSentEventsTransport implements ITransport {
             }
 
             let eventSource: EventSource;
-            if (typeof window !== "undefined") {
+            if (Platform.isBrowser || Platform.isWebWorker) {
                 eventSource = new this.eventSourceConstructor(url, { withCredentials: true });
             } else {
                 // Non-browser passes cookies via the dictionary

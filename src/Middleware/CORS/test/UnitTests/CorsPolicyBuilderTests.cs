@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -285,7 +285,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(corsPolicy.SupportsCredentials);
         }
 
-
         [Fact]
         public void DisallowCredential_SetsSupportsCredentials_ToFalse()
         {
@@ -298,6 +297,21 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.False(corsPolicy.SupportsCredentials);
+        }
+
+        [Fact]
+        public void Build_ThrowsIfConfiguredToAllowAnyOriginWithCredentials()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder()
+                .AllowAnyOrigin()
+                .AllowCredentials();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            // Assert
+            Assert.Equal(Resources.InsecureConfiguration, ex.Message);
         }
 
         [Theory]

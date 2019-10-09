@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
@@ -1369,6 +1368,40 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                     defaults,
                     parameterPolicies: null,
                     requiredValues: new { area = (string)null, action = "SomeAction", controller = "LG2", page = (string)null }),
+                defaults,
+                requiredKeys: new string[] { "area", "action", "controller", "page" },
+                parameterPolicies: null);
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        // Regression test for aspnet/AspNetCore#4212
+        //
+        // An ambient value should be used to satisfy a required value even if if we're discarding
+        // ambient values.
+        [Fact]
+        public void BindValues_LinkingFromPageToAControllerInAreaWithAmbientArea_Success()
+        {
+            // Arrange
+            var expected = "/Admin/LG2/SomeAction";
+
+            var template = "{area}/{controller=Home}/{action=Index}/{id?}";
+            var defaults = new RouteValueDictionary();
+            var ambientValues = new RouteValueDictionary(new { area = "Admin", page = "/LGAnotherPage", id = "17" });
+            var explicitValues = new RouteValueDictionary(new { controller = "LG2", action = "SomeAction" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = "Admin", action = "SomeAction", controller = "LG2", page = (string)null }),
                 defaults,
                 requiredKeys: new string[] { "area", "action", "controller", "page" },
                 parameterPolicies: null);

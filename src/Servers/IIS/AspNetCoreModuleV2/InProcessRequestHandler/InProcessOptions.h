@@ -49,6 +49,12 @@ public:
     }
 
     bool
+    QueryCallStartupHook() const
+    {
+        return m_fCallStartupHook;
+    }
+
+    bool
     QueryWindowsAuthEnabled() const
     {
         return m_fWindowsAuthEnabled;
@@ -88,6 +94,12 @@ public:
         return m_dwShutdownTimeLimitInMS;
     }
 
+    DWORD
+    QueryMaxRequestBodySizeLimit() const
+    {
+        return m_dwMaxRequestBodySize;
+    }
+
     const std::map<std::wstring, std::wstring, ignore_case_comparer>&
     QueryEnvironmentVariables() const
     {
@@ -98,6 +110,12 @@ public:
     QueryBindings() const
     {
         return m_bindingInformation;
+    }
+
+    std::wstring
+    QueryStackSize() const
+    {
+        return m_strStackSize;
     }
 
     InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite);
@@ -113,14 +131,17 @@ private:
     std::wstring                   m_strArguments;
     std::wstring                   m_strProcessPath;
     std::wstring                   m_struStdoutLogFile;
+    std::wstring                   m_strStackSize;
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartUpErrorPage;
     bool                           m_fSetCurrentDirectory;
+    bool                           m_fCallStartupHook;
     bool                           m_fWindowsAuthEnabled;
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
+    DWORD                          m_dwMaxRequestBodySize;
     std::map<std::wstring, std::wstring, ignore_case_comparer> m_environmentVariables;
     std::vector<BindingInformation> m_bindingInformation;
 

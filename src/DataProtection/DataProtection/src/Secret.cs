@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         /// <summary>
-        /// Returns a Secret comprised entirely of random bytes retrieved from
+        /// Returns a Secret made entirely of random bytes retrieved from
         /// a cryptographically secure RNG.
         /// </summary>
         public static Secret Random(int numBytes)

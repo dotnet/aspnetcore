@@ -79,22 +79,22 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of Users.
         /// </summary>
-        public DbSet<TUser> Users { get; set; }
+        public virtual DbSet<TUser> Users { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of User claims.
         /// </summary>
-        public DbSet<TUserClaim> UserClaims { get; set; }
+        public virtual DbSet<TUserClaim> UserClaims { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of User logins.
         /// </summary>
-        public DbSet<TUserLogin> UserLogins { get; set; }
+        public virtual DbSet<TUserLogin> UserLogins { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of User tokens.
         /// </summary>
-        public DbSet<TUserToken> UserTokens { get; set; }
+        public virtual DbSet<TUserToken> UserTokens { get; set; }
 
         private StoreOptions GetStoreOptions() => this.GetService<IDbContextOptions>()
                             .Extensions.OfType<CoreOptionsExtension>()

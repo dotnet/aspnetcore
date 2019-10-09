@@ -1,8 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -14,6 +19,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly IDictionary<int, UrlPrefix> _prefixes = new Dictionary<int, UrlPrefix>(1);
         private UrlGroup _urlGroup;
         private int _nextId = 1;
+
+        // Valid port range of 5000 - 48000.
+        private const int BasePort = 5000;
+        private const int MaxPortIndex = 43000;
+        private const int MaxRetries = 1000;
+        private static int NextPortIndex;
 
         internal UrlPrefixCollection()
         {
@@ -57,8 +68,34 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             lock (_prefixes)
             {
-                return _prefixes[id];
+                return _prefixes.TryGetValue(id, out var prefix) ? prefix : null;
             }
+        }
+
+        internal bool TryMatchLongestPrefix(bool isHttps, string host, string originalPath, out string pathBase, out string remainingPath)
+        {
+            var originalPathString = new PathString(originalPath);
+            var found = false;
+            pathBase = null;
+            remainingPath = null;
+            lock (_prefixes)
+            {
+                foreach (var prefix in _prefixes.Values)
+                {
+                    // The scheme, host, port, and start of path must match.
+                    // Note this does not currently handle prefixes with wildcard subdomains.
+                    if (isHttps == prefix.IsHttps
+                        && string.Equals(host, prefix.HostAndPort, StringComparison.OrdinalIgnoreCase)
+                        && originalPathString.StartsWithSegments(new PathString(prefix.PathWithoutTrailingSlash), StringComparison.OrdinalIgnoreCase, out var remainder)
+                        && (!found || remainder.Value.Length < remainingPath.Length)) // Longest match
+                    {
+                        found = true;
+                        pathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Maintain the input casing
+                        remainingPath = remainder.Value;
+                    }
+                }
+            }
+            return found;
         }
 
         public void Clear()
@@ -138,10 +175,55 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 _urlGroup = urlGroup;
                 // go through the uri list and register for each one of them
-                foreach (var pair in _prefixes)
+                // Call ToList to avoid modification when enumerating.
+                foreach (var pair in _prefixes.ToList())
                 {
-                    // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
-                    _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    var urlPrefix = pair.Value;
+                    if (urlPrefix.PortValue == 0)
+                    {
+                        if (urlPrefix.IsHttps)
+                        {
+                            throw new InvalidOperationException("Cannot bind to port 0 with https.");
+                        }
+
+                        FindHttpPortUnsynchronized(pair.Key, urlPrefix);
+                    }
+                    else
+                    {
+                        // We'll get this index back on each request and use it to look up the prefix to calculate PathBase.
+                        _urlGroup.RegisterPrefix(pair.Value.FullPrefix, pair.Key);
+                    }
+                }
+            }
+        }
+
+        private void FindHttpPortUnsynchronized(int key, UrlPrefix urlPrefix)
+        {
+            for (var index = 0; index < MaxRetries; index++)
+            {
+                try
+                {
+                    // Bit of complicated math to always try 3000 ports, starting from NextPortIndex + 5000,
+                    // circling back around if we go above 8000 back to 5000, and so on.
+                    var port = ((index + NextPortIndex) % MaxPortIndex) + BasePort;
+
+                    Debug.Assert(port >= 5000 || port < 8000);
+
+                    var newPrefix = UrlPrefix.Create(urlPrefix.Scheme, urlPrefix.Host, port, urlPrefix.Path);
+                    _urlGroup.RegisterPrefix(newPrefix.FullPrefix, key);
+                    _prefixes[key] = newPrefix;
+
+                    NextPortIndex += index + 1;
+                    return;
+                }
+                catch (HttpSysException ex)
+                {
+                    if ((ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS) || index == MaxRetries - 1)
+                    {
+                        throw;
+                    }
                 }
             }
         }

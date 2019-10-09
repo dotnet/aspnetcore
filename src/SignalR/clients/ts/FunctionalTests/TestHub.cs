@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
@@ -21,9 +22,26 @@ namespace FunctionalTests
 
     public class TestHub : Hub
     {
+        private readonly IHubContext<TestHub> _context;
+
+        public TestHub(IHubContext<TestHub> context)
+        {
+            _context = context;
+        }
+
         public string Echo(string message)
         {
             return message;
+        }
+
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public int GetNumRedirects()
+        {
+            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"]);
         }
 
         public void ThrowException(string message)
@@ -48,6 +66,19 @@ namespace FunctionalTests
             channel.Writer.TryWrite("b");
             channel.Writer.TryWrite("c");
             channel.Writer.Complete();
+            return channel.Reader;
+        }
+
+        public ChannelReader<string> InfiniteStream(CancellationToken token)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            var connectionId = Context.ConnectionId;
+
+            token.Register(async (state) =>
+            {
+                await ((IHubContext<TestHub>)state).Clients.Client(connectionId).SendAsync("StreamCanceled");
+            }, _context);
+
             return channel.Reader;
         }
 
@@ -94,7 +125,7 @@ namespace FunctionalTests
             {
                 ByteArray = new byte[] { 0x1, 0x2, 0x3 },
                 DateTime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                GUID = new Guid("00010203-0405-0607-0706-050403020100"),
+                Guid = new Guid("00010203-0405-0607-0706-050403020100"),
                 IntArray = new int[] { 1, 2, 3 },
                 String = "hello world",
             };

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -208,6 +208,19 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.NotNull(response.Content);
             var actualContent = await response.Content.ReadAsStringAsync();
             Assert.Equal("Link: /WithDoubleAsteriskCatchAll/a/b%20b1/c%20c1", actualContent);
+        }
+
+        [Fact]
+        public async Task MapGet_HasConventionMetadata()
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync("/convention");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Has metadata", actualContent);
         }
 
         public void Dispose()

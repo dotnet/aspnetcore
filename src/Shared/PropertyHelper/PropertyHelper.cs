@@ -51,13 +51,8 @@ namespace Microsoft.Extensions.Internal
         /// This constructor does not cache the helper. For caching, use <see cref="GetProperties(Type)"/>.
         /// </summary>
         public PropertyHelper(PropertyInfo property)
-        {
-            if (property == null)
-            {
-                throw new ArgumentNullException(nameof(property));
-            }
-
-            Property = property;
+        {   
+            Property = property ?? throw new ArgumentNullException(nameof(property)); 
             Name = property.Name;
         }
 

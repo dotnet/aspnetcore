@@ -35,9 +35,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  + $" --output \"{publishDirectory.FullName}\""
                                  + $" --framework {deploymentParameters.TargetFramework}"
                                  + $" --configuration {deploymentParameters.Configuration}"
-                                 + " --no-restore -p:VerifyMatchingImplicitPackageVersion=false";
-                // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
-                // This verification doesn't matter if we are skipping restore during tests.
+                                 // avoids triggering builds of dependencies of the test app which could cause issues like https://github.com/dotnet/arcade/issues/2941
+                                 + $" --no-dependencies"
+                                 + $" /p:TargetArchitecture={deploymentParameters.RuntimeArchitecture}"
+                                 + " --no-restore";
 
                 if (deploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var architecture = deploymentParameters.RuntimeArchitecture;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return "win7-" + architecture;
+                return "win-" + architecture;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

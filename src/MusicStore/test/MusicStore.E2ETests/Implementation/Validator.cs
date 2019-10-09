@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -111,9 +111,6 @@ namespace E2ETests
             {
                 //Helpers.ThrowIfResponseStatusNotOk(runtimeResponse, _logger);
             }
-
-            // Verify the app is using precompiled views
-            Assert.Contains("MusicStore.Views, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", responseContent);
         }
 
         public void VerifyArchitecture(HttpResponseMessage response, RuntimeArchitecture arch)

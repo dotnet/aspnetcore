@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
@@ -226,7 +225,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/base/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v3.1/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v3.3/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
@@ -258,7 +257,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v3.1/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v3.3/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://www.facebook.com/v3.1/dialog/oauth", location);
+            Assert.Contains("https://www.facebook.com/v3.3/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=", location);
@@ -325,10 +324,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                                 if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == FacebookDefaults.TokenEndpoint)
                                 {
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
-                                    var graphResponse = JsonConvert.SerializeObject(new
-                                    {
-                                        access_token = "TestAuthToken"
-                                    });
+                                    var graphResponse = "{ \"access_token\": \"TestAuthToken\" }";
                                     res.Content = new StringContent(graphResponse, Encoding.UTF8);
                                     return res;
                                 }
@@ -337,11 +333,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                                 {
                                     finalUserInfoEndpoint = req.RequestUri.ToString();
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
-                                    var graphResponse = JsonConvert.SerializeObject(new
-                                    {
-                                        id = "TestProfileId",
-                                        name = "TestName"
-                                    });
+                                    var graphResponse = "{ \"id\": \"TestProfileId\", \"name\": \"TestName\" }";
                                     res.Content = new StringContent(graphResponse, Encoding.UTF8);
                                     return res;
                                 }

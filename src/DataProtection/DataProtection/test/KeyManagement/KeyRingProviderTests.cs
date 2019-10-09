@@ -381,6 +381,47 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         [Fact]
+        public void GetCurrentKeyRing_KeyRingCached_CanForceRefresh()
+        {
+            // Arrange
+            var now = StringToDateTime("2015-03-01 00:00:00Z");
+            var expectedKeyRing1 = new Mock<IKeyRing>().Object;
+            var expectedKeyRing2 = new Mock<IKeyRing>().Object;
+            var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+            mockCacheableKeyRingProvider
+                .Setup(o => o.GetCacheableKeyRing(now))
+                .Returns(new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: StringToDateTime("2015-03-01 00:30:00Z"), // expire in half an hour
+                    keyRing: expectedKeyRing1));
+            mockCacheableKeyRingProvider
+                .Setup(o => o.GetCacheableKeyRing(now + TimeSpan.FromMinutes(1)))
+                .Returns(new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: StringToDateTime("2015-03-01 00:30:00Z"), // expire in half an hour
+                    keyRing: expectedKeyRing1));
+            mockCacheableKeyRingProvider
+                .Setup(o => o.GetCacheableKeyRing(now + TimeSpan.FromMinutes(2)))
+                .Returns(new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: StringToDateTime("2015-03-02 00:00:00Z"),
+                    keyRing: expectedKeyRing2));
+
+            var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+            // Act
+            var retVal1 = keyRingProvider.GetCurrentKeyRingCore(now);
+            var retVal2 = keyRingProvider.GetCurrentKeyRingCore(now + TimeSpan.FromMinutes(1));
+            var retVal3 = keyRingProvider.GetCurrentKeyRingCore(now + TimeSpan.FromMinutes(2), forceRefresh: true);
+
+            // Assert - underlying provider should be called twice
+            Assert.Same(expectedKeyRing1, retVal1);
+            Assert.Same(expectedKeyRing1, retVal2);
+            Assert.Same(expectedKeyRing2, retVal3);
+            mockCacheableKeyRingProvider.Verify(o => o.GetCacheableKeyRing(It.IsAny<DateTimeOffset>()), Times.Exactly(2));
+        }
+
+        [Fact]
         public void GetCurrentKeyRing_KeyRingCached_AfterExpiration_ClearsCache()
         {
             // Arrange

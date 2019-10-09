@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -19,6 +21,8 @@ namespace Microsoft.AspNetCore.Http
             ((IDisposable)disposable).Dispose();
             return Task.CompletedTask;
         };
+
+        private static readonly Func<object, Task> _disposeAsyncDelegate = disposable => ((IAsyncDisposable)disposable).DisposeAsync().AsTask();
 
         /// <summary>
         /// Gets the <see cref="HttpContext"/> for this response.
@@ -41,9 +45,10 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the response body pipe <see cref="PipeWriter"/>
+        /// Gets the response body <see cref="PipeWriter"/>
         /// </summary>
-        public abstract PipeWriter BodyPipe { get; set; }
+        /// <value>The response body <see cref="PipeWriter"/>.</value>
+        public virtual PipeWriter BodyWriter { get => throw new NotImplementedException(); }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.
@@ -92,6 +97,12 @@ namespace Microsoft.AspNetCore.Http
         public virtual void RegisterForDispose(IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
 
         /// <summary>
+        /// Registers an object for asynchronous disposal by the host once the request has finished processing.
+        /// </summary>
+        /// <param name="disposable">The object to be disposed asynchronously.</param>
+        public virtual void RegisterForDisposeAsync(IAsyncDisposable disposable) => OnCompleted(_disposeAsyncDelegate, disposable);
+
+        /// <summary>
         /// Adds a delegate to be invoked after the response has finished being sent to the client.
         /// </summary>
         /// <param name="callback">The delegate to invoke.</param>
@@ -111,5 +122,18 @@ namespace Microsoft.AspNetCore.Http
         /// where only ASCII characters are allowed.</param>
         /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
         public abstract void Redirect(string location, bool permanent);
+
+        /// <summary>
+        /// Starts the response by calling OnStarting() and making headers unmodifiable.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        public virtual Task StartAsync(CancellationToken cancellationToken = default) { throw new NotImplementedException(); }
+
+        /// <summary>
+        /// Flush any remaining response headers, data, or trailers.
+        /// This may throw if the response is in an invalid state such as a Content-Length mismatch.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task CompleteAsync() { throw new NotImplementedException(); }
     }
 }

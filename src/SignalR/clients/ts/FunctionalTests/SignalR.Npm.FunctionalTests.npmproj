@@ -1,0 +1,65 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <BrowserTestHostName Condition="'$(ContinuousIntegrationBuild)' == 'true'">sauce.local</BrowserTestHostName>
+    <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
+    <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
+    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:inner --no-color --configuration $(Configuration)</NpmTestArgs>
+    <NpmBuildArgs>run build:inner</NpmBuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" />
+    <ProjectReference Include="..\client-ts.npmproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+    <Message Importance="High" Text="Running tests for $(MSBuildProjectName)" />
+    <Yarn Condition="'$(DailyTests)' != 'true'" Command="$(NpmTestArgs)" />
+    <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />
+  </Target>
+
+  <Target Name="RunBrowserTests">
+    <Message Text="Running JavaScript client Browser tests" Importance="high" />
+    <!-- Skip the "inner" test run when we're running DailyTests -->
+    <Yarn Command="run test:inner --no-color --configuration $(Configuration)"
+          Condition="'$(DailyTests)' != 'true'"
+          WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
+
+    <PropertyGroup>
+      <BrowserTestHostName Condition="'$(ContinuousIntegrationBuild)' == 'true'">sauce.local</BrowserTestHostName>
+      <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
+      <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
+    </PropertyGroup>
+    <Message Text="test:sauce Args = $(_TestSauceArgs)" Importance="high" />
+    <Yarn Command="run test:sauce $(_TestSauceArgs)"
+          Condition="'$(DailyTests)' == 'true'"
+          WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
+  </Target>
+
+  <Target Name="ClientBuild" AfterTargets="Build">
+    <ItemGroup>
+      <MsgPack5Files Include="$(MSBuildThisFileDirectory)../signalr-protocol-msgpack/node_modules/msgpack5/dist/*.js" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MsgPack5Files)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/msgpack5" />
+    <ItemGroup>
+      <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.js" />
+      <JasmineFiles Include="$(MSBuildThisFileDirectory)node_modules/jasmine-core/lib/jasmine-core/*.css" />
+    </ItemGroup>
+    <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
+
+    <ItemGroup>
+      <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/browser/*" />
+      <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/*" />
+      <SignalRJSWebWorkerClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/webworker/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SignalRJSBrowserClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
+    <Copy SourceFiles="@(SignalRJSWebWorkerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr-webworker" />
+  </Target>
+
+</Project>

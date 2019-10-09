@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+    <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
+    <TestGroupName>Mvc.FunctionalTests</TestGroupName>
+    <!-- The test asset projects this depends on are not strong-named. -->
+    <SignAssembly>false</SignAssembly>
+    <!-- https://github.com/aspnet/AspNetCore/issues/10423 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Formatters.Xml\test\XmlAssert.cs" />
+    <EmbeddedResource Include="compiler\resources\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- For testing the testing infrastructure only -->
+    <WebApplicationFactoryContentRootAttribute Include="BasicWebSite" AssemblyName="BasicWebsite" ContentRootPath="../../../../WebSites/BasicWebSite" ContentRootTest="BasicWebSite.csproj" Priority="-1" />
+    <!-- For testing the testing infrastructure only. This attribute is
+     incorrect by design to ensure that the infrastructure falls back. -->
+    <WebApplicationFactoryContentRootAttribute Include="FiltersWebSite" AssemblyName="FiltersWebSite" ContentRootPath="/../WebSites/FiltersWebSite" ContentRootTest="Incorrect.csproj" Priority="-1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
+
+    <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
+
+    <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\CorsWebSite\CorsWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\GenericHostWebSite\GenericHostWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
+
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.AspNet.WebApi.Client" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+</Project>

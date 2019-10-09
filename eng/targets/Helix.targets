@@ -1,0 +1,91 @@
+<Project>
+
+  <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="@(HelixContent)" />
+  </ItemGroup>
+
+<!--
+
+This target is meant to be used when invoking helix tests on one project at a time.
+
+Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
+
+-->
+  <Target Name="Helix">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
+             Properties="ProjectToBuild=$(MSBuildProjectFullPath)" />
+  </Target>
+
+  <!-- Build the actual helix work items to send to helix queues -->
+  <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
+    <ItemGroup>
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_CreateHelixPayloadInner"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="_SetCreateHelixPayload">
+    <PropertyGroup>
+      <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Include default queues based on platform -->
+      <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true'" />
+
+      <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
+    <ZipDirectory Condition="'$(HelixUseArchive)' == 'true'" SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
+    <RemoveDir Condition="'$(HelixUseArchive)' == 'true'" Directories="$(PublishDir)" />
+  </Target>
+
+  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
+
+    <PropertyGroup>
+      <!-- Extract the effective queue name from this format "(name)host@dockerimage". This is sometimes used in test code to skip tests.  -->
+      <_HelixFriendlyNameTargetQueue>$(HelixTargetQueue)</_HelixFriendlyNameTargetQueue>
+      <_HelixFriendlyNameTargetQueue Condition="$(HelixTargetQueue.Contains('@'))">$(HelixTargetQueue.Substring(1, $([MSBuild]::Subtract($(HelixTargetQueue.LastIndexOf(')')), 1))))</_HelixFriendlyNameTargetQueue>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue;TestRunId" />
+
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+    <ItemGroup>
+      <HelixWorkItem Include="$(HelixTestName)">
+        <PayloadArchive Condition="'$(HelixUseArchive)' == 'true'">$(PublishAbsoluteDir)../$(HelixTestName).zip</PayloadArchive>
+        <PayloadDirectory Condition="'$(HelixUseArchive)' == 'false'">$(PublishAbsoluteDir)</PayloadDirectory>
+        <TestAssembly>$(TargetFileName)</TestAssembly>
+        <PreCommands>@(HelixPreCommand)</PreCommands>
+        <PostCommands>@(HelixPostCommand)</PostCommands>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
+        <Timeout>$(HelixTimeout)</Timeout>
+      </HelixWorkItem>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)" DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem">
+  </Target>
+
+</Project>

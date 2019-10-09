@@ -523,6 +523,7 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     dwTickCount = GetTickCount();
+
     do
     {
         DWORD processStatus = 0;
@@ -535,14 +536,6 @@ SERVER_PROCESS::PostStartCheck(
                 if (GetExitCodeProcess(m_hProcessHandle, &processStatus) && processStatus != STILL_ACTIVE)
                 {
                     hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-                    strEventMsg.SafeSnwprintf(
-                        ASPNETCORE_EVENT_PROCESS_START_STATUS_ERROR_MSG,
-                        m_struAppFullPath.QueryStr(),
-                        m_struPhysicalPath.QueryStr(),
-                        m_struCommandLine.QueryStr(),
-                        hr,
-                        m_dwProcessId,
-                        processStatus);
                     goto Finished;
                 }
             }
@@ -956,12 +949,23 @@ SERVER_PROCESS::StartProcess(
 Finished:
     if (FAILED_LOG(hr) || m_fReady == FALSE)
     {
+        if (m_hStdErrWritePipe != NULL)
+        {
+            if (m_hStdErrWritePipe != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(m_hStdErrWritePipe);
+            }
+
+            m_hStdErrWritePipe = NULL;
+        }
+
         if (m_hStdoutHandle != NULL)
         {
             if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
             {
                 CloseHandle(m_hStdoutHandle);
             }
+
             m_hStdoutHandle = NULL;
         }
 
@@ -976,7 +980,8 @@ Finished:
             m_struAppFullPath.QueryStr(),
             m_struPhysicalPath.QueryStr(),
             m_struCommandLine.QueryStr(),
-            m_dwPort);
+            m_dwPort,
+            m_output.str().c_str());
     }
     return hr;
 }
@@ -1022,22 +1027,28 @@ SERVER_PROCESS::SetupStdHandles(
 
     DBG_ASSERT(pStartupInfo);
 
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
     if (!m_fStdoutLogEnabled)
     {
+        CreatePipe(&m_hStdoutHandle, &m_hStdErrWritePipe, &saAttr, 0 /*nSize*/);
+
+        // Read the stderr handle on a separate thread until we get 30Kb.
+        m_hReadThread = CreateThread(
+            nullptr,       // default security attributes
+            0,          // default stack size
+            reinterpret_cast<LPTHREAD_START_ROUTINE>(ReadStdErrHandle),
+            this,       // thread function arguments
+            0,          // default creation flags
+            nullptr);      // receive thread identifier
+
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdError = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdOutput = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdError = m_hStdErrWritePipe;
+        pStartupInfo->hStdOutput = m_hStdErrWritePipe;
         return hr;
-    }
-    if (m_hStdoutHandle != NULL && m_hStdoutHandle != INVALID_HANDLE_VALUE)
-    {
-        if (!CloseHandle(m_hStdoutHandle))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
-        m_hStdoutHandle = NULL;
     }
 
     hr = FILE_UTILITY::ConvertPathToFullPath(
@@ -1069,10 +1080,6 @@ SERVER_PROCESS::SetupStdHandles(
     {
         goto Finished;
     }
-
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
 
     m_hStdoutHandle = CreateFileW(m_struFullLogFile.QueryStr(),
         FILE_WRITE_DATA,
@@ -1116,6 +1123,57 @@ Finished:
         m_struFullLogFile.Reset();
     }
     return hr;
+}
+
+
+void
+SERVER_PROCESS::ReadStdErrHandle(
+    LPVOID pContext
+)
+{
+    auto pLoggingProvider = static_cast<SERVER_PROCESS*>(pContext);
+    DBG_ASSERT(pLoggingProvider != NULL);
+    pLoggingProvider->ReadStdErrHandleInternal();
+}
+
+void
+SERVER_PROCESS::ReadStdErrHandleInternal()
+{
+    const size_t bufferSize = 4096;
+    size_t charactersLeft = 30000;
+    std::string tempBuffer;
+
+    tempBuffer.resize(bufferSize);
+
+    DWORD dwNumBytesRead = 0;
+    while (charactersLeft > 0)
+    {
+        if (ReadFile(m_hStdoutHandle,
+            tempBuffer.data(),
+            bufferSize,
+            &dwNumBytesRead,
+            nullptr))
+        {
+            auto text = to_wide_string(tempBuffer, dwNumBytesRead, GetConsoleOutputCP());
+            auto const writeSize = min(charactersLeft, text.size());
+            m_output.write(text.c_str(), writeSize);
+            charactersLeft -= writeSize;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    // Continue reading from console out until the program ends or the handle is invalid.
+    // Otherwise, the program may hang as nothing is reading stdout.
+    while (ReadFile(m_hStdoutHandle,
+        tempBuffer.data(),
+        bufferSize,
+        &dwNumBytesRead,
+        nullptr))
+    {
+    }
 }
 
 HRESULT
@@ -1795,6 +1853,7 @@ SERVER_PROCESS::CleanUp()
 
 SERVER_PROCESS::~SERVER_PROCESS()
 {
+    DWORD    dwThreadStatus = 0;
 
     CleanUp();
 
@@ -1815,6 +1874,38 @@ SERVER_PROCESS::~SERVER_PROCESS()
             CloseHandle(m_hStdoutHandle);
         }
         m_hStdoutHandle = NULL;
+    }
+
+    // Forces ReadFile to cancel, causing the read loop to complete.
+    // Don't check return value as IO may or may not be completed already.
+    if (m_hReadThread != nullptr)
+    {
+        LOG_INFO(L"Canceling standard stream pipe reader.");
+        CancelSynchronousIo(m_hReadThread);
+    }
+
+    // GetExitCodeThread returns 0 on failure; thread status code is invalid.
+    if (m_hReadThread != nullptr &&
+        !LOG_LAST_ERROR_IF(!GetExitCodeThread(m_hReadThread, &dwThreadStatus)) &&
+        dwThreadStatus == STILL_ACTIVE)
+    {
+        // Wait for graceful shutdown, i.e., the exit of the background thread or timeout
+        if (WaitForSingleObject(m_hReadThread, PIPE_OUTPUT_THREAD_TIMEOUT) != WAIT_OBJECT_0)
+        {
+            // If the thread is still running, we need kill it first before exit to avoid AV
+            if (!LOG_LAST_ERROR_IF(GetExitCodeThread(m_hReadThread, &dwThreadStatus) == 0) &&
+                dwThreadStatus == STILL_ACTIVE)
+            {
+                LOG_WARN(L"Thread reading stdout/err hit timeout, forcibly closing thread.");
+                TerminateThread(m_hReadThread, STATUS_CONTROL_C_EXIT);
+            }
+        }
+    }
+
+    if (m_hReadThread != nullptr)
+    {
+        CloseHandle(m_hReadThread);
+        m_hReadThread = nullptr;
     }
 
     if (m_fStdoutLogEnabled)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Testing
     {
         public TestApplicationErrorLogger TestApplicationErrorLogger { get; private set; }
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             TestApplicationErrorLogger = new TestApplicationErrorLogger();
             LoggerFactory.AddProvider(new KestrelTestLoggerProvider(TestApplicationErrorLogger));

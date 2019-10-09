@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -335,6 +335,134 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 string response = await SendRequestAsync(root + requestPath);
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Request_UrlUnescaping()
+        {
+            // Must start with '/'
+            var stringBuilder = new StringBuilder("/");
+            for (var i = 32; i < 127; i++)
+            {
+                stringBuilder.Append("%");
+                stringBuilder.Append(i.ToString("X2"));
+            }
+            var rawPath = stringBuilder.ToString();
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+                Assert.Equal(rawPath, requestInfo.RawTarget);
+                // '/' %2F is an exception, un-escaping it would change the structure of the path
+                Assert.Equal("/ !\"#$%&'()*+,-.%2F0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", requestInfo.Path);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendSocketRequestAsync(root, rawPath);
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Request_WithDoubleSlashes_LeftAlone()
+        {
+            var rawPath = "//a/b//c";
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+                Assert.Equal(rawPath, requestInfo.RawTarget);
+                Assert.Equal(rawPath, requestInfo.Path);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendSocketRequestAsync(root, rawPath);
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData("/", "/a/b/../c", "", "/a/c")]
+        [InlineData("/", "/a/b/./c", "", "/a/b/c")]
+        [InlineData("/a", "/a/./c", "/a", "/c")]
+        [InlineData("/a", "/a/d/../b/c", "/a", "/b/c")]
+        [InlineData("/a/b", "/a/d/../b/c", "/a/b", "/c")] // Http.Sys uses the cooked URL when routing.
+        [InlineData("/a/b", "/a/./b/c", "/a/b", "/c")] // Http.Sys uses the cooked URL when routing.
+        public async Task Request_WithNavigation_Removed(string basePath, string input, string expectedPathBase, string expectedPath)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot(basePath, out root, httpContext =>
+            {
+                var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+                Assert.Equal(input, requestInfo.RawTarget);
+                Assert.Equal(expectedPathBase, requestInfo.PathBase);
+                Assert.Equal(expectedPath, requestInfo.Path);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendSocketRequestAsync(root, input);
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalTheory]
+        [InlineData("/a/b/%2E%2E/c", "/a/c")]
+        [InlineData("/a/b/%2E/c", "/a/b/c")]
+        public async Task Request_WithEscapedNavigation_Removed(string input, string expected)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+                Assert.Equal(input, requestInfo.RawTarget);
+                Assert.Equal(expected, requestInfo.Path);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendSocketRequestAsync(root, input);
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Request_ControlCharacters_400()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                throw new NotImplementedException();
+            }))
+            {
+                for (var i = 0; i < 32; i++)
+                {
+                    if (i == 9 || i == 10) continue; // \t and \r are allowed by Http.Sys.
+                    var response = await SendSocketRequestAsync(root, "/" + (char)i);
+                    var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2"));
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Request_EscapedControlCharacters_400()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                throw new NotImplementedException();
+            }))
+            {
+                for (var i = 0; i < 32; i++)
+                {
+                    var response = await SendSocketRequestAsync(root, "/%" + i.ToString("X2"));
+                    var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                    Assert.True(string.Equals("400", responseStatusCode), i.ToString("X2"));
+                }
             }
         }
 

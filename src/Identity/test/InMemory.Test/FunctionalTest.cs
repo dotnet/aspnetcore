@@ -352,12 +352,12 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            Describe(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, null, "Application")));
+                            await DescribeAsync(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, null, "Application")));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                         {
                             var auth = await context.AuthenticateAsync(remainder.Value.Substring(1));
-                            Describe(res, auth);
+                            await DescribeAsync(res, auth);
                         }
                         else if (req.Path == new PathString("/testpath") && testpath != null)
                         {
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             return server;
         }
 
-        private static void Describe(HttpResponse res, AuthenticateResult result)
+        private static async Task DescribeAsync(HttpResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                 {
                     xml.WriteTo(writer);
                 }
-                res.Body.Write(memory.ToArray(), 0, memory.ToArray().Length);
+                await res.Body.WriteAsync(memory.ToArray(), 0, memory.ToArray().Length);
             }
         }
 

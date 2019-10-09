@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@aspnet/signalr";
+import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
 describe("MessagePackHubProtocol", () => {
@@ -9,6 +9,7 @@ describe("MessagePackHubProtocol", () => {
         const invocation = {
             arguments: [42, true, "test", ["x1", "y2"], null],
             headers: {},
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -22,6 +23,7 @@ describe("MessagePackHubProtocol", () => {
         const invocation = {
             arguments: [new Date(Date.UTC(2018, 1, 1, 12, 34, 56))],
             headers: {},
+            streamIds: [],
             target: "mymethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -37,6 +39,7 @@ describe("MessagePackHubProtocol", () => {
             headers: {
                 foo: "bar",
             },
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -51,6 +54,7 @@ describe("MessagePackHubProtocol", () => {
             arguments: [42, true, "test", ["x1", "y2"], null],
             headers: {},
             invocationId: "123",
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -196,6 +200,21 @@ describe("MessagePackHubProtocol", () => {
             0x06, // type = 6 = Ping (fixnum)
         ]);
         const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Ping });
+        expect(new Uint8Array(buffer)).toEqual(payload);
+    });
+
+    it("can write cancel message", () => {
+        const payload = new Uint8Array([
+            0x07, // length prefix
+            0x93, // message array length = 1 (fixarray)
+            0x05, // type = 5 = CancelInvocation (fixnum)
+            0x80, // headers
+            0xa3, // invocationID = string length 3
+            0x61, // a
+            0x62, // b
+            0x63, // c
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.CancelInvocation, invocationId: "abc" });
         expect(new Uint8Array(buffer)).toEqual(payload);
     });
 });

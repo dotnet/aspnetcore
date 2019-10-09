@@ -9,13 +9,13 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
@@ -62,7 +62,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 // approve the authorization demand requested by the remote authorization server.
                 // Since it's a frequent scenario (that is not caused by incorrect configuration),
                 // denied errors are handled differently using HandleAccessDeniedErrorAsync().
-                return await HandleAccessDeniedErrorAsync(properties);
+                var result = await HandleAccessDeniedErrorAsync(properties);
+                return !result.None ? result
+                    : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
             }
 
             var returnedToken = query["oauth_token"];
@@ -97,25 +99,33 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             },
             ClaimsIssuer);
 
-            JObject user = null;
+            JsonDocument user;
             if (Options.RetrieveUserDetails)
             {
                 user = await RetrieveUserDetailsAsync(accessToken, identity);
             }
-
-            if (Options.SaveTokens)
+            else
             {
-                properties.StoreTokens(new [] {
-                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
-                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
-                });
+                user = JsonDocument.Parse("{}");
             }
 
-            return HandleRequestResult.Success(await CreateTicketAsync(identity, properties, accessToken, user));
+            using (user)
+            {
+                if (Options.SaveTokens)
+                {
+                    properties.StoreTokens(new[] {
+                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
+                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
+                    });
+                }
+
+                var ticket = await CreateTicketAsync(identity, properties, accessToken, user.RootElement);
+                return HandleRequestResult.Success(ticket);
+            }
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(
-            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JObject user)
+            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JsonElement user)
         {
             foreach (var action in Options.ClaimActions)
             {
@@ -273,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         // https://dev.twitter.com/rest/reference/get/account/verify_credentials
-        private async Task<JObject> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
+        private async Task<JsonDocument> RetrieveUserDetailsAsync(AccessToken accessToken, ClaimsIdentity identity)
         {
             Logger.RetrieveUserDetails();
 
@@ -286,7 +296,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             }
             var responseText = await response.Content.ReadAsStringAsync();
 
-            var result = JObject.Parse(responseText);
+            var result = JsonDocument.Parse(responseText);
 
             return result;
         }

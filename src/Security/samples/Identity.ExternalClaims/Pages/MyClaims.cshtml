@@ -1,0 +1,36 @@
+@page
+@using Microsoft.AspNetCore.Authentication;
+@model MyClaimsModel
+@{
+    ViewData["Title"] = "My Claims";
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@Model.Message</h3>
+
+<dl>
+    @foreach (var claim in User.Claims)
+    {
+        <dt>@claim.Type</dt>
+        <dd>@claim.Value</dd>
+    }
+</dl>
+
+<h2>AuthenticationProperties</h2>
+@{
+    var authenticateResult = await HttpContext.AuthenticateAsync();
+}
+
+@if (authenticateResult.Succeeded)
+{
+    <dl>
+        @foreach (var prop in authenticateResult.Properties.Items)
+        {
+            <dt>@prop.Key</dt>
+            <dd>@prop.Value</dd>
+        }
+    </dl>
+}
+else
+{
+    <h1>Not Authenticated!</h1>
+}

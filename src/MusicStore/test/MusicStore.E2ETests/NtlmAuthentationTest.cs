@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -17,8 +17,8 @@ namespace E2ETests
     public class NtlmAuthenticationTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/*ServerType.IISExpress https://github.com/aspnet/AspNetCore/issues/6170*/ ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAllArchitectures();
 

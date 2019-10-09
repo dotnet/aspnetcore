@@ -10,6 +10,7 @@
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16
+#define PIPE_OUTPUT_THREAD_TIMEOUT                  2000
 #define LOCALHOST                                   "127.0.0.1"
 #define ASPNETCORE_PORT_STR                         L"ASPNETCORE_PORT"
 #define ASPNETCORE_PORT_ENV_STR                     L"ASPNETCORE_PORT="
@@ -134,6 +135,15 @@ public:
     SendSignal(
         VOID
     );
+
+    static
+        void
+        ReadStdErrHandle(
+            LPVOID pContext
+        );
+
+    void
+        ReadStdErrHandleInternal();
 
 private:
     VOID
@@ -283,6 +293,9 @@ private:
     HANDLE                  m_hListeningProcessHandle;
     HANDLE                  m_hProcessWaitHandle;
     HANDLE                  m_hShutdownHandle;
+    HANDLE                  m_hReadThread;
+    HANDLE                  m_hStdErrWritePipe;
+    std::wstringstream      m_output;
     //
     // m_hChildProcessHandle is the handle to process created by
     // m_hProcessHandle process if it does.

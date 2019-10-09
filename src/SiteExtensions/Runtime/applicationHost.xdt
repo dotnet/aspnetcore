@@ -14,7 +14,7 @@
       </runtime>
 
       <globalModules>
-        <add name="AspNetCoreModuleV2" image="%XDT_EXTENSIONPATH%\ancm\aspnetcorev2.dll" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing" />
+        <add name="AspNetCoreModuleV2" image="%XDT_EXTENSIONPATH%\ancm\aspnetcorev2.dll" xdt:Locator="Match(name)" xdt:Transform="Replace" />
       </globalModules>
     </system.webServer>
 

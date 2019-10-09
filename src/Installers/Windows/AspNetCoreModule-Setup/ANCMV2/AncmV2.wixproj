@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Name>AspNetCoreModuleV2</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</ProjectGuid>
     <OutputType>Package</OutputType>
     <OutputName>aspnetcoremodule_$(Platform)_en_v2</OutputName>
@@ -44,6 +44,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
       <Name>aspnetcoreCA</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
       <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
@@ -52,5 +53,8 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />
-  <Import Project="..\build\versions.props" />
+
+  <PropertyGroup>
+    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
 </Project>

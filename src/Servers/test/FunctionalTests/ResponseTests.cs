@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -25,9 +25,8 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions()
+            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -53,7 +52,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix SelfhostTestVariants
             => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30);
+                .WithTfms(Tfm.NetCoreApp50);
 
         // Connection Close tests do not work through reverse proxies
         [ConditionalTheory]

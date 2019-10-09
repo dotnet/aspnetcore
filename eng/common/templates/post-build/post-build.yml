@@ -1,0 +1,142 @@
+parameters:
+  enableSourceLinkValidation: false
+  enableSigningValidation: true
+  enableSymbolValidation: false
+  enableNugetValidation: true
+  publishInstallersAndChecksums: false
+  SDLValidationParameters:
+    enable: false
+    continueOnError: false
+    params: ''
+
+  # These parameters let the user customize the call to sdk-task.ps1 for publishing
+  # symbols & general artifacts as well as for signing validation
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
+  signingValidationAdditionalParameters: ''
+
+  # Which stages should finish execution before post-build stages start
+  dependsOn: [build]
+
+stages:
+- stage: validate
+  dependsOn: ${{ parameters.dependsOn }}
+  displayName: Validate
+  jobs:
+  - ${{ if eq(parameters.enableNugetValidation, 'true') }}:
+    - job:
+      displayName: NuGet Validation
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: current
+            artifactName: PackageArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+
+  - ${{ if eq(parameters.enableSigningValidation, 'true') }}:
+    - job:
+      displayName: Signing Validation
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: current
+            artifactName: PackageArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: eng\common\sdk-task.ps1
+            arguments: -task SigningValidation -restore -msbuildEngine dotnet
+              /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+              /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
+              /p:Configuration=Release 
+              ${{ parameters.signingValidationAdditionalParameters }}
+
+  - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
+    - job:
+      displayName: SourceLink Validation
+      variables:
+        - template: common-variables.yml
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Blob Artifacts
+          inputs:
+            buildType: current
+            artifactName: BlobArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
+              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
+              -GHRepoName $(Build.Repository.Name) 
+              -GHCommit $(Build.SourceVersion)
+              -SourcelinkCliVersion $(SourceLinkCLIVersion)
+          continueOnError: true
+
+  - ${{ if eq(parameters.SDLValidationParameters.enable, 'true') }}:
+    - template: /eng/common/templates/job/execute-sdl.yml
+      parameters:
+        additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+        continueOnError: ${{ parameters.SDLValidationParameters.continueOnError }}
+
+- template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-dev-30.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-dev-31.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-tools-latest.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\public-validation-release.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-release-30.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-release-31.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
+    publishInstallersAndChecksums: ${{ parameters.publishInstallersAndChecksums }}
+
+- template: \eng\common\templates\post-build\channels\netcore-internal-30.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}

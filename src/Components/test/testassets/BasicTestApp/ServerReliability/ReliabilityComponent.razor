@@ -1,0 +1,143 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@namespace BasicTestApp
+@using BasicTestApp.ServerReliability
+
+<h1>Server reliability</h1>
+<p>
+    This component is used on the server-side execution model to validate that the circuit is resilient to failures, intentional or not.
+    The tests that use this component trigger invalid .NET calls to which the server replies with proper JS interop messages indicating a
+    failure to perform the call.
+
+    We include a counter to ensure that the circuit is still alive and working fine after the error.
+</p>
+
+<p>Current count: @currentCount</p>
+<p id="errormessage-malformed">Error = @errorMalformed</p>
+<p id="errormessage-success">Error = @errorSuccess</p>
+<p id="errormessage-failure">Error = @errorFailure</p>
+
+<button id="triggerjsinterop-malformed" @onclick="@TriggerJSInterop">Trigger malformed JS interop callback</button>
+<button id="triggerjsinterop-success" @onclick="@TriggerJSInteropSuccess">Trigger successful JS interop callback</button>
+<button id="triggerjsinterop-failure" @onclick="@TriggerJSInteropFailure">Trigger error JS interop callback</button>
+
+<button id="event-handler-throw-sync" @onclick="@TriggerSyncException">Trigger sync exception</button>
+
+<button id="thecounter" @onclick="@IncrementCount">Click me</button>
+
+<button id="constructor-throw" @onclick="@(() => showConstructorThrow = true)">Trigger exception on constructor</button>
+@if (showConstructorThrow)
+{
+    <ThrowingConstructorComponent />
+}
+
+<button id="attach-throw" @onclick="@(() => showAttachThrow = true)">Trigger exception on Attach</button>
+@if (showAttachThrow)
+{
+    <ThrowingAttachComponent />
+}
+
+<button id="setparameters-sync-throw" @onclick="@(() => showSetParametersSyncThrow = true)">Trigger exception synchronously on SetParametersAsync</button>
+@if (showSetParametersSyncThrow)
+{
+    <ThrowingSetParametersSyncComponent />
+}
+
+<button id="setparameters-async-throw" @onclick="@(() => showSetParametersAsyncThrow = true)">Trigger exception synchronously on SetParametersAsync</button>
+@if (showSetParametersAsyncThrow)
+{
+    <ThrowingSetParametersAsyncComponent />
+}
+
+<button id="render-throw" @onclick="@(() => showRenderThrow = true)">Trigger exception during rendering</button>
+@if (showRenderThrow)
+{
+    <ThrowingRenderComponent />
+}
+
+<button id="afterrender-sync-throw" @onclick="@(() => showOnAfterRenderSyncThrow = true)">Trigger exception synchronously on OnAfterRenderAsync</button>
+@if (showOnAfterRenderSyncThrow)
+{
+    <ThrowingOnAfterRenderSyncComponent />
+}
+
+<button id="afterrender-async-throw" @onclick="@(() => showOnAfterRenderAsyncThrow = true)">Trigger exception asynchronously on OnAfterRenderAsync</button>
+@if (showOnAfterRenderAsyncThrow)
+{
+    <ThrowingOnAfterRenderAsyncComponent />
+}
+
+<button id="dispose-throw" @onclick="@(() => showDisposeThrow = !showDisposeThrow)">Trigger exception during Dispose</button>
+@if (showDisposeThrow)
+{
+    <ThrowingDisposeComponent />
+}
+
+@code
+{
+    int currentCount = 0;
+    string errorMalformed = "";
+    string errorSuccess = "(this will be cleared)";
+    string errorFailure = "";
+    bool showConstructorThrow;
+    bool showAttachThrow;
+    bool showSetParametersSyncThrow;
+    bool showSetParametersAsyncThrow;
+    bool showRenderThrow;
+    bool showOnAfterRenderSyncThrow;
+    bool showOnAfterRenderAsyncThrow;
+    bool showDisposeThrow;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    void TriggerSyncException() => throw new Exception("Handler threw an exception");
+
+    async Task TriggerJSInterop()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<int>(
+                "sendMalformedCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (Exception e)
+        {
+            errorMalformed = e.Message;
+        }
+    }
+
+    async Task TriggerJSInteropSuccess()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<object>(
+                "sendSuccessCallbackReturn",
+                Array.Empty<object>());
+
+            // Make sure we trigger a render when the interop call completes.
+            // The test uses a render to synchronize.
+            errorSuccess = "";
+        }
+        catch (Exception e)
+        {
+            errorSuccess = e.Message;
+        }
+    }
+
+    async Task TriggerJSInteropFailure()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<object>(
+                "sendFailureCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (JSException e)
+        {
+            errorFailure = e.Message;
+        }
+    }
+}

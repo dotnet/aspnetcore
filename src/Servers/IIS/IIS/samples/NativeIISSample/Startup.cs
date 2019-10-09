@@ -25,7 +25,7 @@ namespace NativeIISSample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.Run(async (context) =>
             {
@@ -80,7 +80,7 @@ namespace NativeIISSample
 
                 foreach (var varName in IISServerVarNames)
                 {
-                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
+                    await context.Response.WriteAsync(varName + ": " + context.GetServerVariable(varName) + Environment.NewLine);
                 }
 
                 await context.Response.WriteAsync(Environment.NewLine);
