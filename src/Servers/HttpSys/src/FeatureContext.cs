@@ -316,16 +316,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
-                    var mode = _requestContext.Server.Options.ClientCertificateMode;
-                    if (mode == ClientCertificateMode.AllowCertificate)
+                    var method = _requestContext.Server.Options.ClientCertificateMethod;
+                    if (method == ClientCertificateMethod.AllowCertificate)
                     {
                         _clientCert = Request.ClientCertificate;
                     }
-                    else if (mode == ClientCertificateMode.DynamicCertificate)
+                    else if (method == ClientCertificateMethod.AllowRenegotation)
                     {
-                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync;
+                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync over async;
                     }
-                    // else if (mode == ClientCertificateMode.NoCertificate) // No-op
+                    // else if (method == ClientCertificateMethod.NoCertificate) // No-op
 
                     SetInitialized(Fields.ClientCertificate);
                 }

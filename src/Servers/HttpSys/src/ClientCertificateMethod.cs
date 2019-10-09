@@ -4,9 +4,9 @@
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     /// <summary>
-    /// Describes the client certificate negotiation methods a HTTPS connection.
+    /// Describes the client certificate negotiation method for HTTPS connections.
     /// </summary>
-    public enum ClientCertificateMode
+    public enum ClientCertificateMethod
     {
         /// <summary>
         /// A client certificate will not be populated on the request.
@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// The TLS session can be renegotiated to request a client certificate.
         /// </summary>
-        DynamicCertificate
+        AllowRenegotation
     }
 }
