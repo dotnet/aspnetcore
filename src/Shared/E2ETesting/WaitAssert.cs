@@ -47,6 +47,13 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static IWebElement Exists(this IWebDriver driver, By finder)
             => Exists(driver, finder, default);
 
+        public static void DoesNotExist(this IWebDriver driver, By finder, TimeSpan timeout = default)
+            => WaitAssertCore(driver, () =>
+            {
+                var elements = driver.FindElements(finder);
+                Assert.Empty(elements);
+            }, timeout);
+
         public static IWebElement Exists(this IWebDriver driver, By finder, TimeSpan timeout)
             => WaitAssertCore(driver, () =>
             {

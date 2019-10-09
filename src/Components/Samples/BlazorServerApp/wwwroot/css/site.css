@@ -111,6 +111,23 @@ app {
     color: red;
 }
 
+#error-ui {
+    background: lightyellow;
+    position: fixed;
+    border: "1px solid";
+    border-color: black;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+#error-ui .dismiss {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
 @media (max-width: 767.98px) {
     .main .top-row {
         display: none;
