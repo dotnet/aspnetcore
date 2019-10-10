@@ -6,30 +6,30 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class OSMinVersionAttributeTest
+    public class MinimumOSVersionAttributeTest
     {
         [Fact]
         public void Linux_ThrowsNotImplemeneted()
         {
-            Assert.Throws<NotImplementedException>(() => new OSMinVersionAttribute(OperatingSystems.Linux, "2.5"));
+            Assert.Throws<NotImplementedException>(() => new MinimumOSVersionAttribute(OperatingSystems.Linux, "2.5"));
         }
 
         [Fact]
         public void Mac_ThrowsNotImplemeneted()
         {
-            Assert.Throws<NotImplementedException>(() => new OSMinVersionAttribute(OperatingSystems.MacOSX, "2.5"));
+            Assert.Throws<NotImplementedException>(() => new MinimumOSVersionAttribute(OperatingSystems.MacOSX, "2.5"));
         }
 
         [Fact]
         public void WindowsOrLinux_ThrowsNotImplemeneted()
         {
-            Assert.Throws<NotImplementedException>(() => new OSMinVersionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, "2.5"));
+            Assert.Throws<NotImplementedException>(() => new MinimumOSVersionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, "2.5"));
         }
 
         [Fact]
         public void DoesNotSkip_LaterVersions()
         {
-            var osSkipAttribute = new OSMinVersionAttribute(
+            var osSkipAttribute = new MinimumOSVersionAttribute(
                 OperatingSystems.Windows,
                 new Version("2.0"),
                 OperatingSystems.Windows,
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Testing
         [Fact]
         public void DoesNotSkip_SameVersion()
         {
-            var osSkipAttribute = new OSMinVersionAttribute(
+            var osSkipAttribute = new MinimumOSVersionAttribute(
                 OperatingSystems.Windows,
                 new Version("2.5"),
                 OperatingSystems.Windows,
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Testing
         [Fact]
         public void Skip_EarlierVersion()
         {
-            var osSkipAttribute = new OSMinVersionAttribute(
+            var osSkipAttribute = new MinimumOSVersionAttribute(
                 OperatingSystems.Windows,
                 new Version("3.0"),
                 OperatingSystems.Windows,
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Testing
         [Fact]
         public void DoesNotSkip_WhenOnlyVersionsMatch()
         {
-            var osSkipAttribute = new OSMinVersionAttribute(
+            var osSkipAttribute = new MinimumOSVersionAttribute(
                 OperatingSystems.Windows,
                 new Version("2.5"),
                 OperatingSystems.Linux,
