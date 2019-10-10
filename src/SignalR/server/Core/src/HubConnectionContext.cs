@@ -554,20 +554,22 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void CheckClientTimeout()
         {
-            if (!Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
-                // If it's been too long since we've heard from the client, then close this
-                if (DateTime.UtcNow.Ticks - Volatile.Read(ref _lastReceivedTimeStamp) > _clientTimeoutInterval)
-                {
-                    if (!_receivedMessageThisInterval)
-                    {
-                        Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
-                        Abort();
-                    }
+                return;
+            }
 
-                    _receivedMessageThisInterval = false;
-                    Volatile.Write(ref _lastReceivedTimeStamp, DateTime.UtcNow.Ticks);
+            // If it's been too long since we've heard from the client, then close this
+            if (DateTime.UtcNow.Ticks - Volatile.Read(ref _lastReceivedTimeStamp) > _clientTimeoutInterval)
+            {
+                if (!_receivedMessageThisInterval)
+                {
+                    Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
+                    Abort();
                 }
+
+                _receivedMessageThisInterval = false;
+                Volatile.Write(ref _lastReceivedTimeStamp, DateTime.UtcNow.Ticks);
             }
         }
 
