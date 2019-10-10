@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -66,9 +67,27 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 culture = uiCulture;
             }
 
+            culture = TwoLetterISoToFullName(culture, false);
+            uiCulture = TwoLetterISoToFullName(uiCulture, true);
+
             var providerResultCulture = new ProviderCultureResult(culture, uiCulture);
 
             return Task.FromResult(providerResultCulture);
+        }
+        /// <summary>
+        /// Find the first culture name from the "Supported Cultures" match the culture parameter if it passed as the two-letter ISO language name 
+        /// EX: if culture = "en" then the function will find the first supported culture has two-letter ISO language name equals to "en" (case insensitive) may "en-US" or "en-GB" or etc. will be selected if it exists at first
+        /// </summary>
+        string TwoLetterISoToFullName(string culture, bool isUICulture)
+        {
+            System.Diagnostics.Debug.WriteLine($"{isUICulture} {this.Options?.SupportedUICultures?.Any()}");
+            if (culture.Length == 2 && this.Options != null)
+            {
+                var cultures = isUICulture ? this.Options.SupportedUICultures : this.Options.SupportedCultures;
+                culture = cultures?.Where(c => c.TwoLetterISOLanguageName.Equals(culture, StringComparison.OrdinalIgnoreCase))
+                    .Select(c => c.Name).FirstOrDefault() ?? culture;
+            }
+            return culture;
         }
     }
 }

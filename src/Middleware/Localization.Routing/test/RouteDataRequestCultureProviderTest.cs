@@ -19,11 +19,15 @@ namespace Microsoft.AspNetCore.Localization.Routing
     {
         [Theory]
         [InlineData("{culture}/{ui-culture}/hello", "ar-SA/ar-YE/hello", "ar-SA", "ar-YE")]
+        [InlineData("{culture}/{ui-culture}/hello", "ar/ar/hello", "ar-SA", "ar-YE")]
         [InlineData("{CULTURE}/{UI-CULTURE}/hello", "ar-SA/ar-YE/hello", "ar-SA", "ar-YE")]
+        [InlineData("{CULTURE}/{UI-CULTURE}/hello", "ar/ar/hello", "ar-SA", "ar-YE")]
         [InlineData("{culture}/{ui-culture}/hello", "unsupported/unsupported/hello", "en-US", "en-US")]
         [InlineData("{culture}/hello", "ar-SA/hello", "ar-SA", "en-US")]
+        [InlineData("{culture}/hello", "ar/hello", "ar-SA", "ar-YE")]//
         [InlineData("hello", "hello", "en-US", "en-US")]
         [InlineData("{ui-culture}/hello", "ar-YE/hello", "en-US", "ar-YE")]
+        [InlineData("{ui-culture}/hello", "ar/hello", "ar-SA", "ar-YE")]//
         public async Task GetCultureInfo_FromRouteData(
             string routeTemplate,
             string requestUrl,
