@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var suppressInputFormatterBuffering = _options.SuppressInputFormatterBuffering;
 
             var readStream = request.Body;
+            var disposeReadStream = false;
             if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
@@ -145,6 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
+
+                disposeReadStream = true;
             }
 
             var successful = true;
@@ -170,9 +173,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     jsonSerializer.Error -= ErrorHandler;
                     ReleaseJsonSerializer(jsonSerializer);
 
-                    if (readStream is FileBufferingReadStream fileBufferingReadStream)
+                    if (disposeReadStream)
                     {
-                        await fileBufferingReadStream.DisposeAsync();
+                        await readStream.DisposeAsync();
                     }
                 }
             }
