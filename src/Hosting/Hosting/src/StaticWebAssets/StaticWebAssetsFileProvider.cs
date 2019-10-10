@@ -71,7 +71,9 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         private bool StartsWithBasePath(string subpath, out PathString rest)
         {
-            return new PathString(subpath).StartsWithSegments(BasePath, FilePathComparison, out rest);
+            var normalizedPath = subpath.StartsWith("/") ? subpath : "/" + subpath;
+
+            return new PathString(normalizedPath).StartsWithSegments(BasePath, FilePathComparison, out rest);
         }
     }
 }
