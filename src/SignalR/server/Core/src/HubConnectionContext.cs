@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
         private ReadOnlyMemory<byte> _cachedPingMessage;
+        private volatile bool _connectionAborted;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -99,6 +100,12 @@ namespace Microsoft.AspNetCore.SignalR
                 return new ValueTask(WriteSlowAsync(message));
             }
 
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
+            }
+
             // This method should never throw synchronously
             var task = WriteCore(message);
 
@@ -127,6 +134,12 @@ namespace Microsoft.AspNetCore.SignalR
             if (!_writeLock.Wait(0))
             {
                 return new ValueTask(WriteSlowAsync(message));
+            }
+
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
             }
 
             // This method should never throw synchronously
@@ -158,6 +171,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
+                Abort();
+
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
         }
@@ -175,6 +190,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
+                Abort();
+
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
         }
@@ -188,6 +205,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -201,6 +220,11 @@ namespace Microsoft.AspNetCore.SignalR
             await _writeLock.WaitAsync();
             try
             {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
                 // Failed to get the lock immediately when entering WriteAsync so await until it is available
 
                 await WriteCore(message);
@@ -208,6 +232,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -219,6 +245,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
                 // Failed to get the lock immediately when entering WriteAsync so await until it is available
                 await _writeLock.WaitAsync();
 
@@ -227,6 +258,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -250,6 +283,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
                 await _connectionContext.Transport.Output.WriteAsync(_cachedPingMessage);
 
                 Log.SentPing(_logger);
@@ -257,6 +295,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -293,6 +333,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public virtual void Abort()
         {
+            _connectionAborted = true;
+
+            // Cancel any current writes or writes that are about to happen and have already gone past the _connectionAborted bool
+            // We have to do this outside of the lock otherwise it could hang if the write is observing backpressure
+            _connectionContext.Transport.Output.CancelPendingFlush();
+
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
             // to avoid spawning a new task in the most common cases
             if (_connectionAbortedTokenSource.IsCancellationRequested)
@@ -423,7 +469,22 @@ namespace Microsoft.AspNetCore.SignalR
         internal Task AbortAsync()
         {
             Abort();
+
+            // Acquire lock to make sure all writes are completed
+            if (!_writeLock.Wait(0))
+            {
+                return AbortAsyncSlow();
+            }
+
+            _writeLock.Release();
             return _abortCompletedTcs.Task;
+        }
+
+        private async Task AbortAsyncSlow()
+        {
+            await _writeLock.WaitAsync();
+            _writeLock.Release();
+            await _abortCompletedTcs.Task;
         }
 
         private void KeepAliveTick()

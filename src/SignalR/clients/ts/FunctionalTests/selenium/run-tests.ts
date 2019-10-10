@@ -1,13 +1,24 @@
 import { ChildProcess, spawn } from "child_process";
-import * as fs from "fs";
+import * as _fs from "fs";
 import { EOL } from "os";
 import * as path from "path";
+import { promisify } from "util";
 import { PassThrough, Readable } from "stream";
 
 import { run } from "../../webdriver-tap-runner/lib";
 
 import * as _debug from "debug";
 const debug = _debug("signalr-functional-tests:run");
+
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+
+// Promisify things from fs we want to use.
+const fs = {
+    createWriteStream: _fs.createWriteStream,
+    exists: promisify(_fs.exists),
+    mkdir: promisify(_fs.mkdir),
+};
 
 process.on("unhandledRejection", (reason) => {
     console.error(`Unhandled promise rejection: ${reason}`);
@@ -102,6 +113,13 @@ if (chromePath) {
     try {
         const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.1", "FunctionalTests.dll");
 
+        if (!await fs.exists(ARTIFACTS_DIR)) {
+            await fs.mkdir(ARTIFACTS_DIR);
+        }
+        if (!await fs.exists(LOGS_DIR)) {
+            await fs.mkdir(LOGS_DIR);
+        }
+
         debug(`Launching Functional Test Server: ${serverPath}`);
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
@@ -116,6 +134,9 @@ if (chromePath) {
                 dotnet.kill();
             }
         }
+
+        const logStream = fs.createWriteStream(path.resolve(LOGS_DIR, "ts.functionaltests.dotnet.log"));
+        dotnet.stdout.pipe(logStream);
 
         process.on("SIGINT", cleanup);
         process.on("exit", cleanup);

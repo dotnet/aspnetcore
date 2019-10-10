@@ -511,6 +511,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
                         context.Response.ContentType = "text/plain";
+
+                        // There are no writes anymore (since this is the write "loop")
+                        // So it is safe to complete the writer
+                        // We complete the writer here because we already have the WriteLock acquired
+                        // and it's unsafe to complete outside of the lock
+                        // Other code isn't guaranteed to be able to acquire the lock before another write
+                        // even if CancelPendingFlush is called, and the other write could hang if there is backpressure
+                        connection.Application.Output.Complete();
                         return;
                     }
 
@@ -549,11 +557,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             Log.TerminatingConection(_logger);
 
-            // Complete the receiving end of the pipe
-            connection.Application.Output.Complete();
-
-            // Dispose the connection gracefully, but don't wait for it. We assign it here so we can wait in tests
-            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
+            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
 
             context.Response.StatusCode = StatusCodes.Status202Accepted;
             context.Response.ContentType = "text/plain";
