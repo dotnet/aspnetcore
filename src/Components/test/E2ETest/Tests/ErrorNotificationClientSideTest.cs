@@ -28,20 +28,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On WebAssembly, page reloads are expensive so skip if possible
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
             Browser.MountTestComponent<ErrorComponent>();
-            Browser.Exists(By.Id("error-ui"));
+            Browser.Exists(By.Id("blazor-error-ui"));
             Browser.Exists(By.TagName("button"));
         }
 
         [Fact]
         public void ShowsErrorNotification_OnError_Dismiss()
         {
-            var errorUi = Browser.FindElement(By.Id("error-ui"));
+            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
             var causeErrorButton = Browser.FindElement(By.TagName("button"));
             causeErrorButton.Click();
 
-            Browser.Exists(By.CssSelector("#error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
 
             var reload = Browser.FindElement(By.ClassName("reload"));
             reload.Click();
@@ -53,15 +53,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void ShowsErrorNotification_OnError_Reload()
         {
             var causeErrorButton = Browser.Exists(By.TagName("button"));
-            var errorUi = Browser.FindElement(By.Id("error-ui"));
+            var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
             causeErrorButton.Click();
-            Browser.Exists(By.CssSelector("#error-ui[style='display: block;']"));
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
 
             var dismiss = Browser.FindElement(By.ClassName("dismiss"));
             dismiss.Click();
-            Browser.Exists(By.CssSelector("#error-ui[style='display: none;']"));
+            Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: none;']"));
         }
     }
 }

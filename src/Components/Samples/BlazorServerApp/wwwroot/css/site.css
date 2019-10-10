@@ -111,7 +111,7 @@ app {
     color: red;
 }
 
-#error-ui {
+#blazor-error-ui {
     background: lightyellow;
     position: fixed;
     border: "1px solid";
@@ -122,7 +122,7 @@ app {
     z-index: 1000;
 }
 
-#error-ui .dismiss {
+#blazor-error-ui .dismiss {
     position: absolute;
     right: 5px;
     top: 5px;
