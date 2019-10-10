@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR
                 Log.ErrorDispatchingHubEvent(_logger, "OnConnectedAsync", ex);
 
                 // The client shouldn't try to reconnect given an error in OnConnected.
-                await SendCloseAsync(connection, ex, preventAutomaticReconnect: true);
+                await SendCloseAsync(connection, ex, allowAutomaticReconnect: false);
 
                 // return instead of throw to let close message send successfully
                 return;
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
             // send close message before aborting the connection
-            await SendCloseAsync(connection, exception, connection.PreventAutomaticReconnect);
+            await SendCloseAsync(connection, exception, connection.AllowAutomaticReconnect);
 
             // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
             // before OnDisconnectedAsync
@@ -177,18 +177,18 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception, bool preventAutomaticReconnect)
+        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception, bool allowAutomaticReconnect)
         {
             var closeMessage = CloseMessage.Empty;
 
             if (exception != null)
             {
                 var errorMessage = ErrorMessageHelper.BuildErrorMessage("Connection closed with an error.", exception, _enableDetailedErrors);
-                closeMessage = new CloseMessage(errorMessage, preventAutomaticReconnect);
+                closeMessage = new CloseMessage(errorMessage, allowAutomaticReconnect);
             }
-            else if (!preventAutomaticReconnect)
+            else if (allowAutomaticReconnect)
             {
-                closeMessage = new CloseMessage(null, preventAutomaticReconnect: false);
+                closeMessage = new CloseMessage(null, allowAutomaticReconnect);
             }
 
             try

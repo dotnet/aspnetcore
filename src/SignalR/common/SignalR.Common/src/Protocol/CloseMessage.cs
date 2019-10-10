@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public class CloseMessage : HubMessage
     {
         /// <summary>
-        /// An empty close message with no error and <see cref="PreventAutomaticReconnect"/> set to <see langword="true"/>.
+        /// An empty close message with no error and <see cref="AllowAutomaticReconnect"/> set to <see langword="false"/>.
         /// </summary>
-        public static readonly CloseMessage Empty = new CloseMessage(error: null, preventAutomaticReconnect: true);
+        public static readonly CloseMessage Empty = new CloseMessage(error: null, allowAutomaticReconnect: false);
 
         /// <summary>
         /// Gets the optional error message.
@@ -22,16 +22,16 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public string Error { get; }
 
         /// <summary>
-        /// If <see langword="true"/>, clients with automatic reconnects enabled should not attempt to reconnect after receiving the <see cref="CloseMessage"/>.
+        /// If <see langword="false"/>, clients with automatic reconnects enabled should not attempt to automatically reconnect after receiving the <see cref="CloseMessage"/>.
         /// </summary>
-        public bool PreventAutomaticReconnect { get; }
+        public bool AllowAutomaticReconnect { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CloseMessage"/> class with an optional error message and <see cref="PreventAutomaticReconnect"/> set to <see langword="true"/>.
+        /// Initializes a new instance of the <see cref="CloseMessage"/> class with an optional error message and <see cref="AllowAutomaticReconnect"/> set to <see langword="false"/>.
         /// </summary>
         /// <param name="error">An optional error message.</param>
         public CloseMessage(string error)
-            : this(error, preventAutomaticReconnect: true)
+            : this(error, allowAutomaticReconnect: false)
         {
         }
 
@@ -40,14 +40,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// automatic reconnects enabled should attempt to reconnect upon receiving the message.
         /// </summary>
         /// <param name="error">An optional error message.</param>
-        /// <param name="preventAutomaticReconnect">
-        /// <see langword="true"/>, if the client should not try to reconnect whether or not automatic reconnects are enabled.
-        /// <see langword="false"/>, if client with automatic reconnects enabled should attempt to reconnect after receiving the <see cref="CloseMessage"/>;
+        /// <param name="allowAutomaticReconnect">
+        /// <see langword="true"/>, if client with automatic reconnects enabled should attempt to reconnect after receiving the <see cref="CloseMessage"/>;
+        /// <see langword="false"/>, if the client should not try to reconnect whether or not automatic reconnects are enabled.
         /// </param>
-        public CloseMessage(string error, bool preventAutomaticReconnect)
+        public CloseMessage(string error, bool allowAutomaticReconnect)
         {
             Error = error;
-            PreventAutomaticReconnect = preventAutomaticReconnect;
+            AllowAutomaticReconnect = allowAutomaticReconnect;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string TargetPropertyName = "target";
         private const string ArgumentsPropertyName = "arguments";
         private const string HeadersPropertyName = "headers";
-        private const string PreventAutomaticReconnectPropertyName = "preventReconnect";
+        private const string AllowAutomaticReconnectPropertyName = "allowReconnect";
 
         private static readonly string ProtocolName = "json";
         private static readonly int ProtocolVersion = 1;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
-                var preventAutomaticReconnect = true;
+                var allowAutomaticReconnect = false;
 
                 using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
@@ -189,8 +189,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     case ErrorPropertyName:
                                         error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
                                         break;
-                                    case PreventAutomaticReconnectPropertyName:
-                                        preventAutomaticReconnect = JsonUtils.ReadAsBoolean(reader, PreventAutomaticReconnectPropertyName);
+                                    case AllowAutomaticReconnectPropertyName:
+                                        allowAutomaticReconnect = JsonUtils.ReadAsBoolean(reader, AllowAutomaticReconnectPropertyName);
                                         break;
                                     case ResultPropertyName:
                                         hasResult = true;
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error, preventAutomaticReconnect);
+                        return BindCloseMessage(error, allowAutomaticReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -738,15 +738,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             throw new JsonReaderException("Unexpected end when reading JSON");
         }
 
-        private CloseMessage BindCloseMessage(string error, bool preventAutomaticReconnect)
+        private CloseMessage BindCloseMessage(string error, bool allowAutomaticReconnect)
         {
             // An empty string is still an error
-            if (error == null && preventAutomaticReconnect)
+            if (error == null && !allowAutomaticReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            return new CloseMessage(error, preventAutomaticReconnect);
+            return new CloseMessage(error, allowAutomaticReconnect);
         }
 
         private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)

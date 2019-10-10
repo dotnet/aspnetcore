@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
         private const string ErrorPropertyName = "error";
         private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
-        private const string PreventAutomaticReconnectPropertyName = "preventReconnect";
-        private static JsonEncodedText PreventAutomaticReconnectPropertyNameBytes = JsonEncodedText.Encode(PreventAutomaticReconnectPropertyName);
+        private const string AllowAutomaticReconnectPropertyName = "allowReconnect";
+        private static JsonEncodedText AllowAutomaticReconnectPropertyNameBytes = JsonEncodedText.Encode(AllowAutomaticReconnectPropertyName);
         private const string TargetPropertyName = "target";
         private static JsonEncodedText TargetPropertyNameBytes = JsonEncodedText.Encode(TargetPropertyName);
         private const string ArgumentsPropertyName = "arguments";
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
-                var preventAutomaticReconnect = true;
+                var allowAutomaticReconnect = false;
 
                 var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -189,9 +189,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (reader.ValueTextEquals(PreventAutomaticReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(AllowAutomaticReconnectPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                preventAutomaticReconnect = reader.ReadAsBoolean(PreventAutomaticReconnectPropertyName);
+                                allowAutomaticReconnect = reader.ReadAsBoolean(AllowAutomaticReconnectPropertyName);
                             }
                             else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error, preventAutomaticReconnect);
+                        return BindCloseMessage(error, allowAutomaticReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -552,9 +552,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 writer.WriteString(ErrorPropertyNameBytes, message.Error);
             }
 
-            if (!message.PreventAutomaticReconnect)
+            if (message.AllowAutomaticReconnect)
             {
-                writer.WriteBoolean(PreventAutomaticReconnectPropertyNameBytes, false);
+                writer.WriteBoolean(AllowAutomaticReconnectPropertyNameBytes, false);
             }
         }
 
@@ -734,15 +734,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return arguments ?? Array.Empty<object>();
         }
 
-        private CloseMessage BindCloseMessage(string error, bool preventAutomaticReconnect)
+        private CloseMessage BindCloseMessage(string error, bool allowAutomaticReconnect)
         {
             // An empty string is still an error
-            if (error == null && preventAutomaticReconnect)
+            if (error == null && !allowAutomaticReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            return new CloseMessage(error, preventAutomaticReconnect);
+            return new CloseMessage(error, allowAutomaticReconnect);
         }
 
         private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string> headers)

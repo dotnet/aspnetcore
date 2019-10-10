@@ -1165,7 +1165,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                     }
 
                                     // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
-                                    if (closeMessage.PreventAutomaticReconnect)
+                                    if (!closeMessage.AllowAutomaticReconnect)
                                     {
                                         connectionState.Stopping = true;
                                     }

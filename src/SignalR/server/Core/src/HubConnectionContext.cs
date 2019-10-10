@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
         private bool _connectionAborted;
-        private volatile bool _preventAutomaticReconnect;
+        private volatile bool _allowAutomaticReconnect = true;
         private int _streamBufferCapacity;
         private long? _maxMessageSize;
 
@@ -107,8 +107,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public virtual IDictionary<object, object> Items => _connectionContext.Items;
 
-        // Used by HubConnectionHandler to determine whether to set CloseMessage.PreventAutomaticReconnect.
-        internal bool PreventAutomaticReconnect => _preventAutomaticReconnect;
+        // Used by HubConnectionHandler to determine whether to set CloseMessage.AllowAutomaticReconnect.
+        internal bool AllowAutomaticReconnect => _allowAutomaticReconnect;
 
         // Used by HubConnectionHandler
         internal PipeReader Input => _connectionContext.Transport.Input;
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual void Abort()
         {
             // REVIEW: Should we provide a new API that *doesn't* prevent automatic reconnects?
-            _preventAutomaticReconnect = true;
+            _allowAutomaticReconnect = false;
             AbortAllowAutoReconnect();
         }
 
