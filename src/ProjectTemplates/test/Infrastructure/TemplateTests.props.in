@@ -16,20 +16,10 @@
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
-      TargetFramework="${DefaultNetCoreTargetFramework}"
       DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppRuntimePackageVersion}"
       TargetingPackVersion="${MicrosoftAspNetCoreAppRefPackageVersion}"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
-  </ItemGroup>
-
-  <!-- This can be removed after we update our build to use .NET Core Preivew7 SDK or newer. (Needs https://github.com/dotnet/core-sdk/pull/2401) -->
-  <ItemGroup>
-    <KnownFrameworkReference
-      Update="Microsoft.NETCore.App"
-      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
-      AppHostPackNamePattern=""
-      AppHostRuntimeIdentifiers="" />
   </ItemGroup>
 
   <ItemGroup>
