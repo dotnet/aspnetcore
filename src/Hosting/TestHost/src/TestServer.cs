@@ -62,11 +62,9 @@ namespace Microsoft.AspNetCore.TestHost
 
             Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
 
-            var host = builder.UseServer(this).Build();
-            host.StartAsync().GetAwaiter().GetResult();
-            _hostInstance = host;
+            _hostInstance = builder.UseServer(this).Build();
 
-            Services = host.Services;
+            Services = _hostInstance.Services;
         }
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
@@ -177,13 +175,10 @@ namespace Microsoft.AspNetCore.TestHost
                     throw new ObjectDisposedException(GetType().FullName);
                 }
             });
-
-            return Task.CompletedTask;
+            
+            return _hostInstance?.StartAsync(cancellationToken) ?? Task.CompletedTask;
         }
 
-        Task IServer.StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
+        Task IServer.StopAsync(CancellationToken cancellationToken) => _hostInstance?.StopAsync(cancellationToken) ?? Task.CompletedTask;
     }
 }
