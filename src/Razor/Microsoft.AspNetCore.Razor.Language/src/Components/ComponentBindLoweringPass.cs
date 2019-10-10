@@ -275,6 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 out var valueAttributeName,
                 out var changeAttributeName,
                 out var expressionAttributeName,
+                out var changeAttributeNode,
                 out var valueAttribute,
                 out var changeAttribute,
                 out var expressionAttribute))
@@ -393,12 +394,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = changeAttributeName,
+                    AttributeNameExpression = changeAttributeNode,
                     Source = node.Source,
 
                     Prefix = changeAttributeName + "=\"",
                     Suffix = "\"",
 
-                    EventUpdatesAttributeName = valueNode.AttributeName,
+                    EventUpdatesAttributeName = valueAttributeName,
                 };
 
                 changeNode.Children.Add(new CSharpExpressionAttributeValueIntermediateNode());
@@ -510,6 +512,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             out string valueAttributeName,
             out string changeAttributeName,
             out string expressionAttributeName,
+            out CSharpExpressionIntermediateNode changeAttributeNode,
             out BoundAttributeDescriptor valueAttribute,
             out BoundAttributeDescriptor changeAttribute,
             out BoundAttributeDescriptor expressionAttribute)
@@ -517,9 +520,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             valueAttributeName = null;
             changeAttributeName = null;
             expressionAttributeName = null;
+            changeAttributeNode = null;
             valueAttribute = null;
             changeAttribute = null;
             expressionAttribute = null;
+
+            // The tag helper specifies attribute names, they should win.
+            //
+            // This handles cases like <input type="text" bind="@Foo" /> where the tag helper is
+            // generated to match a specific tag and has metadata that identify the attributes.
+            //
+            // We expect 1 bind tag helper per-node.
+            var node = bindEntry.BindNode;
+            var attributeName = node.AttributeName;
 
             // Even though some of our 'bind' tag helpers specify the attribute names, they
             // should still satisfy one of the valid syntaxes.
@@ -528,24 +541,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return false;
             }
 
-            if (bindEntry.BindEventNode != null)
-            {
-                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
-            }
-
-            // The tag helper specifies attribute names, they should win.
-            //
-            // This handles cases like <input type="text" bind="@Foo" /> where the tag helper is 
-            // generated to match a specific tag and has metadata that identify the attributes.
-            //
-            // We expect 1 bind tag helper per-node.
-            var node = bindEntry.BindNode;
-            var attributeName = node.AttributeName;
             valueAttributeName = node.TagHelper.GetValueAttributeName() ?? valueAttributeName;
 
             // If there an attribute that specifies the event like @bind:event="oninput",
             // that should be preferred. Otherwise, use the one from the tag helper.
-            changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+            if (bindEntry.BindEventNode == null)
+            {
+                // @bind:event not specified
+                changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+            }
+            else if (TryExtractEventNodeStaticText(bindEntry.BindEventNode, out var text))
+            {
+                // @bind:event="oninput" - change attribute is static
+                changeAttributeName = text;
+            }
+            else
+            {
+                // @bind:event="@someExpr" - we can't know the name of the change attribute, it's dynamic
+                changeAttributeNode = ExtractEventNodeExpression(bindEntry.BindEventNode);
+            }
 
             expressionAttributeName = node.TagHelper.GetExpressionAttributeName();
 
@@ -554,7 +568,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             if (componentTagHelper == null)
             {
                 // If it's not a component node then there isn't too much else to figure out.
-                return attributeName != null && changeAttributeName != null;
+                return attributeName != null && (changeAttributeName != null || changeAttributeNode != null);
             }
 
             // If this is a component, we need an attribute name for the value.
@@ -597,6 +611,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             return true;
+
+            static bool TryExtractEventNodeStaticText(TagHelperDirectiveAttributeParameterIntermediateNode node, out string text)
+            {
+                if (node.Children[0] is HtmlContentIntermediateNode html)
+                {
+                    text = GetAttributeContent(html).Content;
+                    return true;
+                }
+
+                text = null;
+                return false;
+            }
+
+            static CSharpExpressionIntermediateNode ExtractEventNodeExpression(TagHelperDirectiveAttributeParameterIntermediateNode node)
+            {
+                if (node.Children[0] is CSharpExpressionIntermediateNode expression)
+                {
+                    return expression;
+                }
+
+                return null;
+            }
         }
 
         private void RewriteNodesForComponentDelegateBind(
