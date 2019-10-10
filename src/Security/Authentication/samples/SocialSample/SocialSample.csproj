@@ -22,6 +22,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
 </Project>
