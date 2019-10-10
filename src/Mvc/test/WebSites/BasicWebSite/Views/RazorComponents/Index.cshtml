@@ -1,35 +1,8 @@
 ﻿@using BasicWebSite.RazorComponents;
-@model bool;
+
 <h1>Razor components</h1>
-<div id="Greetings">
-    @if (Model)
-    {
-        @(await Html.RenderStaticComponentAsync<Greetings>())
-    }
-    else
-    {
-        @(await Html.RenderComponentAsync<Greetings>())
-    }
-</div>
+<div id="Greetings">@(await Html.RenderComponentAsync<Greetings>(RenderMode.Static))</div>
 
-<div id="FetchData">
-    @if (Model)
-    {
-        @(await Html.RenderStaticComponentAsync<FetchData>(new { StartDate = new DateTime(2019, 01, 15) }))
-    }
-    else
-    {
-        @(await Html.RenderComponentAsync<FetchData>(new { StartDate = new DateTime(2019, 01, 15) }))
-    }
-</div>
+<div id="FetchData">@(await Html.RenderComponentAsync<FetchData>(RenderMode.Static, new { StartDate = new DateTime(2019, 01, 15) }))</div>
 
-<div id="Routing">
-    @if (Model)
-    {
-        @(await Html.RenderStaticComponentAsync<RouterContainer>());
-    }
-    else
-    {
-        @(await Html.RenderComponentAsync<RouterContainer>());
-    }
-</div>
+<div id="Routing">@(await Html.RenderComponentAsync<RouterContainer>(RenderMode.Static))</div>

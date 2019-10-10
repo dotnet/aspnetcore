@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Reflection;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -20,19 +21,21 @@ namespace Microsoft.AspNetCore.Components
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
 
-        private static readonly ParameterView _empty = new ParameterView(_emptyFrames, 0, null);
+        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, null);
 
+        private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
 
-        internal ParameterView(RenderTreeFrame[] frames, int ownerIndex)
-            : this(frames, ownerIndex, null)
+        internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
+            : this(lifetime, frames, ownerIndex, null)
         {
         }
 
-        private ParameterView(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
         {
+            _lifetime = lifetime;
             _frames = frames;
             _ownerIndex = ownerIndex;
             _cascadingParametersOrNull = cascadingParametersOrNull;
@@ -43,27 +46,32 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public static ParameterView Empty => _empty;
 
+        internal ParameterViewLifetime Lifetime => _lifetime;
+
         /// <summary>
         /// Returns an enumerator that iterates through the <see cref="ParameterView"/>.
         /// </summary>
         /// <returns>The enumerator.</returns>
         public Enumerator GetEnumerator()
-            => new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+        {
+            _lifetime.AssertNotExpired();
+            return new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+        }
 
         /// <summary>
         /// Gets the value of the parameter with the specified name.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="result">Receives the result, if any.</param>
         /// <returns>True if a matching parameter was found; false otherwise.</returns>
-        public bool TryGetValue<T>(string parameterName, out T result)
+        public bool TryGetValue<TValue>(string parameterName, out TValue result)
         {
             foreach (var entry in this)
             {
                 if (string.Equals(entry.Name, parameterName))
                 {
-                    result = (T)entry.Value;
+                    result = (TValue)entry.Value;
                     return true;
                 }
             }
@@ -76,22 +84,22 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the value of the parameter with the specified name, or a default value
         /// if no such parameter exists in the collection.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
-        public T GetValueOrDefault<T>(string parameterName)
-            => GetValueOrDefault<T>(parameterName, default);
+        public TValue GetValueOrDefault<TValue>(string parameterName)
+            => GetValueOrDefault<TValue>(parameterName, default);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name, or a specified default value
         /// if no such parameter exists in the collection.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
         /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
-        public T GetValueOrDefault<T>(string parameterName, T defaultValue)
-            => TryGetValue<T>(parameterName, out T result) ? result : defaultValue;
+        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue)
+            => TryGetValue<TValue>(parameterName, out TValue result) ? result : defaultValue;
 
         /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
@@ -108,7 +116,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
-            => new ParameterView(_frames, _ownerIndex, cascadingParameters);
+            => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
 
         // It's internal because there isn't a known use case for user code comparing
         // ParameterView instances, and even if there was, it's unlikely it should
@@ -215,7 +223,7 @@ namespace Microsoft.AspNetCore.Components
                 frames[++i] = RenderTreeFrame.Attribute(i, kvp.Key, kvp.Value);
             }
 
-            return new ParameterView(frames, 0);
+            return new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
         }
 
         /// <summary>

@@ -58,24 +58,23 @@ describe('DefaultReconnectionHandler', () => {
     expect(reconnect).toHaveBeenCalledTimes(1);
   });
 
-  // Skipped while under investigation: https://github.com/aspnet/AspNetCore/issues/12578
-  // it('invokes failed if reconnect fails', async () => {
-  //   const testDisplay = createTestDisplay();
-  //   const reconnect = jest.fn().mockRejectedValue(null);
-  //   const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
-  //   window.console.error = jest.fn();
+  it('invokes failed if reconnect fails', async () => {
+    const testDisplay = createTestDisplay();
+    const reconnect = jest.fn().mockRejectedValue(null);
+    const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
+    window.console.error = jest.fn();
 
-  //   handler.onConnectionDown({
-  //     maxRetries: 3,
-  //     retryIntervalMilliseconds: 20,
-  //     dialogId: 'ignored'
-  //   });
+    handler.onConnectionDown({
+      maxRetries: 2,
+      retryIntervalMilliseconds: 5,
+      dialogId: 'ignored'
+    });
 
-  //   await delay(500);
-  //   expect(testDisplay.show).toHaveBeenCalled();
-  //   expect(testDisplay.failed).toHaveBeenCalled();
-  //   expect(reconnect).toHaveBeenCalledTimes(3);
-  // });
+    await delay(500);
+    expect(testDisplay.show).toHaveBeenCalled();
+    expect(testDisplay.failed).toHaveBeenCalled();
+    expect(reconnect).toHaveBeenCalledTimes(2);
+  });
 });
 
 function attachUserSpecifiedUI(options: ReconnectionOptions): Element {
@@ -94,6 +93,7 @@ function createTestDisplay(): ReconnectDisplay {
   return {
     show: jest.fn(),
     hide: jest.fn(),
-    failed: jest.fn()
+    failed: jest.fn(),
+    rejected: jest.fn()
   };
 }

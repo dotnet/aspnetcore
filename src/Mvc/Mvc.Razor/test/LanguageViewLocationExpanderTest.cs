@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -133,8 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             // Arrange
             var viewLocationExpanderContext = new ViewLocationExpanderContext(
-                new ActionContext(), 
-                "testView", 
+                new ActionContext(),
+                "testView",
                 "test-controller",
                 "",
                 null,
@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             // Arrange
             var viewLocationExpanderContext = new ViewLocationExpanderContext(
-                new ActionContext(), 
-                "testView", 
+                new ActionContext(),
+                "testView",
                 "test-controller",
                 "test-area",
                 null,
@@ -186,8 +186,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             // Arrange
             var viewLocationExpanderContext = new ViewLocationExpanderContext(
-                new ActionContext(), 
-                "testView", 
+                new ActionContext(),
+                "testView",
                 "test-controller",
                 "test-area",
                 null,

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <!-- Default value may lead to an inner build error if $(OpenApiGenerateDocuments) is explicitly set to 'true'. -->
+    <_OpenApiGenerateDocumentsTFM>$(TargetFrameworks.Trim(';').Split(';')[0])</_OpenApiGenerateDocumentsTFM>
+
+    <!-- Prefer first TFM of those the tool supports. -->
+    <_Temporary>$(TargetFrameworks
+        .Replace('netcoreapp1.0', '')
+        .Replace('netcoreapp1.1', '')
+        .Replace('netcoreapp2.0', '')
+        .Trim(';'))</_Temporary>
+    <_OpenApiGenerateDocumentsTFM
+        Condition=" '$(_Temporary)' != '' ">$(_Temporary.Split(';')[0])</_OpenApiGenerateDocumentsTFM>
+
+    <OpenApiGenerateDocuments
+        Condition=" '$(OpenApiGenerateDocuments)' == '' AND '$(_Temporary)' != '' ">true</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocumentsOnBuild
+        Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == '' ">$(OpenApiGenerateDocuments)</OpenApiGenerateDocumentsOnBuild>
+
+    <_Temporary />
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGenerateDocuments" />
+  </ItemGroup>
+
+  <Target Name="GenerateOpenApiDocuments">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="GenerateOpenApiDocuments"
+        Properties="TargetFramework=$(_OpenApiGenerateDocumentsTFM)"
+        RemoveProperties="RuntimeIdentifier" />
+  </Target>
+
+  <Target Name="_GenerateOpenApiDocuments"
+      BeforeTargets="Build"
+      Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' "
+      DependsOnTargets="GenerateOpenApiDocuments" />
+
+  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="OpenApiGetDocuments"
+        Properties="TargetFramework=$(_OpenApiGenerateDocumentsTFM)"
+        RemoveProperties="RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_OpenApiProjectDocuments" />
+    </MSBuild>
+  </Target>
+</Project>

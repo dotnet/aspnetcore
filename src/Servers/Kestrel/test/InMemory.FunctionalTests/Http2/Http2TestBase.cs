@@ -378,9 +378,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
         }
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
             {
@@ -1112,12 +1112,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = result.Buffer;
                 var consumed = buffer.Start;
                 var examined = buffer.Start;
+                var copyBuffer = buffer;
 
                 try
                 {
                     Assert.True(buffer.Length > 0);
 
-                    if (Http2FrameReader.ReadFrame(buffer, frame, maxFrameSize, out var framePayload))
+                    if (Http2FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
                     {
                         consumed = examined = framePayload.End;
                         frame.Payload = framePayload.ToArray();
@@ -1135,7 +1136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 finally
                 {
-                    _bytesReceived += buffer.Slice(buffer.Start, consumed).Length;
+                    _bytesReceived += copyBuffer.Slice(copyBuffer.Start, consumed).Length;
                     _pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }

@@ -78,13 +78,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             _options = options;
             _logger = loggerFactory?.CreateLogger<HttpsConnectionMiddleware>();
         }
-        public Task OnConnectionAsync(ConnectionContext context)
+        public async Task OnConnectionAsync(ConnectionContext context)
         {
-            return Task.Run(() => InnerOnConnectionAsync(context));
-        }
+            await Task.Yield();
 
-        private async Task InnerOnConnectionAsync(ConnectionContext context)
-        {
             bool certificateRequired;
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);

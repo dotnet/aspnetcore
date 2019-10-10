@@ -15,11 +15,11 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <NoSemVer20>true</NoSemVer20>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(TargetRuntimeIdentifier)" />
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(OriginalPackageVersion)" />
+    <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
 
     <ProjectReference Include="..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -31,4 +31,17 @@
     </ProjectReference>
   </ItemGroup>
 
+  <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
+  <Target Name="_GetHostingStartupPackageReference" BeforeTargets="GenerateHostingStartupDeps">
+    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
+    <MSBuild Projects="$(RepoRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <ItemGroup>
+      <HostingStartupPackageReference Include="%(_ResolvedPackageVersionInfo.PackageId)" Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
+    </ItemGroup>
+  </Target>
 </Project>

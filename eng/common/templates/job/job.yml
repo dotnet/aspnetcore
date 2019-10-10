@@ -24,7 +24,7 @@ parameters:
 
   workspace: ''
 
-# Job base template specific parameters
+  # Job base template specific parameters
   # Optional: Enable installing Microbuild plugin
   #           if 'true', these "variables" must be specified in the variables object or as part of the queue matrix
   #             _TeamName - the name of your team
@@ -36,6 +36,9 @@ parameters:
 
   # Optional: Enable publishing to the build asset registry
   enablePublishBuildAssets: false
+
+  # Optional: Prevent gather/push manifest from executing when using publishing pipelines
+  enablePublishUsingPipelines: false
 
   # Optional: Include PublishTestResults task
   enablePublishTestResults: false
@@ -148,6 +151,9 @@ jobs:
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: NuGetAuthenticate@0
+
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
 
@@ -187,7 +193,7 @@ jobs:
       continueOnError: true
       condition: always()
     
-  - ${{ if and(eq(parameters.enablePublishBuildAssets, true), ne(variables['_PublishUsingPipelines'], 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - ${{ if and(eq(parameters.enablePublishBuildAssets, true), ne(parameters.enablePublishUsingPipelines, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - task: CopyFiles@2
       displayName: Gather Asset Manifests
       inputs:
@@ -195,6 +201,7 @@ jobs:
         TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
       continueOnError: ${{ parameters.continueOnError }}
       condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+
     - task: PublishBuildArtifacts@1
       displayName: Push Asset Manifests
       inputs:

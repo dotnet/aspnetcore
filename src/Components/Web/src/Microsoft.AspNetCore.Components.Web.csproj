@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Description>Support for rendering ASP.NET Core components for browsers.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -11,11 +12,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
 </Project>

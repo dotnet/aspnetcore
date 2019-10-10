@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Test
 {
     public class GenericContext<TItem> : ComponentBase
@@ -57,7 +56,7 @@ namespace Test
 
         private readonly CSharpSyntaxTree MultipleGenericParameterComponent = Parse(@"
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 namespace Test
 {
     public class MultipleGenericParameter<TItem1, TItem2, TItem3> : ComponentBase
@@ -121,7 +120,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
+<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
 
 @code {
     GenericContext<int> _my;
@@ -188,7 +187,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
+<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
 
 @code {
     GenericContext<int> _my;
@@ -221,7 +220,7 @@ namespace Test
 
             var assembly = CompileToAssembly("Test.cshtml", @"
 @typeparam TItem
-<GenericContext Items=""@MyItems"" @ref=""_my"" @ref:suppressField />
+<GenericContext Items=""@MyItems"" @ref=""_my"" />
 
 @code {
     [Parameter] public List<TItem> MyItems { get; set; }

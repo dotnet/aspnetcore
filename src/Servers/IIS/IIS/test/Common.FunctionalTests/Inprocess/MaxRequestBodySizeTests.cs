@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBody", new StringContent("test"));
 
-            // IIS returns a 404 instead of a 413... 
+            // IIS returns a 404 instead of a 413...
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         }
 
@@ -78,6 +78,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            // Logs get tangled up due to ANCM debug logs and managed logs logging at the same time.
+            // Disable it for this test as we are trying to verify a log.
+            deploymentParameters.HandlerSettings["debugLevel"] = "";
             deploymentParameters.ServerConfigActionList.Add(
                 (config, _) => {
                     config

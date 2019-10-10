@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var contextAttributes = context.Attributes;
             var contextAttributesCount = contextAttributes.Count;
             var attributes = new List<object>(contextAttributesCount);
-            
+
             for (var i = 0; i < contextAttributesCount; i++)
             {
                 var attribute = contextAttributes[i];
@@ -367,15 +367,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 else if (context.Key.MetadataKind == ModelMetadataKind.Property)
                 {
                     addInferredRequiredAttribute = IsNullableReferenceType(
-                        context.Key.ContainerType, 
-                        member: null, 
+                        context.Key.ContainerType,
+                        member: null,
                         context.PropertyAttributes);
                 }
                 else if (context.Key.MetadataKind == ModelMetadataKind.Parameter)
                 {
                     addInferredRequiredAttribute = IsNullableReferenceType(
-                        context.Key.ParameterInfo?.Member.ReflectedType, 
-                        context.Key.ParameterInfo.Member, 
+                        context.Key.ParameterInfo?.Member.ReflectedType,
+                        context.Key.ParameterInfo.Member,
                         context.ParameterAttributes);
                 }
                 else
@@ -494,6 +494,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
         internal static bool IsNullableBasedOnContext(Type containingType, MemberInfo member)
         {
+            // For generic types, inspecting the nullability requirement additionally requires
+            // inspecting the nullability constraint on generic type parameters. This is fairly non-triviial
+            // so we'll just avoid calculating it. Users should still be able to apply an explicit [Required]
+            // attribute on these members.
+            if (containingType.IsGenericType)
+            {
+                return false;
+            }
+
             // The [Nullable] and [NullableContext] attributes are not inherited.
             //
             // The [NullableContext] attribute can appear on a method or on the module.
@@ -516,7 +525,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 }
 
                 type = type.DeclaringType;
-            } 
+            }
             while (type != null);
 
             // If we don't find the attribute on the declaring type then repeat at the module level

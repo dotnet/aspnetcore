@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -82,9 +82,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             StateHasChanged();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         void IDisposable.Dispose()
         {
             DetachValidationStateChangedListener();
+            Dispose(disposing: true);
         }
 
         private void DetachValidationStateChangedListener()

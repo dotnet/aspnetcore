@@ -6,8 +6,9 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Components.Web.Rendering
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
     /// Writeable memory stream backed by a an <see cref="ArrayBuilder{T}"/>.

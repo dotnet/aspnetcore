@@ -5,10 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Components.Rendering;
+#if !IGNITOR
 using Microsoft.AspNetCore.Components.RenderTree;
+#endif
 
-namespace Microsoft.AspNetCore.Components.Web.Rendering
+#if IGNITOR
+namespace Ignitor
+#else
+namespace Microsoft.AspNetCore.Components.Server.Circuits
+#endif
 {
     // TODO: We should consider *not* having this type of infrastructure in the .Server
     // project, but instead in some new project called .Remote or similar, since it

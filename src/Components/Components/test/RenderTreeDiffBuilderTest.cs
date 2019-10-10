@@ -361,6 +361,23 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RejectsClashingKeysEvenIfAllPairsMatch()
+        {
+            // This sort of scenario would happen if you accidentally used a constant value for @key
+
+            // Arrange
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key1", "attrib1b");
+
+            AddWithKey(newTree, "key1", "attrib1a");
+            AddWithKey(newTree, "key1", "attrib1b");
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+        }
+
+        [Fact]
         public void HandlesInsertionOfUnkeyedItemsAroundKey()
         {
             // The fact that the new sequence numbers are descending makes this
@@ -425,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingAdded()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame without a key and a new frame with a key.
 
@@ -455,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingRemoved()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame with a key and a new frame without a key.
 
@@ -835,9 +852,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RecognizesAttributeEventHandlerValuesChanged()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
-            Action<UIEventArgs> removedHandler = _ => { };
-            Action<UIEventArgs> addedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
+            Action<EventArgs> removedHandler = _ => { };
+            Action<EventArgs> addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "onfoo", retainedHandler);
             oldTree.AddAttribute(2, "onbar", removedHandler);
@@ -1575,7 +1592,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1601,7 +1618,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -2214,7 +2231,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public object ObjectProperty { get; set; }
 
             [Parameter]
-            public string ReadonlyProperty { get; private set; }
+            public string ReadonlyProperty { get; set; }
 
             [Parameter]
             public string PrivateProperty { get; set; }

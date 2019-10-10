@@ -77,6 +77,14 @@ namespace Microsoft.AspNetCore.SignalR
             return true;
         }
 
+        public void CompleteAll(Exception ex)
+        {
+            foreach (var converter in _lookup)
+            {
+                converter.Value.TryComplete(ex);
+            }
+        }
+
         private static IStreamConverter BuildStream<T>(int streamBufferCapacity)
         {
             return new ChannelConverter<T>(streamBufferCapacity);

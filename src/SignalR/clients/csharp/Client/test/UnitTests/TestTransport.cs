@@ -44,6 +44,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application = pair.Application;
             await _startHandler();
 
+            // To test canceling the token from the onTransportStart Func.
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Start a loop to read from the pipe
             Receiving = ReceiveLoop();
             async Task ReceiveLoop()

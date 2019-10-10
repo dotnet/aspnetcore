@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
-        IHttpBodyControlFeature
+        IHttpBodyControlFeature,
+        IHttpSysRequestInfoFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -173,23 +174,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    var protocol = Request.ProtocolVersion;
-                    if (protocol == Constants.V2)
-                    {
-                        _httpProtocolVersion = "HTTP/2";
-                    }
-                    else if (protocol == Constants.V1_1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol == Constants.V1_0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
+                    _httpProtocolVersion = Request.ProtocolVersion.GetHttpProtocolVersion();
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -545,6 +530,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
 
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+
+        IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
         internal async Task OnResponseStart()
         {

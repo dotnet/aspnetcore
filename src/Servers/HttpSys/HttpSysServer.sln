@@ -70,6 +70,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{00A88B8D-D539-45DD-B071-1E955AF89A4A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueSharing", "samples\QueueSharing\QueueSharing.csproj", "{9B58DF76-DC6D-4728-86B7-40087BDDC897}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -304,6 +306,18 @@ Global
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A}.Release|x86.ActiveCfg = Release|Any CPU
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A}.Release|x86.Build.0 = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Debug|x86.Build.0 = Debug|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|x86.ActiveCfg = Release|Any CPU
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -329,6 +343,7 @@ Global
 		{19DC60DE-C413-43A2-985E-0D0F20AD2302} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{D93575B3-BFA3-4523-B060-D268D6A0A66B} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
+		{9B58DF76-DC6D-4728-86B7-40087BDDC897} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34B42B42-FA09-41AB-9216-14073990C504}

@@ -191,8 +191,23 @@ elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -a
     $BuildManaged = $true
 }
 
-if ($BuildManaged -and ($NoBuildNodeJS)) {
-    Write-Warning "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
+if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
+    if ((-not $BuildNodeJS) -and (-not $NoBuildNodeJS)) {
+        $node = Get-Command node -ErrorAction Ignore -CommandType Application
+
+        if ($node) {
+            $nodeHome = Split-Path -Parent (Split-Path -Parent $node.Path)
+            Write-Host -f Magenta "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected in $nodeHome."
+        }
+        else {
+            Write-Host -f Magenta "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
+            $NoBuildNodeJS = $true
+        }
+    }
+
+    if ($NoBuildNodeJS){
+        Write-Warning "Some managed projects depend on NodeJS projects. Building NodeJS is disabled so the managed projects will fallback to using the output from previous builds. The output may not be correct or up to date."
+    }
 }
 
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
@@ -292,6 +307,8 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
+# Though VS Code may indicate $nodeReuse, $warnAsError and $msbuildEngine are unused, tools.ps1 uses them.
+
 # Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 $nodeReuse = $false
 $env:MSBUILDDISABLENODEREUSE=1
@@ -313,10 +330,10 @@ if ($CI) {
 }
 
 # tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
-rm variable:global:_BuildTool -ea Ignore
-rm variable:global:_DotNetInstallDir -ea Ignore
-rm variable:global:_ToolsetBuildProj -ea Ignore
-rm variable:global:_MSBuildExe -ea Ignore
+Remove-Item variable:global:_BuildTool -ea Ignore
+Remove-Item variable:global:_DotNetInstallDir -ea Ignore
+Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
+Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
@@ -376,10 +393,10 @@ finally {
     }
 
     # tools.ps1 corrupts global state, so reset these values so they don't carry between invocations of build.ps1
-    rm variable:global:_BuildTool -ea Ignore
-    rm variable:global:_DotNetInstallDir -ea Ignore
-    rm variable:global:_ToolsetBuildProj -ea Ignore
-    rm variable:global:_MSBuildExe -ea Ignore
+    Remove-Item variable:global:_BuildTool -ea Ignore
+    Remove-Item variable:global:_DotNetInstallDir -ea Ignore
+    Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
+    Remove-Item variable:global:_MSBuildExe -ea Ignore
 
     if ($DumpProcesses -or $ci) {
         Stop-Job -Name DumpProcesses

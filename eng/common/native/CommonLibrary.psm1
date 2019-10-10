@@ -59,9 +59,38 @@ function DownloadAndExtract {
                                           -Verbose:$Verbose
 
   if ($UnzipStatus -Eq $False) {
-    Write-Error "Unzip failed"
-    return $False
+    # Retry Download one more time with Force=true
+    $DownloadRetryStatus = CommonLibrary\Get-File -Uri $Uri `
+                                             -Path $TempToolPath `
+                                             -DownloadRetries 1 `
+                                             -RetryWaitTimeInSeconds $RetryWaitTimeInSeconds `
+                                             -Force:$True `
+                                             -Verbose:$Verbose
+
+    if ($DownloadRetryStatus -Eq $False) {
+      Write-Error "Last attempt of download failed as well"
+      return $False
+    }
+
+    # Retry unzip again one more time with Force=true
+    $UnzipRetryStatus = CommonLibrary\Expand-Zip -ZipPath $TempToolPath `
+                                            -OutputDirectory $InstallDirectory `
+                                            -Force:$True `
+                                            -Verbose:$Verbose
+    if ($UnzipRetryStatus -Eq $False)
+    {
+      Write-Error "Last attempt of unzip failed as well"
+      # Clean up partial zips and extracts
+      if (Test-Path $TempToolPath) {
+        Remove-Item $TempToolPath -Force
+      }
+      if (Test-Path $InstallDirectory) {
+        Remove-Item $InstallDirectory -Force -Recurse
+      }
+      return $False
+    }
   }
+
   return $True
 }
 
@@ -123,6 +152,8 @@ function Get-File {
   }
   else {
     Write-Verbose "Downloading $Uri"
+    # Don't display the console progress UI - it's a huge perf hit
+    $ProgressPreference = 'SilentlyContinue'   
     while($Attempt -Lt $DownloadRetries)
     {
       try {

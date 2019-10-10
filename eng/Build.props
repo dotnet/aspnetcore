@@ -17,7 +17,6 @@
 
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj;
                       $(RepoRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
                       $(RepoRoot)src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj;
                       "
@@ -29,6 +28,7 @@
     <!-- These projects are meant to be executed by tests. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                      $(RepoRoot)src\Tools\Tests.Common\TestProjects\**\*.csproj;
                       $(RepoRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
@@ -42,6 +42,7 @@
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
+                      $(RepoRoot)src\Components\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
@@ -119,17 +120,6 @@
 
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
-
-        <!-- These projects have a transitive dependency on Microsoft.AspNetCore.Components.Web.JS. Exclude these projects if we are not building NodeJS -->
-        <!-- Do not skip these projects on the CI since we don't want to accidentally miss building artifacts -->
-        <DotnetProjectsTransitiveNodeJsDependencies Include="
-                          $(RepoRoot)src\Framework\**\*.csproj;
-                          $(RepoRoot)src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj;
-                          $(RepoRoot)src\ProjectTemplates\*\*.csproj;
-                          $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
-                          $(RepoRoot)src\Components\**\*.*proj;
-                          $(RepoRoot)src\Mvc\**\*.*proj;" />
-        <ProjectToExclude Include="@(DotnetProjectsTransitiveNodeJsDependencies)" Condition="'$(BuildNodeJS)' == 'false' and '$(ContinuousIntegrationBuild)' != 'true'" />
 
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,

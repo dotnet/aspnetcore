@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Components.Routing
-@inject Microsoft.AspNetCore.Components.IUriHelper uriHelper
+@inject NavigationManager NavigationManager
 <style type="text/css">
     a.active {
         background-color: yellow;
@@ -20,13 +20,15 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
     <li><NavLink href="/subdir/LongPage1">Long page 1</NavLink></li>
     <li><NavLink href="/subdir/LongPage2">Long page 2</NavLink></li>
+    <li><NavLink href="PreventDefaultCases">preventDefault cases</NavLink></li>
+    <li><NavLink>Null href never matches</NavLink></li>
 </ul>
 
-<button id="do-navigation" @onclick=@(x => uriHelper.NavigateTo("Other"))>
+<button id="do-navigation" @onclick=@(x => NavigationManager.NavigateTo("Other"))>
     Programmatic navigation
 </button>
 
-<button id="do-navigation-forced" @onclick=@(x => uriHelper.NavigateTo("Other", true))>
+<button id="do-navigation-forced" @onclick=@(x => NavigationManager.NavigateTo("Other", true))>
     Programmatic navigation with force-load
 </button>
 
@@ -38,4 +40,3 @@
 
 <a href="/subdir/NotAComponent.html">Not a component</a>
 <a href="/subdir/routeablecomponentfrompackage.html">Cannot route to me</a>
-

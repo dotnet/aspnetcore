@@ -33,10 +33,10 @@
         try
         {
             using var cancellationTokenSource = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(1));
-            await JSRuntime.InvokeAsync<object>(
+            await JSRuntime.InvokeVoidAsync(
                 "asyncFunctionTakesLongerThanDefaultTimeoutToResolve",
-                Array.Empty<object>(),
-                cancellationTokenSource.Token);
+                cancellationTokenSource.Token,
+                Array.Empty<object>());
         }
         catch (TaskCanceledException)
         {

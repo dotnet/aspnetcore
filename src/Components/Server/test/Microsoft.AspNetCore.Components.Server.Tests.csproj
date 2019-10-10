@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,11 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Components\test\Rendering\HtmlRendererTestBase.cs" />
     <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack" />
+
+    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentSerializer.cs" LinkBase="Mvc" />
+    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentInvocationSequence.cs" LinkBase="Mvc" />
   </ItemGroup>
 
 </Project>

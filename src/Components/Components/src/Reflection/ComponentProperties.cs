@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Components.Reflection
     {
         private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
+        // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
+        // the same name. We don't give you a way to express this in code (would create duplicate properties),
+        // and we don't have the ability to represent it in our data structures.
         private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
             = new ConcurrentDictionary<Type, WritersForType>();
 
@@ -44,6 +47,24 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         ThrowForUnknownIncomingParameterName(targetType, parameterName);
                         throw null; // Unreachable
                     }
+                    else if (writer.Cascading && !parameter.Cascading)
+                    {
+                        // We don't allow you to set a cascading parameter with a non-cascading value. Put another way:
+                        // cascading parameters are not part of the public API of a component, so it's not reasonable
+                        // for someone to set it directly.
+                        //
+                        // If we find a strong reason for this to work in the future we can reverse our decision since
+                        // this throws today.
+                        ThrowForSettingCascadingParameterWithNonCascadingValue(targetType, parameterName);
+                        throw null; // Unreachable
+                    }
+                    else if (!writer.Cascading && parameter.Cascading)
+                    {
+                        // We're giving a more specific error here because trying to set a non-cascading parameter
+                        // with a cascading value is likely deliberate (but not supported), or is a bug in our code.
+                        ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                        throw null; // Unreachable
+                    }
 
                     SetProperty(target, writer, parameterName, parameter.Value);
                 }
@@ -62,7 +83,24 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     }
 
                     var isUnmatchedValue = !writers.WritersByName.TryGetValue(parameterName, out var writer);
-                    if (isUnmatchedValue)
+
+                    if ((isUnmatchedValue && parameter.Cascading) || (writer != null && !writer.Cascading && parameter.Cascading))
+                    {
+                        // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                        // parameter to be set with a cascading value.
+                        //
+                        // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                        ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                        throw null; // Unreachable
+
+                    }
+                    else if (isUnmatchedValue ||
+
+                        // Allow unmatched parameters to collide with the names of cascading parameters. This is
+                        // valid because cascading parameter names are not part of the public API. There's no
+                        // way for the user of a component to know what the names of cascading parameters
+                        // are.
+                        (writer.Cascading && !parameter.Cascading))
                     {
                         unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                         unmatched[parameterName] = parameter.Value;
@@ -138,6 +176,20 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
+        private static void ThrowForSettingCascadingParameterWithNonCascadingValue(Type targetType, string parameterName)
+        {
+            throw new InvalidOperationException(
+                $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
+                $"but it does not have [{nameof(ParameterAttribute)}] applied.");
+        }
+
+        private static void ThrowForSettingParameterWithCascadingValue(Type targetType, string parameterName)
+        {
+            throw new InvalidOperationException(
+                $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set " +
+                $"using a cascading value.");
+        }
+
         private static void ThrowForCaptureUnmatchedValuesConflict(Type targetType, string parameterName, Dictionary<string, object> unmatched)
         {
             throw new InvalidOperationException(
@@ -179,15 +231,22 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
                     var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
-                    var isParameter = parameterAttribute != null || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
+                    var cascadingParameterAttribute = propertyInfo.GetCustomAttribute<CascadingParameterAttribute>();
+                    var isParameter = parameterAttribute != null || cascadingParameterAttribute != null;
                     if (!isParameter)
                     {
                         continue;
                     }
 
-                    var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
-
                     var propertyName = propertyInfo.Name;
+                    if (parameterAttribute != null && (propertyInfo.SetMethod == null || !propertyInfo.SetMethod.IsPublic))
+                    {
+                        throw new InvalidOperationException(
+                            $"The type '{targetType.FullName}' declares a parameter matching the name '{propertyName}' that is not public. Parameters must be public.");
+                    }
+
+                    var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: cascadingParameterAttribute != null);
+
                     if (WritersByName.ContainsKey(propertyName))
                     {
                         throw new InvalidOperationException(
@@ -213,7 +272,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
                         }
 
-                        CaptureUnmatchedValuesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
+                        CaptureUnmatchedValuesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: false);
                         CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
                     }
                 }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium number of circuit states retained by the server.
+        /// This value determines the maximum number of circuit states retained by the server.
         /// <seealso cref="DisconnectedCircuitRetentionPeriod"/>
         /// </para>
         /// </summary>
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// without losing any state in the event of transient connection issues.
         /// </para>
         /// <para>
-        /// This value determines the maximium duration circuit state is retained by the server before being evicted.
+        /// This value determines the maximum duration circuit state is retained by the server before being evicted.
         /// <seealso cref="DisconnectedCircuitMaxRetained"/>
         /// </para>
         /// </summary>
@@ -64,5 +64,17 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Defaults to <c>1 minute</c>.
         /// </value>
         public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// Gets or sets the maximum number of render batches that a circuit will buffer until an acknowledgement for the batch is
+        /// received.
+        /// </summary>
+        /// <remarks>
+        /// When the limit of buffered render batches is reached components will stop rendering and will wait until either the
+        /// circuit is disconnected and disposed or at least one batch gets acknowledged.
+        /// </remarks>
+        /// <value>
+        /// Defaults to <c>10</c>.</value>
+        public int MaxBufferedUnacknowledgedRenderBatches { get; set; } = 10;
     }
 }

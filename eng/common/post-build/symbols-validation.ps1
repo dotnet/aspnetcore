@@ -4,10 +4,7 @@ param(
   [Parameter(Mandatory=$true)][string] $DotnetSymbolVersion     # Version of dotnet symbol to use
 )
 
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
-
-. $PSScriptRoot\..\tools.ps1
+. $PSScriptRoot\post-build-utils.ps1
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
@@ -40,10 +37,10 @@ function FirstMatchingSymbolDescriptionOrDefault {
   # DWARF file for a .dylib
   $DylibDwarf = $SymbolPath.Replace($Extension, ".dylib.dwarf")
  
-  $dotnetsymbolExe = "$env:USERPROFILE\.dotnet\tools"
-  $dotnetsymbolExe = Resolve-Path "$dotnetsymbolExe\dotnet-symbol.exe"
+  $dotnetSymbolExe = "$env:USERPROFILE\.dotnet\tools"
+  $dotnetSymbolExe = Resolve-Path "$dotnetSymbolExe\dotnet-symbol.exe"
 
-  & $dotnetsymbolExe --symbols --modules --windows-pdbs $TargetServerParam $FullPath -o $SymbolsPath | Out-Null
+  & $dotnetSymbolExe --symbols --modules --windows-pdbs $TargetServerParam $FullPath -o $SymbolsPath | Out-Null
 
   if (Test-Path $PdbPath) {
     return "PDB"
@@ -162,19 +159,25 @@ function CheckSymbolsAvailable {
     }
 }
 
-function CheckExitCode ([string]$stage) {
-  $exitCode = $LASTEXITCODE
-  if ($exitCode -ne 0) {
-    Write-PipelineTaskError "Something failed while '$stage'. Check for errors above. Exiting now..."
-    ExitWithExitCode $exitCode
+function InstallDotnetSymbol {
+  $dotnetSymbolPackageName = "dotnet-symbol"
+
+  $dotnetRoot = InitializeDotNetCli -install:$true
+  $dotnet = "$dotnetRoot\dotnet.exe"
+  $toolList = & "$dotnet" tool list --global
+
+  if (($toolList -like "*$dotnetSymbolPackageName*") -and ($toolList -like "*$dotnetSymbolVersion*")) {
+    Write-Host "dotnet-symbol version $dotnetSymbolVersion is already installed."
+  }
+  else {
+    Write-Host "Installing dotnet-symbol version $dotnetSymbolVersion..."
+    Write-Host "You may need to restart your command window if this is the first dotnet tool you have installed."
+    & "$dotnet" tool install $dotnetSymbolPackageName --version $dotnetSymbolVersion --verbosity "minimal" --global
   }
 }
 
 try {
-  Write-Host "Installing dotnet symbol ..."
-  Get-Location
-  . $PSScriptRoot\dotnetsymbol-init.ps1 -dotnetsymbolVersion $DotnetSymbolVersion
-  CheckExitCode "Running dotnetsymbol-init"
+  InstallDotnetSymbol
 
   CheckSymbolsAvailable
 }

@@ -3,65 +3,88 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
+using TestServer;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ComponentHubReliabilityTest : IClassFixture<AspNetSiteServerFixture>, IDisposable
+    public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromMilliseconds(500);
-        private readonly AspNetSiteServerFixture _serverFixture;
-
-        public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture)
+        public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
+            : base(serverFixture, output)
         {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
-            _serverFixture = serverFixture;
-            CreateDefaultConfiguration();
         }
-
-        public BlazorClient Client { get; set; }
-
-        private IList<Batch> Batches { get; set; } = new List<Batch>();
-        private IList<string> Errors { get; set; } = new List<string>();
-        private IList<LogMessage> Logs { get; set; } = new List<LogMessage>();
-
-        public TestSink TestSink { get; set; }
-
-        private void CreateDefaultConfiguration()
-        {
-            Client = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
-            Client.RenderBatchReceived += (id, rendererId, data) => Batches.Add(new Batch(id, rendererId, data));
-            Client.OnCircuitError += (error) => Errors.Add(error);
-
-            _  = _serverFixture.RootUri; // this is needed for the side-effects of getting the URI.
-            TestSink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            TestSink.MessageLogged += LogMessages;
-        }
-
-        private void LogMessages(WriteContext context) => Logs.Add(new LogMessage(context.LogLevel, context.Message, context.Exception));
 
         [Fact]
         public async Task CannotStartMultipleCircuits()
         {
             // Arrange
             var expectedError = "The circuit host '.*?' has already been initialized.";
-            var rootUri = _serverFixture.RootUri;
+            var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
+            var descriptors = await Client.GetPrerenderDescriptors(baseUri);
+
             // Act
-            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "StartCircuit",
-                baseUri.GetLeftPart(UriPartial.Authority),
-                baseUri));
+                baseUri,
+                baseUri + "/home",
+                descriptors));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Matches(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+        }
+
+        [Fact]
+        public async Task CannotStartCircuitWithNullData()
+        {
+            // Arrange
+            var expectedError = "The uris provided are invalid.";
+            var rootUri = ServerFixture.RootUri;
+            var uri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(uri, connectAutomatically: false), "Couldn't connect to the app");
+            var descriptors = await Client.GetPrerenderDescriptors(uri);
+
+            // Act
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Matches(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+        }
+
+        // This is a hand-chosen example of something that will cause an exception in creating the circuit host.
+        // We want to test this case so that we know what happens when creating the circuit host blows up.
+        [Fact]
+        public async Task StartCircuitCausesInitializationError()
+        {
+            // Arrange
+            var expectedError = "The circuit failed to initialize.";
+            var rootUri = ServerFixture.RootUri;
+            var uri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(uri, connectAutomatically: false), "Couldn't connect to the app");
+            var descriptors = await Client.GetPrerenderDescriptors(uri);
+
+            // Act
+            //
+            // These are valid URIs by the BaseUri doesn't contain the Uri - so it fails to initialize.
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -74,13 +97,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "Circuit not initialized.";
-            var rootUri = _serverFixture.RootUri;
+            var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
-            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "BeginInvokeDotNetFromJS",
                 "",
                 "",
@@ -92,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -100,13 +123,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "Circuit not initialized.";
-            var rootUri = _serverFixture.RootUri;
+            var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
-            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "EndInvokeJSFromDotNet",
                 3,
                 true,
@@ -116,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -124,13 +147,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = "Circuit not initialized.";
-            var rootUri = _serverFixture.RootUri;
+            var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
-            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "DispatchBrowserEvent",
                 "",
                 ""));
@@ -139,21 +162,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization"));
         }
 
         [Fact]
-        public async Task CannotInvokeOnRenderCompletedInitialization()
+        public async Task CannotInvokeOnRenderCompletedBeforeInitialization()
         {
             // Arrange
             var expectedError = "Circuit not initialized.";
-            var rootUri = _serverFixture.RootUri;
+            var rootUri = ServerFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
-            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "OnRenderCompleted",
                 5,
                 null));
@@ -162,40 +185,170 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization"));
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task CannotInvokeOnLocationChangedBeforeInitialization()
         {
-            TestSink.MessageLogged -= LogMessages;
+            // Arrange
+            var expectedError = "Circuit not initialized.";
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
+            Assert.Empty(Batches);
+
+            // Act
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
+                "OnLocationChanged",
+                baseUri.AbsoluteUri,
+                false));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnLocationChanged' received before the circuit host initialization"));
         }
 
-        private class LogMessage
+        [Fact]
+        public async Task OnLocationChanged_ReportsDebugForExceptionInValidation()
         {
-            public LogMessage(LogLevel logLevel, string message, Exception exception)
+            // Arrange
+            var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
+                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "Location change to 'http://example.com' failed.";
+
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
+            Assert.Single(Batches);
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "OnLocationChanged",
+                "http://example.com",
+                false));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "LocationChangeFailed");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
+            Assert.Matches("Location change to 'http://example.com' in circuit '.*' failed\\.", entry.Message);
+        }
+
+        [Fact]
+        public async Task OnLocationChanged_ReportsErrorForExceptionInUserCode()
+        {
+            // Arrange
+            var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
+                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "Location change failed.";
+
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
+            Assert.Single(Batches);
+
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.NavigationFailureComponent");
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "OnLocationChanged",
+                new Uri(baseUri, "/test").AbsoluteUri,
+                false));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "LocationChangeFailed");
+            Assert.Equal(LogLevel.Error, entry.LogLevel);
+            Assert.Matches($"Location change to '{new Uri(ServerFixture.RootUri, "/test")}' in circuit '.*' failed\\.", entry.Message);
+        }
+
+        [Theory]
+        [InlineData("constructor-throw")]
+        [InlineData("attach-throw")]
+        [InlineData("setparameters-sync-throw")]
+        [InlineData("setparameters-async-throw")]
+        [InlineData("render-throw")]
+        [InlineData("afterrender-sync-throw")]
+        [InlineData("afterrender-async-throw")]
+        public async Task ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
+        {
+            if (id == "setparameters-async-throw")
             {
-                LogLevel = logLevel;
-                Message = message;
-                Exception = exception;
+                // In the case of setparameters-async-throw, the exception isn't triggered until after
+                // a renderbatch. This would lead to timing-based flakiness, because that batch's ACK
+                // may be received either before or after the subsequent event that is meant to trigger
+                // circuit termination. If it was received before, then the circuit would be terminated
+                // prematurely by the OnRenderCompleted call. To avoid timing-based flakiness, we can
+                // just not send OnRenderCompleted calls as they aren't required for this scenario.
+                Client.ConfirmRenderBatch = false;
             }
 
-            public LogLevel LogLevel { get; set; }
-            public string Message { get; set; }
-            public Exception Exception { get; set; }
+            // Arrange
+            var expectedError = "Unhandled exception in circuit .*";
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
+            Assert.Single(Batches);
+
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
+
+            // Act
+            await Client.ExpectCircuitError(async () =>
+            {
+                await Client.ClickAsync(id, expectRenderBatch: false);
+            });
+
+            // Now if you try to click again, you will get *forcibly* disconnected for trying to talk to
+            // a circuit that's gone.
+            await Client.ExpectCircuitErrorAndDisconnect(async () =>
+            {
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await Client.ClickAsync(id, expectRenderBatch: false));
+            });
+
+            // Checking logs at the end to avoid race condition.
+            Assert.Contains(
+                Logs,
+                e => LogLevel.Error == e.LogLevel && Regex.IsMatch(e.Message, expectedError));
         }
 
-        private class Batch
+        [Fact]
+        public async Task ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
         {
-            public Batch(int id, int rendererId, byte [] data)
-            {
-                Id = id;
-                RendererId = rendererId;
-                Data = data;
-            }
+            // Arrange
+            var expectedError = "Unhandled exception in circuit .*";
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
+            Assert.Single(Batches);
 
-            public int Id { get; }
-            public int RendererId { get; }
-            public byte[] Data { get; }
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
+
+            // Act - show then hide
+            await Client.ClickAsync("dispose-throw");
+            await Client.ExpectCircuitError(async () =>
+            {
+                await Client.ClickAsync("dispose-throw", expectRenderBatch: false);
+            });
+
+            // Now if you try to click again, you will get *forcibly* disconnected for trying to talk to
+            // a circuit that's gone.
+            await Client.ExpectCircuitErrorAndDisconnect(async () =>
+            {
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await Client.ClickAsync("dispose-throw", expectRenderBatch: false));
+            });
+
+            // Checking logs at the end to avoid race condition.
+            Assert.Contains(
+                Logs,
+                e => LogLevel.Error == e.LogLevel && Regex.IsMatch(e.Message, expectedError));
         }
     }
 }

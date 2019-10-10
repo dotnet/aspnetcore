@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         [Fact]
-        public async Task NegotiateReservesConnectionIdAndReturnsIt()
+        public async Task NegotiateVersionZeroReservesConnectionIdAndReturnsIt()
         {
             using (StartVerifiableLog())
             {
@@ -55,8 +54,35 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
                 var connectionId = negotiateResponse.Value<string>("connectionId");
-                Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
+                var connectionToken = negotiateResponse.Value<string>("connectionToken");
+                Assert.Null(connectionToken);
+                Assert.NotNull(connectionId);
+            }
+        }
+
+        [Fact]
+        public async Task NegotiateReservesConnectionTokenAndConnectionIdAndReturnsIt()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=1");
+                await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                var connectionToken = negotiateResponse.Value<string>("connectionToken");
+                Assert.True(manager.TryGetConnection(connectionToken, out var connectionContext));
                 Assert.Equal(connectionId, connectionContext.ConnectionId);
+                Assert.NotEqual(connectionId, connectionToken);
             }
         }
 
@@ -75,12 +101,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
                 context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=1");
                 var options = new HttpConnectionDispatcherOptions { TransportMaxBufferSize = 4, ApplicationMaxBufferSize = 4 };
                 await dispatcher.ExecuteNegotiateAsync(context, options);
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-                var connectionId = negotiateResponse.Value<string>("connectionId");
-                context.Request.QueryString = context.Request.QueryString.Add("id", connectionId);
-                Assert.True(manager.TryGetConnection(connectionId, out var connection));
+                var connectionToken = negotiateResponse.Value<string>("connectionToken");
+                context.Request.QueryString = context.Request.QueryString.Add("id", connectionToken);
+                Assert.True(manager.TryGetConnection(connectionToken, out var connection));
                 // Fake actual connection after negotiate to populate the pipes on the connection
                 await dispatcher.ExecuteAsync(context, options, c => Task.CompletedTask);
 
@@ -93,6 +120,62 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await connection.Transport.Input.ConsumeAsync(5);
 
                 await writeTask.AsTask().OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvalidNegotiateProtocolVersionThrows()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=Invalid");
+                var options = new HttpConnectionDispatcherOptions { TransportMaxBufferSize = 4, ApplicationMaxBufferSize = 4 };
+                await dispatcher.ExecuteNegotiateAsync(context, options);
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+
+                var error = negotiateResponse.Value<string>("error");
+                Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                Assert.Null(connectionId);
+            }
+        }
+
+        [Fact]
+        public async Task NoNegotiateVersionInQueryStringThrowsWhenMinProtocolVersionIsSet()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("");
+                var options = new HttpConnectionDispatcherOptions { TransportMaxBufferSize = 4, ApplicationMaxBufferSize = 4, MinimumProtocolVersion = 1 };
+                await dispatcher.ExecuteNegotiateAsync(context, options);
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+
+                var error = negotiateResponse.Value<string>("error");
+                Assert.Equal("The client requested version '0', but the server does not support this version.", error);
+
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                Assert.Null(connectionId);
             }
         }
 
@@ -126,7 +209,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -167,6 +251,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
                 context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=1");
                 await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { Transports = transports });
 
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
@@ -205,6 +290,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = "unknown";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     SetTransport(context, transportType);
@@ -241,6 +327,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = "unknown";
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -277,7 +364,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -316,6 +404,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionId;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -355,7 +444,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -416,7 +506,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -482,7 +573,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -545,6 +637,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
                     values["id"] = connection.ConnectionId;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -614,7 +707,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     values["another"] = "value";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
@@ -662,8 +756,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     var connectionHttpContext = connection.GetHttpContext();
                     Assert.NotNull(connectionHttpContext);
 
-                    Assert.Equal(2, connectionHttpContext.Request.Query.Count);
-                    Assert.Equal(connection.ConnectionId, connectionHttpContext.Request.Query["id"]);
+                    Assert.Equal(3, connectionHttpContext.Request.Query.Count);
                     Assert.Equal("value", connectionHttpContext.Request.Query["another"]);
 
                     Assert.Equal(3, connectionHttpContext.Request.Headers.Count);
@@ -707,6 +800,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     services.AddSingleton<TestConnectionHandler>();
                     context.Request.Path = "/foo";
                     context.Request.Method = "GET";
+                    context.Request.QueryString = new QueryString("?negotiateVersion=1");
 
                     SetTransport(context, transportType);
 
@@ -749,7 +843,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
@@ -776,6 +871,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     services.AddSingleton<TestConnectionHandler>();
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
+                    context.Request.QueryString = new QueryString("?negotiateVersion=1");
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseConnectionHandler<TestConnectionHandler>();
@@ -847,6 +943,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
                 var context = MakeRequest("/foo", connection);
+
                 SetTransport(context, HttpTransportType.ServerSentEvents);
 
                 var services = new ServiceCollection();
@@ -858,7 +955,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionToken, out _);
                 Assert.False(exists);
             }
         }
@@ -1222,7 +1319,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await task;
 
                 Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionToken, out _);
                 Assert.False(exists);
             }
         }
@@ -1263,7 +1360,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await task;
 
                 Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
-                var exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                var exists = manager.TryGetConnection(connection.ConnectionToken, out _);
                 Assert.False(exists);
             }
         }
@@ -1365,10 +1462,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Method = "GET";
                 context.RequestServices = sp;
                 var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
+                values["id"] = connection.ConnectionToken;
+                values["negotiateVersion"] = "1";
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
-
                 var builder = new ConnectionBuilder(sp);
                 builder.UseConnectionHandler<TestConnectionHandler>();
                 var app = builder.Build();
@@ -1453,7 +1550,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Issue the delete request
                 var deleteContext = new DefaultHttpContext();
                 deleteContext.Request.Path = "/foo";
-                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
                 deleteContext.Request.Method = "DELETE";
                 var ms = new MemoryStream();
                 deleteContext.Response.Body = ms;
@@ -1496,7 +1593,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Issue the delete request and make sure the poll completes
                 var deleteContext = new DefaultHttpContext();
                 deleteContext.Request.Path = "/foo";
-                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
                 deleteContext.Request.Method = "DELETE";
 
                 Assert.False(pollTask.IsCompleted);
@@ -1514,7 +1611,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
 
                 // Verify the connection was removed from the manager
-                Assert.False(manager.TryGetConnection(connection.ConnectionId, out _));
+                Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
             }
         }
 
@@ -1544,7 +1641,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Issue the delete request and make sure the poll completes
                 var deleteContext = new DefaultHttpContext();
                 deleteContext.Request.Path = "/foo";
-                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionId}");
+                deleteContext.Request.QueryString = new QueryString($"?id={connection.ConnectionToken}");
                 deleteContext.Request.Method = "DELETE";
 
                 await dispatcher.ExecuteAsync(deleteContext, options, app).OrTimeout();
@@ -1562,7 +1659,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await connection.DisposeAndRemoveTask.OrTimeout();
 
                 // Verify the connection was removed from the manager
-                Assert.False(manager.TryGetConnection(connection.ConnectionId, out _));
+                Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
             }
         }
 
@@ -1582,6 +1679,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "POST";
                 context.Response.Body = ms;
+                context.Request.QueryString = new QueryString("?negotiateVersion=1");
                 await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { Transports = HttpTransportType.WebSockets });
 
                 var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
@@ -1638,7 +1736,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1694,7 +1793,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1747,7 +1847,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
                     var values = new Dictionary<string, StringValues>();
-                    values["id"] = connection.ConnectionId;
+                    values["id"] = connection.ConnectionToken;
+                    values["negotiateVersion"] = "1";
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
                     var buffer = Encoding.UTF8.GetBytes("Hello, world");
@@ -1809,7 +1910,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await pollTask.OrTimeout();
 
                 Assert.Equal(StatusCodes.Status500InternalServerError, pollContext.Response.StatusCode);
-                Assert.False(manager.TryGetConnection(connection.ConnectionId, out var _));
+                Assert.False(manager.TryGetConnection(connection.ConnectionToken, out var _));
             }
         }
 
@@ -1832,7 +1933,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 context.Request.Path = "/foo";
                 context.Request.Method = "GET";
                 var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
+                values["id"] = connection.ConnectionToken;
+                values["negotiateVersion"] = "1";
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
@@ -1854,14 +1956,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private static DefaultHttpContext MakeRequest(string path, ConnectionContext connection, string format = null)
+        private static DefaultHttpContext MakeRequest(string path, HttpConnectionContext connection, string format = null)
         {
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
             context.Request.Path = path;
             context.Request.Method = "GET";
             var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
+            values["id"] = connection.ConnectionToken;
+            values["negotiateVersion"] = "1";
             if (format != null)
             {
                 values["format"] = format;

@@ -16,5 +16,9 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
                 endpoints.MapBlazorHub();
             });
         }
+
+        public class App : Microsoft.AspNetCore.Components.ComponentBase
+        {
+        }
     }
 }

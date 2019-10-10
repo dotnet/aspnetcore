@@ -8,7 +8,7 @@
     <Name>AspNetCoreSharedFramework</Name>
     <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
-    <EmbedCab>no</EmbedCab>
+    <EmbedCab>yes</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
     <ProjectGuid>C681D730-4505-42C6-9E6C-87F757C4FB32</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
@@ -84,16 +84,21 @@
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
-      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
+
+      <!-- Everything built in this project _except_ the final package are shipping assets. -->
+      <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+      <_GeneratedPackageVersion
+          Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     </PropertyGroup>
-      <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
                       '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
-                      '$(PackageVersion)' ^
+                      '$(_GeneratedPackageVersion)' ^
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)'" />

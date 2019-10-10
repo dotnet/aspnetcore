@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -101,6 +101,71 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).OrTimeout();
 
                     Assert.Equal("Hello World!", result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ServerRejectsClientWithOldProtocol()
+        {
+            bool ExpectedError(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                    writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            var protocol = HubProtocols["json"];
+            using (StartServer<Startup>(out var server, ExpectedError))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/negotiateProtocolVersion12", HttpTransportType.LongPolling);
+                connectionBuilder.Services.AddSingleton(protocol);
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(() => connection.StartAsync()).OrTimeout();
+                    Assert.Equal("The client requested version '1', but the server does not support this version.", ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ClientCanConnectToServerWithLowerMinimumProtocol()
+        {
+            var protocol = HubProtocols["json"];
+            using (StartServer<Startup>(out var server))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/negotiateProtocolVersionNegative", HttpTransportType.LongPolling);
+                connectionBuilder.Services.AddSingleton(protocol);
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
                 }
                 catch (Exception ex)
                 {
@@ -491,13 +556,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [LogLevel(LogLevel.Trace)]
         public async Task StreamAsyncDoesNotStartIfTokenAlreadyCanceled(string protocolName, HttpTransportType transportType, string path)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
             var protocol = HubProtocols[protocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
                 try
@@ -901,16 +961,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [LogLevel(LogLevel.Trace)]
         public async Task CanCloseStreamMethodEarly(string protocolName, HttpTransportType transportType, string path)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                // Writing is not allowed after writer was completed.
-                // Can happen since we are closing the connection while the connection could still be writing the streaming data
-                return writeContext.LoggerName == typeof(HubConnectionContext).FullName &&
-                       writeContext.EventId.Name == "FailedWritingMessage";
-            }
-
             var protocol = HubProtocols[protocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
                 try
@@ -1013,14 +1065,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolved(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1046,14 +1092,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolvedAndArgumentsPassedIn(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1079,14 +1119,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsList))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentCountMismatch(string hubProtocolName)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.LongPolling, hubProtocol, LoggerFactory);
                 try
@@ -1112,14 +1146,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1145,14 +1173,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfStreamingHubMethodCannotBeResolved(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1179,14 +1201,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnStreamingHubMethodArgumentCountMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1213,14 +1229,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnStreamingHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1247,14 +1257,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfNonStreamMethodInvokedWithStreamAsync(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "NonStreamingMethodCalledWithStream";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1280,14 +1284,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfStreamMethodInvokedWithInvoke(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "StreamingMethodCalledWithInvoke";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1313,14 +1311,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfBuildingAsyncEnumeratorIsNotPossible(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "InvalidReturnValueFromStreamingMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1345,16 +1337,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task RandomGenericIsNotTreatedAsStream()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" == writeContext.LoggerName &&
-                    "FailedInvokingHubMethod" == writeContext.EventId.Name;
-            }
             var hubPath = HubPaths[0];
             var hubProtocol = HubProtocols.First().Value;
             var transportType = TransportTypes().First().Cast<HttpTransportType>().First();
 
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 await connection.StartAsync().OrTimeout();
@@ -1479,6 +1466,118 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await hubConnection.StartAsync().OrTimeout();
                     var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "X-test", "X-42" }).OrTimeout();
                     Assert.Equal(new[] { "42", "test" }, headerValues);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UserAgentIsSet()
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
+                    {
+                        options.Headers["X-test"] = "42";
+                        options.Headers["X-42"] = "test";
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "User-Agent" }).OrTimeout();
+                    Assert.NotNull(headerValues);
+                    Assert.Single(headerValues);
+
+                    var userAgent = headerValues[0];
+
+                    Assert.StartsWith("Microsoft SignalR/", userAgent);
+
+                    var majorVersion = typeof(HttpConnection).Assembly.GetName().Version.Major;
+                    var minorVersion = typeof(HttpConnection).Assembly.GetName().Version.Minor;
+
+                    Assert.Contains($"{majorVersion}.{minorVersion}", userAgent);
+
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UserAgentCanBeCleared()
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
+                    {
+                        options.Headers["User-Agent"] = "";
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "User-Agent" }).OrTimeout();
+                    Assert.NotNull(headerValues);
+                    Assert.Single(headerValues);
+
+                    var userAgent = headerValues[0];
+
+                    Assert.Null(userAgent);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UserAgentCanBeSet()
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
+                    {
+                        options.Headers["User-Agent"] = "User Value";
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "User-Agent" }).OrTimeout();
+                    Assert.NotNull(headerValues);
+                    Assert.Single(headerValues);
+
+                    var userAgent = headerValues[0];
+
+                    Assert.Equal("User Value", userAgent);
                 }
                 catch (Exception ex)
                 {

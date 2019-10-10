@@ -24,5 +24,10 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the max buffer size for client upload streams.
         /// </summary>
         public int StreamBufferCapacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum message size the client can send.
+        /// </summary>
+        public long? MaximumReceiveMessageSize { get; set; }
     }
 }

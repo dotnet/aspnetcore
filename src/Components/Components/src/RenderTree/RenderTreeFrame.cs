@@ -3,13 +3,22 @@
 
 using System;
 using System.Runtime.InteropServices;
+#if !IGNITOR
 using Microsoft.AspNetCore.Components.Rendering;
+#endif
 
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     /// <summary>
-    /// Represents an entry in a tree of user interface (UI) items.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in future release.
     /// </summary>
+    //
+    // Represents an entry in a tree of user interface (UI) items.
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
     public readonly struct RenderTreeFrame
     {

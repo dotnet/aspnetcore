@@ -25,7 +25,7 @@
 
     string message;
 
-    void OnTouch(UITouchEventArgs e)
+    void OnTouch(TouchEventArgs e)
     {
         message += e.Type;
         Console.WriteLine(JsonSerializer.Serialize(e));

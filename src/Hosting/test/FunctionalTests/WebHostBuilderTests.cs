@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
         public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
-                .WithTfms(Tfm.NetCoreApp30);
+                .WithTfms(Tfm.NetCoreApp50);
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]

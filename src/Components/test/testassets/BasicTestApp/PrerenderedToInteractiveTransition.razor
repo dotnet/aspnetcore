@@ -1,6 +1,6 @@
 @page "/prerendered-transition"
 @using Microsoft.AspNetCore.Components
-@inject IComponentContext ComponentContext
+@using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
     <AuthorizeView>
@@ -10,7 +10,7 @@
 
     <p>
         Current state:
-        <strong id="connected-state">@(ComponentContext.IsConnected ? "connected" : "not connected")</strong>
+        <strong id="connected-state">@(hasRenderedInConnectedMode ? "connected" : "not connected")</strong>
     </p>
 
     <p>
@@ -21,14 +21,13 @@
 </CascadingAuthenticationState>
 
 @code {
+    bool hasRenderedInConnectedMode;
     int count;
-    bool firstRender = false;
-    protected override Task OnAfterRenderAsync()
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (firstRender)
         {
-            firstRender = true;
-
+            hasRenderedInConnectedMode = true;
             // We need to queue another render when we connect, otherwise the
             // browser won't see anything.
             StateHasChanged();

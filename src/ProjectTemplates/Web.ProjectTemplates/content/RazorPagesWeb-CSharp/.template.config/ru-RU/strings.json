@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Веб-приложение",
+    "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом содержимого ASP.NET Core Razor Pages."
+  }
+}

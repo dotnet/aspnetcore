@@ -5,10 +5,11 @@
 Commonly used types:
 Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer&lt;TResource&gt;
 Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;localization</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

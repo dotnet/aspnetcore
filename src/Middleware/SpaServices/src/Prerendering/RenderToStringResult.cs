@@ -1,12 +1,18 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
     /// <summary>
     /// Describes the prerendering result returned by JavaScript code.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class RenderToStringResult
     {
         /// <summary>
@@ -49,9 +55,13 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
             foreach (var property in Globals.Properties())
             {
-                stringBuilder.AppendFormat("window.{0} = {1};",
-                    property.Name,
-                    property.Value.ToString(Formatting.None));
+                var propertyNameJavaScriptString = JavaScriptEncoder.Default.Encode(property.Name);
+                var valueJson = property.Value.ToString(Formatting.None);
+                var valueJsonJavaScriptString = JavaScriptEncoder.Default.Encode(valueJson);
+
+                stringBuilder.AppendFormat("window[\"{0}\"] = JSON.parse(\"{1}\");",
+                    propertyNameJavaScriptString,
+                    valueJsonJavaScriptString);
             }
 
             return stringBuilder.ToString();

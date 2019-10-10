@@ -91,21 +91,22 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             services.AddSingleton(_BrowserHostBuilderContext);
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
             services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
-            services.AddSingleton<IComponentContext, WebAssemblyComponentContext>();
-            services.AddSingleton<IUriHelper>(WebAssemblyUriHelper.Instance);
+            services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
             services.AddSingleton<HttpClient>(s =>
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
-                var uriHelper = s.GetRequiredService<IUriHelper>();
+                var navigationManager = s.GetRequiredService<NavigationManager>();
                 return new HttpClient
                 {
-                    BaseAddress = new Uri(WebAssemblyUriHelper.Instance.GetBaseUri())
+                    BaseAddress = new Uri(navigationManager.BaseUri)
                 };
             });
 
             // Needed for authorization
+            // However, since authorization isn't on by default, we could consider removing these and
+            // having a separate services.AddBlazorAuthorization() call that brings in the required services.
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
 

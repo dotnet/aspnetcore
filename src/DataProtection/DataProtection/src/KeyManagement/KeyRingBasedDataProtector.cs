@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     }
                 }
 
-                // Do we need to notify the caller that he should reprotect the data?
+                // Do we need to notify the caller that they should reprotect the data?
                 status = UnprotectStatus.Ok;
                 if (keyIdFromPayload != currentKeyRing.DefaultKeyId)
                 {

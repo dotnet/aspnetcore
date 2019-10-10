@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (Disposed)
             {
-                throw new ObjectDisposedException(nameof(FileBufferingReadStream));
+                throw new ObjectDisposedException(nameof(FileBufferingWriteStream));
             }
         }
 

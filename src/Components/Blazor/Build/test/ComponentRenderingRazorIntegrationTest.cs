@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.Components.Web;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -95,7 +96,7 @@ namespace Test
         }
 
         [Fact]
-        public void Render_ChildComponent_TriesToSetNonParamter()
+        public void Render_ChildComponent_TriesToSetNonParameter()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -202,23 +203,25 @@ namespace Test
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Test
 {
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIMouseEventArgs> OnClick { get; set; }
+        public Action<MouseEventArgs> OnClick { get; set; }
     }
 }
 "));
 
             var component = CompileToComponent($@"
+@using Microsoft.AspNetCore.Components.Web
 <MyComponent OnClick=""{expression}""/>
 
 @code {{
     private int counter;
-    private void Increment(UIMouseEventArgs e) {{
+    private void Increment(MouseEventArgs e) {{
         counter++;
     }}
 }}");
@@ -235,7 +238,7 @@ namespace Test
                     AssertFrame.Attribute(frame, "OnClick", 1);
 
                     // The handler will have been assigned to a lambda
-                    var handler = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
+                    var handler = Assert.IsType<Action<MouseEventArgs>>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
                 });
         }
@@ -253,7 +256,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIEventArgs> OnClick { get; set; }
+        public Action<EventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -263,7 +266,7 @@ namespace Test
 
 @code {
     private int counter;
-    private void Increment(UIEventArgs e) {
+    private void Increment(EventArgs e) {
         counter++;
     }
 }");
@@ -280,7 +283,7 @@ namespace Test
                     AssertFrame.Attribute(frame, "OnClick", 1);
 
                     // The handler will have been assigned to a lambda
-                    var handler = Assert.IsType<Action<UIEventArgs>>(frame.AttributeValue);
+                    var handler = Assert.IsType<Action<EventArgs>>(frame.AttributeValue);
                     Assert.Equal("Test.TestComponent", handler.Target.GetType().FullName);
                     Assert.Equal("Increment", handler.Method.Name);
                 });
@@ -445,11 +448,12 @@ namespace Test
 
             // Act
             var component = CompileToComponent(@"
+@using Microsoft.AspNetCore.Components.Web
 <p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
-    public void OnComponentHover(UIMouseEventArgs e)
+    public void OnComponentHover(MouseEventArgs e)
     {
     }
 }
@@ -565,7 +569,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Test
 {

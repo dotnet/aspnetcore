@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
@@ -66,7 +67,7 @@ namespace BlazorServerWeb_CSharp
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -127,7 +128,7 @@ namespace BlazorServerWeb_CSharp
             services.AddRazorPages();
             services.AddServerSideBlazor();
 #if (IndividualLocalAuth)
-            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 #endif
             services.AddSingleton<WeatherForecastService>();
         }
@@ -169,7 +170,7 @@ namespace BlazorServerWeb_CSharp
 #if (OrganizationalAuth || IndividualAuth)
                 endpoints.MapControllers();
 #endif
-                endpoints.MapBlazorHub<App>(selector: "app");
+                endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

@@ -1,130 +1,274 @@
-import { internalFunctions as uriHelperFunctions } from '../../Services/UriHelper';
-import { ComponentDescriptor, MarkupRegistrationTags, StartComponentComment, EndComponentComment } from './ComponentDescriptor';
+import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
+import { toLogicalRootCommentElement, LogicalElement } from '../../Rendering/LogicalElements';
 
 export class CircuitDescriptor {
-  public circuitId: string;
+  public circuitId?: string;
 
   public components: ComponentDescriptor[];
 
-  public constructor(circuitId: string, components: ComponentDescriptor[]) {
-    this.circuitId = circuitId;
+  public constructor(components: ComponentDescriptor[]) {
+    this.circuitId = undefined;
     this.components = components;
   }
 
   public reconnect(reconnection: signalR.HubConnection): Promise<boolean> {
+    if (!this.circuitId) {
+      throw new Error('Circuit host not initialized.');
+    }
+
     return reconnection.invoke<boolean>('ConnectCircuit', this.circuitId);
   }
-}
 
-
-export function discoverPrerenderedCircuits(document: Document): CircuitDescriptor[] {
-  const commentPairs = resolveCommentPairs(document);
-  const discoveredCircuits = new Map<string, ComponentDescriptor[]>();
-  for (let i = 0; i < commentPairs.length; i++) {
-    const pair = commentPairs[i];
-    // We replace '--' on the server with '..' when we prerender due to the fact that this
-    // is not allowed in HTML comments and doesn't get encoded by default.
-    const circuitId = pair.start.circuitId.replace('..', '--');
-    let circuit = discoveredCircuits.get(circuitId);
-    if (!circuit) {
-      circuit = [];
-      discoveredCircuits.set(circuitId, circuit);
+  public initialize(circuitId: string): void {
+    if (this.circuitId) {
+      throw new Error(`Circuit host '${this.circuitId}' already initialized.`);
     }
-    const entry = new ComponentDescriptor(pair.start.componentId, circuitId, pair.start.rendererId, pair);
-    circuit.push(entry);
+
+    this.circuitId = circuitId;
   }
-  const circuits: CircuitDescriptor[] = [];
-  for (const [key, values] of discoveredCircuits) {
-    circuits.push(new CircuitDescriptor(key, values));
+
+  public async startCircuit(connection: signalR.HubConnection): Promise<boolean> {
+
+    const result = await connection.invoke<string>(
+      'StartCircuit',
+      navigationManagerFunctions.getBaseURI(),
+      navigationManagerFunctions.getLocationHref(),
+      JSON.stringify(this.components.map(c => c.toRecord()))
+    );
+
+    if (result) {
+      this.initialize(result);
+      return true;
+    } else {
+      return false;
+    }
   }
-  return circuits;
+
+  public resolveElement(sequence: string): LogicalElement {
+    const parsedSequence = Number.parseInt(sequence);
+    if (!Number.isNaN(parsedSequence)) {
+      return toLogicalRootCommentElement(this.components[parsedSequence].start as Comment, this.components[parsedSequence].end as Comment);
+    } else {
+      throw new Error(`Invalid sequence number '${sequence}'.`);
+    }
+  }
 }
 
-export async function startCircuit(connection: signalR.HubConnection): Promise<CircuitDescriptor | undefined> {
-  const result = await connection.invoke<string>('StartCircuit', uriHelperFunctions.getLocationHref(), uriHelperFunctions.getBaseURI());
-  if (result) {
-    return new CircuitDescriptor(result, []);
-  } else {
-    return undefined;
+interface ComponentMarker {
+  type: string;
+  sequence: number;
+  descriptor: string;
+}
+
+export class ComponentDescriptor {
+  public type: string;
+
+  public start: Node;
+
+  public end?: Node;
+
+  public sequence: number;
+
+  public descriptor: string;
+
+  public constructor(type: string, start: Node, end: Node | undefined, sequence: number, descriptor: string) {
+    this.type = type;
+    this.start = start;
+    this.end = end;
+    this.sequence = sequence;
+    this.descriptor = descriptor;
+  }
+
+  public toRecord(): ComponentMarker {
+    const result = { type: this.type, sequence: this.sequence, descriptor: this.descriptor };
+    return result;
   }
 }
 
-function resolveCommentPairs(node: Node): MarkupRegistrationTags[] {
+export function discoverComponents(document: Document): ComponentDescriptor[] {
+  const componentComments = resolveComponentComments(document);
+  const discoveredComponents: ComponentDescriptor[] = [];
+  for (let i = 0; i < componentComments.length; i++) {
+    const componentComment = componentComments[i];
+    const entry = new ComponentDescriptor(
+      componentComment.type,
+      componentComment.start,
+      componentComment.end,
+      componentComment.sequence,
+      componentComment.descriptor,
+    );
+
+    discoveredComponents.push(entry);
+  }
+
+  return discoveredComponents;
+}
+
+
+interface ComponentComment {
+  type: 'server';
+  sequence: number;
+  descriptor: string;
+  start: Node;
+  end?: Node;
+  prerenderId?: string;
+}
+
+function resolveComponentComments(node: Node): ComponentComment[] {
   if (!node.hasChildNodes()) {
     return [];
   }
-  const result: MarkupRegistrationTags[] = [];
-  const children = node.childNodes;
-  let i = 0;
-  const childrenLength = children.length;
-  while (i < childrenLength) {
-    const currentChildNode = children[i];
-    const startComponent = getComponentStartComment(currentChildNode);
-    if (!startComponent) {
-      i++;
-      const childResults = resolveCommentPairs(currentChildNode);
+
+  const result: ComponentComment[] = [];
+  const childNodeIterator = new ComponentCommentIterator(node.childNodes);
+  while (childNodeIterator.next() && childNodeIterator.currentElement) {
+    const componentComment = getComponentComment(childNodeIterator);
+    if (componentComment) {
+      result.push(componentComment);
+    } else {
+      const childResults = resolveComponentComments(childNodeIterator.currentElement);
       for (let j = 0; j < childResults.length; j++) {
         const childResult = childResults[j];
         result.push(childResult);
       }
-      continue;
     }
-    const endComponent = getComponentEndComment(startComponent, children, i + 1, childrenLength);
-    result.push({ start: startComponent, end: endComponent });
-    i = endComponent.index + 1;
   }
+
   return result;
 }
-function getComponentStartComment(node: Node): StartComponentComment | undefined {
-  if (node.nodeType !== Node.COMMENT_NODE) {
+
+const blazorCommentRegularExpression = /\W*Blazor:[^{]*(.*)$/;
+
+function getComponentComment(commentNodeIterator: ComponentCommentIterator): ComponentComment | undefined {
+  const candidateStart = commentNodeIterator.currentElement;
+
+  if (!candidateStart || candidateStart.nodeType !== Node.COMMENT_NODE) {
     return;
   }
-  if (node.textContent) {
-    const componentStartComment = /\W+M.A.C.Component:[^{]*(.*)$/;
-    const definition = componentStartComment.exec(node.textContent);
+  if (candidateStart.textContent) {
+    const componentStartComment = new RegExp(blazorCommentRegularExpression);
+    const definition = componentStartComment.exec(candidateStart.textContent);
     const json = definition && definition[1];
+
     if (json) {
       try {
-        const { componentId, rendererId, circuitId } = JSON.parse(json);
-        const allComponents = componentId !== undefined && rendererId !== undefined && !!circuitId;
-        if (allComponents) {
-          return {
-            node: node as Comment,
-            circuitId,
-            rendererId: rendererId,
-            componentId: componentId,
-          };
-        }
+        return createComponentComment(json, candidateStart, commentNodeIterator);
       } catch (error) {
+        throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
       }
-      throw new Error(`Found malformed start component comment at ${node.textContent}`);
+    } else {
+      return;
     }
   }
 }
-function getComponentEndComment(component: StartComponentComment, children: NodeList, index: number, end: number): EndComponentComment {
-  for (let i = index; i < end; i++) {
-    const node = children[i];
+
+function createComponentComment(json: string, start: Node, iterator: ComponentCommentIterator): ComponentComment {
+  const payload = JSON.parse(json) as ComponentComment;
+  const { type, sequence, descriptor, prerenderId } = payload;
+  if (type !== 'server') {
+    throw new Error(`Invalid component type '${type}'.`);
+  }
+
+  if (!descriptor) {
+    throw new Error('descriptor must be defined when using a descriptor.');
+  }
+
+  if (sequence === undefined) {
+    throw new Error('sequence must be defined when using a descriptor.');
+  }
+
+  if (!Number.isInteger(sequence)) {
+    throw new Error(`Error parsing the sequence '${sequence}' for component '${json}'`);
+  }
+
+  if (!prerenderId) {
+    return {
+      type,
+      sequence: sequence,
+      descriptor,
+      start,
+    };
+  } else {
+    const end = getComponentEndComment(prerenderId, iterator);
+    if (!end) {
+      throw new Error(`Could not find an end component comment for '${start}'`);
+    }
+
+    return {
+      type,
+      sequence,
+      descriptor,
+      start,
+      prerenderId,
+      end,
+    };
+  }
+}
+
+function getComponentEndComment(prerenderedId: string, iterator: ComponentCommentIterator): ChildNode | undefined {
+  while (iterator.next() && iterator.currentElement) {
+    const node = iterator.currentElement;
     if (node.nodeType !== Node.COMMENT_NODE) {
       continue;
     }
     if (!node.textContent) {
       continue;
     }
-    const componentEndComment = /\W+M.A.C.Component:\W+(\d+)\W+$/;
-    const definition = componentEndComment.exec(node.textContent);
+
+    const definition = new RegExp(blazorCommentRegularExpression).exec(node.textContent);
     const json = definition && definition[1];
     if (!json) {
       continue;
     }
-    try {
-      // The value is expected to be a JSON encoded number
-      const componentId = JSON.parse(json);
-      if (componentId === component.componentId) {
-        return { componentId, node: node as Comment, index: i };
-      }
-    } catch (error) {
-    }
-    throw new Error(`Found malformed end component comment at ${node.textContent}`);
+
+    validateEndComponentPayload(json, prerenderedId);
+
+    return node;
   }
-  throw new Error(`End component comment not found for ${component.node}`);
+
+  return undefined;
 }
+
+function validateEndComponentPayload(json: string, prerenderedId: string): void {
+  const payload = JSON.parse(json) as ComponentComment;
+  if (Object.keys(payload).length !== 1) {
+    throw new Error(`Invalid end of component comment: '${json}'`);
+  }
+  const prerenderedEndId = payload.prerenderId;
+  if (!prerenderedEndId) {
+    throw new Error(`End of component comment must have a value for the prerendered property: '${json}'`);
+  }
+  if (prerenderedEndId !== prerenderedId) {
+    throw new Error(`End of component comment prerendered property must match the start comment prerender id: '${prerenderedId}', '${prerenderedEndId}'`);
+  }
+}
+
+class ComponentCommentIterator {
+
+  private childNodes: NodeListOf<ChildNode>;
+
+  private currentIndex: number;
+
+  private length: number;
+
+  public currentElement: ChildNode | undefined;
+
+  public constructor(childNodes: NodeListOf<ChildNode>) {
+    this.childNodes = childNodes;
+    this.currentIndex = -1;
+    this.length = childNodes.length;
+  }
+
+  public next(): boolean {
+    this.currentIndex++;
+    if (this.currentIndex < this.length) {
+      this.currentElement = this.childNodes[this.currentIndex];
+      return true;
+    } else {
+      this.currentElement = undefined;
+      return false;
+    }
+  }
+}
+
+

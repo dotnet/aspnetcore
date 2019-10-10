@@ -73,18 +73,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 _renderTreeBuilderPrevious.GetFrames(),
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
+            batchBuilder.InvalidateParameterViews();
         }
 
-        public void DisposeInBatch(RenderBatchBuilder batchBuilder)
+        public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, out Exception exception)
         {
             _componentWasDisposed = true;
+            exception = null;
 
-            // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
-            if (Component is IDisposable disposable)
+            try
             {
-                disposable.Dispose();
+                if (Component is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
             }
 
+            // We don't expect these things to throw.
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
             if (_hasAnyCascadingParameterSubscriptions)
@@ -93,13 +102,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             DisposeBuffers();
+
+            return exception == null;
         }
 
+        // Callers expect this method to always return a faulted task.
         public Task NotifyRenderCompletedAsync()
         {
             if (Component is IHandleAfterRender handlerAfterRender)
             {
-                return handlerAfterRender.OnAfterRenderAsync();
+                try
+                {
+                    return handlerAfterRender.OnAfterRenderAsync();
+                }
+                catch (OperationCanceledException cex)
+                {
+                    return Task.FromCanceled(cex.CancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return Task.FromException(ex);
+                }
             }
 
             return Task.CompletedTask;
@@ -108,8 +131,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void SetDirectParameters(ParameterView parameters)
         {
             // Note: We should be careful to ensure that the framework never calls
-            // IComponent.SetParameters directly elsewhere. We should only call it
-            // via ComponentState.SetParameters (or NotifyCascadingValueChanged below).
+            // IComponent.SetParametersAsync directly elsewhere. We should only call it
+            // via ComponentState.SetDirectParameters (or NotifyCascadingValueChanged below).
             // If we bypass this, the component won't receive the cascading parameters nor
             // will it update its snapshot of direct parameters.
 
@@ -134,10 +157,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
         }
 
-        public void NotifyCascadingValueChanged()
+        public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
         {
             var directParams = _latestDirectParametersSnapshot != null
-                ? new ParameterView(_latestDirectParametersSnapshot.Buffer, 0)
+                ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);
