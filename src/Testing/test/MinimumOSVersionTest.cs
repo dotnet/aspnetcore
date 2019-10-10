@@ -8,10 +8,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class OSMinVersionTest
+    public class MinimumOSVersionTest
     {
         [ConditionalFact]
-        [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public void RunTest_Win8DoesNotRunOnWin7()
         {
             Assert.False(
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         [ConditionalTheory]
-        [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         [InlineData(1)]
         public void RunTheory_Win8DoesNotRunOnWin7(int arg)
         {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         [ConditionalFact]
-        [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RunTest_Win10_RS4()
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         [ConditionalFact]
-        [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2)]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public void RunTest_Win10_19H2()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Testing
         }
     }
 
-    [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
     public class OSMinVersionClassTest
     {
         [ConditionalFact]
