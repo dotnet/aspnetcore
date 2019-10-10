@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => throw GetException(reason, method.ToString().ToUpperInvariant());
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static BadHttpRequestException GetException(RequestRejectionReason reason)
+        public static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
             BadHttpRequestException ex;
             switch (reason)
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static BadHttpRequestException GetException(RequestRejectionReason reason, string detail)
+        public static BadHttpRequestException GetException(RequestRejectionReason reason, string detail)
         {
             BadHttpRequestException ex;
             switch (reason)
