@@ -24,7 +24,15 @@ namespace TestServer
             services.AddMvc().AddNewtonsoftJson();
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
+                // It's not enough just to return "Access-Control-Allow-Origin: *", because
+                // browsers don't allow wildcards in conjunction with credentials. So we must
+                // specify explicitly which origin we want to allow.
+                options.AddPolicy("AllowAll", policy =>
+                    policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("MyCustomHeader")
+                    .AllowAnyMethod()
+                    .AllowCredentials());
             });
             services.AddServerSideBlazor()
                 .AddCircuitOptions(o =>
@@ -48,18 +56,6 @@ namespace TestServer
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            // It's not enough just to return "Access-Control-Allow-Origin: *", because
-            // browsers don't allow wildcards in conjunction with credentials. So we must
-            // specify explicitly which origin we want to allow.
-            app.UseCors(policy =>
-            {
-                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
-                    .AllowAnyHeader()
-                    .WithExposedHeaders("MyCustomHeader")
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            });
 
             app.UseAuthentication();
 
@@ -119,6 +115,8 @@ namespace TestServer
             });
 
             app.UseRouting();
+            
+            app.UseCors();
 
             app.UseEndpoints(endpoints =>
             {
