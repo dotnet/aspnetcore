@@ -6,11 +6,11 @@
     outline: 1px solid red;
 }
 
-#error-ui {
+#blazor-error-ui {
     display: none;
 }
 
-    #error-ui dismiss {
+    #blazor-error-ui dismiss {
         cursor: pointer;
     }
 
