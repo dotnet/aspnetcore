@@ -10,8 +10,8 @@
 </head>
 <body>
     <div id="test-container">
-        <component type="typeof(GreeterComponent)" render-mode="ServerPrerendered" />
-        <component type="typeof(GreeterComponent)" render-mode="Server" />
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
         <component type="typeof(GreeterComponent)" render-mode="Static" param-name='"John"' />
         <component type="typeof(GreeterComponent)" render-mode="Server"/>
         <div id="container">

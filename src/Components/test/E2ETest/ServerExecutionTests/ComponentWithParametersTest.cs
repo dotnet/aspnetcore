@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public void PassingParametersToComponentsWorks()
+        public void PassingParametersToComponentsFromThePageWorks()
         {
             Navigate("/prerendered/componentwithparameters?QueryValue=testQueryValue");
 
