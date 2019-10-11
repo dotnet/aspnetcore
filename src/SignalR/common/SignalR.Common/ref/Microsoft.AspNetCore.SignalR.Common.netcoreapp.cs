@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         public static readonly Microsoft.AspNetCore.SignalR.Protocol.CloseMessage Empty;
         public CloseMessage(string error) { }
+        public CloseMessage(string error, bool allowAutomaticReconnect) { }
+        public bool AllowAutomaticReconnect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class CompletionMessage : Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage
