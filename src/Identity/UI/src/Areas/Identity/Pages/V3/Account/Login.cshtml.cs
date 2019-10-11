@@ -92,12 +92,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public virtual Task<IActionResult> OnPostSendVerificationEmailAsync() => throw new NotImplementedException();
     }
 
     internal class LoginModel<TUser> : LoginModel where TUser : class
