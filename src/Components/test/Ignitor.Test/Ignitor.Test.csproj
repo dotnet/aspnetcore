@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\Ignitor\Ignitor.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
 </Project>
