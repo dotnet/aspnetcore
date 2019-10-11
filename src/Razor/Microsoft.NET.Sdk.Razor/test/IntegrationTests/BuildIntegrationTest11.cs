@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputDoesNotContainLine(result, "ProjectCapability: DotNetCoreRazorConfiguration");
         }
 
-        [Fact (Skip = "https://github.com/aspnet/AspNetCore-Tooling/pull/1122#issuecomment-530976125")]
+        [Fact]
         [InitializeTestProject("SimpleMvc11")]
         public async Task RazorSdk_DoesNotBuildViewsForNetCoreApp11Projects()
         {
             MSBuildIntegrationTestBase.TargetFramework = "netcoreapp1.1";
             var result = await DotnetMSBuild("Build");
 
-            Assert.BuildPassed(result);
+            Assert.BuildPassed(result, allowWarnings: true);
             Assert.FileExists(result, OutputPath, "SimpleMvc11.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc11.pdb");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc11.Views.dll");
