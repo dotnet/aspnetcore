@@ -545,8 +545,18 @@ export class HubConnection {
                     case MessageType.Close:
                         this.logger.log(LogLevel.Information, "Close message received from server.");
 
-                        // We don't want to wait on the stop itself.
-                        this.stopPromise = this.stopInternal(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
+                        const error = message.error ? new Error("Server returned an error on close: " + message.error) : undefined;
+
+                        if (message.allowReconnect === true) {
+                            // It feels wrong not to await connection.stop() here, but processIncomingData is called as part of an onreceive callback which is not async,
+                            // this is already the behavior for serverTimeout(), and HttpConnection.Stop() should catch and log all possible exceptions.
+
+                            // tslint:disable-next-line:no-floating-promises
+                            this.connection.stop(error);
+                        } else {
+                            // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
+                            this.stopPromise = this.stopInternal(error);
+                        }
 
                         break;
                     default:

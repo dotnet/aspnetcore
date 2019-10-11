@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { IConnection } from "../src/IConnection";
 import { HubMessage, IHubProtocol, MessageType } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
+import { IRetryPolicy } from "../src/IRetryPolicy";
 import { TransferFormat } from "../src/ITransport";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { NullLogger } from "../src/Loggers";
@@ -16,8 +18,8 @@ import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
 import { delayUntil, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
-function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null) {
-    return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
+function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null, reconnectPolicy?: IRetryPolicy) {
+    return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol(), reconnectPolicy);
 }
 
 registerUnhandledRejectionHandler();
@@ -812,6 +814,64 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                try {
+                    let isClosed = false;
+                    let closeError: Error | undefined;
+                    hubConnection.onclose((e) => {
+                        isClosed = true;
+                        closeError = e;
+                    });
+
+                    await hubConnection.start();
+
+                    // allowReconnect Should have no effect since auto reconnect is disabled by default.
+                    connection.receive({
+                        allowReconnect: true,
+                        error: "Error!",
+                        type: MessageType.Close,
+                    });
+
+                    expect(isClosed).toEqual(true);
+                    expect(closeError!.message).toEqual("Server returned an error on close: Error!");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("reconnect on close message if allowReconnect is true and auto reconnect is enabled", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger, null, new DefaultReconnectPolicy());
+                try {
+                    let isReconnecting = false;
+                    let reconnectingError: Error | undefined;
+
+                    hubConnection.onreconnecting((e) => {
+                        isReconnecting = true;
+                        reconnectingError = e;
+                    });
+
+                    await hubConnection.start();
+
+                    connection.receive({
+                        allowReconnect: true,
+                        error: "Error!",
+                        type: MessageType.Close,
+                    });
+
+                    expect(isReconnecting).toEqual(true);
+                    expect(reconnectingError!.message).toEqual("Server returned an error on close: Error!");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("stop on close message if allowReconnect is missing and auto reconnect is enabled", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger, null, new DefaultReconnectPolicy());
                 try {
                     let isClosed = false;
                     let closeError: Error | undefined;
