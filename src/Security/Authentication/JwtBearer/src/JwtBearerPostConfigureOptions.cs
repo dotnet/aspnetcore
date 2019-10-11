@@ -55,7 +55,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 10; // 10 MB
 
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(httpClient) { RequireHttps = options.RequireHttpsMetadata });
+                        new HttpDocumentRetriever(httpClient) { RequireHttps = options.RequireHttpsMetadata })
+                    {
+                        RefreshInterval = options.RefreshInterval,
+                        AutomaticRefreshInterval = options.AutomaticRefreshInterval,
+                    };
                 }
             }
         }
