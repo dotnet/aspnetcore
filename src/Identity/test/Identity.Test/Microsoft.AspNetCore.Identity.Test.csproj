@@ -17,6 +17,7 @@
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Identity.Core" />
     <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
@@ -26,7 +27,7 @@
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
-      </AssemblyAttribute>      
+      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
