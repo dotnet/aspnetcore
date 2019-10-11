@@ -9,7 +9,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
   </ItemGroup>
 

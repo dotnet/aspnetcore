@@ -16,6 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public static readonly MediaTypeHeaderValue ApplicationAnyJsonSyntax
             = MediaTypeHeaderValue.Parse("application/*+json").CopyAsReadOnly();
 
+        public static readonly MediaTypeHeaderValue ApplicationJsonPatch
+            = MediaTypeHeaderValue.Parse("application/json-patch+json").CopyAsReadOnly();
+
         public static readonly MediaTypeHeaderValue ApplicationXml
             = MediaTypeHeaderValue.Parse("application/xml").CopyAsReadOnly();
 

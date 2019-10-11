@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\**\*.cs" />
+
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 </Project>
