@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -76,15 +76,7 @@ namespace System.IO.Pipelines
 
             _length += source.Length;
             var task = _pipeWriter.WriteAsync(source);
-            if (task.IsCompletedSuccessfully)
-            {
-                // Cancellation can be triggered by PipeWriter.CancelPendingFlush
-                if (task.Result.IsCanceled)
-                {
-                    throw new OperationCanceledException();
-                }
-            }
-            else if (!task.IsCompletedSuccessfully)
+            if (!task.IsCompletedSuccessfully)
             {
                 return WriteSlowAsync(task);
             }

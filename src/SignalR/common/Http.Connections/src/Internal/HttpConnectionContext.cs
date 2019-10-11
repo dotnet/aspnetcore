@@ -274,35 +274,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // Cancel any pending flushes from back pressure
                     Application?.Output.CancelPendingFlush();
 
-                    // Normally it isn't safe to try and acquire this lock because the Send can hold onto it for a long time if there is backpressure
-                    // It is safe to wait for this lock now because the Send will be in one of 4 states
-                    // 1. In the middle of a write which is in the middle of being canceled by the CancelPendingFlush above, when it throws
-                    //    an OperationCanceledException it will complete the PipeWriter which will make any other Send waiting on the lock
-                    //    throw an InvalidOperationException if they call Write
-                    // 2. About to write and see that there is a pending cancel from the CancelPendingFlush, go to 1 to see what happens
-                    // 3. Enters the Send and sees the Dispose state from DisposeAndRemoveAsync and releases the lock
-                    // 4. No Send in progress
-                    await WriteLock.WaitAsync();
-                    try
-                    {
-                        // Complete the applications read loop
-                        Application?.Output.Complete(transportTask.Exception?.InnerException);
-                    }
-                    finally
-                    {
-                        WriteLock.Release();
-                    }
-
-                    Log.WaitingForTransportAndApplication(_logger, TransportType);
-
-                    // Wait for application so we can complete the writer safely
-                    await applicationTask.NoThrow();
-
-                    // Shutdown application side now that it's finished
+                    // Shutdown both sides and wait for nothing
                     Transport?.Output.Complete(applicationTask.Exception?.InnerException);
+                    Application?.Output.Complete(transportTask.Exception?.InnerException);
 
                     try
                     {
+                        Log.WaitingForTransportAndApplication(_logger, TransportType);
                         // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
                         await Task.WhenAll(applicationTask, transportTask);
                     }
