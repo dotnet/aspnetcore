@@ -327,5 +327,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return cookieOptions;
             }
         }
+
+        /// <summary>
+        /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+        /// </summary>
+        public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
+
+        /// <summary>
+        /// 30 seconds is the default time interval that must pass for <see cref="ConfigurationManager" /> to obtain a new configuration.
+        /// </summary>
+        public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
     }
 }
