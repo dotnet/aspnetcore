@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.Razor.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.Razor.Manual.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures"  />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime"  />
     <Reference Include="Microsoft.Extensions.Caching.Memory"  />
