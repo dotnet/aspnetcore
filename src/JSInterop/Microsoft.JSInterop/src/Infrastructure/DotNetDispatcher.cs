@@ -24,6 +24,9 @@ namespace Microsoft.JSInterop.Infrastructure
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
             = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
 
+        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByType
+            = new ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
+
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
         /// </summary>
@@ -129,9 +132,12 @@ namespace Microsoft.JSInterop.Infrastructure
             var methodIdentifier = callInfo.MethodIdentifier;
 
             AssemblyKey assemblyKey;
+            MethodInfo methodInfo;
+            Type[] parameterTypes;
             if (objectReference is null)
             {
                 assemblyKey = new AssemblyKey(assemblyName);
+                (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
             }
             else
             {
@@ -147,10 +153,8 @@ namespace Microsoft.JSInterop.Infrastructure
                     return default;
                 }
 
-                assemblyKey = new AssemblyKey(objectReference.Value.GetType().Assembly);
+                (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
             }
-
-            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
 
             var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
@@ -301,7 +305,47 @@ namespace Microsoft.JSInterop.Infrastructure
             }
             else
             {
-                throw new ArgumentException($"The assembly '{assemblyKey.AssemblyName}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+                throw new ArgumentException($"The assembly '{assemblyKey.AssemblyName}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+            }
+        }
+
+        private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
+        {
+            var type = objectReference.Value.GetType();
+            var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
+            if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new ArgumentException($"The type '{type.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+            }
+
+            static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
+            {
+                var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+                var invokableMethods = type
+                    .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
+
+                foreach (var method in invokableMethods)
+                {
+                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false).Identifier ?? method.Name;
+                    var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+
+                    if (result.ContainsKey(identifier))
+                    {
+                        throw new InvalidOperationException($"The type {type.Name} contains more than one " +
+                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                            $"type must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            $"the [JSInvokable] attribute.");
+                    }
+
+                    result.Add(identifier, (method, parameterTypes));
+                }
+
+                return result;
             }
         }
 
@@ -312,35 +356,22 @@ namespace Microsoft.JSInterop.Infrastructure
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
             var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
                 .GetExportedTypes()
-                .SelectMany(type => type.GetMethods(
-                    BindingFlags.Public |
-                    BindingFlags.DeclaredOnly |
-                    BindingFlags.Instance |
-                    BindingFlags.Static))
-                .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
+                .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
             foreach (var method in invokableMethods)
             {
                 var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false).Identifier ?? method.Name;
                 var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
 
-                try
+                if (result.ContainsKey(identifier))
                 {
-                    result.Add(identifier, (method, parameterTypes));
+                    throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
+                        $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                        $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
+                        $"the [JSInvokable] attribute.");
                 }
-                catch (ArgumentException)
-                {
-                    if (result.ContainsKey(identifier))
-                    {
-                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
-                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                            $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
-                            $"the [JSInvokable] attribute.");
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+
+                result.Add(identifier, (method, parameterTypes));
             }
 
             return result;
