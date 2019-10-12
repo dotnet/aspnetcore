@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// </summary>
     public class HubConnectionBuilder : IHubConnectionBuilder
     {
-        private bool _hubConnectionBuilt;
-
         /// <inheritdoc />
         public IServiceCollection Services { get; }
 
@@ -35,14 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <inheritdoc />
         public HubConnection Build()
         {
-            // Build can only be used once
-            if (_hubConnectionBuilt)
-            {
-                throw new InvalidOperationException("HubConnectionBuilder allows creation only of a single instance of HubConnection.");
-            }
-
-            _hubConnectionBuilt = true;
-
             // The service provider is disposed by the HubConnection
             var serviceProvider = Services.BuildServiceProvider();
 
