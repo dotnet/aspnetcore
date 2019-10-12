@@ -32,13 +32,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Each usage will be represented by a tag helper property that is a descendant of either
             // a component or element.
             var references = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeIntermediateNode>();
-            var parameterReferences = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeParameterIntermediateNode>();
-
             var parents = new HashSet<IntermediateNode>();
             for (var i = 0; i < references.Count; i++)
             {
                 parents.Add(references[i].Parent);
             }
+
+            // We need to do something similar for directive attribute parameters like @onclick:preventDefault.
+            var parameterReferences = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeParameterIntermediateNode>();
             for (var i = 0; i < parameterReferences.Count; i++)
             {
                 parents.Add(parameterReferences[i].Parent);
