@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                     // Overflow buffer is always empty when we get here and we can use it's full length to write contents to.
                     Utf8.FromUtf16(_charBuffer, _overflowBuffer.Array, out var overFlowChars, out var overflowBytes, isFinalBlock: false);
 
-                    Debug.Assert(overflowBytes > 0 && overFlowChars > 0, "We expect writes to the overflow buffer to always succeed since it is large enough to accomodate at least one char.");
+                    Debug.Assert(overflowBytes > 0 && overFlowChars > 0, "We expect writes to the overflow buffer to always succeed since it is large enough to accommodate at least one char.");
 
                     _charBuffer = _charBuffer.Slice(overFlowChars);
 
