@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // 2. When a type is specified, use GetSupportedContentTypes to expand wildcards and get the range of content-types formatters support.
             // 3. When no formatter supports the specified content-type, use the user specified value as is. This is useful in actions where the user
             // dictates the content-type.
-            // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "applicaiton/pdf");
+            // e.g. [Produces("application/pdf")] Action() => FileStream("somefile.pdf", "application/pdf");
 
             foreach (var apiResponse in responseTypes)
             {
