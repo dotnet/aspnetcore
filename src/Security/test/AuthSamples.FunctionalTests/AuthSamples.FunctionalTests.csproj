@@ -70,7 +70,7 @@
     <Copy
       SourceFiles="@(_staticFiles)"
       DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
-    
+
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
