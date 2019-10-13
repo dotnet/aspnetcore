@@ -171,6 +171,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 }
 namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 {
+    internal static partial class CryptographyAlgorithms
+    {
+        public static System.Security.Cryptography.SHA256 CreateSHA256() { throw null; }
+    }
+
     internal partial class DefaultFileVersionProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider
     {
         private static readonly char[] QueryStringAndFragmentTokens;
