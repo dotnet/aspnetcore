@@ -26,6 +26,7 @@
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\testassets\StartWithIApplicationBuilderUrlApp\StartWithIApplicationBuilderUrlApp.csproj" ReferenceOutputAssemblies="false" />
 
     <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

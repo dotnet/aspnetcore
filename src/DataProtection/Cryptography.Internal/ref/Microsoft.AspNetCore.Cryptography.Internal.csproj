@@ -6,6 +6,6 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Cryptography.Internal.netstandard2.0.cs" />
     <Compile Include="Microsoft.AspNetCore.Cryptography.Internal.Manual.cs" />
-
+    
   </ItemGroup>
 </Project>

@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
   <ItemGroup>
