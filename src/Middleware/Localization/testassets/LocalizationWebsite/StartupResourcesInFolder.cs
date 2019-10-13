@@ -36,11 +36,17 @@ namespace LocalizationWebsite
                 DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = new List<CultureInfo>()
                 {
-                    new CultureInfo("fr-FR")
+                    new CultureInfo("fr-FR"),
+                    new CultureInfo("zh-TW"),
+                    new CultureInfo("zh-Hant"),
+                    new CultureInfo("zh")
                 },
                 SupportedUICultures = new List<CultureInfo>()
                 {
-                    new CultureInfo("fr-FR")
+                    new CultureInfo("fr-FR"),
+                    new CultureInfo("zh-TW"),
+                    new CultureInfo("zh-Hant"),
+                    new CultureInfo("zh")
                 }
             });
 

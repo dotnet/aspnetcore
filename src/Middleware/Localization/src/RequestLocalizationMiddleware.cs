@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class RequestLocalizationMiddleware
     {
-        private static readonly int MaxCultureFallbackDepth = 5;
-
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
         private readonly ILogger _logger;
@@ -86,11 +84,12 @@ namespace Microsoft.AspNetCore.Localization
                     {
                         continue;
                     }
+
                     var cultures = providerResultCulture.Cultures;
                     var uiCultures = providerResultCulture.UICultures;
-
                     CultureInfo cultureInfo = null;
                     CultureInfo uiCultureInfo = null;
+
                     if (_options.SupportedCultures != null)
                     {
                         cultureInfo = GetCultureInfo(
@@ -162,28 +161,60 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         private static CultureInfo GetCultureInfo(
-            IList<StringSegment> cultureNames,
-            IList<CultureInfo> supportedCultures,
+            IEnumerable<StringSegment> cultureNames,
+            IEnumerable<CultureInfo> supportedCultures,
             bool fallbackToParentCultures)
         {
-            foreach (var cultureName in cultureNames)
+            var nonNullableCultureNames = cultureNames.Where(c => c != null);
+
+            foreach (var cultureName in nonNullableCultureNames)
             {
-                // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
-                // the CultureInfo ctor
-                if (cultureName != null)
+                var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
+                if (cultureInfo != null)
                 {
-                    var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures, currentDepth: 0);
-                    if (cultureInfo != null)
-                    {
-                        return cultureInfo;
-                    }
+                    return cultureInfo;
                 }
             }
 
             return null;
         }
 
-        private static CultureInfo GetCultureInfo(StringSegment name, IList<CultureInfo> supportedCultures)
+        private static CultureInfo GetCultureInfo(
+            StringSegment cultureName,
+            IEnumerable<CultureInfo> supportedCultures,
+            bool fallbackToParentCultures)
+        {
+            var culture = GetCultureInfo(cultureName, supportedCultures);
+
+            if (culture == null)
+            {
+                return culture;
+            }
+
+            if (fallbackToParentCultures)
+            {
+                var fallbackCulture = culture;
+
+                while (fallbackCulture != fallbackCulture.Parent)
+                {
+                    fallbackCulture = fallbackCulture.Parent;
+
+                    if (supportedCultures.Contains(fallbackCulture))
+                    {
+                        return fallbackCulture;
+                    }
+                }
+
+                if (supportedCultures.Contains(fallbackCulture))
+                {
+                    return fallbackCulture;
+                }
+            }
+
+            return culture;
+        }
+
+        private static CultureInfo GetCultureInfo(StringSegment name, IEnumerable<CultureInfo> supportedCultures)
         {
             // Allow only known culture names as this API is called with input from users (HTTP requests) and
             // creating CultureInfo objects is expensive and we don't want it to throw either.
@@ -191,6 +222,7 @@ namespace Microsoft.AspNetCore.Localization
             {
                 return null;
             }
+
             var culture = supportedCultures.FirstOrDefault(
                 supportedCulture => StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
 
@@ -200,30 +232,6 @@ namespace Microsoft.AspNetCore.Localization
             }
 
             return CultureInfo.ReadOnly(culture);
-        }
-
-        private static CultureInfo GetCultureInfo(
-            StringSegment cultureName,
-            IList<CultureInfo> supportedCultures,
-            bool fallbackToParentCultures,
-            int currentDepth)
-        {
-            var culture = GetCultureInfo(cultureName, supportedCultures);
-
-            if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
-            {
-                var lastIndexOfHyphen = cultureName.LastIndexOf('-');
-
-                if (lastIndexOfHyphen > 0)
-                {
-                    // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                    var parentCultureName = cultureName.Subsegment(0, lastIndexOfHyphen);
-
-                    culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToParentCultures, currentDepth + 1);
-                }
-            }
-
-            return culture;
         }
     }
 }
