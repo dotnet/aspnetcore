@@ -20,7 +20,7 @@ jobs:
     enableTelemetry: ${{ parameters.enableTelemetry }}
     enablePublishBuildArtifacts: true
     continueOnError: ${{ parameters.continueOnError }}
-
+    
     jobs:
       - job: '${{ parameters.jobName }}'
 
@@ -51,7 +51,7 @@ jobs:
           - ${{ if ne(parameters.osGroup, 'Windows_NT') }}:
             - HelixPreCommand: 'export PERFLAB_UPLOAD_TOKEN="$(PerfCommandUploadTokenLinux)"'
             - IsInternal: --internal
-
+            
           - group: DotNet-HelixApi-Access
           - group: dotnet-benchview
 
