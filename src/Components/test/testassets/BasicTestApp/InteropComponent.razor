@@ -70,13 +70,15 @@
         var shouldSupportSyncInterop = RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
         var testDTOTOPassByRef = new TestDTO(nonSerializedValue: 123);
         var instanceMethodsTarget = new JavaScriptInterop();
+        var genericType = new JavaScriptInterop.GenericType<string> { Value = "Initial value" };
 
         Console.WriteLine("Starting interop invocations.");
         await JSRuntime.InvokeVoidAsync(
             "jsInteropTests.invokeDotNetInteropMethodsAsync",
             shouldSupportSyncInterop,
             DotNetObjectReference.Create(testDTOTOPassByRef),
-            DotNetObjectReference.Create(instanceMethodsTarget));
+            DotNetObjectReference.Create(instanceMethodsTarget),
+            DotNetObjectReference.Create(genericType));
 
         if (shouldSupportSyncInterop)
         {

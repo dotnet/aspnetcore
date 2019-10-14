@@ -1,4 +1,5 @@
 @page ""
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +12,7 @@
     <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
 </head>
 <body>
-    <root>@(await Html.RenderComponentAsync<BasicTestApp.Index>(RenderMode.Server))</root>
+    <root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
 
     <!-- Used for testing interop scenarios between JS and .NET -->
     <script src="js/jsinteroptests.js"></script>

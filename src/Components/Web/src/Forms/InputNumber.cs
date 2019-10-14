@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // of it for us. We will only get asked to parse the T for nonempty inputs.
             var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
             if (targetType == typeof(int) ||
+                targetType == typeof(long) ||
                 targetType == typeof(float) ||
                 targetType == typeof(double) ||
                 targetType == typeof(decimal))

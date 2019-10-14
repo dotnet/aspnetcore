@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -321,6 +324,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             HashStrength = (int)handshake.HashStrength;
             KeyExchangeAlgorithm = handshake.KeyExchangeType;
             KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+        }
+
+        public X509Certificate2 ClientCertificate
+        {
+            get
+            {
+                if (_clientCert == null && SslStatus == SslStatus.ClientCert)
+                {
+                    try
+                    {
+                        _clientCert = _nativeRequestContext.GetClientCertificate();
+                    }
+                    catch (CryptographicException ce)
+                    {
+                        RequestContext.Logger.LogDebug(ce, "An error occurred reading the client certificate.");
+                    }
+                    catch (SecurityException se)
+                    {
+                        RequestContext.Logger.LogDebug(se, "An error occurred reading the client certificate.");
+                    }
+                }
+
+                return _clientCert;
+            }
         }
 
         // Populates the client certificate.  The result may be null if there is no client cert.

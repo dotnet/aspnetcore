@@ -1,0 +1,48 @@
+<h3 class="interactive">Component With Parameters</h3>
+
+<ul class="Param1">
+    @foreach (var value in Param1)
+    {
+        <li>@value.StringProperty @value.IntProperty</li>
+    }
+</ul>
+
+@* Making sure polymorphism works *@
+<div class="Param2">@DerivedParam2.StringProperty @DerivedParam2.DerivedProperty</div>
+
+@* Making sure CaptureUnmatchedValues works *@
+
+<ul class="Param3">
+    @foreach (var value in Param3.OrderBy(kvp => kvp.Key))
+    {
+        <li>@value.Key @value.Value</li>
+    }
+</ul>
+
+@code
+{
+    [Parameter] public List<TestModel> Param1 { get; set; }
+
+    [Parameter] public TestModel Param2 { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> Param3 { get; set; }
+
+    private DerivedModel DerivedParam2 => (DerivedModel)Param2;
+
+    public static List<TestModel> TestModelValues => Enumerable.Range(0, 100).Select(c => new TestModel { StringProperty = c.ToString(), IntProperty = c }).ToList();
+
+    public static DerivedModel DerivedModelValue = new DerivedModel { StringProperty = "Value", DerivedProperty = "Derived-Value" };
+
+    public class TestModel
+    {
+
+        public string StringProperty { get; set; }
+
+        public int IntProperty { get; set; }
+    }
+
+    public class DerivedModel : TestModel
+    {
+        public string DerivedProperty { get; set; }
+    }
+}

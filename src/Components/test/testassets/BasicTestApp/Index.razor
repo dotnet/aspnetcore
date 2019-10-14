@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Rendering
 <div id="test-selector">
-  Select test:
+    Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
         <option value="none">Choose...</option>
         <option value="BasicTestApp.AddRemoveChildComponents">Add/remove child components</option>
@@ -20,6 +20,7 @@
         <option value="BasicTestApp.DispatchingComponent">Dispatching to sync context</option>
         <option value="BasicTestApp.DuplicateAttributesComponent">Duplicate attributes</option>
         <option value="BasicTestApp.ElementRefComponent">Element ref component</option>
+        <option value="BasicTestApp.ErrorComponent">Error throwing</option>
         <option value="BasicTestApp.EventBubblingComponent">Event bubbling</option>
         <option value="BasicTestApp.EventCallbackTest.EventCallbackCases">EventCallback</option>
         <option value="BasicTestApp.EventCasesComponent">Event cases</option>
@@ -81,6 +82,12 @@
 <app>
     @((RenderFragment)RenderSelectedComponent)
 </app>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href class='reload'>Reload</a>
+    <a class='dismiss' style="cursor: pointer;">🗙</a>
+</div>
 
 @code {
     string SelectedComponentTypeName { get; set; } = "none";

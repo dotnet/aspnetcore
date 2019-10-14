@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorComponents
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     public class HtmlRendererTest
     {

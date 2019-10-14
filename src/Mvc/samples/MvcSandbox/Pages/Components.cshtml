@@ -1,5 +1,4 @@
 ﻿@page
-@model MvcSandbox.Pages.ComponentsModel
 @{ 
     Layout = null;
 }
@@ -15,8 +14,7 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>@(await Html.RenderComponentAsync<MvcSandbox.Components.App>(RenderMode.Static))</app>
-
-    <script src="_framework/components.server.js"></script>
+    <component type="typeof(MvcSandbox.Components.App)" render-mode="Static" />
+    <script src="_framework/blazor.server.js"></script>
 </body>
 </html>
