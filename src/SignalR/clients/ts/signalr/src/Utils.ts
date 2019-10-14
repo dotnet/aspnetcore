@@ -190,7 +190,7 @@ export class ConsoleLogger implements ILogger {
 
 /** @private */
 export function getUserAgentHeader(): [string, string] {
-    let userAgentHeaderName = "X-SignalR-UserAgent";
+    let userAgentHeaderName = "X-SignalR-User-Agent";
     if (Platform.isNode) {
         userAgentHeaderName = "User-Agent";
     }
@@ -225,20 +225,19 @@ export function constructUserAgent(version: string, os: string, runtime: string,
 }
 
 function getOsName(): string {
-    let os: string = "";
     if (Platform.isNode) {
-        os = process.platform;
-    }
-
-    switch (os) {
-        case "win32":
-            return "Windows NT";
-        case "darwin":
-            return "macOS";
-        case "linux":
-            return "Linux";
-        default:
-            return os;
+        switch (process.platform) {
+            case "win32":
+                return "Windows NT";
+            case "darwin":
+                return "macOS";
+            case "linux":
+                return "Linux";
+            default:
+                return process.platform;
+        }
+    } else {
+        return "";
     }
 }
 
