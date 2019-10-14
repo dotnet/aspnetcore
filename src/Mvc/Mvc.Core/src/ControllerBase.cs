@@ -2452,7 +2452,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await TryUpdateModelAsync(model, prefix, valueProvider);
         }
 
@@ -2526,7 +2531,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2565,7 +2575,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2693,7 +2708,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -32,10 +34,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private static async Task AddValueProviderAsync(ValueProviderFactoryContext context, HttpRequest request)
         {
-            var formCollection = await request.ReadFormAsync();
-            if (formCollection.Files.Count > 0)
+            IFormCollection form;
+
+            try
             {
-                var valueProvider = new FormFileValueProvider(formCollection.Files);
+                form = await request.ReadFormAsync();
+            }
+            catch (InvalidDataException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+
+            if (form.Files.Count > 0)
+            {
+                var valueProvider = new FormFileValueProvider(form.Files);
                 context.ValueProviders.Add(valueProvider);
             }
         }

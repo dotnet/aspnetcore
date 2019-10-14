@@ -1202,6 +1202,54 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(250.0, transferInfo.Amount);
         }
 
+        [Fact]
+        public async Task BinderDelegateRecordsErrorWhenValueProviderThrowsValueProviderException()
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                BoundProperties = new List<ParameterDescriptor>(),
+                Parameters = new[] { new ParameterDescriptor { Name = "name", ParameterType = typeof(string) } },
+            };
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
+            var modelBinderProvider = Mock.Of<IModelBinderProvider>();
+            var factory = TestModelBinderFactory.CreateDefault(modelBinderProvider);
+            var modelValidatorProvider = Mock.Of<IModelValidatorProvider>();
+            var parameterBinder = new ParameterBinder(
+                new EmptyModelMetadataProvider(),
+                factory,
+                GetObjectValidator(modelMetadataProvider, modelValidatorProvider),
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
+
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("Some error"));
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ValueProviderFactories.Add(valueProviderFactory.Object);
+
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+            var modelState = controllerContext.ModelState;
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                actionDescriptor,
+                _options);
+
+            await binderDelegate(controllerContext, new TestController(), arguments);
+
+            // Assert
+            var entry = Assert.Single(modelState);
+            Assert.Empty(entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+
+            Assert.Equal("Some error", error.ErrorMessage);
+        }
+
         private static ControllerContext GetControllerContext(ControllerActionDescriptor descriptor = null)
         {
             var services = new ServiceCollection();
