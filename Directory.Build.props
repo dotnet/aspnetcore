@@ -93,8 +93,8 @@
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
     <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
-    <!-- TODO - remove this from release/3.0 after 3.0.1 is shipped. Do not merge this line into any branch other than release/3.0 -->
-    <IsTargetingPackBuilding>true</IsTargetingPackBuilding>
+    <!-- We need to build the targeting pack in 3.0.1. We can remove this line from any branch other than release/3.0 -->
+    <IsTargetingPackBuilding Condition="'$(VersionPrefix)' == '3.0.1'">true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
