@@ -83,6 +83,42 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ChallengeDoesNotIncludePkceIfUsingIdentityServer3(bool isUsingIdentityServer3)
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = OpenIdConnectResponseType.Code;
+                    opt.ClientId = "Test Id";
+                    opt.UsePkce = true;
+                    opt.IsUsingIdentityServer3 = isUsingIdentityServer3;
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            if (isUsingIdentityServer3)
+            {
+                Assert.DoesNotContain("code_challenge=", res.Headers.Location.Query);
+                Assert.DoesNotContain("code_challenge_method=", res.Headers.Location.Query);
+
+            }
+            else
+            {
+                Assert.Contains("code_challenge=", res.Headers.Location.Query);
+                Assert.Contains("code_challenge_method=S256", res.Headers.Location.Query);
+            }
+        }
+
+        [Theory]
         [InlineData(OpenIdConnectResponseType.Token)]
         [InlineData(OpenIdConnectResponseType.IdToken)]
         [InlineData(OpenIdConnectResponseType.CodeIdToken)]

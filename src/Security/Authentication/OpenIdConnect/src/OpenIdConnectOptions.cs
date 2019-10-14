@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectOptions : RemoteAuthenticationOptions
     {
         private CookieBuilder _nonceCookieBuilder;
-
+        private bool _usePkce = true;
         /// <summary>
         /// Initializes a new <see cref="OpenIdConnectOptions"/>
         /// </summary>
@@ -302,7 +302,18 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// See https://tools.ietf.org/html/rfc7636.
         /// The default value is `true`.
         /// </summary>
-        public bool UsePkce { get; set; } = true;
+        public bool UsePkce
+        {
+            get => _usePkce;
+            set => _usePkce = !IsUsingIdentityServer3 && value;
+        }
+
+        /// <summary>
+        /// Determines if the user is using Identity Server 3.
+        /// If set to true, this will disable the use of the Proof Key for Code Exchange (PKCE) and set <see cref="UsePkce"/> to false.
+        /// The default value is `false`.
+        /// </summary>
+        public bool IsUsingIdentityServer3 { get; set; } = false;
 
         private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
         {
