@@ -626,7 +626,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(incompleteItemsSelector);
 
             // Mark first item as done; observe the remaining incomplete item appears unchecked
-            // because the diff algoritm explicitly unchecks it
+            // because the diff algorithm explicitly unchecks it
             appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
             Browser.True(() =>
             {
@@ -636,7 +636,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
 
             // Mark first done item as not done; observe the remaining complete item appears checked
-            // because the diff algoritm explicitly re-checks it
+            // because the diff algorithm explicitly re-checks it
             appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
             Browser.True(() =>
             {
