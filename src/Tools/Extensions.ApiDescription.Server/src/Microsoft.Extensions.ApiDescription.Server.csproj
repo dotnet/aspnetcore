@@ -13,6 +13,9 @@
     <PackageTags>MSBuild;Swagger;OpenAPI;code generation;Web API;service reference;document generation</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- Compiling against reference assemblies breaks ProjectReferenceBuildTargets (TODO: investigate why) -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
 
     <!--
       Publish the referenced projects when building .NET Core bits. This is not needed for full framework builds
