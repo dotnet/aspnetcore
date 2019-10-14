@@ -3,11 +3,10 @@
 
 using System;
 using System.Buffers;
-using System.Net.Http;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
@@ -52,6 +51,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     _bodyInputPipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
                 }
             }
+        }
+
+        internal Task CopyToAsync(Stream destination, CancellationToken cancellationToken)
+        {
+            if (!HasStartedConsumingRequestBody)
+            {
+                InitializeRequestIO();
+            }
+
+            return _bodyInputPipe.Reader.CopyToAsync(destination, cancellationToken);
         }
 
         /// <summary>

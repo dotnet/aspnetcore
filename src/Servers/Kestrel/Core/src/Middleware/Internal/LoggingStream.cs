@@ -176,78 +176,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            var task = ReadAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<int>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(task2.Result);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
+            return TaskToApm.End<int>(asyncResult);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(WriteAsync(buffer, offset, count), callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            ((Task<object>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
-        {
-            var tcs = new TaskCompletionSource<object>(state);
-            var task = WriteAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<object>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(null);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
+            TaskToApm.End(asyncResult);
         }
     }
 }
