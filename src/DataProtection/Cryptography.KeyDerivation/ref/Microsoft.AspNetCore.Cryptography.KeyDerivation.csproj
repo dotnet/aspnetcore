@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp2.0</TargetFrameworks>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.netstandard2.0.cs" />
