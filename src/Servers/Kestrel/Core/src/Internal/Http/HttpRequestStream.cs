@@ -155,6 +155,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// <inheritdoc />
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+            }
+
             return _pipeReader.CopyToAsync(destination, cancellationToken);
         }
     }
