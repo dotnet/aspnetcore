@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components
             var messages = editContext.GetValidationMessages(() => model.Property1);
             Assert.Single(messages);
 
-            messages = editContext.GetValidationMessages(() => model.Property2);
+            messages = editContext.GetValidationMessages(new FieldIdentifier(model.Property2, string.Empty));
             Assert.Single(messages);
 
             messages = editContext.GetValidationMessages(() => model.Property2.Name);
