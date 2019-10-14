@@ -55,6 +55,7 @@
     <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 
 </Project>

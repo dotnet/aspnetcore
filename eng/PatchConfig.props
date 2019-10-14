@@ -15,7 +15,14 @@ Directory.Build.props checks this property using the following condition:
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
     <PackagesInPatch>
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.CookiePolicy;
       Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+      @microsoft/signalr;
+      Microsoft.Net.Http.Headers;
+      Microsoft.AspNetCore.Http.Abstractions;
+      Microsoft.AspNetCore.Http.Features;
+      Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

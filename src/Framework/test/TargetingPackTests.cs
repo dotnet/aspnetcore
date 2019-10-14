@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore
             _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
         public void AssembliesAreReferenceAssemblies()
         {
             IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
@@ -55,12 +55,19 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/14832")]
         public void PlatformManifestListsAllFiles()
         {
             var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
-            var expectedAssemblies = TestData.GetSharedFxDependencies()
+            var expectedAssemblies = TestData.GetTargetingPackDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(i =>
+                {
+                    var fileName = Path.GetFileName(i);
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                        ? fileName.Substring(0, fileName.Length - 4)
+                        : fileName;
+                })
                 .ToHashSet();
 
             _output.WriteLine("==== file contents ====");

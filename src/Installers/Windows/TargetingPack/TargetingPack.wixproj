@@ -9,6 +9,7 @@
     <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <IsShipping>true</IsShipping>
+    <SkipCopyToArtifactsDirectory Condition="'$(IsTargetingPackBuilding)' == 'false'">true</SkipCopyToArtifactsDirectory>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
@@ -21,6 +22,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
+  </ItemGroup>
 
   <ItemGroup>
     <WixExtension Include="WixDependencyExtension">
@@ -97,6 +102,7 @@
                       '$(_GeneratedPackageVersion)' ^
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
-                      '$(AspNetCoreMinorVersion)'" />
+                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageIconFullPath)'" />
   </Target>
 </Project>
