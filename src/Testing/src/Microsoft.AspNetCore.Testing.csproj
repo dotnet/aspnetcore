@@ -10,6 +10,8 @@
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <HasReferenceAssembly>true</HasReferenceAssembly>
+    <GenerateFrameworkReferenceAssembly>true</GenerateFrameworkReferenceAssembly>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
