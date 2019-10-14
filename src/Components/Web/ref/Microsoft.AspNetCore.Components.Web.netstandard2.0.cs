@@ -125,6 +125,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         public ValidationSummary() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
         public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected virtual void Dispose(bool disposing) { }
         protected override void OnParametersSet() { }
