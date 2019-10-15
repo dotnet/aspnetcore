@@ -56,13 +56,13 @@
     </div>
     <footer class="footer border-top pl-3 text-muted">
         <div class="container">
-        &copy; @DateTime.Now.Year - @Environment.ApplicationName -
+        &copy; @DateTime.Now.Year - @Environment.ApplicationName
             @{
                 var foundPrivacy = Url.Page("/Privacy", new { area = "" });
             }
             @if (foundPrivacy != null)
             {
-                <a asp-area="" asp-page="/Privacy">Privacy</a>
+                - <a asp-area="" asp-page="/Privacy">Privacy</a>
             }
         </div>
     </footer>
