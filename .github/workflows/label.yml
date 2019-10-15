@@ -1,0 +1,15 @@
+name: Labeler
+on:
+  pull_request:
+    branches:
+      - 'mkArtak/labelTests'
+    paths:
+      - 'src/ProjectTemplates/**'
+
+jobs:
+  area-mvc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@v2
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
