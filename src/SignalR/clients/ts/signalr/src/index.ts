@@ -1,10 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// Version token that will be replaced by the prepack command
-/** The version of the SignalR client. */
-export const VERSION: string = "0.0.0-DEV_BUILD";
-
 // Everything that users need to access must be exported here. Including interfaces.
 export { AbortSignal } from "./AbortController";
 export { AbortError, HttpError, TimeoutError } from "./Errors";
@@ -22,3 +18,4 @@ export { NullLogger } from "./Loggers";
 export { JsonHubProtocol } from "./JsonHubProtocol";
 export { Subject } from "./Subject";
 export { IRetryPolicy, RetryContext } from "./IRetryPolicy";
+export { VERSION } from "./Utils";

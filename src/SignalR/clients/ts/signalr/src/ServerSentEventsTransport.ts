@@ -5,7 +5,7 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
-import { Arg, getDataDetail, Platform, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, Platform, sendMessage } from "./Utils";
 
 /** @private */
 export class ServerSentEventsTransport implements ITransport {
@@ -62,7 +62,13 @@ export class ServerSentEventsTransport implements ITransport {
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this.httpClient.getCookieString(url);
-                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers: { Cookie: cookies } } as EventSourceInit);
+                const headers = {
+                    Cookie: cookies,
+                };
+                const [name, value] = getUserAgentHeader();
+                headers[name] = value;
+
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers } as EventSourceInit);
             }
 
             try {
