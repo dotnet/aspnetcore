@@ -9,6 +9,7 @@
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Remove="testroot\wwwroot\Static Web Assets.txt" />
     <Content Include="Microsoft.AspNetCore.Hosting.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
