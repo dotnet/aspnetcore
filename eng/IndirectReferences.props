@@ -1,0 +1,1571 @@
+<Project>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ResponseCompression'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Hosting.WindowsServices'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="falscde" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Hosting'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Localization.Routing'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Client'))">
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Client.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Client" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.IIS'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ResponseCaching'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.NodeServices'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Routing.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics.HealthChecks'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.ApiExplorer'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Formatters.Json'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Html.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Http.Headers'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.TagHelpers'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.Json'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Certificate'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Connections.Abstractions'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Rewrite'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Razor.Runtime'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.HeaderPropagation'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.HttpOverrides'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Server'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Common'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.OpenIdConnect'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.JsonPatch'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.AzureKeyVault'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Blazor'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Razor'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Antiforgery'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Extensions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.ViewFeatures'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.OAuth'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Cryptography.KeyDerivation'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.HostFiltering'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.AzureAppServicesIntegration'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authorization'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ConcurrencyLimiter'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Cryptography.Internal'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.StackExchangeRedis'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Identity.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Localization'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Routing'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Web'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Hosting.Server.Abstractions'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Forms'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Blazor.Server'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SpaServices.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SpaServices" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.NodeServices" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.WebUtilities'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Connections'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Cors'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.WsFederation'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Cors'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Session'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Identity'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Razor'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SpaServices'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.NodeServices" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Hosting.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.IISIntegration'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.HttpSys'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Google'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.TestHost'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.RazorPages'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Testing'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.TestHost" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Features'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.JwtBearer'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Identity.Stores'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Core" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Connections.Client'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Identity.UI'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Identity" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Stores" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ResponseCaching.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Negotiate'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Metadata'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.AzureAppServices.HostingStartup'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.MicrosoftAccount'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Cookies'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.StaticFiles'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.Extensions'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.DataAnnotations'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Twitter'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Identity.EntityFrameworkCore'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Stores" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Identity.Core" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SpaServices.Extensions'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SpaServices" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.NodeServices" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Authorization'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Abstractions'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Facebook'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.NewtonsoftJson'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.JsonPatch" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.AzureStorage'))">
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.CookiePolicy'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Blazor.HttpClient'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authorization.Policy'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.HttpsPolicy'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.AzureAD.UI'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Antiforgery" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Owin'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Connections.Common'))">
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Client.Core'))">
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.IIS" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.IISIntegration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Formatters.Xml'))">
+		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.WebSockets'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Localization'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.MiddlewareAnalysis'))">
+		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="@(IndirectReference)" KeepDuplicates="false" />
+	</ItemGroup>
+</Project>
