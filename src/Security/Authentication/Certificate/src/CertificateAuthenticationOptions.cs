@@ -16,9 +16,15 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.Chained;
 
         /// <summary>
+        /// Flag indicating whether the issuer for the certificate is trusted by the application host OS.
+        /// </summary>
+        /// <remarks>This check will only be performed if the client certificate chains to a root CA.</remarks>
+        public bool ValidateCertificateChain { get; set; } = true;
+
+        /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client
         /// authentication, either via the Client Authentication EKU, or having no EKUs
-        /// at all. If the certificate chains to a root CA all certificates in the chain must be validate
+        /// at all. If the certificate chains to a root CA all certificates in the chain must be validated
         /// for the client authentication EKU.
         /// </summary>
         public bool ValidateCertificateUse { get; set; } = true;

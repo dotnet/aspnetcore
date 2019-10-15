@@ -168,6 +168,11 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 chainPolicy.ExtraStore.Add(certificate);
             }
 
+            if (!Options.ValidateCertificateChain)
+            {
+                chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
+            }
+
             if (!Options.ValidateValidityPeriod)
             {
                 chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreNotTimeValid;
