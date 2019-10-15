@@ -1165,7 +1165,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                     }
 
                                     // Stopping being true indicates the client shouldn't try to reconnect even if automatic reconnects are enabled.
-                                    if (!closeMessage.AllowAutomaticReconnect)
+                                    if (!closeMessage.AllowReconnect)
                                     {
                                         connectionState.Stopping = true;
                                     }
@@ -1645,7 +1645,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public CancellationToken UploadStreamToken { get; set; }
 
             // Indicates the connection is stopping AND the client should NOT attempt to reconnect even if automatic reconnects are enabled.
-            // This means either HubConnection.DisposeAsync/StopAsync was called OR a CloseMessage with AllowAutomaticReconnects set to false was received.
+            // This means either HubConnection.DisposeAsync/StopAsync was called OR a CloseMessage with AllowReconnects set to false was received.
             public bool Stopping
             {
                 get => _stopping;

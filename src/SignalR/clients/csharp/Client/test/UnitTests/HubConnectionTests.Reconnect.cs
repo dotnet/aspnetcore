@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CanBeInducedByCloseMessageWithAllowAutoReconnectSet()
+            public async Task CanBeInducedByCloseMessageWithAllowReconnectSet()
             {
                 bool ExpectedErrors(WriteContext writeContext)
                 {
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CannotBeInducedByCloseMessageWithAllowAutoReconnectOmitted()
+            public async Task CannotBeInducedByCloseMessageWithAllowReconnectOmitted()
             {
                 bool ExpectedErrors(WriteContext writeContext)
                 {

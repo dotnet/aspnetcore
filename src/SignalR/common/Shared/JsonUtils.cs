@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Internal
                 throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Boolean}.");
             }
 
-            // REVIEW: I'm trying to keep this similar to ReadAsInt32, but why not just call reader.ReadAsBoolean() and verify it's not null?
             return Convert.ToBoolean(reader.Value, CultureInfo.InvariantCulture);
         }
 

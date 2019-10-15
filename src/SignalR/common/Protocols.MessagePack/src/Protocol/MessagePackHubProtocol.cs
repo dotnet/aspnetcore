@@ -264,20 +264,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static CloseMessage CreateCloseMessage(byte[] input, ref int offset, int itemCount)
         {
             var error = ReadString(input, ref offset, "error");
-            var allowAutomaticReconnect = true;
+            var allowReconnect = false;
 
             if (itemCount > 2)
             {
-                allowAutomaticReconnect = ReadBoolean(input, ref offset, "allowReconnect");
+                allowReconnect = ReadBoolean(input, ref offset, "allowReconnect");
             }
 
             // An empty string is still an error
-            if (error == null && !allowAutomaticReconnect)
+            if (error == null && !allowReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            return new CloseMessage(error, allowAutomaticReconnect);
+            return new CloseMessage(error, allowReconnect);
         }
 
         private static Dictionary<string, string> ReadHeaders(byte[] input, ref int offset)
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 MessagePackBinary.WriteString(packer, message.Error);
             }
 
-            MessagePackBinary.WriteBoolean(packer, message.AllowAutomaticReconnect);
+            MessagePackBinary.WriteBoolean(packer, message.AllowReconnect);
         }
 
         private void WritePingMessage(PingMessage pingMessage, Stream packer)

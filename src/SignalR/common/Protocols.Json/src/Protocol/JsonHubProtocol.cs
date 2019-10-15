@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
         private const string ErrorPropertyName = "error";
         private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
-        private const string AllowAutomaticReconnectPropertyName = "allowReconnect";
-        private static JsonEncodedText AllowAutomaticReconnectPropertyNameBytes = JsonEncodedText.Encode(AllowAutomaticReconnectPropertyName);
+        private const string AllowReconnectPropertyName = "allowReconnect";
+        private static JsonEncodedText AllowReconnectPropertyNameBytes = JsonEncodedText.Encode(AllowReconnectPropertyName);
         private const string TargetPropertyName = "target";
         private static JsonEncodedText TargetPropertyNameBytes = JsonEncodedText.Encode(TargetPropertyName);
         private const string ArgumentsPropertyName = "arguments";
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
-                var allowAutomaticReconnect = false;
+                var allowReconnect = false;
 
                 var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -189,9 +189,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (reader.ValueTextEquals(AllowAutomaticReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(AllowReconnectPropertyNameBytes.EncodedUtf8Bytes))
                             {
-                                allowAutomaticReconnect = reader.ReadAsBoolean(AllowAutomaticReconnectPropertyName);
+                                allowReconnect = reader.ReadAsBoolean(AllowReconnectPropertyName);
                             }
                             else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error, allowAutomaticReconnect);
+                        return BindCloseMessage(error, allowReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -552,9 +552,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 writer.WriteString(ErrorPropertyNameBytes, message.Error);
             }
 
-            if (message.AllowAutomaticReconnect)
+            if (message.AllowReconnect)
             {
-                writer.WriteBoolean(AllowAutomaticReconnectPropertyNameBytes, false);
+                writer.WriteBoolean(AllowReconnectPropertyNameBytes, true);
             }
         }
 
@@ -734,15 +734,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return arguments ?? Array.Empty<object>();
         }
 
-        private CloseMessage BindCloseMessage(string error, bool allowAutomaticReconnect)
+        private CloseMessage BindCloseMessage(string error, bool allowReconnect)
         {
             // An empty string is still an error
-            if (error == null && !allowAutomaticReconnect)
+            if (error == null && !allowReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            return new CloseMessage(error, allowAutomaticReconnect);
+            return new CloseMessage(error, allowReconnect);
         }
 
         private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string> headers)
