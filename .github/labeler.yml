@@ -1,7 +1,46 @@
+#area-azure:
+
+area-blazor:
+  - src/Components/**/*
+
+#area-commandlinetools:
+
+#area-dataprotection:
+
+#area-grpc:
+
+#area-healthchecks:
+
+area-hosting:
+  - src/Hosting/**/*
+
+#area-httpclientfactory:
+
+area-identity:
+  - src/Identity/**/*
+
+#area-infrastructure:
+
+#area-installers:
+
+area-middleware:
+  - src/Middleware/**/*
+
 area-mvc:
   - src/ProjectTemplates/**/*
   - src/Razor/**/*
   - src/Mvc/**/*
+  - src/MusicStore/**/*
+  
+#area-platform:
 
-area-blazor:
-  - src/Components/**/*
+area-security:
+  - src/Security/**/*
+
+area-servers:
+  - src/Servers/**/*
+
+area-signalr:
+  - src/SignalR/**/*
+
+#area-websockets:
