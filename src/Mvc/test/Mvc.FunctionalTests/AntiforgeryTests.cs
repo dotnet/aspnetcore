@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
             Assert.Equal("SAMEORIGIN", header);
+            Assert.Equal("testing", "auto-labeler");
 
             var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
 
