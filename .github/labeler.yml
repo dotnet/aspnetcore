@@ -5,7 +5,8 @@ area-blazor:
 
 #area-commandlinetools:
 
-#area-dataprotection:
+area-dataprotection:
+  - src/DataProtection/**/*
 
 #area-grpc:
 
@@ -13,15 +14,21 @@ area-blazor:
 
 area-hosting:
   - src/Hosting/**/*
+  - src/SiteExtensions/**/*
 
 #area-httpclientfactory:
 
 area-identity:
   - src/Identity/**/*
 
-#area-infrastructure:
+area-infrastructure:
+  - global.json
+  - .azure/**/*
+  - .config/**/*
+  - eng/**/*
 
-#area-installers:
+area-installers:
+  - src/Installers/**/*
 
 area-middleware:
   - src/Middleware/**/*
