@@ -2608,6 +2608,31 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
+        public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
+        {
+            // Arrange
+            var modelName = "mymodel";
+
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("some error"));
+
+            var controller = GetController(new StubModelBinder());
+            controller.ControllerContext.ValueProviderFactories.Add(valueProviderFactory.Object);
+            var model = new MyModel();
+
+            // Act
+            var result = await controller.TryUpdateModelAsync(model, modelName);
+
+            // Assert
+            Assert.False(result);
+            var modelState = Assert.Single(controller.ModelState);
+            Assert.Empty(modelState.Key);
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal("some error", error.ErrorMessage);
+        }
+
+        [Fact]
         public async Task TryUpdateModel_PropertyFilterOverload_UsesPassedArguments()
         {
             // Arrange
@@ -3037,7 +3062,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 });
         }
 
-        private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
+        private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider = null)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
             var services = new ServiceCollection();
@@ -3056,11 +3081,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                     stringLocalizerFactory: null),
             };
 
-            valueProvider = valueProvider ?? new SimpleValueProvider();
+            valueProvider ??= new SimpleValueProvider();
             var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext,
-                ValueProviderFactories = new[] { new SimpleValueProviderFactory(valueProvider), },
+                ValueProviderFactories = new List<IValueProviderFactory> { new SimpleValueProviderFactory(valueProvider), },
             };
 
             var binderFactory = new Mock<IModelBinderFactory>();

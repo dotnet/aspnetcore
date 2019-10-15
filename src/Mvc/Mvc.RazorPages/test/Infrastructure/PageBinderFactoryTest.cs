@@ -709,6 +709,57 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 });
         }
 
+        [Fact]
+        public async Task FactoryRecordsErrorWhenValueProviderThrowsValueProviderException()
+        {
+            // Arrange
+            var type = typeof(PageModelWithExecutors);
+            var actionDescriptor = GetActionDescriptorWithHandlerMethod(type, nameof(PageModelWithExecutors.OnGet));
+
+            // Act
+            var parameterBinder = new TestParameterBinder(new Dictionary<string, object>()
+            {
+                { "id", "value" },
+            });
+
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelBinderFactory = TestModelBinderFactory.CreateDefault();
+            var factory = PageBinderFactory.CreateHandlerBinder(
+                parameterBinder,
+                modelMetadataProvider,
+                modelBinderFactory,
+                actionDescriptor,
+                actionDescriptor.HandlerMethods[0],
+                _options);
+
+            var pageContext = GetPageContext();
+            var page = new PageWithProperty
+            {
+                PageContext = pageContext,
+            };
+
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("Some error"));
+
+            pageContext.ValueProviderFactories.Add(valueProviderFactory.Object);
+
+            var model = new PageModelWithExecutors();
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            await factory(page.PageContext, arguments);
+
+            // Assert
+            var modelState = pageContext.ModelState;
+            var entry = Assert.Single(modelState);
+            Assert.Empty(entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+
+            Assert.Equal("Some error", error.ErrorMessage);
+        }
+
+
         private static CompiledPageActionDescriptor GetActionDescriptorWithHandlerMethod(Type type, string method)
         {
             var handlerMethodInfo = type.GetMethod(method);
