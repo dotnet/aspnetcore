@@ -1,50 +1,15 @@
 parameters:
-  symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
   publishInstallersAndChecksums: false
 
 stages:
-- stage: NetCore_Release31_Publish
+- stage: PVR_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: .NET Core 3.1 Release Publishing
+  displayName: .NET Tools - Validation Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
-
-  - job:
-    displayName: Symbol Publishing
-    dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_31_Channel_Id))
-    variables:
-      - group: DotNet-Symbol-Server-Pats
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
-        inputs:
-          artifactName: 'BlobArtifacts'
-        continueOnError: true
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download PDB Artifacts
-        inputs:
-          artifactName: 'PDBArtifacts'
-        continueOnError: true
-
-      - task: PowerShell@2
-        displayName: Publish
-        inputs:
-          filePath: eng\common\sdk-task.ps1
-          arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
-            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-            /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
-            /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
-            /p:Configuration=Release
-            ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job: publish_assets
     displayName: Publish Assets
@@ -56,7 +21,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_31_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.NetCore_Tools_Validation_Channel_Id))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -96,7 +61,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
+            /p:ArtifactsCategory=$(_DotNetValidationArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -117,14 +82,14 @@ stages:
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
             /p:PublishToAzureDevOpsNuGetFeeds=true
-            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
-            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json'
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
-            /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+            /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools-symbols/nuget/v3/index.json'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml
         parameters:
-          ChannelId: ${{ variables.PublicRelease_31_Channel_Id }}
+          ChannelId: ${{ variables.NetCore_Tools_Validation_Channel_Id }}
