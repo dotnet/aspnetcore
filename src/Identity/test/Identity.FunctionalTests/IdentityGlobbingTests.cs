@@ -32,5 +32,21 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             Assert.Contains("/js/dist/dashboardHome.js", content);
             Assert.DoesNotContain("/js/dist/FAKE*.js", content);
         }
+
+        [Fact]
+        public async Task GlobbingPatternFindsFolder()
+        {
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
+
+            // Act
+            var response = await client.GetAsync("/");
+
+            // Assert
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("/js/razorlib/file.js", content);
+            Assert.DoesNotContain("/js/**/file.js", content);
+        }
     }
 }

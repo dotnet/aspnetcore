@@ -24,6 +24,7 @@ namespace Identity.DefaultUI.Globbing
                 {
                     if (!args.Contains("--use-startup=false"))
                     {
+                        webBuilder.UseStaticWebAssets();
                         webBuilder.UseStartup<Startup>();
                     }
                 });

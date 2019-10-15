@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+  
+</Project>
