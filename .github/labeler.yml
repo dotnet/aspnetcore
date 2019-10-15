@@ -21,7 +21,11 @@ area-hosting:
 area-identity:
   - src/Identity/**/*
 
-#area-infrastructure:
+area-infrastructure:
+  - global.json
+  - .azure/**/*
+  - .config/**/*
+  - eng/**/*
 
 area-installers:
   - src/Installers/**/*
