@@ -25,6 +25,9 @@ export interface HttpRequest {
 
     /** The time to wait for the request to complete before throwing a TimeoutError. Measured in milliseconds. */
     timeout?: number;
+
+    /** TODO */
+    withCredentials?: boolean;
 }
 
 /** Represents an HTTP response. */

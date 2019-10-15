@@ -81,7 +81,8 @@ export class HttpConnection implements IConnection {
         this.baseUrl = this.resolveUrl(url);
 
         options = options || {};
-        options.logMessageContent = options.logMessageContent || false;
+        options.logMessageContent = options.logMessageContent === undefined ? false : options.logMessageContent;
+        options.withCredentials = options.withCredentials === undefined ? true : options.withCredentials;
 
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
@@ -319,6 +320,7 @@ export class HttpConnection implements IConnection {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
                 headers,
+                withCredentials: this.options.withCredentials,
             });
 
             if (response.statusCode !== 200) {
@@ -410,9 +412,9 @@ export class HttpConnection implements IConnection {
                 if (!this.options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource);
+                return new ServerSentEventsTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource, this.options.withCredentials!);
             case HttpTransportType.LongPolling:
-                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
+                return new LongPollingTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.withCredentials!);
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }

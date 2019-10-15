@@ -84,7 +84,8 @@ export function isArrayBuffer(val: any): val is ArrayBuffer {
 }
 
 /** @private */
-export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined, content: string | ArrayBuffer, logMessageContent: boolean): Promise<void> {
+export async function sendMessage(logger: ILogger, transportName: string, httpClient: HttpClient, url: string, accessTokenFactory: (() => string | Promise<string>) | undefined,
+                                  content: string | ArrayBuffer, logMessageContent: boolean, withCredentials: boolean): Promise<void> {
     let headers = {};
     if (accessTokenFactory) {
         const token = await accessTokenFactory();
@@ -105,6 +106,7 @@ export async function sendMessage(logger: ILogger, transportName: string, httpCl
         content,
         headers,
         responseType,
+        withCredentials,
     });
 
     logger.log(LogLevel.Trace, `(${transportName} transport) request complete. Response status: ${response.statusCode}.`);

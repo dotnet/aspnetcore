@@ -55,7 +55,7 @@ export class FetchHttpClient extends HttpClient {
             response = await fetch(request.url!, {
                 body: request.content!,
                 cache: "no-cache",
-                credentials: "include",
+                credentials: request.withCredentials === true ? "include" : "same-origin",
                 headers: {
                     "Content-Type": "text/plain;charset=UTF-8",
                     "X-Requested-With": "XMLHttpRequest",
