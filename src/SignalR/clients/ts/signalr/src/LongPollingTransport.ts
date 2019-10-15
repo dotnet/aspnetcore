@@ -6,7 +6,7 @@ import { HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
-import { Arg, getDataDetail, sendMessage } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, sendMessage } from "./Utils";
 
 // Not exported from 'index', this type is internal.
 /** @private */
@@ -58,9 +58,13 @@ export class LongPollingTransport implements ITransport {
             throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
         }
 
+        const headers = {};
+        const [name, value] = getUserAgentHeader();
+        headers[name] = value;
+
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
-            headers: {},
+            headers,
             timeout: 100000,
         };
 
@@ -194,8 +198,12 @@ export class LongPollingTransport implements ITransport {
             // Send DELETE to clean up long polling on the server
             this.logger.log(LogLevel.Trace, `(LongPolling transport) sending DELETE request to ${this.url}.`);
 
+            const headers = {};
+            const [name, value] = getUserAgentHeader();
+            headers[name] = value;
+
             const deleteOptions: HttpRequest = {
-                headers: {},
+                headers,
             };
             const token = await this.getAccessToken();
             this.updateHeaderToken(deleteOptions, token);

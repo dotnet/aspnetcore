@@ -5,6 +5,7 @@ import { HttpResponse } from "../src/HttpClient";
 import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
+import { getUserAgentHeader } from "../src/Utils";
 
 import { HttpError } from "../src/Errors";
 import { NullLogger } from "../src/Loggers";
@@ -1122,6 +1123,32 @@ describe("HttpConnection", () => {
             expect(connectionId).toEqual("2");
         },
         "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
+    });
+
+    it("user agent header set on negotiate", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let userAgentValue: string = "";
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        userAgentValue = r.headers![`User-Agent`];
+                        return new HttpResponse(200, "", "{\"error\":\"nope\"}");
+                    }),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+            } catch {
+            } finally {
+                await connection.stop();
+            }
+
+            const [, value] = getUserAgentHeader();
+            expect(userAgentValue).toEqual(value);
+        }, "Failed to start the connection: Error: nope");
     });
 
     describe(".constructor", () => {

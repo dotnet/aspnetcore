@@ -4,6 +4,7 @@
 import { HttpResponse } from "../src/HttpClient";
 import { TransferFormat } from "../src/ITransport";
 import { LongPollingTransport } from "../src/LongPollingTransport";
+import { getUserAgentHeader } from "../src/Utils";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
@@ -118,6 +119,50 @@ describe("LongPollingTransport", () => {
 
             // Wait for stop to complete
             await stopPromise;
+        });
+    });
+
+    it("user agent header set on sends and polls", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let firstPoll = true;
+            let firstPollUserAgent = "";
+            let secondPollUserAgent = "";
+            let deleteUserAgent = "";
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        firstPollUserAgent = r.headers![`User-Agent`];
+                        return new HttpResponse(200);
+                    } else {
+                        secondPollUserAgent = r.headers![`User-Agent`];
+                        await pollingPromiseSource.promise;
+                        return new HttpResponse(204);
+                    }
+                })
+                .on("DELETE", async (r) => {
+                    deleteUserAgent = r.headers![`User-Agent`];
+                    return new HttpResponse(202);
+                });
+
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false);
+
+            await transport.connect("http://tempuri.org", TransferFormat.Text);
+
+            // Begin stopping transport
+            const stopPromise = transport.stop();
+
+            // Allow polling to complete
+            pollingPromiseSource.resolve();
+
+            // Wait for stop to complete
+            await stopPromise;
+
+            const [, value] = getUserAgentHeader();
+            expect(firstPollUserAgent).toEqual(value);
+            expect(deleteUserAgent).toEqual(value);
+            expect(secondPollUserAgent).toEqual(value);
         });
     });
 });
