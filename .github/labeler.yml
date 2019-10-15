@@ -1,0 +1,6 @@
+area-mvc:
+  - src/ProjectTemplates/**/*
+  - src/Razor/**/*
+
+area-blazor:
+  - src/Components/**/*
