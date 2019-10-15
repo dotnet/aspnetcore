@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             else if (allowAutomaticReconnect)
             {
-                closeMessage = new CloseMessage(null, allowAutomaticReconnect);
+                closeMessage = new CloseMessage(error: null, allowAutomaticReconnect);
             }
 
             try

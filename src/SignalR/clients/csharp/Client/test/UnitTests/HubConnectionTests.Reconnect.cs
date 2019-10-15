@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CannotBeInducedByCloseMessageWithAllowAutoReconnectOmmitted()
+            public async Task CannotBeInducedByCloseMessageWithAllowAutoReconnectOmitted()
             {
                 bool ExpectedErrors(WriteContext writeContext)
                 {
