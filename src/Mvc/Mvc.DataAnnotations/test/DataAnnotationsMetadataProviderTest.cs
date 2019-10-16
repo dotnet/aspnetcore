@@ -1333,7 +1333,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var property = type.GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType));
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(property.DeclaringType, member: null, property.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.True(result);
@@ -1379,7 +1379,21 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var property = type.GetProperty(nameof(NullableReferenceTypes.NullableReferenceType));
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(property.DeclaringType, member: null, property.GetCustomAttributes(inherit: true));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsNonNullable_FindsNullableProperty_InBase()
+        {
+            // Arrange
+            var type = typeof(NullableReferenceTypes);
+            var property = type.GetProperty(nameof(NullableReferenceTypes.NullableReferenceTypeInBase));
+
+            // Act
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type.DeclaringType, member: null, property.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.False(result);
@@ -1644,7 +1658,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         }
 
 #nullable enable
-        private class NullableReferenceTypes
+        private class NullableReferenceTypes : NullableReferenceTypesBase
         {
             public string NonNullableReferenceType { get; set; } = default!;
 
@@ -1657,6 +1671,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             {
             }
         }
+
+        private class NullableReferenceTypesBase
+        {
+            public string? NullableReferenceTypeInBase { get; set; } = default!;
+        }
+
 #nullable restore
     }
 }

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
@@ -366,8 +367,23 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 }
                 else if (context.Key.MetadataKind == ModelMetadataKind.Property)
                 {
+                    var matchingProperties = context.Key.ContainerType.GetProperties()
+                        .Where(x => x.Name == context.Key.Name)
+                        .ToArray();
+                    
+                    if(matchingProperties.Length > 1)
+                    {
+                        matchingProperties = matchingProperties
+                            .Where(x => x.PropertyType.IsAssignableFrom(context.Key.ModelType))
+                            .ToArray();
+                    }
+
+                    Debug.Assert(matchingProperties.Length == 1);
+
+                    var containerType = matchingProperties[0].DeclaringType;
+
                     addInferredRequiredAttribute = IsNullableReferenceType(
-                        context.Key.ContainerType,
+                        containerType,
                         member: null,
                         context.PropertyAttributes);
                 }
