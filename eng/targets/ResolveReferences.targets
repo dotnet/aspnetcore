@@ -223,7 +223,7 @@
       <PackageReference Include="@(_ExtensionPackageReferences)" ExcludeAssets="Compile" />
 
       <!-- Add reference to Microsoft.Internal.Extensions.Refs to resolve the reference assemblies -->
-      <PackageReference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" PrivateAssets="All" Condition="'@(_ExtensionPackageReferences)' != ''" />
+      <PackageReference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
