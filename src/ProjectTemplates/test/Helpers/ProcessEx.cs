@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
@@ -26,6 +27,7 @@ namespace Templates.Test.Helpers
         private readonly object _pipeCaptureLock = new object();
         private BlockingCollection<string> _stdoutLines;
         private TaskCompletionSource<int> _exited;
+        private CancellationTokenSource _stdoutLinesCancellationSource = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
         public ProcessEx(ITestOutputHelper output, Process proc)
         {
@@ -71,7 +73,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        public IEnumerable<string> OutputLinesAsEnumerable => _stdoutLines.GetConsumingEnumerable();
+        public IEnumerable<string> OutputLinesAsEnumerable => _stdoutLines.GetConsumingEnumerable(_stdoutLinesCancellationSource.Token);
 
         public int ExitCode => _process.ExitCode;
 
