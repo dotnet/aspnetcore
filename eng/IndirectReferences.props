@@ -358,7 +358,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
