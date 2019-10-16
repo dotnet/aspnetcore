@@ -368,6 +368,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        [ConditionalTheory]
+        [InlineData(AuthenticationSchemes.Negotiate)]
+        [InlineData(AuthenticationSchemes.NTLM)]
+        // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
+        // [InlineData(AuthenticationSchemes.Basic)] // Doesn't work with default creds
+        [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /* AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic)]
+        public async Task AuthTypes_DisableAutomaticAuthentication(AuthenticationSchemes authType)
+        {
+            using (var server = Utilities.CreateDynamicHost(out var address, options =>
+            {
+                options.AutomaticAuthentication = false;
+                options.Authentication.Schemes = authType;
+                options.Authentication.AllowAnonymous = DenyAnoymous;
+            },
+            httpContext =>
+            {
+                Assert.Null(httpContext.User);
+                return Task.CompletedTask;
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool useDefaultCredentials = false)
         {
             HttpClientHandler handler = new HttpClientHandler();
