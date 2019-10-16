@@ -58,10 +58,9 @@ export class ServerSentEventsTransport implements ITransport {
                 return;
             }
 
-            const withCredentials = this.withCredentials === undefined ? true : this.withCredentials;
             let eventSource: EventSource;
             if (Platform.isBrowser || Platform.isWebWorker) {
-                eventSource = new this.eventSourceConstructor(url, { withCredentials });
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: this.withCredentials });
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this.httpClient.getCookieString(url);
@@ -71,7 +70,7 @@ export class ServerSentEventsTransport implements ITransport {
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 
-                eventSource = new this.eventSourceConstructor(url, { withCredentials, headers } as EventSourceInit);
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: this.withCredentials, headers } as EventSourceInit);
             }
 
             try {

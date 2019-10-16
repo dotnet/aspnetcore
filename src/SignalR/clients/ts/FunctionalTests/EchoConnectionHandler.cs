@@ -12,8 +12,9 @@ namespace FunctionalTests
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
+            var context = connection.GetHttpContext();
             // The 'withCredentials' tests wont send a cookie for cross-site requests
-            if (!connection.GetHttpContext().Request.Cookies.ContainsKey("testCookie"))
+            if (!context.WebSockets.IsWebSocketRequest && !context.Request.Cookies.ContainsKey("testCookie"))
             {
                 return;
             }
