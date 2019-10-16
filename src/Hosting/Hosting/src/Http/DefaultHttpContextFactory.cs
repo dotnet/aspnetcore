@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Http
             _serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         }
 
+        internal IHttpContextAccessor HttpContextAccessor => _httpContextAccessor;
+
         public HttpContext Create(IFeatureCollection featureCollection)
         {
             if (featureCollection is null)
@@ -71,15 +73,11 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        internal void Dispose(DefaultHttpContext httpContext, out bool usedHttpContextAccessor)
+        internal void Dispose(DefaultHttpContext httpContext)
         {
-            usedHttpContextAccessor = false;
-
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = null;
-
-                usedHttpContextAccessor = true;
             }
 
             httpContext.Uninitialize();
