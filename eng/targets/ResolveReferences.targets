@@ -11,7 +11,7 @@
 
   Items used by the resolution strategy:
 
-    * BaselinePackageReference = a list of packages that were reference in the last release of the project currently building
+    * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
@@ -30,7 +30,7 @@
   <PropertyGroup>
     <!--
       Projects should only use the latest package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
+        * preparing a new major or minor release i.e. a non-servicing builds
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
     -->
@@ -80,21 +80,22 @@
     <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
 
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
-      Include="@(Reference)"
-      Exclude="
-        @(AspNetCoreAppReference);
-        @(AspNetCoreAppReferenceAndPackage);
-        @(ExternalAspNetCoreAppReference);
-        @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
+        Include="@(Reference)"
+        Exclude="
+          @(AspNetCoreAppReference);
+          @(AspNetCoreAppReferenceAndPackage);
+          @(ExternalAspNetCoreAppReference);
+          @(_CompilationOnlyReference);
+          @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <_OriginalReferences Include="@(Reference)" />
+
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
       Order matters. This comes before package resolution because projects should be used when possible instead of packages.
     -->
     <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
-      Include="@(ProjectReferenceProvider)"
-      Exclude="@(_UnusedProjectReferenceProvider)" />
+        Include="@(ProjectReferenceProvider)"
+        Exclude="@(_UnusedProjectReferenceProvider)" />
 
     <!-- Use ref assembly project paths for ref assembly projects -->
     <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
@@ -109,13 +110,11 @@
   </ItemGroup>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This target helps ensure projects within the shared framework do no unintentionally add new references,
     and that assemblies outside the shared framework reference the framework as a whole instead of using
     individual assemblies.
   -->
   <Target Name="_CheckForReferenceBoundaries" BeforeTargets="CollectPackageReferences;ResolveReferences">
-
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
 
@@ -129,10 +128,12 @@
   </Target>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
+    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ResolveCustomReferences"
+      BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences"
+      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
@@ -142,8 +143,13 @@
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+      <!--
+        Temporarily ignore the above. Restore Condition="'$(IsServicingBuild)' != 'true'" when
+        https://github.com/aspnet/AspNetCore/issues/14630 is resolved.
+      -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
@@ -164,7 +170,6 @@
         <Id>%(BaselinePackageReference.Identity)</Id>
         <Version>%(BaselinePackageReference.Version)</Version>
       </_BaselinePackageReferenceWithVersion>
-
       <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
 
       <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
@@ -176,10 +181,9 @@
         <Id>%(LatestPackageReference.Identity)</Id>
         <Version>%(LatestPackageReference.Version)</Version>
       </_PrivatePackageReferenceWithVersion>
-
       <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
 
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <!-- Remove reference items that have been resolved to an item with PrivateAssets="All". -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
 

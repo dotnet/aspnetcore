@@ -58,15 +58,15 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup
-      Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <!-- By default build and pack everything except targeting packs when servicing. -->
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
     <!-- Used to distinguish between packages building -->
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
-    <!-- Suppress creation of .nupkg for servicing builds. -->
+    <!-- Suppress creation of .nupkg for servicing builds of non-shipping projects. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
 
