@@ -95,10 +95,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var content = File.ReadAllText(versionedPath);
             var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
-
             path = Directory.Exists(path) ? Path.Combine(path, "wwwroot") : Path.Combine(FindHelixSlnFileDirectory(), "UI", "wwwroot");
 
+            var libPath = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(a => a.Key == "Microsoft.AspNetCore.Testing.RazorClassLibProjectPath").Value;
+            libPath = Directory.Exists(libPath) ? Path.Combine(libPath, "wwwroot") : Path.Combine(FindHelixSlnFileDirectory(), "wwwroot");
+
             var updatedContent = content.Replace("{TEST_PLACEHOLDER}", path);
+            updatedContent = updatedContent.Replace("{RAZORCLASSLIB_PLACEHOLDER}", libPath);
 
             File.WriteAllText(versionedPath, updatedContent);
         }

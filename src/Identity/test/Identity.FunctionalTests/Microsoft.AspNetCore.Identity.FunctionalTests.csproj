@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
+    <ProjectReference Include="..\..\testassets\Identity.DefaultUI.RazorClassLib\Identity.DefaultUI.RazorClassLib.csproj" />
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.Globbing\Identity.DefaultUI.Globbing.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
@@ -53,6 +54,12 @@
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>Microsoft.AspNetCore.Testing.IdentityUIProjectPath</_Parameter1>
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
+      </AssemblyAttribute>
+
+      <_RazorClassLibProjectPath Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Identity.DefaultUI.RazorClassLib'" />
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.RazorClassLibProjectPath</_Parameter1>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_RazorClassLibProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
 
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(HelixType)' == 'ci'">

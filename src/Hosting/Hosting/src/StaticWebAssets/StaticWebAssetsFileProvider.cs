@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -40,20 +44,29 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <inheritdoc />
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            if (!StartsWithBasePath(subpath, out var physicalPath))
+            var modifiedSub = subpath.StartsWith("/") ? subpath : "/" + subpath;
+
+            if (StartsWithBasePath(modifiedSub, out var physicalPath))
             {
-                return NotFoundDirectoryContents.Singleton;
+                return InnerProvider.GetDirectoryContents(physicalPath.Value);
+            }
+            else
+            if (string.Equals(subpath, string.Empty) || BasePath.StartsWithSegments(modifiedSub))
+            {
+                return new FakeRoot(BasePath, modifiedSub);
             }
             else
             {
-                return InnerProvider.GetDirectoryContents(physicalPath.Value);
+                return NotFoundDirectoryContents.Singleton;
             }
         }
 
         /// <inheritdoc />
         public IFileInfo GetFileInfo(string subpath)
         {
-            if (!StartsWithBasePath(subpath, out var physicalPath))
+            var modifiedSub = subpath.StartsWith("/") ? subpath : "/" + subpath;
+
+            if (!StartsWithBasePath(modifiedSub, out var physicalPath))
             {
                 return new NotFoundFileInfo(subpath);
             }
@@ -71,9 +84,61 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         private bool StartsWithBasePath(string subpath, out PathString rest)
         {
-            var normalizedPath = subpath.StartsWith("/") ? subpath : "/" + subpath;
+            return new PathString(subpath).StartsWithSegments(BasePath, FilePathComparison, out rest);
+        }
 
-            return new PathString(normalizedPath).StartsWithSegments(BasePath, FilePathComparison, out rest);
+        private class FakeRoot : IDirectoryContents
+        {
+            private readonly string _nextSegment;
+
+            public FakeRoot(string basePath, string subPath)
+            {
+                var trimmedBase = basePath.Substring(subPath.Length);
+                _nextSegment = trimmedBase.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            }
+
+            public bool Exists => true;
+
+            public IEnumerator<IFileInfo> GetEnumerator()
+            {
+                return GenerateEnum();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GenerateEnum();
+            }
+
+            private IEnumerator<IFileInfo> GenerateEnum()
+            {
+                return new[] { new FakeFileInfo(_nextSegment) }
+                    .Cast<IFileInfo>().GetEnumerator();
+            }
+
+            private class FakeFileInfo : IFileInfo
+            {
+                public FakeFileInfo(string name)
+                {
+                    Name = name;
+                }
+
+                public bool Exists => true;
+
+                public long Length => throw new NotImplementedException();
+
+                public string PhysicalPath => throw new NotImplementedException();
+
+                public DateTimeOffset LastModified => throw new NotImplementedException();
+
+                public bool IsDirectory => true;
+
+                public string Name { get; }
+
+                public Stream CreateReadStream()
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 }

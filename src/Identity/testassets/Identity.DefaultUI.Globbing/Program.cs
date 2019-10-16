@@ -22,9 +22,9 @@ namespace Identity.DefaultUI.Globbing
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseStaticWebAssets();
                     if (!args.Contains("--use-startup=false"))
                     {
-                        webBuilder.UseStaticWebAssets();
                         webBuilder.UseStartup<Startup>();
                     }
                 });

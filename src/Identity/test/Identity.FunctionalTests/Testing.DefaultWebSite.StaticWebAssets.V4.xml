@@ -1,3 +1,4 @@
 <StaticWebAssets Version="1.0">
   <ContentRoot BasePath="/Identity" Path="{TEST_PLACEHOLDER}/V4" />
+  <ContentRoot BasePath="/_content/Identity.DefaultUI.RazorClassLib" Path="{RAZORCLASSLIB_PLACEHOLDER}" />
 </StaticWebAssets>
