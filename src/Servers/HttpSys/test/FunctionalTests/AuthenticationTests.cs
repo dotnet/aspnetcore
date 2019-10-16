@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             using (var server = Utilities.CreateDynamicHost(out var address, options =>
             {
-                options.AutomaticAuthentication = false;
+                options.Authentication.AutomaticAuthentication = false;
                 options.Authentication.Schemes = authType;
                 options.Authentication.AllowAnonymous = DenyAnoymous;
             },
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.NotNull(httpContext.User.Identity);
                 Assert.False(httpContext.User.Identity.IsAuthenticated);
 
-                var authenticateResult = await httpContext.AuthenticateAsync();
+                var authenticateResult = await httpContext.AuthenticateAsync(HttpSysDefaults.AuthenticationScheme);
 
                 Assert.NotNull(authenticateResult.Principal);
                 Assert.NotNull(authenticateResult.Principal.Identity);

@@ -31,12 +31,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         /// <summary>
-        /// If true the server should set HttpContext.User. If false the server will only provide an
-        /// identity when explicitly requested by the AuthenticationScheme. The default is true.
-        /// </summary>
-        public bool AutomaticAuthentication { get; set; } = true;
-
-        /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
         public string RequestQueueName

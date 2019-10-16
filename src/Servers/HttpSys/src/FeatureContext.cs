@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _rawTarget = Request.RawUrl;
             _scheme = Request.Scheme;
 
-            if (requestContext.Server.Options.AutomaticAuthentication)
+            if (requestContext.Server.Options.Authentication.AutomaticAuthentication)
             {
                 _user = _requestContext.User;
             }
