@@ -71,11 +71,15 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        internal void Dispose(DefaultHttpContext httpContext)
+        internal void Dispose(DefaultHttpContext httpContext, out bool usedHttpContextAccessor)
         {
+            usedHttpContextAccessor = false;
+
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = null;
+
+                usedHttpContextAccessor = true;
             }
 
             httpContext.Uninitialize();
