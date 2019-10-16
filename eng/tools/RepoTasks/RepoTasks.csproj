@@ -12,14 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks" Version="5.1.0-rtm.5921" />
+    <PackageReference Include="NuGet.Build.Tasks" Version="5.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.3.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">

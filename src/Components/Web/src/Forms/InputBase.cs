@@ -13,8 +13,9 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// integrates with an <see cref="Forms.EditContext"/>, which must be supplied
     /// as a cascading parameter.
     /// </summary>
-    public abstract class InputBase<TValue> : ComponentBase
+    public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
+        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore _parsingValidationMessages;
         private Type _nullableUnderlyingType;
@@ -122,7 +123,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <summary>
-        /// Formats the value as a string. Derived classes can override this to determine the formatting used for <see cref="CurrentValueAsString"/>.
+        /// Constructs an instance of <see cref="InputBase{TValue}"/>.
+        /// </summary>
+        protected InputBase()
+        {
+            _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
+        }
+
+        /// <summary>
+        /// Formats the value as a string. Derived classes can override this to determine the formating used for <see cref="CurrentValueAsString"/>.
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
@@ -193,6 +202,8 @@ namespace Microsoft.AspNetCore.Components.Forms
                 EditContext = CascadedEditContext;
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
                 _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+
+                EditContext.OnValidationStateChanged += _validationStateChangedHandler;
             }
             else if (CascadedEditContext != EditContext)
             {
@@ -207,6 +218,20 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
+        void IDisposable.Dispose()
+        {
+            if (EditContext != null)
+            {
+                EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            }
+
+            Dispose(disposing: true);
         }
     }
 }

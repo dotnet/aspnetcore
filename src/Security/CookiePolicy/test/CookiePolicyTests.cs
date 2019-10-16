@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             context.Response.Cookies.Append("C", "C", new CookieOptions { SameSite = Http.SameSiteMode.None });
             context.Response.Cookies.Append("D", "D", new CookieOptions { SameSite = Http.SameSiteMode.Lax });
             context.Response.Cookies.Append("E", "E", new CookieOptions { SameSite = Http.SameSiteMode.Strict });
+            context.Response.Cookies.Append("F", "F", new CookieOptions { SameSite = (Http.SameSiteMode)(-1) });
             return Task.FromResult(0);
         };
 
@@ -236,6 +237,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                     Assert.Equal("C=C; path=/; samesite=none", transaction.SetCookie[2]);
                     Assert.Equal("D=D; path=/; samesite=lax", transaction.SetCookie[3]);
                     Assert.Equal("E=E; path=/; samesite=strict", transaction.SetCookie[4]);
+                    Assert.Equal("F=F; path=/", transaction.SetCookie[5]);
                 }));
         }
 

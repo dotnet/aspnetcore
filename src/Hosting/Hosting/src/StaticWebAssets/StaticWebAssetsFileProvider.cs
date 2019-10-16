@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
             else
             {
-                return InnerProvider.GetDirectoryContents(physicalPath);
+                return InnerProvider.GetDirectoryContents(physicalPath.Value);
             }
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
             else
             {
-                return InnerProvider.GetFileInfo(physicalPath);
+                return InnerProvider.GetFileInfo(physicalPath.Value);
             }
         }
 

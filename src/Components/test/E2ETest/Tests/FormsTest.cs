@@ -376,6 +376,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Premium", () => selectedTicketClassDisplay.Text);
         }
 
+        [Fact]
+        public void InputComponentsRespondToAsynchronouslyAddedMessages()
+        {
+            var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
+            var input = appElement.FindElement(By.CssSelector(".username input"));
+            var triggerAsyncErrorButton = appElement.FindElement(By.CssSelector(".username button"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Initially shows no error
+            Browser.Empty(() => messagesAccessor());
+            Browser.Equal("valid", () => input.GetAttribute("class"));
+
+            // Can trigger async error
+            triggerAsyncErrorButton.Click();
+            Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
+            Browser.Equal("invalid", () => input.GetAttribute("class"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
