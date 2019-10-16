@@ -43,7 +43,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
@@ -99,7 +98,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ResponseCaching'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
@@ -211,7 +209,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
@@ -281,7 +278,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -360,7 +356,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
@@ -623,7 +618,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc.Localization'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
@@ -683,7 +677,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Web'))">
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Hosting.Server.Abstractions'))">
@@ -856,7 +849,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
@@ -971,7 +963,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
@@ -1286,7 +1277,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.Extensions'))">
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
@@ -1329,7 +1319,6 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Mvc'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Cors" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cors" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
@@ -1348,7 +1337,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1623,7 +1611,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Client.Core'))">
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
