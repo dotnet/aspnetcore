@@ -1,6 +1,7 @@
 // Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,6 +94,36 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.Equal(42, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.StreamBufferCapacity);
+        }
+
+        [Fact]
+        public void UserSpecifiedOptionsRunAfterDefaultOptions()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR(options =>
+            {
+                options.MaximumReceiveMessageSize = null;
+                options.StreamBufferCapacity = null;
+                options.EnableDetailedErrors = null;
+                options.KeepAliveInterval = null;
+                options.HandshakeTimeout = null;
+                options.SupportedProtocols = null;
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var globalOptions = serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value;
+            Assert.Null(globalOptions.MaximumReceiveMessageSize);
+            Assert.Null(globalOptions.StreamBufferCapacity);
+            Assert.Null(globalOptions.EnableDetailedErrors);
+            Assert.Null(globalOptions.KeepAliveInterval);
+            Assert.Null(globalOptions.HandshakeTimeout);
+            Assert.Null(globalOptions.SupportedProtocols);
+            Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
+
+            var typedOptions = serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>();
         }
     }
 

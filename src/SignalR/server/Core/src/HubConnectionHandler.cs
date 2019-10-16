@@ -60,7 +60,14 @@ namespace Microsoft.AspNetCore.SignalR
             _userIdProvider = userIdProvider;
 
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
-            _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
+            if (_hubOptions._maximumReceiveMessageSizeSet)
+            {
+                _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
+            }
+            else
+            {
+                _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
+            }
 
             _dispatcher = new DefaultHubDispatcher<THub>(
                 serviceScopeFactory,

@@ -39,7 +39,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets or sets the maximum message size of a single incoming hub message. The default is 32KB.
         /// </summary>
-        public long? MaximumReceiveMessageSize { get; set; } = null;
+        public long? MaximumReceiveMessageSize
+        {
+            get => _maximumReceiveMessageSize;
+            set
+            {
+                // null means no-limit and uninitialized, in order to allow the no-limit case
+                // we need to track if the user has set the value
+                _maximumReceiveMessageSizeSet = true;
+                _maximumReceiveMessageSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether detailed error messages are sent to the client.
@@ -51,5 +61,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the max buffer size for client upload streams. The default size is 10.
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
+
+        internal long? _maximumReceiveMessageSize = null;
+        internal bool _maximumReceiveMessageSizeSet;
     }
 }
