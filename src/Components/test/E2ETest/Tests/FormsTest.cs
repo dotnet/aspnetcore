@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var form = appElement.FindElement(By.TagName("form"));
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
-            var submitButton = appElement.FindElement(By.TagName("button"));
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
             // The form emits unmatched attributes
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
-            var submitButton = appElement.FindElement(By.TagName("button"));
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
             var submissionStatus = appElement.FindElement(By.Id("submission-status"));
 
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var emailContainer = appElement.FindElement(By.ClassName("email"));
             var emailInput = emailContainer.FindElement(By.TagName("input"));
             var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer);
-            var submitButton = appElement.FindElement(By.TagName("button"));
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
             // Doesn't show messages for other fields
             submitButton.Click();
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
             var modelErrors = CreateValidationMessagesAccessor(appElement.FindElement(By.ClassName("model-errors")));
             CreateValidationMessagesAccessor(emailContainer);
-            var submitButton = appElement.FindElement(By.TagName("button"));
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
             // Updates on edit
             emailInput.SendKeys("a@b.com\t");

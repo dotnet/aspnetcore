@@ -4,7 +4,7 @@
 <EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
     @if (UseExperimentalValidator)
     {
-        <BlazorDataAnnotationsValidator />
+        <ObjectGraphDataAnnotationsValidator />
     }
     else
     {

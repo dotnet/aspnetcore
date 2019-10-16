@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
-    public class BlazorDatAnnotationsValidatorTest
+    public class ObjectGraphDataAnnotationsValidatorTest
     {
         public class SimpleModel
         {
@@ -306,6 +306,125 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(2, editContext.GetValidationMessages().Count());
         }
 
+        private class Person
+        {
+            [Required]
+            public string Name { get; set; }
+
+            [ValidateComplexType]
+            public Person Related { get; set; }
+        }
+
+        [Fact]
+        public void ValidateObject_RecursiveRelation()
+        {
+            var model = new Person { Related = new Person() };
+            model.Related.Related = model;
+
+            var editContext = Validate(model);
+
+            var messages = editContext.GetValidationMessages(() => model.Name);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => model.Related.Name);
+            Assert.Single(messages);
+
+            Assert.Equal(2, editContext.GetValidationMessages().Count());
+        }
+
+        [Fact]
+        public void ValidateObject_RecursiveRelation_OverManySteps()
+        {
+            var person1 = new Person();
+            var person2 = new Person { Name = "Valid name" };
+            var person3 = new Person();
+            var person4 = new Person();
+
+            person1.Related = person2;
+            person2.Related = person3;
+            person3.Related = person4;
+            person4.Related = person1;
+
+            var editContext = Validate(person1);
+
+            var messages = editContext.GetValidationMessages(() => person1.Name);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => person2.Name);
+            Assert.Empty(messages);
+
+            messages = editContext.GetValidationMessages(() => person3.Name);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => person4.Name);
+            Assert.Single(messages);
+
+            Assert.Equal(3, editContext.GetValidationMessages().Count());
+        }
+
+        private class Node
+        {
+            [Required]
+            public string Id { get; set; }
+
+            [ValidateComplexType]
+            public List<Node> Related { get; set; } = new List<Node>();
+        }
+
+        [Fact]
+        public void ValidateObject_RecursiveRelation_ViaCollection()
+        {
+            var node1 = new Node();
+            var node2 = new Node { Id = "Valid Id" };
+            var node3 = new Node();
+            node1.Related.Add(node2);
+            node2.Related.Add(node3);
+            node3.Related.Add(node1);
+
+            var editContext = Validate(node1);
+
+            var messages = editContext.GetValidationMessages(() => node1.Id);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => node2.Id);
+            Assert.Empty(messages);
+
+            messages = editContext.GetValidationMessages(() => node3.Id);
+            Assert.Single(messages);
+
+            Assert.Equal(2, editContext.GetValidationMessages().Count());
+        }
+
+        [Fact]
+        public void ValidateObject_RecursiveRelation_InCollection()
+        {
+            var person1 = new Person();
+            var person2 = new Person { Name = "Valid name" };
+            var person3 = new Person();
+            var person4 = new Person();
+
+            person1.Related = person2;
+            person2.Related = person3;
+            person3.Related = person4;
+            person4.Related = person1;
+
+            var editContext = Validate(person1);
+
+            var messages = editContext.GetValidationMessages(() => person1.Name);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => person2.Name);
+            Assert.Empty(messages);
+
+            messages = editContext.GetValidationMessages(() => person3.Name);
+            Assert.Single(messages);
+
+            messages = editContext.GetValidationMessages(() => person4.Name);
+            Assert.Single(messages);
+
+            Assert.Equal(3, editContext.GetValidationMessages().Count());
+        }
+
         [Fact]
         public void ValidateField_PropertyValid()
         {
@@ -394,7 +513,7 @@ namespace Microsoft.AspNetCore.Components
         private static EditContext Validate(object model)
         {
             var editContext = new EditContext(model);
-            var validator = new TestBlazorDataAnnotationsValidator { EditContext = editContext, };
+            var validator = new TestObjectGraphDataAnnotationsValidator { EditContext = editContext, };
             validator.OnInitialized();
 
             editContext.Validate();
@@ -405,7 +524,7 @@ namespace Microsoft.AspNetCore.Components
         private static EditContext ValidateField(object model, in FieldIdentifier field)
         {
             var editContext = new EditContext(model);
-            var validator = new TestBlazorDataAnnotationsValidator { EditContext = editContext, };
+            var validator = new TestObjectGraphDataAnnotationsValidator { EditContext = editContext, };
             validator.OnInitialized();
 
             editContext.NotifyFieldChanged(field);
@@ -413,7 +532,7 @@ namespace Microsoft.AspNetCore.Components
             return editContext;
         }
 
-        private class TestBlazorDataAnnotationsValidator : BlazorDataAnnotationsValidator
+        private class TestObjectGraphDataAnnotationsValidator : ObjectGraphDataAnnotationsValidator
         {
             public new void OnInitialized() => base.OnInitialized();
         }

@@ -6,13 +6,14 @@ namespace System.ComponentModel.DataAnnotations
     /// <summary>
     /// A <see cref="ValidationAttribute"/> that compares two properties
     /// </summary>
-    public sealed class BlazorCompareAttribute : CompareAttribute
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public sealed class ComparePropertyAttribute : CompareAttribute
     {
         /// <summary>
         /// Initializes a new instance of <see cref="BlazorCompareAttribute"/>.
         /// </summary>
         /// <param name="otherProperty">The property to compare with the current property.</param>
-        public BlazorCompareAttribute(string otherProperty)
+        public ComparePropertyAttribute(string otherProperty)
             : base(otherProperty)
         {
         }

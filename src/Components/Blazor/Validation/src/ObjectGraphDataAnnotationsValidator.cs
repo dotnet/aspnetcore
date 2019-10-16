@@ -7,9 +7,10 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
-    public class BlazorDataAnnotationsValidator : ComponentBase
+    public class ObjectGraphDataAnnotationsValidator : ComponentBase
     {
         private static readonly object ValidationContextValidatorKey = new object();
+        private static readonly object ValidatedObjectsKey = new object();
         private ValidationMessageStore _validationMessageStore;
 
         [CascadingParameter]
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             EditContext.OnValidationRequested += (sender, eventArgs) =>
             {
                 _validationMessageStore.Clear();
-                ValidateObject(EditContext.Model);
+                ValidateObject(EditContext.Model, new HashSet<object>());
                 EditContext.NotifyValidationStateChanged();
             };
 
@@ -32,10 +33,16 @@ namespace Microsoft.AspNetCore.Components.Forms
                 ValidateField(EditContext, _validationMessageStore, eventArgs.FieldIdentifier);
         }
 
-        internal void ValidateObject(object value)
+        internal void ValidateObject(object value, HashSet<object> visited)
         {
             if (value is null)
             {
+                return;
+            }
+
+            if (!visited.Add(value))
+            {
+                // Already visited this object.
                 return;
             }
 
@@ -44,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 var index = 0;
                 foreach (var item in enumerable)
                 {
-                    ValidateObject(item);
+                    ValidateObject(item, visited);
                     index++;
                 }
 
@@ -52,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
 
             var validationResults = new List<ValidationResult>();
-            ValidateObject(value, validationResults);
+            ValidateObject(value, visited, validationResults);
 
             // Transfer results to the ValidationMessageStore
             foreach (var validationResult in validationResults)
@@ -71,18 +78,20 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private void ValidateObject(object value, List<ValidationResult> validationResults)
+        private void ValidateObject(object value, HashSet<object> visited, List<ValidationResult> validationResults)
         {
             var validationContext = new ValidationContext(value);
             validationContext.Items.Add(ValidationContextValidatorKey, this);
+            validationContext.Items.Add(ValidatedObjectsKey, visited);
             Validator.TryValidateObject(value, validationContext, validationResults, validateAllProperties: true);
         }
 
         internal static bool TryValidateRecursive(object value, ValidationContext validationContext)
         {
-            if (validationContext.Items.TryGetValue(ValidationContextValidatorKey, out var result) && result is BlazorDataAnnotationsValidator validator)
+            if (validationContext.Items.TryGetValue(ValidationContextValidatorKey, out var result) && result is ObjectGraphDataAnnotationsValidator validator)
             {
-                validator.ValidateObject(value);
+                var visited = (HashSet<object>)validationContext.Items[ValidatedObjectsKey];
+                validator.ValidateObject(value, visited);
 
                 return true;
             }

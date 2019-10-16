@@ -8,8 +8,9 @@ namespace System.ComponentModel.DataAnnotations
     /// <summary>
     /// A <see cref="ValidationAttribute"/> that indicates that the property is a complex or collection type that further needs to be validated.
     /// <para>
-    /// By default <see cref="Validator"/> does not recurse in to complex property types during validation. When used in conjunction with <see cref="BlazorDataAnnotationsValidator"/>,
-    /// this property allows the validation system to validate complex or collection type properties.
+    /// By default <see cref="Validator"/> does not recurse in to complex property types during validation.
+    /// When used in conjunction with <see cref="ObjectGraphDataAnnotationsValidator"/>, this property allows the validation system to validate
+    /// complex or collection type properties.
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
@@ -18,9 +19,9 @@ namespace System.ComponentModel.DataAnnotations
         /// <inheritdoc />
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (!BlazorDataAnnotationsValidator.TryValidateRecursive(value, validationContext))
+            if (!ObjectGraphDataAnnotationsValidator.TryValidateRecursive(value, validationContext))
             {
-                throw new InvalidOperationException($"{nameof(ValidateComplexTypeAttribute)} can only used with {nameof(BlazorDataAnnotationsValidator)}.");
+                throw new InvalidOperationException($"{nameof(ValidateComplexTypeAttribute)} can only used with {nameof(ObjectGraphDataAnnotationsValidator)}.");
             }
 
             return ValidationResult.Success;

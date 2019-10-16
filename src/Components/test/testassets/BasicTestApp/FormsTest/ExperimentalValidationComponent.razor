@@ -1,9 +1,13 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
+    <p>
+        This component is used to verify the use of the experimental ObjectGraphDataAnnotationsValidator type with IValidatableObject and deep validation, as well
+        as the ComparePropertyAttribute.
+    </p>
 
 <EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
-    <BlazorDataAnnotationsValidator />
+    <ObjectGraphDataAnnotationsValidator />
 
     <p class="name">
         Name: <InputText @bind-Value="model.Recipient" placeholder="Enter the recipient" />
@@ -104,7 +108,7 @@
         [EmailAddress(ErrorMessage = "Enter a valid email address")]
         public string EmailAddress { get; set; }
 
-        [BlazorCompare(nameof(EmailAddress))]
+        [CompareProperty(nameof(EmailAddress))]
         [Display(Name = "Confirm email address")]
         public string ConfirmEmailAddress { get; set; }
 

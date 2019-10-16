@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Provides experimental support for validation of complex properties using DataAnnotations.</Description>
+    <Description>Provides experimental support for validation using DataAnnotations.</Description>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
