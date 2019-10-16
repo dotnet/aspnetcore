@@ -82,7 +82,11 @@ export class HttpConnection implements IConnection {
 
         options = options || {};
         options.logMessageContent = options.logMessageContent === undefined ? false : options.logMessageContent;
-        options.withCredentials = options.withCredentials === undefined ? true : options.withCredentials;
+        if (typeof options.withCredentials === "boolean" || options.withCredentials === undefined) {
+            options.withCredentials = options.withCredentials === undefined ? true : options.withCredentials;
+        } else {
+            throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
+        }
 
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
