@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public bool DisplayConfirmAccountLink { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string EmailConfirmationUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email) { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email, string returnUrl = null) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         public bool DisplayConfirmAccountLink { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string EmailConfirmationUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email) { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email, string returnUrl = null) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
