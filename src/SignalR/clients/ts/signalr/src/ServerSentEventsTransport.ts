@@ -58,7 +58,7 @@ export class ServerSentEventsTransport implements ITransport {
                 return;
             }
 
-            var withCredentials = this.withCredentials === undefined ? true : this.withCredentials;
+            const withCredentials = this.withCredentials === undefined ? true : this.withCredentials;
             let eventSource: EventSource;
             if (Platform.isBrowser || Platform.isWebWorker) {
                 eventSource = new this.eventSourceConstructor(url, { withCredentials });

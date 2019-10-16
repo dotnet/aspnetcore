@@ -56,7 +56,7 @@ export interface IHttpConnectionOptions {
 
     /**
      * Default value is 'true'.
-     * This controls whether credentials like cookies are allowed in cross-site requests.
+     * This controls whether credentials such as cookies are sent in cross-site requests.
      *
      * Cookies are used by many load-balancers for sticky sessions which is required when your app is deployed with multiple servers.
      */

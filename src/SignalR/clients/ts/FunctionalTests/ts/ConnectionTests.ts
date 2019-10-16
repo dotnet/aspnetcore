@@ -10,6 +10,7 @@ import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
 import { HttpConnection } from "@microsoft/signalr/dist/esm/HttpConnection";
+import { Platform } from "@microsoft/signalr/dist/esm/Utils";
 import "./LogBannerReporter";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -153,6 +154,38 @@ describe("connection", () => {
                         done();
                     });
                 });
+
+                // withCredentials doesn't make sense in Node or when using WebSockets
+                if (!Platform.isNode && transportType !== HttpTransportType.WebSockets) {
+                    it("honors withCredentials flag", (done) => {
+                        TestLogger.saveLogsAndReset();
+                        const message = "Hello World!";
+
+                        // The server will set some response headers for the '/negotiate' endpoint
+                        const connection = new HttpConnection(ECHOENDPOINT_URL, {
+                            ...commonOptions,
+                            httpClient,
+                            transport: transportType,
+                            withCredentials: false,
+                        });
+
+                        connection.onreceive = (data: any) => {
+                            fail(new Error(`Unexpected messaged received '${data}'.`));
+                        };
+
+                        // @ts-ignore: We don't use the error parameter intentionally.
+                        connection.onclose = (error) => {
+                            done();
+                        };
+
+                        connection.start(TransferFormat.Text).then(() => {
+                            connection.send(message);
+                        }).catch((e: any) => {
+                            fail(e);
+                            done();
+                        });
+                    });
+                }
             });
         });
     });
