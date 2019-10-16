@@ -22,4 +22,4 @@ Set `<HasReferenceAssembly>false</HasReferenceAssembly>` in the implementation (
 
 ### Regenerate reference assemblies for all projects
 
-Run `.\eng\scripts\GenerateReferenceAssemblies.ps1` from repository root.
+Run `.\eng\scripts\GenerateReferenceAssemblies.ps1` from repository root. Make sure you've run `.\restore.cmd` first.
