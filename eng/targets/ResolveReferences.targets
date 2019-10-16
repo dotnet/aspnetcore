@@ -105,13 +105,30 @@
         Include="@(ProjectReferenceProvider)"
         Exclude="@(_UnusedProjectReferenceProvider)" />
 
-    <!-- Use ref assembly project paths for ref assembly projects -->
     <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
       <IsReferenceAssembly>false</IsReferenceAssembly>
+
+      <!--
+        If ref/ project exists, copy the implementation project output to the bin folder. Do not compile against
+        implementation project or use its version in generated .nuspec.
+
+        Copying implementation assemblies into the output folder may impact build performance. If that is the case, try
+        not setting OutputItemType when building an implementation project. But, that may cause problems with transitive
+        dependencies.
+      -->
+      <OutputItemType
+          Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">ReferenceCopyLocalPaths</OutputItemType>
+      <PrivateAssets
+          Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">All</PrivateAssets>
+      <ReferenceOutputAssembly
+          Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">false</ReferenceOutputAssembly>
     </ProjectReference>
 
     <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
       <IsReferenceAssembly>true</IsReferenceAssembly>
+
+      <!-- Do not include output from ref/ project in output directory when also referencing the implementation project. -->
+      <Private Condition=" '$(ReferenceImplementationAssemblies)' == 'true' ">false</Private>
     </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
