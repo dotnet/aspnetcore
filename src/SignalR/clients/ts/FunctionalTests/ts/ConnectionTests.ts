@@ -156,7 +156,10 @@ describe("connection", () => {
                 });
 
                 // withCredentials doesn't make sense in Node or when using WebSockets
-                if (!Platform.isNode && transportType !== HttpTransportType.WebSockets) {
+                if (!Platform.isNode && transportType !== HttpTransportType.WebSockets &&
+                    // tests run through karma during automation which is cross-site, but manually running the server will result in these tests failing
+                    // so we check for cross-site
+                    !(window && ECHOENDPOINT_URL.match(`^${window.location.href}`))) {
                     it("honors withCredentials flag", (done) => {
                         TestLogger.saveLogsAndReset();
                         const message = "Hello World!";
