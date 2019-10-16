@@ -30,6 +30,7 @@
   <ItemGroup>
     <NuspecProperty Include="artifactsBinDir=$(ArtifactsBinDir)" />
     <NuspecProperty Include="configuration=$(Configuration)" />
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

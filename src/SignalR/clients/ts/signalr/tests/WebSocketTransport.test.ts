@@ -66,6 +66,33 @@ describe("WebSocketTransport", () => {
         });
     });
 
+    it("connect failure does not call onclose handler", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestErrorEvent;
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
+            let closeCalled = false;
+            webSocket.onclose = () => closeCalled = true;
+
+            let connectComplete: boolean = false;
+            const connectPromise = (async () => {
+                await webSocket.connect("http://example.com", TransferFormat.Text);
+                connectComplete = true;
+            })();
+
+            await TestWebSocket.webSocket.closeSet;
+
+            expect(connectComplete).toBe(false);
+
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await expect(connectPromise)
+                .rejects
+                .toThrow("There was an error with the transport.");
+            expect(connectComplete).toBe(false);
+            expect(closeCalled).toBe(false);
+        });
+    });
+
     [["http://example.com", "ws://example.com?access_token=secretToken"],
     ["http://example.com?value=null", "ws://example.com?value=null&access_token=secretToken"],
     ["https://example.com?value=null", "wss://example.com?value=null&access_token=secretToken"]]

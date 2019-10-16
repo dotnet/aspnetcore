@@ -23,6 +23,14 @@
     <Reference Include="System.Buffers" />
   </ItemGroup>
 
+  <!-- These references were removed in 3.0 -->
+  <ItemGroup>
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.Analyzers" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Authorization" />
+    <SuppressBaselineReference Include="Microsoft.JSInterop" />
+    <SuppressBaselineReference Include="System.ComponentModel.Annotations" />
+  </ItemGroup>
+
   <Target Name="_GetNuspecDependencyPackageVersions">
     <MSBuild Targets="_GetPackageVersionInfo"
         BuildInParallel="$(BuildInParallel)"
@@ -47,6 +55,7 @@
     <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 
 </Project>

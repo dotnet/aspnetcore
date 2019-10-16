@@ -164,6 +164,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys", "..\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj", "{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers", "..\Http\Headers\src\Microsoft.Net.Http.Headers.csproj", "{4BB8D7D7-E111-4A86-B6E5-C1201E0DA8CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
