@@ -3,6 +3,7 @@
 
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
+import { MessageType } from "../src/IHubProtocol";
 import { RetryContext } from "../src/IRetryPolicy";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 
@@ -726,6 +727,62 @@ describe("auto reconnect", () => {
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(1);
+        });
+    });
+
+    it("reconnect on close message if allowReconnect is true and auto reconnect is enabled", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new TestConnection();
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), new DefaultReconnectPolicy());
+            try {
+                let isReconnecting = false;
+                let reconnectingError: Error | undefined;
+
+                hubConnection.onreconnecting((e) => {
+                    isReconnecting = true;
+                    reconnectingError = e;
+                });
+
+                await hubConnection.start();
+
+                connection.receive({
+                    allowReconnect: true,
+                    error: "Error!",
+                    type: MessageType.Close,
+                });
+
+                expect(isReconnecting).toEqual(true);
+                expect(reconnectingError!.message).toEqual("Server returned an error on close: Error!");
+            } finally {
+                await hubConnection.stop();
+            }
+        });
+    });
+
+    it("stop on close message if allowReconnect is missing and auto reconnect is enabled", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new TestConnection();
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), new DefaultReconnectPolicy());
+            try {
+                let isClosed = false;
+                let closeError: Error | undefined;
+                hubConnection.onclose((e) => {
+                    isClosed = true;
+                    closeError = e;
+                });
+
+                await hubConnection.start();
+
+                connection.receive({
+                    error: "Error!",
+                    type: MessageType.Close,
+                });
+
+                expect(isClosed).toEqual(true);
+                expect(closeError!.message).toEqual("Server returned an error on close: Error!");
+            } finally {
+                await hubConnection.stop();
+            }
         });
     });
 });
