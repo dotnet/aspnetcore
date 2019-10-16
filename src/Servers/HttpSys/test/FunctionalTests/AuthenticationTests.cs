@@ -382,10 +382,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 options.Authentication.Schemes = authType;
                 options.Authentication.AllowAnonymous = DenyAnoymous;
             },
-            httpContext =>
+            async httpContext =>
             {
-                Assert.Null(httpContext.User);
-                return Task.CompletedTask;
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+
+                var authenticateResult = await httpContext.AuthenticateAsync();
+
+                Assert.NotNull(authenticateResult.Principal);
+                Assert.NotNull(authenticateResult.Principal.Identity);
+                Assert.True(authenticateResult.Principal.Identity.IsAuthenticated);
             }))
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
