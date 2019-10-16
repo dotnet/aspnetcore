@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public bool AutomaticAuthentication { get; set; } = true;
 
+        /// <summary>
         /// The name of the Http.Sys request queue
         /// </summary>
         public string RequestQueueName
