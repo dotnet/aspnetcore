@@ -12,6 +12,7 @@
   Items used by the resolution strategy:
 
     * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
+      - mainly used to ensure references do not change in servicing builds unless $(UseLatestPackageReferences) is not true.
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
@@ -19,7 +20,7 @@
 <Project>
 
   <PropertyGroup>
-    <EnableCustomReferenceResolution Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildFromSource)' != 'true' OR '$(ExcludeFromSourceBuild)' != 'true')">true</EnableCustomReferenceResolution>
+    <EnableCustomReferenceResolution Condition="'$(EnableCustomReferenceResolution)' == ''">true</EnableCustomReferenceResolution>
 
     <ResolveReferencesDependsOn>
       ResolveCustomReferences;
@@ -33,28 +34,25 @@
         * preparing a new major or minor release i.e. a non-servicing builds
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+      That is, use latest package references unless this is a servicing build, the project is normally packable, and
+      the package is not included in this release.
     -->
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
-    <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackableInNonServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
     <!--
-      Projects should only use the project references instead of baseline package references when:
-        * preparing a new major or minor release (i.e. a non-servicing builds)
-        * when a project is a test or sample project
-      We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
+      Projects should use project references (instead of baseline packages), compile against ref/ assemblies, and
+      execute against implementation assemblies in almost all cases. But, there's no need for implementation assemblies
+      when building a ref/ project.
     -->
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
-    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
-
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND ('$(IsReferenceAssemblyProject)' == 'true' OR '$(IsImplementationProject)' == 'true')">true</ReferenceReferenceAssemblies>
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
-
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true' AND '$(IsImplementationProject)' != 'true'">true</ReferenceImplementationAssemblies>
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">true</ReferenceReferenceAssemblies>
+    <ReferenceImplementationAssemblies
+        Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true' ">false</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies
+        Condition=" '$(ReferenceImplementationAssemblies)' == '' ">true</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -175,7 +173,7 @@
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
-      <!-- Resolve references from BaselinePackageReference for servicing builds. -->
+      <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
       <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
         <Id>%(BaselinePackageReference.Identity)</Id>
         <Version>%(BaselinePackageReference.Version)</Version>
