@@ -31,31 +31,31 @@
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.0.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>950fbeb5eb6f8f27d73cd98bf98a2915015f0394</Sha>
+      <Sha>e2fe2f425e976394d933ad5fcf304fd3de6759f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.0.1-servicing.19506.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
