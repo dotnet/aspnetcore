@@ -281,7 +281,7 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>0b951c16de0f39e13cce8372e11c28eb90576662</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-rc2.19463.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-rc2.19463.5" CoherentParentDependency="Microsoft.EntityFrameworkCore" Pinned="true">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>0b951c16de0f39e13cce8372e11c28eb90576662</Sha>
     </Dependency>
