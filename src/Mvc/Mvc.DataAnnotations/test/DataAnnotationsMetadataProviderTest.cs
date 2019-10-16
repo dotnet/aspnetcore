@@ -1152,8 +1152,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)));
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(string));
+                typeof(string),
+                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(NullableReferenceTypes));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
@@ -1175,8 +1175,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired)));
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired), typeof(string));
+                typeof(string),
+                nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired), typeof(NullableReferenceTypes));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
@@ -1202,8 +1202,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)));
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(string));
+                typeof(string),
+                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(NullableReferenceTypes));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
@@ -1227,7 +1227,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 });
 
             var attributes = new Attribute[] { new EmailAddressAttribute(), validationProviderAttribute };
-            var key = ModelMetadataIdentity.ForProperty(typeof(string), "Length", typeof(string));
+            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
@@ -1393,7 +1393,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var property = type.GetProperty(nameof(NullableReferenceTypes.NullableReferenceTypeInBase));
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type.DeclaringType, member: null, property.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(property.DeclaringType, member: null, property.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.False(result);
