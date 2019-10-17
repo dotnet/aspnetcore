@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private ModelMetadataCacheEntry GetCacheEntry(PropertyInfo property, Type modelType)
         {
             return _typeCache.GetOrAdd(
-                ModelMetadataIdentity.ForProperty(modelType, property.Name, property.DeclaringType),
+                ModelMetadataIdentity.ForProperty(property, modelType, property.DeclaringType),
                 _cacheEntryFactory);
         }
 
@@ -275,8 +275,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 var propertyHelper = propertyHelpers[i];
 
                 var propertyKey = ModelMetadataIdentity.ForProperty(
+                    propertyHelper.Property,
                     propertyHelper.Property.PropertyType,
-                    propertyHelper.Name,
                     key.ModelType);
 
                 var propertyEntry = CreateSinglePropertyDetails(propertyKey, propertyHelper);

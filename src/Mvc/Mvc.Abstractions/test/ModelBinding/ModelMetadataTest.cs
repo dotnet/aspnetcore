@@ -270,7 +270,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ContainerType_ReturnExpectedMetadata_ForProperty()
         {
             // Arrange & Act
-            var metadata = new TestModelMetadata(typeof(int), nameof(string.Length), typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var metadata = new TestModelMetadata(property, typeof(int), typeof(string));
 
             // Assert
             Assert.Equal(typeof(string), metadata.ContainerType);
@@ -308,7 +309,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void Names_ReturnExpectedMetadata_ForProperty()
         {
             // Arrange & Act
-            var metadata = new TestModelMetadata(typeof(int), nameof(string.Length), typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var metadata = new TestModelMetadata(property, typeof(int), typeof(string));
 
             // Assert
             Assert.Equal(nameof(string.Length), metadata.Name);
@@ -322,7 +324,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetDisplayName_ReturnsDisplayName_IfSet()
         {
             // Arrange
-            var metadata = new TestModelMetadata(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var metadata = new TestModelMetadata(property, typeof(int), typeof(string));
             metadata.SetDisplayName("displayName");
 
             // Act
@@ -351,7 +354,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetDisplayName_ReturnsPropertyName_WhenSetAndDisplayNameIsNull()
         {
             // Arrange
-            var metadata = new TestModelMetadata(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var metadata = new TestModelMetadata(property, typeof(int), typeof(string));
 
             // Act
             var result = metadata.GetDisplayName();
@@ -419,8 +423,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
             }
 
-            public TestModelMetadata(Type modelType, string propertyName, Type containerType)
-                : base(ModelMetadataIdentity.ForProperty(modelType, propertyName, containerType))
+            public TestModelMetadata(PropertyInfo propertyInfo, Type modelType, Type containerType)
+                : base(ModelMetadataIdentity.ForProperty(propertyInfo, modelType, containerType))
             {
             }
 

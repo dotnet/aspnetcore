@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new EmptyModelMetadataProvider();
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
-            var key = ModelMetadataIdentity.ForProperty(typeof(string), "Message", typeof(Exception));
+            var key = ModelMetadataIdentity.ForProperty(typeof(Exception).GetProperty(nameof(Exception.Message)), typeof(string), typeof(Exception));
             var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], new object[0], null));
 
             // Act
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)),
                 typeof(string),
-                nameof(TypeWithProperties.PublicGetPublicSetProperty),
                 typeof(TypeWithProperties));
 
             var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
@@ -160,8 +160,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)),
                 typeof(string),
-                nameof(TypeWithProperties.PublicGetPublicSetProperty),
                 typeof(TypeWithProperties));
 
             var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
@@ -197,8 +197,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)), 
                 typeof(string),
-                nameof(TypeWithProperties.PublicGetPublicSetProperty),
                 typeof(TypeWithProperties));
 
             var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
@@ -393,19 +393,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
+            var prop1 = typeof(Exception).GetProperty(nameof(Exception.Message));
+            var prop2 = typeof(Exception).GetProperty(nameof(Exception.StackTrace));
+
             var expectedProperties = new DefaultModelMetadata[]
             {
                 new DefaultModelMetadata(
                     provider.Object,
                     detailsProvider,
                     new DefaultMetadataDetails(
-                        ModelMetadataIdentity.ForProperty(typeof(int), "Prop1", typeof(string)),
+                        ModelMetadataIdentity.ForProperty(prop1, typeof(int), typeof(string)),
                         attributes: new ModelAttributes(new object[0], new object[0], null))),
                 new DefaultModelMetadata(
                     provider.Object,
                     detailsProvider,
                     new DefaultMetadataDetails(
-                        ModelMetadataIdentity.ForProperty(typeof(int), "Prop2", typeof(string)),
+                        ModelMetadataIdentity.ForProperty(prop2, typeof(int), typeof(string)),
                         attributes: new ModelAttributes(new object[0], new object[0], null))),
             };
 
@@ -475,7 +478,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     provider.Object,
                     detailsProvider,
                     new DefaultMetadataDetails(
+#pragma warning disable CS0618 // Using the obsolete overload does not affect the intent of this test, but fixing it requires a lot of code churn.
                         ModelMetadataIdentity.ForProperty(typeof(int), originalName, typeof(string)),
+#pragma warning restore CS0618 // Type or member is obsolete
                         attributes: new ModelAttributes(new object[0], new object[0], null))));
             }
 
@@ -575,7 +580,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             foreach (var kvp in originalNamesAndOrders)
             {
                 var propertyCache = new DefaultMetadataDetails(
+#pragma warning disable CS0618 // Using the obsolete overload does not affect the intent of this test, but fixing it requires a lot of code churn.
                         ModelMetadataIdentity.ForProperty(typeof(int), kvp.Key, typeof(string)),
+#pragma warning restore CS0618 // Type or member is obsolete
                         attributes: new ModelAttributes(new object[0], new object[0], null))
                 {
                     DisplayMetadata = new DisplayMetadata(),
@@ -934,7 +941,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             // Arrange
             var property = GetType()
                 .GetProperty(nameof(CalculateHasValidators_PropertyMetadata_TypeHasNoValidatorsProperty), BindingFlags.Static | BindingFlags.NonPublic);
-            var modelIdentity = ModelMetadataIdentity.ForProperty(property.PropertyType, property.Name, GetType());
+            var modelIdentity = ModelMetadataIdentity.ForProperty(property, property.PropertyType, GetType());
             var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), false);
 
             // Act
@@ -997,7 +1004,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var propertyIdentity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var property = typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty));
+            var propertyIdentity = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(TypeWithProperties));
             var propertyMetadata = new Mock<ModelMetadata>(propertyIdentity);
 
             metadataProvider
@@ -1021,10 +1029,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var property1Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var property1Identity = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)), typeof(int), modelType);
             var property1Metadata = CreateModelMetadata(property1Identity, metadataProvider.Object, false);
 
-            var property2Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetProtectedSetProperty), typeof(string));
+            var property2Identity = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(TypeWithProperties.PublicGetProtectedSetProperty)), typeof(int), modelType);
             var property2Metadata = CreateModelMetadata(property2Identity, metadataProvider.Object, true);
 
             metadataProvider
@@ -1048,7 +1056,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var propertyIdentity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var propertyIdentity = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)), typeof(int), modelType);
             var propertyMetadata = CreateModelMetadata(propertyIdentity, metadataProvider.Object, null);
 
             metadataProvider
@@ -1072,10 +1080,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var property1Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), modelType);
+            var property1Identity = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)), typeof(int), modelType);
             var property1Metadata = CreateModelMetadata(property1Identity, metadataProvider.Object, false);
 
-            var property2Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetProtectedSetProperty), modelType);
+            var property2Identity = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(TypeWithProperties.PublicGetProtectedSetProperty)), typeof(int), modelType);
             var property2Metadata = CreateModelMetadata(property2Identity, metadataProvider.Object, false);
 
             metadataProvider
@@ -1099,18 +1107,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Id)), typeof(int), modelType);
             var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
-            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Unit)), typeof(BusinessUnit), modelType);
             var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
-            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManager = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Manager)), typeof(Employee), modelType);
             var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
-            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Employees)), typeof(List<Employee>), modelType);
             var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
 
-            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitModel = typeof(BusinessUnit);
+            var unitHead = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Head)), typeof(Employee), unitModel);
             var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, false);
-            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitId = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Id)), typeof(int), unitModel);
             var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, true); // BusinessUnit.Id has validators.
 
             metadataProvider
@@ -1139,18 +1148,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Id)), typeof(int), modelType);
             var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
-            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Unit)), typeof(BusinessUnit), modelType);
             var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
-            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManager = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Manager)), typeof(Employee), modelType);
             var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
-            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Employees)), typeof(List<Employee>), modelType);
             var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
 
-            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitModel = typeof(BusinessUnit);
+            var unitHead = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Head)), typeof(Employee), unitModel);
             var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, true); // BusinessUnit.Head has validators
-            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitId = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Id)), typeof(int), unitModel);
             var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false); 
 
             metadataProvider
@@ -1181,9 +1191,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Id)), typeof(int), modelType);
             var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
-            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Employees)), typeof(List<Employee>), modelType);
             var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
 
             metadataProvider
@@ -1210,18 +1220,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadataProvider = new Mock<IModelMetadataProvider>();
             var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
 
-            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Id)), typeof(int), modelType);
             var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
-            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Unit)), typeof(BusinessUnit), modelType);
             var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
-            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManager = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Manager)), typeof(Employee), modelType);
             var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
-            var employeeEmployeesId = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployeesId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(Employee.Employees)), typeof(List<Employee>), modelType);
             var employeeEmployeesIdMetadata = CreateModelMetadata(employeeEmployeesId, metadataProvider.Object, false);
 
-            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitModel = typeof(BusinessUnit);
+            var unitHead = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Head)), typeof(Employee), unitModel);
             var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, false);
-            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitId = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Id)), typeof(int), unitModel);
             var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false);
 
             metadataProvider
