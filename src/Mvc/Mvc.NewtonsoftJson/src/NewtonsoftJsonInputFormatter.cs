@@ -196,8 +196,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            if (!(exception is JsonException || exception is OverflowException))
+            if (!(exception is JsonException || exception is OverflowException || exception is FormatException))
             {
+                // At this point we've already recorded all exceptions as an entry in the ModelStateDictionary.
+                // We only need to rethrow an exception if we believe it needs to be handled by something further up
+                // the stack.
+                // JsonException, OverflowException, and FormatException are assumed to be only encountered when
+                // parsing the JSON and are consequently "safe" to be exposed as part of ModelState. Everything else
+                // needs to be rethrown.
+
                 var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
                 exceptionDispatchInfo.Throw();
             }
