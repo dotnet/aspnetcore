@@ -167,10 +167,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 chainPolicy.VerificationFlags |= X509VerificationFlags.IgnoreEndRevocationUnknown;
                 chainPolicy.ExtraStore.Add(certificate);
             }
-
-            if (!Options.ValidateCertificateChain)
+            else
             {
-                chainPolicy.VerificationFlags |= X509VerificationFlags.AllowUnknownCertificateAuthority;
+                chainPolicy.CustomTrustStore = Options.CustomTrustStore;
+
+                if (Options.CustomTrustStore != null && Options.CustomTrustStore.Count > 0)
+                {
+                    chainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                }
             }
 
             if (!Options.ValidateValidityPeriod)

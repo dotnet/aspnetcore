@@ -40,9 +40,11 @@ In the sample above you can see the default way to add certificate authenticatio
 
 The `CertificateAuthenticationOptions` handler has some built in validations that are the minimum validations you should perform on a certificate. Each of these settings are turned on by default.
 
-### ValidateCertificateChain
+### CustomTrustStore
 
-This check validates that the issuer for the certificate is trusted by the application host OS. If you are going to accept self-signed certificates you must disable this check.
+This check validates that the certificate presented by the client can form a valid certificate chain when combined with the certificates in this collection.
+
+If any certificates are added to this collection then the default OS trust store is not used to validate the certificate chain, so this collection needs to contain the complete certificate chain.
 
 ### ValidateCertificateUse
 

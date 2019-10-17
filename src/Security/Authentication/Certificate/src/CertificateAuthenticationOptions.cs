@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.Chained;
 
         /// <summary>
-        /// Flag indicating whether the issuer for the certificate is trusted by the application host OS.
+        /// Collection of X509 certificates which are trusted components of the certificate chain.
         /// </summary>
-        /// <remarks>This check will only be performed if the client certificate chains to a root CA.</remarks>
-        public bool ValidateCertificateChain { get; set; } = true;
+        /// <remarks>If this collection contains certificates, X509 certificate issuer validation will ignore the system trust store.</remarks>
+        public X509Certificate2Collection CustomTrustStore { get; set; } = new X509Certificate2Collection();
 
         /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client
