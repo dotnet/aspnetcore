@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.DataAnnotations.netcoreapp3.0.cs" />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Compile Include="Microsoft.AspNetCore.Mvc.DataAnnotations.Manual.cs" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core"  />
-    <Reference Include="Microsoft.Extensions.Localization"  />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Client.netstandard2.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections.Client"  />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
   </ItemGroup>
 </Project>

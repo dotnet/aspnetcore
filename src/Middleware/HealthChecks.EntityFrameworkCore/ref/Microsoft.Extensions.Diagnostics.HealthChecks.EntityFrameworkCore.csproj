@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
     <Compile Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.netstandard2.1.cs" />
-    <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
   </ItemGroup>
 </Project>

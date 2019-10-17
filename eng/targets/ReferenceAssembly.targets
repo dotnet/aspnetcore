@@ -71,23 +71,27 @@
     <Exec Command="$(_GenAPICmd)" />
 
     <ItemGroup>
-      <FilteredOriginalReferences
-        Include="%(_OriginalReferences.Identity)"
-        Condition="'%(_OriginalReferences.NuGetPackageId)' == '' AND '%(_OriginalReferences.PrivateAssets)' != 'All'" />
+      <_ReferenceAssemblyCompileItems Include="$(_RefSourceFileName)" />
+      <_ReferenceAssemblyCompileItems Include="../src/AssemblyInfo.cs"
+          Condition="Exists('$(MSBuildProjectDirectory)/AssemblyInfo.cs')" />
+      <_ReferenceAssemblyCompileItems Include="../src/Properties/AssemblyInfo.cs"
+          Condition="Exists('$(MSBuildProjectDirectory)/Properties/AssemblyInfo.cs')" />
+      <_ReferenceAssemblyCompileItems Include="$(_ManualRefSourceFileName)"
+          Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')" />
+      <FilteredOriginalReferences Include="%(_OriginalReferences.Identity)"
+          Condition="'%(_OriginalReferences.NuGetPackageId)' == '' AND '%(_OriginalReferences.PrivateAssets)' != 'All'" />
+
+      <_ReferenceAssemblyItems
+          Include="@(_ReferenceAssemblyCompileItems->'&lt;Compile Include=&quot;%(Identity)&quot; /&gt;')" />
+      <_ReferenceAssemblyItems
+          Include="@(FilteredOriginalReferences->'&lt;Reference Include=&quot;%(Identity)&quot; /&gt;')" />
     </ItemGroup>
 
     <PropertyGroup>
-      <_ManualReferenceAssemblyContent />
-      <_ManualReferenceAssemblyContent Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')">
-      <![CDATA[
-    <Compile Include="$(_ManualRefSourceFileName)" />]]>
-      </_ManualReferenceAssemblyContent>
-
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
-    <Compile Include="$(_RefSourceFileName)" />]]>$(_ManualReferenceAssemblyContent)<![CDATA[
-    @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
+    @(_ReferenceAssemblyItems, '%0A    ')
   </ItemGroup>
 ]]>
       </ReferencesContent>

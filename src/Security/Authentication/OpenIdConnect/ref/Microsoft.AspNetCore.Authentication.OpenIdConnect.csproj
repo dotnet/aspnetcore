@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.OpenIdConnect.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.OAuth"  />
-    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect"  />
+    <Reference Include="Microsoft.AspNetCore.Authentication.OAuth" />
+    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 </Project>

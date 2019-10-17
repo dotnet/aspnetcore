@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.Facebook.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.OAuth"  />
+    <Reference Include="Microsoft.AspNetCore.Authentication.OAuth" />
   </ItemGroup>
 </Project>

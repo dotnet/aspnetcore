@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.DataProtection.Abstractions.netstandard2.0.cs" />
-    
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
   </ItemGroup>
 </Project>
