@@ -828,13 +828,22 @@ export class HubConnection {
             const invocationId = this.invocationId;
             this.invocationId++;
 
-            return {
-                arguments: args,
-                invocationId: invocationId.toString(),
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    invocationId: invocationId.toString(),
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         }
     }
 
@@ -903,13 +912,22 @@ export class HubConnection {
         const invocationId = this.invocationId;
         this.invocationId++;
 
-        return {
-            arguments: args,
-            invocationId: invocationId.toString(),
-            streamIds,
-            target: methodName,
-            type: MessageType.StreamInvocation,
-        };
+        if (streamIds.length !== 0) {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                streamIds,
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        } else {
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                target: methodName,
+                type: MessageType.StreamInvocation,
+            };
+        }
     }
 
     private createCancelInvocation(id: string): CancelInvocationMessage {

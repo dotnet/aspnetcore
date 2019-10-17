@@ -245,7 +245,6 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -998,7 +997,6 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streamIds: [],
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });
