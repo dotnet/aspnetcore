@@ -6,9 +6,7 @@
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -16,7 +14,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
@@ -35,7 +32,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -52,7 +48,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -62,7 +57,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
@@ -81,7 +75,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -91,7 +84,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
@@ -124,7 +116,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Localization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -142,14 +133,12 @@
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Common" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'dotnet-openapi'))">
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.IIS'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -158,7 +147,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
@@ -169,7 +157,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -187,7 +174,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -208,7 +194,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
@@ -219,7 +204,6 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Routing.Abstractions'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
@@ -237,9 +221,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -256,25 +238,20 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -290,25 +267,20 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -329,7 +301,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -353,9 +324,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -363,14 +332,12 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -388,7 +355,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -402,7 +368,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.Json'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -425,7 +390,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -440,14 +404,11 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -458,7 +419,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Connections.Abstractions'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ANCMSymbols'))">
@@ -473,7 +433,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -481,7 +440,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Razor.Runtime'))">
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.HeaderPropagation'))">
@@ -496,7 +454,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -508,7 +465,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -528,10 +484,8 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
@@ -542,7 +496,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
@@ -550,7 +503,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
@@ -572,7 +524,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -595,9 +546,7 @@
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -609,7 +558,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -642,7 +590,6 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Common'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
@@ -664,7 +611,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -684,7 +630,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
@@ -695,7 +640,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
@@ -723,7 +667,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
@@ -732,7 +675,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Razor'))">
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Antiforgery'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -747,7 +689,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -756,19 +697,15 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'GetDocument.Insider'))">
-		<IndirectReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Extensions'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
@@ -788,13 +725,10 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
@@ -803,7 +737,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
@@ -811,7 +744,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
@@ -837,7 +769,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -851,13 +782,11 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Abstractions'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.ApiDescription.Server'))">
 		<IndirectReference Include="dotnet-getdocument" KeepDuplicates="false" />
 		<IndirectReference Include="GetDocumentInsider" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel.Core'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -872,7 +801,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
@@ -892,7 +820,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -912,7 +839,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -923,7 +849,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
@@ -943,9 +868,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
@@ -954,13 +877,11 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -978,7 +899,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyModel" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
@@ -1000,10 +920,8 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ConcurrencyLimiter'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1026,9 +944,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1058,9 +974,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -1068,13 +982,11 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -1092,7 +1004,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1113,10 +1024,8 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1136,7 +1045,6 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Web'))">
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
@@ -1159,7 +1067,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Forms'))">
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
@@ -1178,9 +1085,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -1190,14 +1095,12 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
@@ -1222,7 +1125,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1251,9 +1153,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1267,7 +1167,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -1284,25 +1183,20 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -1323,7 +1217,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1342,9 +1235,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1361,7 +1252,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1378,7 +1268,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1407,9 +1296,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -1417,13 +1304,11 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -1441,7 +1326,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1465,9 +1349,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -1476,14 +1358,12 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -1505,7 +1385,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1524,7 +1403,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1558,7 +1436,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1577,7 +1454,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1588,7 +1464,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
@@ -1608,7 +1483,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1624,25 +1498,20 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -1664,7 +1533,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1673,7 +1541,6 @@
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'dotnet-dev-certs'))">
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.TestHost'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -1686,18 +1553,15 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
@@ -1716,9 +1580,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -1726,13 +1588,11 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -1750,7 +1610,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1772,9 +1631,7 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.TestHost" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
@@ -1784,13 +1641,11 @@
 		<IndirectReference Include="Microsoft.Extensions.Logging.EventSource" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.EventLog" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
@@ -1806,9 +1661,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyModel" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
@@ -1822,7 +1675,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'dotnet-watch'))">
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -1839,10 +1691,8 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
@@ -1853,7 +1703,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Identity.Stores" KeepDuplicates="false" />
@@ -1863,7 +1712,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
@@ -1888,7 +1736,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -1906,7 +1753,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'dotnet-getdocument'))">
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Identity.Specification.Tests'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -1920,7 +1766,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1945,7 +1790,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -1967,7 +1811,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1993,8 +1836,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
@@ -2002,7 +1843,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2023,10 +1863,8 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
@@ -2037,7 +1875,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Identity.Stores" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
@@ -2045,7 +1882,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
@@ -2069,7 +1905,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -2105,7 +1940,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2125,9 +1959,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2142,7 +1974,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -2165,8 +1996,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2189,7 +2018,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2200,7 +2028,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
@@ -2214,7 +2041,6 @@
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics.Abstractions'))">
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
@@ -2235,7 +2061,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2259,7 +2084,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2280,9 +2104,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2316,25 +2138,20 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -2356,7 +2173,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2387,13 +2203,11 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Rewrite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Ini" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Server" KeepDuplicates="false" />
@@ -2414,7 +2228,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
@@ -2445,9 +2258,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Server.HttpSys" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2507,10 +2318,8 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
@@ -2520,14 +2329,12 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -2545,7 +2352,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -2584,7 +2390,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2603,9 +2408,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
@@ -2615,14 +2418,12 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.StaticFiles" KeepDuplicates="false" />
@@ -2645,7 +2446,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -2661,7 +2461,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2682,9 +2481,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2700,7 +2497,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components.Authorization'))">
@@ -2708,7 +2504,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2717,7 +2512,6 @@
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2740,7 +2534,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2757,21 +2550,17 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
@@ -2788,7 +2577,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
@@ -2800,7 +2588,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'dotnet-sql-cache'))">
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.DataProtection.AzureStorage'))">
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
@@ -2820,7 +2607,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2839,10 +2625,8 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2861,7 +2645,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
@@ -2882,10 +2665,8 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.RazorPages" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication" KeepDuplicates="false" />
@@ -2896,7 +2677,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
@@ -2904,7 +2684,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Cookies" KeepDuplicates="false" />
@@ -2926,7 +2705,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Caching.Memory" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -2946,7 +2724,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -2962,7 +2739,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2970,7 +2746,6 @@
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Http.Connections.Common'))">
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
@@ -2984,7 +2759,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -3007,11 +2781,9 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Razor.Runtime" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Server" KeepDuplicates="false" />
@@ -3030,7 +2802,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
@@ -3052,9 +2823,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Server.IISIntegration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.CommandLine" KeepDuplicates="false" />
@@ -3089,7 +2858,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.CommandLineUtils.Sources" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -3102,9 +2870,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Server.IISIntegration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
@@ -3114,7 +2880,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Logging.EventSource" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Connections.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
@@ -3157,31 +2922,25 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Routing.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Core" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.TypeNameHelper.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ValueStopwatch.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Components'))">
-		<IndirectReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
@@ -3190,7 +2949,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -3202,7 +2960,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
@@ -3216,7 +2973,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
