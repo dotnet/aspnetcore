@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task<IActionResult> OnGetAsync(string email) => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnGetAsync(string email, string returnUrl = null) => throw new NotImplementedException();
     }
 
     internal class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
@@ -57,12 +57,13 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             _sender = sender;
         }
 
-        public override async Task<IActionResult> OnGetAsync(string email)
+        public override async Task<IActionResult> OnGetAsync(string email, string returnUrl = null)
         {
             if (email == null)
             {
                 return RedirectToPage("/Index");
             }
+            returnUrl = returnUrl ?? Url.Content("~/");
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code },
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme);
             }
 
