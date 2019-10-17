@@ -18,6 +18,8 @@ function createHubConnection(connection: IConnection, logger?: ILogger | null, p
     return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
 }
 
+// These tests check that the message size doesn't change without us being aware of it and making a conscious decision to increase the size
+
 describe("Message size", () => {
     it("send invocation", async () => {
         await VerifyLogger.run(async (logger) => {
