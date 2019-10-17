@@ -94,7 +94,7 @@
     <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
     <!-- We need to build the targeting pack in 3.0.1. We can remove this line from any branch other than release/3.0 -->
-    <IsTargetingPackBuilding Condition="'$(VersionPrefix)' == '3.0.1'">true</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition="'$(VersionPrefix)' == '3.0.1' AND '$(DotNetBuildFromSource)' != 'true'">true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
