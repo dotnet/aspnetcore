@@ -169,10 +169,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             }
             else
             {
-                chainPolicy.CustomTrustStore = Options.CustomTrustStore;
-
                 if (Options.CustomTrustStore != null && Options.CustomTrustStore.Count > 0)
                 {
+                    chainPolicy.CustomTrustStore.AddRange(Options.CustomTrustStore);
                     chainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
                 }
             }
