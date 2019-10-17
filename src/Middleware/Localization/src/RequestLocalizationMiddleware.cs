@@ -161,77 +161,74 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         private static CultureInfo GetCultureInfo(
-            IEnumerable<StringSegment> cultureNames,
+            IList<StringSegment> cultureNames,
             IEnumerable<CultureInfo> supportedCultures,
             bool fallbackToParentCultures)
         {
-            var nonNullableCultureNames = cultureNames.Where(c => c != null);
-
-            foreach (var cultureName in nonNullableCultureNames)
+            foreach (var cultureName in GetValidNonNullableCultures())
             {
-                var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToParentCultures);
-                if (cultureInfo != null)
+                var cultureInfo = supportedCultures?
+                    .FirstOrDefault(c => StringSegment.Equals(c.Name, cultureName, StringComparison.OrdinalIgnoreCase))
+                    ?? null;
+
+                if (cultureInfo == null)
+                {
+                    if (fallbackToParentCultures)
+                    {
+                        var fallbackCulture = CultureInfo.GetCultureInfo(cultureName.Value);
+
+                        while (fallbackCulture != fallbackCulture.Parent)
+                        {
+                            fallbackCulture = fallbackCulture.Parent;
+
+                            if (supportedCultures.Contains(fallbackCulture))
+                            {
+                                return fallbackCulture;
+                            }
+                        }
+
+                        if (supportedCultures.Contains(fallbackCulture))
+                        {
+                            return fallbackCulture;
+                        }
+                    }
+                }
+                else
                 {
                     return cultureInfo;
                 }
             }
 
             return null;
-        }
 
-        private static CultureInfo GetCultureInfo(
-            StringSegment cultureName,
-            IEnumerable<CultureInfo> supportedCultures,
-            bool fallbackToParentCultures)
-        {
-            var culture = GetCultureInfo(cultureName, supportedCultures);
-
-            if (culture == null)
+            IEnumerable<StringSegment> GetValidNonNullableCultures()
             {
-                return culture;
-            }
+                var validCultures = new List<StringSegment>();
 
-            if (fallbackToParentCultures)
-            {
-                var fallbackCulture = culture;
-
-                while (fallbackCulture != fallbackCulture.Parent)
+                foreach (var name in cultureNames)
                 {
-                    fallbackCulture = fallbackCulture.Parent;
-
-                    if (supportedCultures.Contains(fallbackCulture))
+                    try
                     {
-                        return fallbackCulture;
+                        if (name == null)
+                        {
+                            continue;
+                        }
+
+                        var culture = CultureInfo.GetCultureInfo(name.Value);
+                        if (!culture.DisplayName.StartsWith("Unknown Locale"))
+                        {
+                            validCultures.Add(name);
+                        }
+
+                    }
+                    catch (CultureNotFoundException)
+                    {
+
                     }
                 }
 
-                if (supportedCultures.Contains(fallbackCulture))
-                {
-                    return fallbackCulture;
-                }
+                return validCultures;
             }
-
-            return culture;
-        }
-
-        private static CultureInfo GetCultureInfo(StringSegment name, IEnumerable<CultureInfo> supportedCultures)
-        {
-            // Allow only known culture names as this API is called with input from users (HTTP requests) and
-            // creating CultureInfo objects is expensive and we don't want it to throw either.
-            if (name == null || supportedCultures == null)
-            {
-                return null;
-            }
-
-            var culture = supportedCultures.FirstOrDefault(
-                supportedCulture => StringSegment.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
-
-            if (culture == null)
-            {
-                return null;
-            }
-
-            return CultureInfo.ReadOnly(culture);
         }
     }
 }

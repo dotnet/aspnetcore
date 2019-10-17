@@ -3,18 +3,15 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
-using LocalizationWebsite.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 
 namespace LocalizationWebsite
 {
-    public class StartupResourcesInFolder
+    public class StartupResourcesInFolderWithoutFallBackToParentCultures
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -23,47 +20,31 @@ namespace LocalizationWebsite
 
         public void Configure(
             IApplicationBuilder app,
-            ILoggerFactory loggerFactory,
-            IStringLocalizerFactory stringLocalizerFactory,
-            IStringLocalizer<StartupResourcesInFolder> startupStringLocalizer,
-            IStringLocalizer<Customer> custromerStringLocalizer,
-            // This localizer is used in tests to prevent a regression of https://github.com/aspnet/Localization/issues/293
-            // Namely that english was always being returned if it existed.
-            IStringLocalizer<StartupCustomCulturePreserved> customCultureLocalizer)
+            IStringLocalizer<StartupResourcesInFolderWithoutFallBackToParentCultures> startupStringLocalizer)
         {
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = new List<CultureInfo>()
                 {
-                    new CultureInfo("ar"),
-                    new CultureInfo("fr-FR"),
                     new CultureInfo("zh-TW"),
                     new CultureInfo("zh-Hant"),
                     new CultureInfo("zh")
                 },
                 SupportedUICultures = new List<CultureInfo>()
                 {
-                    new CultureInfo("ar"),
-                    new CultureInfo("fr-FR"),
                     new CultureInfo("zh-TW"),
                     new CultureInfo("zh-Hant"),
                     new CultureInfo("zh")
-                }
+                },
+                FallBackToParentCultures = false,
+                FallBackToParentUICultures = false
             });
-
-            var assemblyName = typeof(StartupResourcesInFolder).GetTypeInfo().Assembly.GetName().Name;
-            var stringLocalizer = stringLocalizerFactory.Create("Test", assemblyName);
 
             app.Run(async (context) =>
             {
+                var list = startupStringLocalizer.GetAllStrings(false);
                 await context.Response.WriteAsync(startupStringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(stringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(custromerStringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(customCultureLocalizer["Hello"]);
             });
         }
     }

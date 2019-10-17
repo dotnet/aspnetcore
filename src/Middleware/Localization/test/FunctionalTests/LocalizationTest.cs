@@ -15,15 +15,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     public class LocalizationTest
     {
         [Fact]
-        public Task Localization_ContentLanguageHeader()
-        {
-            return RunTest(
-                typeof(StartupContentLanguageHeader),
-                "ar-YE",
-                "True ar-YE");
-        }
-
-        [Fact]
         public Task Localization_CustomCulture()
         {
             return RunTest(
@@ -55,26 +46,26 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         {
             return RunTest(
                 typeof(StartupResourcesInFolder),
-                "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
+                "zh",
+                "您好 (zh) from StartupResourcesInFolder Hello Hello Hello");
         }
 
         [Fact]
-        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback()
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_ToRootCulture()
         {
             return RunTest(
                 typeof(StartupResourcesInFolder),
-                "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Hello");
+                "ar-YE",
+                "مرحبا from StartupResourcesInFolder Hello Hello Hello");
         }
 
         [Fact]
-        public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep()
+        public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_WithCultureFallback_ToCultureHierarchy()
         {
             return RunTest(
                 typeof(StartupResourcesInFolder),
-                "fr-FR-test-again-too-deep-to-work",
-                "Hello Hello Hello Hello");
+                "zh-TW",
+                "您好 (zh-Hant) from StartupResourcesInFolder Hello Hello Hello");
         }
 
         [Fact]
@@ -84,6 +75,15 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 typeof(StartupResourcesAtRootFolder),
                 "fr-FR",
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in Models folder");
+        }
+
+        [Fact]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithoutFallBackToParentCultures()
+        {
+            return RunTest(
+                typeof(StartupResourcesInFolderWithoutFallBackToParentCultures),
+                "zh-Hant",
+                "您好 (zh-Hant) from StartupResourcesInFolderWithoutFallBackToParentCultures");
         }
 
         [Fact]
