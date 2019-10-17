@@ -55,7 +55,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             async Task Bind(PageContext pageContext, object instance)
             {
-                var valueProvider = await CompositeValueProvider.CreateAsync(pageContext, pageContext.ValueProviderFactories);
+                var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(pageContext, pageContext.ValueProviderFactories);
+                if (!success)
+                {
+                    return;
+                }
+
                 for (var i = 0; i < properties.Count; i++)
                 {
                     var property = properties[i];
@@ -131,7 +136,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             async Task Bind(PageContext pageContext, IDictionary<string, object> arguments)
             {
-                var valueProvider = await CompositeValueProvider.CreateAsync(pageContext, pageContext.ValueProviderFactories);
+                var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(pageContext, pageContext.ValueProviderFactories);
+                if (!success)
+                {
+                    return;
+                }
 
                 for (var i = 0; i < parameterBindingInfo.Length; i++)
                 {

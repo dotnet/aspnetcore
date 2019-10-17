@@ -38,6 +38,17 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         }
 
         [Fact]
+        public void StaticWebAssetsFileProvider_FindsFileWithSpaces()
+        {
+            // Arrange & Act
+            var provider = new StaticWebAssetsFileProvider("/_content",
+                Path.Combine(AppContext.BaseDirectory, "testroot", "wwwroot"));
+
+            // Assert
+            Assert.True(provider.GetFileInfo("/_content/Static Web Assets.txt").Exists);
+        }
+
+        [Fact]
         public void GetFileInfo_DoesNotMatch_IncompletePrefixSegments()
         {
             // Arrange

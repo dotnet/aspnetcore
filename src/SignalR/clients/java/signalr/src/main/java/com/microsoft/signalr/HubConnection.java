@@ -57,6 +57,7 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
+    private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -260,7 +261,7 @@ public class HubConnection {
         HttpRequest request = new HttpRequest();
         request.addHeaders(this.localHeaders);
 
-        return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
+        return httpClient.post(Negotiate.resolveNegotiateUrl(url, this.negotiateVersion), request).map((response) -> {
             if (response.getStatusCode() != 200) {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.",
                         response.getStatusCode(), response.getStatusText()));
@@ -376,7 +377,6 @@ public class HubConnection {
                         hubConnectionStateLock.lock();
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
-                            this.connectionId = negotiateResponse.getConnectionId();
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
@@ -446,14 +446,16 @@ public class HubConnection {
                     throw new RuntimeException("There were no compatible transports on the server.");
                 }
 
-                String finalUrl = url;
-                if (response.getConnectionId() != null) {
-                    if (url.contains("?")) {
-                        finalUrl = url + "&id=" + response.getConnectionId();
-                    } else {
-                        finalUrl = url + "?id=" + response.getConnectionId();
-                    }
+                String connectionToken = "";
+                if (response.getVersion() > 0) {
+                    this.connectionId = response.getConnectionId();
+                    connectionToken = response.getConnectionToken();
+                } else {
+                    connectionToken = this.connectionId = response.getConnectionId();
                 }
+
+                String finalUrl = Utils.appendQueryString(url, "id=" + connectionToken);
+
                 response.setFinalUrl(finalUrl);
                 return Single.just(response);
             }

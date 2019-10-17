@@ -6,10 +6,10 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -62,6 +62,24 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CaptureAsyncExceptions(attachComponentTask);
 
             return RenderRootComponentAsync(componentId);
+        }
+
+        /// <summary>
+        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
+        /// causing it to be displayed in the specified DOM element.
+        /// </summary>
+        /// <param name="componentType">The type of the component.</param>
+        /// <param name="parameters">The parameters for the component.</param>
+        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
+        {
+            var component = InstantiateComponent(componentType);
+            var componentId = AssignRootComponentId(component);
+
+            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
+            CaptureAsyncExceptions(attachComponentTask);
+
+            return RenderRootComponentAsync(componentId, parameters);
         }
 
         protected override void ProcessPendingRender()

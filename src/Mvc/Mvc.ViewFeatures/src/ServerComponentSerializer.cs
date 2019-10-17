@@ -19,22 +19,27 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
-        public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, bool prerendered)
+        public ServerComponentMarker SerializeInvocation(ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters, bool prerendered)
         {
-            var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type);
+            var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters);
             return prerendered ? ServerComponentMarker.Prerendered(sequence, serverComponent) : ServerComponentMarker.NonPrerendered(sequence, serverComponent);
         }
 
         private (int sequence, string payload) CreateSerializedServerComponent(
             ServerComponentInvocationSequence invocationId,
-            Type rootComponent)
+            Type rootComponent,
+            ParameterView parameters)
         {
             var sequence = invocationId.Next();
+
+            var (definitions, values) = ComponentParameter.FromParameterView(parameters);
 
             var serverComponent = new ServerComponent(
                 sequence,
                 rootComponent.Assembly.GetName().Name,
                 rootComponent.FullName,
+                definitions,
+                values,
                 invocationId.Value);
 
             var serializedServerComponent = JsonSerializer.Serialize(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);

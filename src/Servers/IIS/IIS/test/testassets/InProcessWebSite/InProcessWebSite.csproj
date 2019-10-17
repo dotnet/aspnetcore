@@ -3,12 +3,12 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)" />
     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
   </ItemGroup>
 

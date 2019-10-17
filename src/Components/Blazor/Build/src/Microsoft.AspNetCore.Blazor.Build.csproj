@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
     <IsShippingPackage>true</IsShippingPackage>

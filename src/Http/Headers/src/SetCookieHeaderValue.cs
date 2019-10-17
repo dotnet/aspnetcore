@@ -106,7 +106,7 @@ namespace Microsoft.Net.Http.Headers
 
         public bool Secure { get; set; }
 
-        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : (SameSiteMode)(-1); // Unspecified
+        public SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : SameSiteMode.Unspecified;
 
         public bool HttpOnly { get; set; }
 
@@ -478,7 +478,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     if (!ReadEqualsSign(input, ref offset))
                     {
-                        result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                        result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : SameSiteMode.Unspecified;
                     }
                     else
                     {
@@ -499,7 +499,7 @@ namespace Microsoft.Net.Http.Headers
                         }
                         else
                         {
-                            result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : (SameSiteMode)(-1); // Unspecified
+                            result.SameSite = SuppressSameSiteNone ? SameSiteMode.Strict : SameSiteMode.Unspecified;
                         }
                     }
                 }

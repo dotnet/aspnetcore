@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         {
             foreach (var header in originalRequestContent.Headers)
             {
-                contentCopy.Headers.Add(header.Key, header.Value);
-                newRequestContent.Headers.Add(header.Key, header.Value);
+                contentCopy.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                newRequestContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
         {
             foreach (var header in originalRequestHeaders)
             {
-                newRequestHeaders.Add(header.Key, header.Value);
+                newRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
 

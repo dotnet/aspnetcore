@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// </summary>
         /// <value>The default value is <see langword="true"/>.</value>
         /// <remarks>This property is currently ignored.</remarks>
+        [Obsolete("This property is deprecated and is no longer used by the runtime.")]
         public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; } = true;
 
         /// <summary>

@@ -1,7 +1,8 @@
 import '@dotnet/jsinterop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { EventDelegator } from '../Rendering/EventDelegator';
 
-let hasRegisteredNavigationInterception = false;
+let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
@@ -28,21 +29,30 @@ function listenForNavigationEvents(callback: (uri: string, intercepted: boolean)
 }
 
 function enableNavigationInterception() {
-  if (hasRegisteredNavigationInterception) {
-    return;
-  }
+  hasEnabledNavigationInterception = true;
+}
 
-  hasRegisteredNavigationInterception = true;
+export function attachToEventDelegator(eventDelegator: EventDelegator) {
+  // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
+  // running its simulated bubbling process so that we can respect any preventDefault requests.
+  // So instead of registering our own native event, register using the EventDelegator.
+  eventDelegator.notifyAfterClick(event => {
+    if (!hasEnabledNavigationInterception) {
+      return;
+    }
 
-  document.addEventListener('click', event => {
     if (event.button !== 0 || eventHasSpecialKey(event)) {
       // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
       return;
     }
 
+    if (event.defaultPrevented) {
+      return;
+    }
+
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
-    const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement;
+    const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement | null;
     const hrefAttributeName = 'href';
     if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
       const targetAttributeValue = anchorTarget.getAttribute('target');

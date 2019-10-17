@@ -25,13 +25,13 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             {
                 var project1 = refProj1.WithCSharpProject("refProj");
                 project1
-                    .WithTargetFrameworks("netcoreapp3.0")
+                    .WithTargetFrameworks(TestTFM)
                     .Dir()
                     .Create();
 
                 var project2 = refProj2.WithCSharpProject("refProj2");
                 project2
-                    .WithTargetFrameworks("netcoreapp3.0")
+                    .WithTargetFrameworks(TestTFM)
                     .Dir()
                     .Create();
 
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
                 var refProjName = "refProj";
                 var csproj = refProj.WithCSharpProject(refProjName);
                 csproj
-                    .WithTargetFrameworks("netcoreapp3.0")
+                    .WithTargetFrameworks(TestTFM)
                     .Dir()
                     .Create();
 
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
                 var refProjName = "refProj";
                 refProj
                     .WithCSharpProject(refProjName)
-                    .WithTargetFrameworks("netcoreapp3.0")
+                    .WithTargetFrameworks(TestTFM)
                     .Dir()
                     .Create();
 

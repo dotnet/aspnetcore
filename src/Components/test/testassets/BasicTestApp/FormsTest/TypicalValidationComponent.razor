@@ -1,7 +1,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <p class="name">
@@ -42,6 +42,10 @@
     <p class="is-evil">
         Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
     </p>
+    <p class="username">
+        Username (optional): <InputText @bind-Value="person.Username" />
+        <button type="button" @onclick="@TriggerAsyncValidationError">Trigger async error</button>
+    </p>
 
     <button type="submit">Submit</button>
 
@@ -52,6 +56,14 @@
 
 @code {
     Person person = new Person();
+    EditContext editContext;
+    ValidationMessageStore customValidationMessageStore;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person);
+        customValidationMessageStore = new ValidationMessageStore(editContext);
+    }
 
     // Usually this would be in a different file
     class Person
@@ -83,6 +95,8 @@
 
         [Required, EnumDataType(typeof(TicketClass))]
         public TicketClass TicketClass { get; set; }
+
+        public string Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
@@ -92,5 +106,23 @@
     void HandleValidSubmit()
     {
         submissionLog.Add("OnValidSubmit");
+    }
+
+    void TriggerAsyncValidationError()
+    {
+        customValidationMessageStore.Clear();
+
+        // Note that this method returns void, so the renderer doesn't react to
+        // its async flow by default. This is to simulate some external system
+        // implementing async validation.
+        Task.Run(async () =>
+        {
+            // The duration of the delay doesn't matter to the test, as long as it's not
+            // so long that we time out. Picking a value that's long enough for humans
+            // to observe the asynchrony too.
+            await Task.Delay(500);
+            customValidationMessageStore.Add(editContext.Field(nameof(Person.Username)), "This is invalid, asynchronously");
+            _ = InvokeAsync(editContext.NotifyValidationStateChanged);
+        });
     }
 }
