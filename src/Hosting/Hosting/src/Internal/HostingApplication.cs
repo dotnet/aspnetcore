@@ -96,6 +96,14 @@ namespace Microsoft.AspNetCore.Hosting
             if (_defaultHttpContextFactory != null)
             {
                 _defaultHttpContextFactory.Dispose((DefaultHttpContext)httpContext);
+
+                if (_defaultHttpContextFactory.HttpContextAccessor != null)
+                {
+                    // Clear the HttpContext if the accessor was used. It's likely that the lifetime extends
+                    // past the end of the http request and we want to avoid changing the reference from under
+                    // consumers.
+                    context.HttpContext = null;
+                }
             }
             else
             {
