@@ -818,12 +818,20 @@ export class HubConnection {
 
     private createInvocation(methodName: string, args: any[], nonblocking: boolean, streamIds: string[]): InvocationMessage {
         if (nonblocking) {
-            return {
-                arguments: args,
-                streamIds,
-                target: methodName,
-                type: MessageType.Invocation,
-            };
+            if (streamIds.length !== 0) {
+                return {
+                    arguments: args,
+                    streamIds,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            } else {
+                return {
+                    arguments: args,
+                    target: methodName,
+                    type: MessageType.Invocation,
+                };
+            }
         } else {
             const invocationId = this.invocationId;
             this.invocationId++;

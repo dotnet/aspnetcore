@@ -32,7 +32,7 @@ describe("Message size", () => {
 
                 // Verify the message is sent
                 expect(connection.sentData.length).toBe(1);
-                expect((connection.sentData[0] as string).length).toEqual(59);
+                expect((connection.sentData[0] as string).length).toEqual(44);
             } finally {
                 // Close the connection
                 await hubConnection.stop();
