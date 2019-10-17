@@ -1177,7 +1177,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2040", "All")]
         public async Task MultipleRequestsToActiveConnectionId409ForLongPolling()
         {
             using (StartVerifiableLog())
