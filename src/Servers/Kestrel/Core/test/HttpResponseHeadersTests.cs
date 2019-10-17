@@ -139,6 +139,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ThrowsWhenSettingContentLengthPropertyAfterReadOnlyIsSet()
+        {
+            var headers = new HttpResponseHeaders();
+            headers.SetReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => headers.ContentLength = null);
+        }
+
+        [Fact]
         public void ThrowsWhenChangingHeaderAfterReadOnlyIsSet()
         {
             var headers = new HttpResponseHeaders();
