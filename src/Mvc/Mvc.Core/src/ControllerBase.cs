@@ -1870,7 +1870,10 @@ namespace Microsoft.AspNetCore.Mvc
                 detail: detail,
                 instance: instance);
 
-            return new ObjectResult(problemDetails);
+            return new ObjectResult(problemDetails)
+            {
+                StatusCode = problemDetails.Status
+            };
         }
 
         /// <summary>
@@ -1946,7 +1949,10 @@ namespace Microsoft.AspNetCore.Mvc
                 return new BadRequestObjectResult(validationProblem);
             }
 
-            return new ObjectResult(validationProblem);
+            return new ObjectResult(validationProblem)
+            {
+                StatusCode = validationProblem.Status
+            };
         }
 
         /// <summary>
@@ -2446,7 +2452,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await TryUpdateModelAsync(model, prefix, valueProvider);
         }
 
@@ -2520,7 +2531,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2559,7 +2575,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
@@ -2687,7 +2708,12 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(ControllerContext);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(ControllerContext, ControllerContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,

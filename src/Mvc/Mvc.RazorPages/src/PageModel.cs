@@ -222,7 +222,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await TryUpdateModelAsync(model, name, valueProvider);
         }
 
@@ -294,7 +299,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(includeExpressions));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 name,
@@ -332,7 +342,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(propertyFilter));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 name,
@@ -457,7 +472,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(PageContext, PageContext.ValueProviderFactories);
+            var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(PageContext, PageContext.ValueProviderFactories);
+            if (!success)
+            {
+                return false;
+            }
+
             return await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 modelType,

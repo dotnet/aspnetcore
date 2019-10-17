@@ -2,6 +2,7 @@ import '@dotnet/jsinterop';
 import './GlobalExports';
 import * as signalR from '@aspnet/signalr';
 import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
+import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -106,6 +107,7 @@ async function initializeConnection(options: BlazorOptions, logger: Logger, circ
   connection.on('JS.Error', error => {
     renderingFailed = true;
     unhandledError(connection, error, logger);
+    showErrorNotification();
   });
 
   window['Blazor']._internal.forceCloseConnection = () => connection.stop();

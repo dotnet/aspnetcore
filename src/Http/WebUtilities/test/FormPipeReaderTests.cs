@@ -213,6 +213,28 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         [Theory]
         [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_LimitsCanBeLarge(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.KeyLengthLimit = int.MaxValue;
+            formReader.ValueLengthLimit = int.MaxValue;
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
+            Assert.Equal("", dict["t"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
         public void TryParseFormValues_SplitAcrossSegmentsWorks(Encoding encoding)
         {
             var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
@@ -220,6 +242,28 @@ namespace Microsoft.AspNetCore.WebUtilities
             KeyValueAccumulator accumulator = default;
 
             var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+            Assert.True(readOnlySequence.IsEmpty);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
+            Assert.Equal("", dict["t"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_SplitAcrossSegmentsWorks_LimitsCanBeLarge(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.KeyLengthLimit = int.MaxValue;
+            formReader.ValueLengthLimit = int.MaxValue;
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
             formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
             Assert.True(readOnlySequence.IsEmpty);
 

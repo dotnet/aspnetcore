@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorComponents
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     public class HtmlRendererTest
     {
@@ -270,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorComponents
             // Assert
             Assert.Equal(expectedHtml, result);
         }
-        
+
         [Fact]
         public void RenderComponentAsync_MarksSelectedOptionsAsSelected()
         {
@@ -668,18 +666,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorComponents
 
             public Task SetParametersAsync(ParameterView parameters)
             {
-                _renderHandle.Render(CreateRenderFragment(parameters));
+                var content = parameters.GetValueOrDefault<string>("Value");
+                _renderHandle.Render(CreateRenderFragment(content));
                 return Task.CompletedTask;
             }
 
-            private RenderFragment CreateRenderFragment(ParameterView parameters)
+            private RenderFragment CreateRenderFragment(string content)
             {
                 return RenderFragment;
 
                 void RenderFragment(RenderTreeBuilder rtb)
                 {
                     rtb.OpenElement(1, "span");
-                    rtb.AddContent(2, parameters.GetValueOrDefault<string>("Value"));
+                    rtb.AddContent(2, content);
                     rtb.CloseElement();
                 }
             }

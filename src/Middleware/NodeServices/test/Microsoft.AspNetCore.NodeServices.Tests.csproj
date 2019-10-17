@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestDependsOnNode>true</TestDependsOnNode>
   </PropertyGroup>
 
@@ -9,7 +9,7 @@
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Content Include="js\**\*" />   
+    <Content Include="js\**\*" />
   </ItemGroup>
 
 </Project>

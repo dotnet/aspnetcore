@@ -11,11 +11,10 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal class StaticComponentRenderer
     {

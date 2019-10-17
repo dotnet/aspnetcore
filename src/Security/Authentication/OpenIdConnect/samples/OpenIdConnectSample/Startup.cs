@@ -35,16 +35,16 @@ namespace OpenIdConnectSample
 
         private void CheckSameSite(HttpContext httpContext, CookieOptions options)
         {
-            if (options.SameSite > (SameSiteMode)(-1))
+            if (options.SameSite > SameSiteMode.Unspecified)
             {
-                var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+                var userAgent = httpContext.Request.Headers["User-Agent"];
                 // TODO: Use your User Agent library of choice here.
                 if (userAgent.Contains("CPU iPhone OS 12") // Also covers iPod touch
                     || userAgent.Contains("iPad; CPU OS 12")
                     // Safari 12 and 13 are both broken on Mojave
                     || userAgent.Contains("Macintosh; Intel Mac OS X 10_14"))
                 {
-                    options.SameSite = (SameSiteMode)(-1);
+                    options.SameSite = SameSiteMode.Unspecified;
                 }
             }
         }
@@ -55,15 +55,14 @@ namespace OpenIdConnectSample
 
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.MinimumSameSitePolicy = (SameSiteMode)(-1);
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
                 options.OnAppendCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
                 options.OnDeleteCookie = cookieContext => CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
 
             services.AddAuthentication(sharedOptions =>
             {
-                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie()

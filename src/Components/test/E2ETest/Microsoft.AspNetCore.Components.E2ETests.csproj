@@ -4,18 +4,18 @@
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    
+
     <!-- Run on platforms where we support Selenium -->
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
-    
+
     <OutputPath />
 
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
@@ -31,6 +31,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Ignitor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,10 +42,7 @@
     <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
-    <ProjectReference Include="..\testassets\Ignitor\Ignitor.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
@@ -54,6 +52,7 @@
   <ItemGroup>
     <!-- Shared descriptor infrastructure with MVC -->
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
   </ItemGroup>

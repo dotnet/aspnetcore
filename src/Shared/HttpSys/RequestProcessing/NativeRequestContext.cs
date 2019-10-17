@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.Extensions.Primitives;
 
@@ -477,6 +480,88 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 dataChunkIndex = -1;
             }
             return dataRead;
+        }
+
+        internal IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetRequestInfo((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetRequestInfo(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> GetRequestInfo(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var count = nativeRequest->RequestInfoCount;
+            if (count == 0)
+            {
+                return ImmutableDictionary<int, ReadOnlyMemory<byte>>.Empty;
+            }
+
+            var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var requestInfo = nativeRequest->pRequestInfo[i];
+                var offset = (long)requestInfo.pInfo - (long)baseAddress;
+                info.Add(
+                    (int)requestInfo.InfoType,
+                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength));
+            }
+
+            return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
+        }
+
+        internal X509Certificate2 GetClientCertificate()
+        {
+            if (_permanentlyPinned)
+            {
+                return GetClientCertificate((IntPtr)_nativeRequest, (HttpApiTypes.HTTP_REQUEST_V2*)_nativeRequest);
+            }
+            else
+            {
+                fixed (byte* pMemoryBlob = _backingBuffer)
+                {
+                    var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
+                    return GetClientCertificate(_originalBufferAddress, request);
+                }
+            }
+        }
+
+        // Throws CryptographicException
+        private X509Certificate2 GetClientCertificate(IntPtr baseAddress, HttpApiTypes.HTTP_REQUEST_V2* nativeRequest)
+        {
+            var request = nativeRequest->Request;
+            long fixup = (byte*)nativeRequest - (byte*)baseAddress;
+            if (request.pSslInfo == null)
+            {
+                return null;
+            }
+
+            var sslInfo = (HttpApiTypes.HTTP_SSL_INFO*)((byte*)request.pSslInfo + fixup);
+            if (sslInfo->SslClientCertNegotiated == 0 || sslInfo->pClientCertInfo == null)
+            {
+                return null;
+            }
+
+            var clientCertInfo = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)((byte*)sslInfo->pClientCertInfo + fixup);
+            if (clientCertInfo->pCertEncoded == null)
+            {
+                return null;
+            }
+
+            var clientCert = clientCertInfo->pCertEncoded + fixup;
+            byte[] certEncoded = new byte[clientCertInfo->CertEncodedSize];
+            Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
+            return new X509Certificate2(certEncoded);
         }
     }
 }

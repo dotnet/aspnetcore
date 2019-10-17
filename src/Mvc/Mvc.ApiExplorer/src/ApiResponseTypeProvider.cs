@@ -214,7 +214,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             var declaredReturnType = action.MethodInfo.ReturnType;
             if (declaredReturnType == typeof(void) ||
-                declaredReturnType == typeof(Task))
+                declaredReturnType == typeof(Task) ||
+                declaredReturnType == typeof(ValueTask))
             {
                 return typeof(void);
             }
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
             var unwrappedType = declaredReturnType;
             if (declaredReturnType.IsGenericType &&
-                declaredReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                (declaredReturnType.GetGenericTypeDefinition() == typeof(Task<>) || declaredReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
             {
                 unwrappedType = declaredReturnType.GetGenericArguments()[0];
             }

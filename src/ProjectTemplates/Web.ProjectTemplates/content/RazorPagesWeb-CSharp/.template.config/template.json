@@ -8,15 +8,15 @@
   ],
   "name": "ASP.NET Core Web App",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content",
+  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
-  "precedence": "5000",
-  "identity": "Microsoft.Web.RazorPages.CSharp.3.0",
+  "precedence": "6000",
+  "identity": "Microsoft.Web.RazorPages.CSharp.3.1",
   "shortName": [
     "webapp",
     "razor"
   ],
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/3.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/3.1-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -310,12 +310,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp3.1",
+          "description": "Target netcoreapp3.1"
         }
       ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
+      "replaces": "netcoreapp3.1",
+      "defaultValue": "netcoreapp3.1"
     },
     "copyrightYear": {
       "type": "generated",

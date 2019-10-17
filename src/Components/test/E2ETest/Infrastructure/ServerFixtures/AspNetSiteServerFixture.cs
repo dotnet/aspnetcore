@@ -7,12 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public class AspNetSiteServerFixture : WebHostServerFixture
     {
-        public delegate IWebHost BuildWebHost(string[] args);
+        public delegate IHost BuildWebHost(string[] args);
 
         public Assembly ApplicationAssembly { get; set; }
 
@@ -20,9 +21,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
         public AspNetEnvironment Environment { get; set; } = AspNetEnvironment.Production;
 
-        public List<string> AdditionalArguments { get; set; } = new List<string>();
+        public List<string> AdditionalArguments { get; set; } = new List<string> { "--test-execution-mode", "server" };
 
-        protected override IWebHost CreateWebHost()
+        protected override IHost CreateWebHost()
         {
             if (BuildWebHostMethod == null)
             {

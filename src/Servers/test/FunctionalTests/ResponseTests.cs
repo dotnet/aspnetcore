@@ -26,7 +26,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp31)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -52,7 +52,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix SelfhostTestVariants
             => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30);
+                .WithTfms(Tfm.NetCoreApp31);
 
         // Connection Close tests do not work through reverse proxies
         [ConditionalTheory]

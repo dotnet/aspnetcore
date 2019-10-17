@@ -26,8 +26,7 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2327", FlakyOn.All)]
-        public async Task RazorPagesTemplate_NoAuthImplAsync()
+        public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
 
@@ -45,7 +44,7 @@ namespace Templates.Test
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, createResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             var buildResult = await Project.RunDotNetBuildAsync();
@@ -95,10 +94,9 @@ namespace Templates.Test
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2335", FlakyOn.All)]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task RazorPagesTemplate_IndividualAuthImplAsync(bool useLocalDB)
+        public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
 
@@ -115,7 +113,7 @@ namespace Templates.Test
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             var buildResult = await Project.RunDotNetBuildAsync();

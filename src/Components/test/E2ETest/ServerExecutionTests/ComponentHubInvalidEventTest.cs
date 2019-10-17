@@ -10,21 +10,17 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ComponentHubInvalidEventTest : IgnitorTest<AspNetSiteServerFixture>
+    public class ComponentHubInvalidEventTest : IgnitorTest<ServerStartup>
     {
-        public ComponentHubInvalidEventTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+        public ComponentHubInvalidEventTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
-        }
-
-        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
-        {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
         protected async override Task InitializeAsync()

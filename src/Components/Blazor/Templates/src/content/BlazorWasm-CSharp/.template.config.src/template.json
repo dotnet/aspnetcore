@@ -83,12 +83,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp3.1",
+          "description": "Target netcoreapp3.1"
         }
       ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
+      "replaces": "netcoreapp3.1",
+      "defaultValue": "netcoreapp3.1"
     },
     "HostIdentifier": {
       "type": "bind",

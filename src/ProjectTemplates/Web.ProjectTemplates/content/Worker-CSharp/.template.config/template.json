@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
-  "precedence": "5000",
-  "identity": "Microsoft.Worker.Empty.CSharp.3.0",
+  "precedence": "6000",
+  "identity": "Microsoft.Worker.Empty.CSharp.3.1",
   "shortName": "worker",
   "tags": {
     "language": "C#",
@@ -47,12 +47,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
+          "choice": "netcoreapp3.1",
+          "description": "Target netcoreapp3.1"
         }
       ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
+      "replaces": "netcoreapp3.1",
+      "defaultValue": "netcoreapp3.1"
     },
     "copyrightYear": {
       "type": "generated",

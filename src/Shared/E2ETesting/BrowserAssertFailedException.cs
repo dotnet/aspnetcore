@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Xunit.Sdk;
 
 namespace OpenQA.Selenium
@@ -12,16 +13,15 @@ namespace OpenQA.Selenium
     // case.
     public class BrowserAssertFailedException : XunitException
     {
-        public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException)
-            : base(BuildMessage(logs), innerException)
+        public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException, string screenShotPath)
+            : base(BuildMessage(innerException, logs, screenShotPath), innerException)
         {
         }
 
-        private static string BuildMessage(IReadOnlyList<LogEntry> logs)
-        {
-            return
-                "Encountered browser errors while running assertion." + Environment.NewLine +
-                string.Join(Environment.NewLine, logs);
-        }
+        private static string BuildMessage(Exception innerException, IReadOnlyList<LogEntry> logs, string screenShotPath) =>
+            innerException.ToString() + Environment.NewLine +
+            (File.Exists(screenShotPath) ? $"Screen shot captured at '{screenShotPath}'" + Environment.NewLine : "") +
+            (logs.Count > 0 ? "Encountered browser logs" : "No browser logs found") + " while running the assertion." + Environment.NewLine +
+            string.Join(Environment.NewLine, logs);
     }
 }
