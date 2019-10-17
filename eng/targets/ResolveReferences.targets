@@ -227,7 +227,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <PackageReference Include="@(_LatestPackageReferenceWithVersion)">
+        <IsImplicitlyDefined Condition="'$(IsReferenceAssemblyProject)' == 'true' OR '$(IsImplementationProject)' == 'true' ">true</IsImplicitlyDefined>
+      </PackageReference>
+    </ItemGroup>
 
       <!-- Resolve references from BaselinePackageReference for servicing builds. -->
       <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
