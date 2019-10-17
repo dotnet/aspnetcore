@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
 
-        internal long? _maximumReceiveMessageSize = null;
-        internal bool _maximumReceiveMessageSizeSet;
+        internal long? _maximumReceiveMessageSize { get; set; } = null;
+        internal bool _maximumReceiveMessageSizeSet { get; set; }
     }
 }

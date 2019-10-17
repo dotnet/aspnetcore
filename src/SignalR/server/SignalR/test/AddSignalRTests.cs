@@ -101,6 +101,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var serviceCollection = new ServiceCollection();
 
+            // null is special when the default options setup runs, so we set to null to verify that our options run after the default
+            // setup runs
             serviceCollection.AddSignalR(options =>
             {
                 options.MaximumReceiveMessageSize = null;
@@ -122,8 +124,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.HandshakeTimeout);
             Assert.Null(globalOptions.SupportedProtocols);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
-
-            var typedOptions = serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>();
         }
     }
 
