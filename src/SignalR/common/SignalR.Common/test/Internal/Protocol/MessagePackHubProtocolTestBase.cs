@@ -178,6 +178,24 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 name: "Ping",
                 message: PingMessage.Instance,
                 binary: "kQY="),
+
+            // Close Messages
+            new ProtocolTestData(
+                name: "CloseMessage",
+                message: CloseMessage.Empty,
+                binary: "kwfAwg=="),
+            new ProtocolTestData(
+                name: "CloseMessage_HasError",
+                message: new CloseMessage("Error!"),
+                binary: "kwemRXJyb3Ihwg=="),
+            new ProtocolTestData(
+                name: "CloseMessage_HasAllowReconnect",
+                message: new CloseMessage(error: null, allowReconnect: true),
+                binary: "kwfAww=="),
+            new ProtocolTestData(
+                name: "CloseMessage_HasErrorAndAllowReconnect",
+                message: new CloseMessage("Error!", allowReconnect: true),
+                binary: "kwemRXJyb3Ihww=="),
         }.ToDictionary(t => t.Name);
 
         [Theory]

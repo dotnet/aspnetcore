@@ -822,7 +822,9 @@ describe("HubConnection", () => {
 
                     await hubConnection.start();
 
+                    // allowReconnect Should have no effect since auto reconnect is disabled by default.
                     connection.receive({
+                        allowReconnect: true,
                         error: "Error!",
                         type: MessageType.Close,
                     });

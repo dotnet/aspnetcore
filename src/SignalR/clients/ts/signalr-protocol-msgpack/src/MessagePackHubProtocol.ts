@@ -124,6 +124,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
         return {
             // Close messages have no headers.
+            allowReconnect: properties.length >= 3 ? properties[2] : undefined,
             error: properties[1],
             type: MessageType.Close,
         } as HubMessage;

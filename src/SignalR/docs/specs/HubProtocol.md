@@ -482,6 +482,7 @@ A `Close` message is a JSON object with the following properties
 
 * `type` - A `Number` with the literal value `7`, indicating that this message is a `Close`.
 * `error` - An optional `String` encoding the error message.
+* `allowReconnect` - An optional `Boolean` indicating to clients with automatic reconnects enabled that they should attempt to reconnect after receiving the message.
 
 Example - A `Close` message without an error
 ```json
@@ -495,6 +496,15 @@ Example - A `Close` message with an error
 {
     "type": 7,
     "error": "Connection closed because of an error!"
+}
+```
+
+Example - A `Close` message with an error that allows automatic client reconnects.
+```json
+{
+    "type": 7,
+    "error": "Connection closed because of an error!",
+    "allowReconnect": true
 }
 ```
 
@@ -809,11 +819,12 @@ is decoded as follows:
 `Close` messages have the following structure
 
 ```
-[7, Error]
+[7, Error, AllowReconnect?]
 ```
 
 * `7` - Message Type - `7` indicates this is a `Close` message.
 * `Error` - Error - A `String` encoding the error for the message.
+* `AllowReconnect` - An optional `Boolean` indicating to clients with automatic reconnects enabled that they should attempt to reconnect after receiving the message.
 
 Examples:
 
@@ -832,6 +843,23 @@ is decoded as follows:
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
+
+#### Close message that allows automatic client reconnects
+
+The following payload:
+```
+0x93 0x07 0xa3 0x78 0x79 0x7a 0xc3
+```
+
+is decoded as follows:
+
+* `0x93` - 3-element array
+* `0x07` - `7` (Message Type - `Close` message)
+* `0xa3` - string of length 3 (Error)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0xc3` - `True` (AllowReconnect)
 
 ### MessagePack Headers Encoding
 

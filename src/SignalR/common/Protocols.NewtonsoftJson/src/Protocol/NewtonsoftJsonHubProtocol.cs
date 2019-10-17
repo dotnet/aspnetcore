@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string TargetPropertyName = "target";
         private const string ArgumentsPropertyName = "arguments";
         private const string HeadersPropertyName = "headers";
+        private const string AllowReconnectPropertyName = "allowReconnect";
 
         private static readonly string ProtocolName = "json";
         private static readonly int ProtocolVersion = 1;
@@ -131,6 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
+                var allowReconnect = false;
 
                 using (var reader = JsonUtils.CreateJsonTextReader(textReader))
                 {
@@ -186,6 +188,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                         break;
                                     case ErrorPropertyName:
                                         error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
+                                        break;
+                                    case AllowReconnectPropertyName:
+                                        allowReconnect = JsonUtils.ReadAsBoolean(reader, AllowReconnectPropertyName);
                                         break;
                                     case ResultPropertyName:
                                         hasResult = true;
@@ -373,7 +378,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error);
+                        return BindCloseMessage(error, allowReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -549,6 +554,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 writer.WritePropertyName(ErrorPropertyName);
                 writer.WriteValue(message.Error);
+            }
+
+            if (message.AllowReconnect)
+            {
+                writer.WritePropertyName(AllowReconnectPropertyName);
+                writer.WriteValue(true);
             }
         }
 
@@ -733,16 +744,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             throw new JsonReaderException("Unexpected end when reading JSON");
         }
 
-        private CloseMessage BindCloseMessage(string error)
+        private CloseMessage BindCloseMessage(string error, bool allowReconnect)
         {
             // An empty string is still an error
-            if (error == null)
+            if (error == null && !allowReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            var message = new CloseMessage(error);
-            return message;
+            return new CloseMessage(error, allowReconnect);
         }
 
         private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)

@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.SignalR
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
         private bool _connectionAborted;
+        private volatile bool _allowReconnect = true;
         private int _streamBufferCapacity;
         private long? _maxMessageSize;
 
@@ -105,6 +106,9 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets a key/value collection that can be used to share data within the scope of this connection.
         /// </summary>
         public virtual IDictionary<object, object> Items => _connectionContext.Items;
+
+        // Used by HubConnectionHandler to determine whether to set CloseMessage.AllowReconnect.
+        internal bool AllowReconnect => _allowReconnect;
 
         // Used by HubConnectionHandler
         internal PipeReader Input => _connectionContext.Transport.Input;
@@ -201,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
-                Abort();
+                AbortAllowReconnect();
 
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
@@ -220,7 +224,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
-                Abort();
+                AbortAllowReconnect();
 
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
@@ -236,7 +240,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.FailedWritingMessage(_logger, ex);
 
-                Abort();
+                AbortAllowReconnect();
             }
             finally
             {
@@ -262,7 +266,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
-                Abort();
+                AbortAllowReconnect();
             }
             finally
             {
@@ -287,7 +291,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
-                Abort();
+                AbortAllowReconnect();
             }
             finally
             {
@@ -323,7 +327,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
-                Abort();
+                AbortAllowReconnect();
             }
             finally
             {
@@ -358,6 +362,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// Aborts the connection.
         /// </summary>
         public virtual void Abort()
+        {
+            _allowReconnect = false;
+            AbortAllowReconnect();
+        }
+
+        private void AbortAllowReconnect()
         {
             _connectionAborted = true;
 
@@ -514,7 +524,7 @@ namespace Microsoft.AspNetCore.SignalR
         // Used by the HubConnectionHandler only
         internal Task AbortAsync()
         {
-            Abort();
+            AbortAllowReconnect();
             return _abortCompletedTcs.Task;
         }
 
@@ -560,7 +570,7 @@ namespace Microsoft.AspNetCore.SignalR
                 if (!_receivedMessageThisInterval)
                 {
                     Log.ClientTimeout(_logger, TimeSpan.FromTicks(_clientTimeoutInterval));
-                    Abort();
+                    AbortAllowReconnect();
                 }
 
                 _receivedMessageThisInterval = false;
