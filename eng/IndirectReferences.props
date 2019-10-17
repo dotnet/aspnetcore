@@ -1959,6 +1959,410 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Diagnostics.HealthChecks'))">
+		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.NewtonsoftJson'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Options.DataAnnotations'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.Abstractions'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Localization.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.AzureAppServices'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Primitives'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.DependencyInjection.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting.Systemd'))">
+		<IndirectReference Include="Microsoft.Extensions.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.CommandLine" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventSource" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Debug" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventLog" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.UserSecrets'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.TraceSource'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Caching.Abstractions'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.WebEncoders'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Caching.SqlServer'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting.Abstractions'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.CommandLine'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.EnvironmentVariables'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.EventSource'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.FileProviders.Physical'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Options'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.FileSystemGlobbing'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting.WindowsServices'))">
+		<IndirectReference Include="Microsoft.Extensions.Hosting" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.CommandLine" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventSource" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Debug" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventLog" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.Ini'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.DiagnosticAdapter'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.JSInterop'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.FileProviders.Abstractions'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.EventLog'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Options.ConfigurationExtensions'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.ObjectPool'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.KeyPerFile'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.DependencyInjection'))">
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting'))">
+		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.CommandLine" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventSource" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Json" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Debug" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.EventLog" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.UserSecrets" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.FileProviders.Embedded'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.Console'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.AzureKeyVault'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Localization'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Localization.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.FileProviders.Composite'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.Configuration'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Mono.WebAssembly.Interop'))">
+		<IndirectReference Include="Microsoft.JSInterop" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.Binder'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.Abstractions'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Caching.Memory'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.Json'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Http.Polly'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Http" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.Xml'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Testing'))">
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Logging.Debug'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Http'))">
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Configuration.FileExtensions'))">
+		<IndirectReference Include="Microsoft.Extensions.FileSystemGlobbing" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
+	<ItemGroup Condition="@(Reference->Count()) != '0' AND @(Reference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Caching.StackExchangeRedis'))">
+		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.Extensions.Caching.Abstractions" KeepDuplicates="false" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="@(IndirectReference)" KeepDuplicates="false" />
