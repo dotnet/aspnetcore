@@ -48,6 +48,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!--
+    In order to properly support Blazor partial classes we need to ensure that older SDKs don't
+    add declaration files to the compile list. We do all the compilation work in-memory in latest
+    VS.
+  -->
+  <Target Name="_RemoveRazorDeclartionsFromCompile" AfterTargets="RazorGenerateComponentDeclaration">
+    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
+      <Compile Remove="@(_RazorComponentDeclaration)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
     WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.
     Conditinally import these capabilities if the project isn't targeting the WebSdk.
    -->
