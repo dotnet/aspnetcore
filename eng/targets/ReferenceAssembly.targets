@@ -14,7 +14,7 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_GenerateProjectSourceInner"
-             Properties="TargetFramework=%(_DeduplicatedTargetFramework.Identity)">
+             Properties="TargetFramework=%(_DeduplicatedTargetFramework.Identity);ReferenceReferenceAssemblies=false">
       <Output TaskParameter="TargetOutputs" ItemName="ProjectListContentItem" />
     </MSBuild>
 
@@ -43,7 +43,7 @@
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
-  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(TargetFramework).cs</_RefSourceFileName>

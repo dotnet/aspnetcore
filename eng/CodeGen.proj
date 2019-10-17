@@ -3,6 +3,7 @@
   <PropertyGroup>
     <BuildManaged>true</BuildManaged>
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
   </PropertyGroup>
 
   <Import Project="Build.props" />
@@ -11,11 +12,11 @@
     <Message Importance="High" Text="Analyzing @(ProjectToBuild->Count()) projects" />
 
     <MSBuild Projects="@(ProjectToBuild)"
-             Targets="GetReferencesProvided"
+             Targets="Restore;GetReferencesProvided"
              BuildInParallel="true"
+             Properties="ReferenceReferenceAssemblies=false"
              SkipNonexistentTargets="true"
              SkipNonexistentProjects="true" >
-
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
     </MSBuild>
 
@@ -80,7 +81,7 @@
   <Target Name="GenerateReferenceSources">
       <MSBuild
           Projects="@(ProjectToBuild)"
-          Targets="GenerateReferenceSource"
+          Targets="Restore;Build"
           SkipNonexistentTargets="true"
           SkipNonexistentProjects="true" />
   </Target>

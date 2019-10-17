@@ -29,7 +29,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <GenerateDependencyFile>false</GenerateDependencyFile>
 
-    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>

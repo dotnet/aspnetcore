@@ -68,7 +68,7 @@
     -->
     <PackageReference Include="Microsoft.Internal.Extensions.Refs"
         Version="$(MicrosoftInternalExtensionsRefsPackageVersion)"
-        Condition=" '$(MicrosoftInternalExtensionsRefsPath)' == '' "
+        Condition="'$(ReferenceReferenceAssemblies)' == 'true' AND @(Reference->WithMetadataValue('Identity', 'Microsoft.Internal.Extensions.Refs')->Count()) == 0"
         IsImplicitlyDefined="true"
         PrivateAssets="All" />
 
@@ -105,7 +105,8 @@
         Include="@(ProjectReferenceProvider)"
         Exclude="@(_UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')"
+        Condition="'$(ReferenceImplementationAssemblies)' == 'true'">
       <IsReferenceAssembly>false</IsReferenceAssembly>
 
       <!--
@@ -118,17 +119,18 @@
       -->
       <OutputItemType
           Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">ReferenceCopyLocalPaths</OutputItemType>
-      <PrivateAssets
-          Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">All</PrivateAssets>
+      <!-- Private
+          Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">true</Private -->
       <ReferenceOutputAssembly
           Condition=" '$(ReferenceReferenceAssemblies)' == 'true' AND '%(ProjectReference.RefProjectPath)' != '' ">false</ReferenceOutputAssembly>
     </ProjectReference>
 
-    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')"
+        Condition="'$(ReferenceReferenceAssemblies)' == 'true'">
       <IsReferenceAssembly>true</IsReferenceAssembly>
 
       <!-- Do not include output from ref/ project in output directory when also referencing the implementation project. -->
-      <Private Condition=" '$(ReferenceImplementationAssemblies)' == 'true' ">false</Private>
+      <!-- Private Condition=" '$(ReferenceImplementationAssemblies)' == 'true' ">false</Private -->
     </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
