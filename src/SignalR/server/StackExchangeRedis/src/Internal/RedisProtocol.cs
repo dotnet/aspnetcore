@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
@@ -12,13 +13,19 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
-    internal class RedisProtocol
+    internal class RedisProtocol<THub> where THub : Hub
     {
         private readonly IReadOnlyList<IHubProtocol> _protocols;
+        private readonly IHubMessageSerializer<THub> _messageSerializer;
 
         public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
         {
             _protocols = protocols;
+        }
+
+        public RedisProtocol(IHubMessageSerializer<THub> messageSerializer)
+        {
+            _messageSerializer = messageSerializer;
         }
 
         // The Redis Protocol:
@@ -60,8 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                     MessagePackBinary.WriteArrayHeader(writer, 0);
                 }
 
-                WriteSerializedHubMessage(writer,
-                    new SerializedHubMessage(new InvocationMessage(methodName, args)));
+                WriteHubMessage(writer, new InvocationMessage(methodName, args));
                 return writer.ToArray();
             }
             finally
@@ -163,21 +169,40 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             return MessagePackUtil.ReadInt32(ref data);
         }
 
-        private void WriteSerializedHubMessage(Stream stream, SerializedHubMessage message)
+        private void WriteHubMessage(Stream stream, HubMessage message)
         {
             // Written as a MessagePack 'map' where the keys are the name of the protocol (as a MessagePack 'str')
             // and the values are the serialized blob (as a MessagePack 'bin').
 
-            MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
-
-            foreach (var protocol in _protocols)
+            if (_protocols != null)
             {
-                MessagePackBinary.WriteString(stream, protocol.Name);
+                MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
 
-                var serialized = message.GetSerializedMessage(protocol);
-                var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
-                Debug.Assert(isArray);
-                MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
+                foreach (var protocol in _protocols)
+                {
+                    MessagePackBinary.WriteString(stream, protocol.Name);
+
+                    var serialized = protocol.GetMessageBytes(message);
+                    var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
+                    Debug.Assert(isArray);
+                    MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
+                }
+            }
+            else
+            {
+                var serializedHubMessage = _messageSerializer.SerializeMessage(message);
+                var serializedMessages = serializedHubMessage.GetAllSerializations().ToList();
+
+                MessagePackBinary.WriteMapHeader(stream, serializedMessages.Count);
+
+                foreach (var serializedMessage in serializedMessages)
+                {
+                    MessagePackBinary.WriteString(stream, serializedMessage.ProtocolName);
+
+                    var isArray = MemoryMarshal.TryGetArray(serializedMessage.Serialized, out var array);
+                    Debug.Assert(isArray);
+                    MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
+                }
             }
         }
 

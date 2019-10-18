@@ -5,8 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
 
             var decoded = protocol.ReadAck(testData.Encoded);
 
@@ -44,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
 
             var encoded = protocol.WriteAck(testData.Decoded);
 
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
 
             var decoded = protocol.ReadGroupCommand(testData.Encoded);
 
@@ -80,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
 
             var encoded = protocol.WriteGroupCommand(testData.Decoded);
 
@@ -140,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             var testData = _invocationTestData[testName];
             var hubProtocols = new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") };
-            var protocol = new RedisProtocol(hubProtocols);
+            var protocol = new RedisProtocol<EchoHub>(hubProtocols);
 
             var expected = testData.Decoded();
 
@@ -171,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteInvocation(string testName)
         {
             var testData = _invocationTestData[testName];
-            var protocol = new RedisProtocol(new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol<EchoHub>(new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.

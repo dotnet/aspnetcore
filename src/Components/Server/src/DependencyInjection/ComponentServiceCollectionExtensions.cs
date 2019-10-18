@@ -45,11 +45,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSignalR().AddHubOptions<ComponentHub>(options =>
             {
                 options.SupportedProtocols.Clear();
-                options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
-            });
 
-            // Register the Blazor specific hub protocol
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
+                // Add Blazor specific hub protocol here instead of in DI
+                // Because adding to DI would add this protocol to all Hubs by default
+                options.AdditionalHubProtocols.Add(new BlazorPackHubProtocol());
+            });
 
             // Here we add a bunch of services that don't vary in any way based on the
             // user's configuration. So even if the user has multiple independent server-side

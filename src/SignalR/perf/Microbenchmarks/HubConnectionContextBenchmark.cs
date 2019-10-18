@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe.AddReadResult(new ValueTask<ReadResult>(_handshakeRequestResult));
 
             await _hubConnectionContext.HandshakeAsync(TimeSpan.FromSeconds(5), _supportedProtocols, _successHubProtocolResolver,
-                _userIdProvider, enableDetailedErrors: true);
+                _userIdProvider, enableDetailedErrors: true, Array.Empty<IHubProtocol>());
         }
 
         [Benchmark]
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe.AddReadResult(new ValueTask<ReadResult>(_handshakeRequestResult));
 
             await _hubConnectionContext.HandshakeAsync(TimeSpan.FromSeconds(5), _supportedProtocols, _failureHubProtocolResolver,
-                _userIdProvider, enableDetailedErrors: true);
+                _userIdProvider, enableDetailedErrors: true, Array.Empty<IHubProtocol>());
         }
     }
 

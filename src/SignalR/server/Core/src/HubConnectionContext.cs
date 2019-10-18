@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
-            IUserIdProvider userIdProvider, bool enableDetailedErrors)
+            IUserIdProvider userIdProvider, bool enableDetailedErrors, IList<IHubProtocol> additionalProtocols)
         {
             try
             {
@@ -437,10 +437,22 @@ namespace Microsoft.AspNetCore.SignalR
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
                                     if (Protocol == null)
                                     {
-                                        Log.HandshakeFailed(_logger, null);
+                                        foreach (var protocol in additionalProtocols)
+                                        {
+                                            if (string.Equals(handshakeRequestMessage.Protocol, protocol.Name, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                Protocol = protocol;
+                                                break;
+                                            }
+                                        }
 
-                                        await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"The protocol '{handshakeRequestMessage.Protocol}' is not supported."));
-                                        return false;
+                                        if (Protocol == null)
+                                        {
+                                            Log.HandshakeFailed(_logger, null);
+
+                                            await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"The protocol '{handshakeRequestMessage.Protocol}' is not supported."));
+                                            return false;
+                                        }
                                     }
 
                                     if (!Protocol.IsVersionSupported(handshakeRequestMessage.Version))

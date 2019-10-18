@@ -23,8 +23,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = services.BuildServiceProvider().GetRequiredService<IOptions<HubOptions<ComponentHub>>>();
 
             // Assert
-            var protocol = Assert.Single(options.Value.SupportedProtocols);
-            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol);
+            Assert.Empty(options.Value.SupportedProtocols);
+            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
         }
 
         [Fact]
@@ -44,8 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = services.BuildServiceProvider().GetRequiredService<IOptions<HubOptions<ComponentHub>>>();
 
             // Assert
-            var protocol = Assert.Single(options.Value.SupportedProtocols);
-            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol);
+            Assert.Empty(options.Value.SupportedProtocols);
+            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
             Assert.Equal(TimeSpan.FromMinutes(10), options.Value.HandshakeTimeout);
         }
 
@@ -71,8 +73,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var globalOptions = services.BuildServiceProvider().GetRequiredService<IOptions<HubOptions>>();
 
             // Assert
-            var protocol = Assert.Single(options.Value.SupportedProtocols);
-            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol);
+            Assert.Empty(options.Value.SupportedProtocols);
+            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
             Assert.Equal(TimeSpan.FromMinutes(5), options.Value.HandshakeTimeout);
 
             // Configuring Blazor options is kept separate from the global options.
