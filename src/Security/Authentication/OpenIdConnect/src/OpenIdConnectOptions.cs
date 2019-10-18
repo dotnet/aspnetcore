@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
 
         /// <summary>
-        /// 30 seconds is the default time interval that must pass for <see cref="ConfigurationManager" /> to obtain a new configuration.
+        /// 30 seconds is the default, minimum time interval that must pass for <see cref="ConfigurationManager" /> to obtain a new configuration.
         /// </summary>
         public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
     }
