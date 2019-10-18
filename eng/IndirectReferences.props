@@ -1263,7 +1263,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Connections.Common" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore" KeepDuplicates="false" />
-		<IndirectReference Include="TestContentPackage" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.WebSockets" KeepDuplicates="false" />
@@ -1564,7 +1563,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.HttpOverrides" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.FileExtensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
@@ -3487,7 +3485,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Options" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" KeepDuplicates="false" />
 	</ItemGroup>
