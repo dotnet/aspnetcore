@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private SerializedMessage _cachedItem1;
         private SerializedMessage _cachedItem2;
-        private IList<SerializedMessage> _cachedItems;
+        private List<SerializedMessage> _cachedItems;
         private readonly object _lock = new object();
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR
             for (var i = 0; i < messages.Count; i++)
             {
                 var message = messages[i];
-                SetCache(message.ProtocolName, message.Serialized);
+                SetCacheUnsynchronized(message.ProtocolName, message.Serialized);
             }
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             lock (_lock)
             {
-                if (!TryGetCached(protocol.Name, out var serialized))
+                if (!TryGetCachedUnsynchronized(protocol.Name, out var serialized))
                 {
                     if (Message == null)
                     {
@@ -63,42 +63,45 @@ namespace Microsoft.AspNetCore.SignalR
                     }
 
                     serialized = protocol.GetMessageBytes(Message);
-                    SetCache(protocol.Name, serialized);
+                    SetCacheUnsynchronized(protocol.Name, serialized);
                 }
 
                 return serialized;
             }
         }
 
-        // Used for unit testing.
-        internal IReadOnlyList<SerializedMessage> GetAllSerializations()
+        /// <summary>
+        /// Gets all serialized hub messages for all protocols used on this <see cref="SerializedHubMessage"/> instance.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{T}"/> of already serialized hub messages for each protocol.</returns>
+        public IEnumerable<SerializedMessage> GetAllSerializations()
         {
             // Even if this is only used in tests, let's do it right.
             lock (_lock)
             {
                 if (_cachedItem1.ProtocolName == null)
                 {
-                    return Array.Empty<SerializedMessage>();
+                    yield break;
                 }
 
-                var list = new List<SerializedMessage>(2);
-                list.Add(_cachedItem1);
+                yield return _cachedItem1;
 
                 if (_cachedItem2.ProtocolName != null)
                 {
-                    list.Add(_cachedItem2);
+                    yield return _cachedItem2;
 
                     if (_cachedItems != null)
                     {
-                        list.AddRange(_cachedItems);
+                        foreach (var item in _cachedItems)
+                        {
+                            yield return item;
+                        }
                     }
                 }
-
-                return list;
             }
         }
 
-        private void SetCache(string protocolName, ReadOnlyMemory<byte> serialized)
+        private void SetCacheUnsynchronized(string protocolName, ReadOnlyMemory<byte> serialized)
         {
             // We set the fields before moving on to the list, if we need it to hold more than 2 items.
             // We have to read/write these fields under the lock because the structs might tear and another
@@ -132,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private bool TryGetCached(string protocolName, out ReadOnlyMemory<byte> result)
+        private bool TryGetCachedUnsynchronized(string protocolName, out ReadOnlyMemory<byte> result)
         {
             if (string.Equals(_cachedItem1.ProtocolName, protocolName, StringComparison.Ordinal))
             {

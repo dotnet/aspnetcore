@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<SignalRCoreMarkerService>();
             services.TryAddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.TryAddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
+            services.TryAddSingleton(typeof(IHubMessageSerializer<>), typeof(DefaultHubMessageSerializer<>));
             services.TryAddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.TryAddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
             services.TryAddSingleton(typeof(HubConnectionHandler<>), typeof(HubConnectionHandler<>));

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
     public class RedisProtocolBenchmark
     {
-        private RedisProtocol _protocol;
+        private RedisProtocol<TestHub> _protocol;
         private RedisGroupCommand _groupCommand;
         private object[] _args;
         private string _methodName;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _protocol = new RedisProtocol(new [] {
+            _protocol = new RedisProtocol<TestHub>(new [] {
                 new DummyProtocol("protocol1"),
                 new DummyProtocol("protocol2")
             });
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             return ids;
         }
 
-        private class DummyProtocol: IHubProtocol
+        private class DummyProtocol : IHubProtocol
         {
             private static readonly byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
 
@@ -152,5 +152,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 return HubProtocolExtensions.GetMessageBytes(this, message);
             }
         }
+
+        private class TestHub : Hub
+        { }
     }
 }
