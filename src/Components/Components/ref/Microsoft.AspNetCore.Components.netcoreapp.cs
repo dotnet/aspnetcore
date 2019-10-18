@@ -207,7 +207,10 @@ namespace Microsoft.AspNetCore.Components
     public sealed partial class EventHandlerAttribute : System.Attribute
     {
         public EventHandlerAttribute(string attributeName, System.Type eventArgsType) { }
+        public EventHandlerAttribute(string attributeName, System.Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault) { }
         public string AttributeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool EnablePreventDefault { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool EnableStopPropagation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Type EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial interface IComponent
