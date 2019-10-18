@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public void Configure(HubOptions<THub> options)
         {
+            // Do a deep copy, otherwise users modifying the HubOptions<THub> list would be changing the global options list
             options.SupportedProtocols = new List<string>(_hubOptions.SupportedProtocols.Count);
             foreach (var protocol in _hubOptions.SupportedProtocols)
             {
@@ -24,7 +26,12 @@ namespace Microsoft.AspNetCore.SignalR
             options.KeepAliveInterval = _hubOptions.KeepAliveInterval;
             options.HandshakeTimeout = _hubOptions.HandshakeTimeout;
 
-            options.AdditionalHubProtocols = _hubOptions.AdditionalHubProtocols;
+            // Do a deep copy, otherwise users modifying the HubOptions<THub> list would be changing the global options list
+            options.AdditionalHubProtocols = new List<IHubProtocol>(_hubOptions.AdditionalHubProtocols.Count);
+            foreach (var protocol in _hubOptions.AdditionalHubProtocols)
+            {
+                options.AdditionalHubProtocols.Add(protocol);
+            }
         }
     }
 }
