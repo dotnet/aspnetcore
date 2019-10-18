@@ -273,11 +273,11 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>40c00020ac632006c9db91383de246226f9cb44a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.0.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.0.1-servicing.19510.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>40c00020ac632006c9db91383de246226f9cb44a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.0.1-servicing.19510.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.0.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>40c00020ac632006c9db91383de246226f9cb44a</Sha>
     </Dependency>
