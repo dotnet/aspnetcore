@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Empty(options.Value.SupportedProtocols);
-            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            var protocol = Assert.Single(options.Value.HubProtocols);
             Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Empty(options.Value.SupportedProtocols);
-            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            var protocol = Assert.Single(options.Value.HubProtocols);
             Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
             Assert.Equal(TimeSpan.FromMinutes(10), options.Value.HandshakeTimeout);
         }
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Empty(options.Value.SupportedProtocols);
-            var protocol = Assert.Single(options.Value.AdditionalHubProtocols);
+            var protocol = Assert.Single(options.Value.HubProtocols);
             Assert.Equal(BlazorPackHubProtocol.ProtocolName, protocol.Name);
             Assert.Equal(TimeSpan.FromMinutes(5), options.Value.HandshakeTimeout);
 

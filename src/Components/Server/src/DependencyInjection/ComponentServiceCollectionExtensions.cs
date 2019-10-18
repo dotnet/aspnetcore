@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 // Add Blazor specific hub protocol here instead of in DI
                 // Because adding to DI would add this protocol to all Hubs by default
-                options.AdditionalHubProtocols.Add(new BlazorPackHubProtocol());
+                options.HubProtocols.Add(new BlazorPackHubProtocol());
             });
 
             // Here we add a bunch of services that don't vary in any way based on the

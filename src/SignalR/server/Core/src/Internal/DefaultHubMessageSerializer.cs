@@ -11,10 +11,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal class DefaultHubMessageSerializer<THub> : IHubMessageSerializer<THub> where THub : Hub
     {
-        private List<IHubProtocol> _hubProtocols = new List<IHubProtocol>();
+        private readonly List<IHubProtocol> _hubProtocols = new List<IHubProtocol>();
 
         public DefaultHubMessageSerializer(IHubProtocolResolver hubProtocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions)
         {
+            if (hubOptions.Value.HubProtocols.Any())
+            {
+                _hubProtocols.AddRange(hubOptions.Value.HubProtocols);
+                return;
+            }
+
             var supportedProtocols = hubOptions.Value.SupportedProtocols ?? globalHubOptions.Value.SupportedProtocols ?? Array.Empty<string>();
             foreach (var protocolName in supportedProtocols)
             {
@@ -23,13 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     _hubProtocols.Add(protocol);
                 }
-            }
-
-            // REVIEW: Do we care about removing dupes, since that's a very unlikely scenario?
-            var additionalProtocols = hubOptions.Value.AdditionalHubProtocols ?? globalHubOptions.Value.AdditionalHubProtocols ?? Array.Empty<IHubProtocol>();
-            foreach (var protocol in additionalProtocols)
-            {
-                _hubProtocols.Add(protocol);
             }
         }
 

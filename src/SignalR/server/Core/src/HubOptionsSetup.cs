@@ -54,11 +54,6 @@ namespace Microsoft.AspNetCore.SignalR
                 options.SupportedProtocols = new List<string>();
             }
 
-            if (options.AdditionalHubProtocols == null)
-            {
-                options.AdditionalHubProtocols = new List<IHubProtocol>();
-            }
-
             if (options.StreamBufferCapacity == null)
             {
                 options.StreamBufferCapacity = DefaultStreamBufferCapacity;
