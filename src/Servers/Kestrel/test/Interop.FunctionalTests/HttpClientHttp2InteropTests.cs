@@ -42,7 +42,6 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
                 if (Utilities.CurrentPlatformSupportsAlpn())
                 {
                     list.Add(new[] { "https" });
@@ -389,7 +388,7 @@ namespace Interop.FunctionalTests
             await ReadStreamHelloWorld(stream);
 
             Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
-            stream.Dispose(); // https://github.com/dotnet/corefx/issues/39404 can be worked around by commenting out this Dispose
+            stream.Dispose();
 
             // Send one more message after the server has finished.
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
@@ -413,16 +412,12 @@ namespace Interop.FunctionalTests
                     webHostBuilder.ConfigureServices(AddTestLogging)
                     .Configure(app => app.Run(async context =>
                     {
-                        // Prime it?
-                        // var readTask = context.Request.BodyReader.ReadAsync();
                         context.Response.ContentType = "text/plain";
                         await context.Response.WriteAsync("Hello World");
                         await context.Response.CompleteAsync().DefaultTimeout();
 
                         try
                         {
-                            // var readResult = await readTask;
-                            // context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
                             using var streamReader = new StreamReader(context.Request.Body);
                             var read = await streamReader.ReadToEndAsync().DefaultTimeout();
                             clientEcho.SetResult(read);
@@ -438,7 +433,6 @@ namespace Interop.FunctionalTests
             var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
-            // client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
             var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
@@ -447,15 +441,8 @@ namespace Interop.FunctionalTests
             Assert.Equal(HttpVersion.Version20, response.Version);
 
             // Read Hello World and echo it back to the server.
-            /* https://github.com/dotnet/corefx/issues/39404
             var read = await response.Content.ReadAsStringAsync().DefaultTimeout();
             Assert.Equal("Hello World", read);
-            */
-            var stream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
-            await ReadStreamHelloWorld(stream).DefaultTimeout();
-
-            Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
-            stream.Dispose(); // https://github.com/dotnet/corefx/issues/39404 can be worked around by commenting out this Dispose
 
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
             streamingContent.Complete();
@@ -632,9 +619,121 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        // ServerReset_AfterEndStream_NoError
-        // ServerReset_AfterTrailers_NoError
-        // ServerReset_BeforeRequestBody_ClientBodyThrows
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_AfterEndStream_NoError(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Hello World");
+                        await context.Response.CompleteAsync();
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync().DefaultTimeout();
+            Assert.Equal("Hello World", body);
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_AfterTrailers_NoError(string scheme)
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        context.Response.DeclareTrailer("TestTrailer");
+                        await context.Response.WriteAsync("Hello World");
+                        context.Response.AppendTrailer("TestTrailer", "TestValue");
+                        await context.Response.CompleteAsync();
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+            using var client = CreateClient();
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("TestTrailer", response.Headers.Trailer.Single());
+            var responseBody = await response.Content.ReadAsStringAsync().DefaultTimeout();
+            Assert.Equal("Hello World", responseBody);
+            // The response is buffered, we must already have the trailers.
+            Assert.Equal("TestValue", response.TrailingHeaders.GetValues("TestTrailer").Single());
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
+        {
+            var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverReset = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var headersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        context.Response.ContentType = "text/plain";
+                        await context.Response.BodyWriter.FlushAsync();
+                        await headersReceived.Task.DefaultTimeout();
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                        serverReset.SetResult(0);
+
+                        try
+                        {
+                            using var streamReader = new StreamReader(context.Request.Body);
+                            var read = await streamReader.ReadToEndAsync().DefaultTimeout();
+                            clientEcho.SetResult(read);
+                        }
+                        catch (Exception ex)
+                        {
+                            clientEcho.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var streamingContent = new StreamingContent();
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            headersReceived.SetResult(0);
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+
+            await serverReset.Task.DefaultTimeout();
+            var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
+            var requestEx = await Assert.ThrowsAsync<HttpRequestException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
+            Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", requestEx.ToString());
+
+            await Assert.ThrowsAsync<IOException>(() => clientEcho.Task.DefaultTimeout());
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
         // ServerReset_BeforeRequestBodyEnd_ClientBodyThrows
         // ClientReset_BeforeRequestData_ReadThrows
         // ClientReset_BeforeRequestDataEnd_ReadThrows
