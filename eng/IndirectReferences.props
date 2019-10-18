@@ -2169,6 +2169,7 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.JSInterop" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(_RefsToCheck->Count()) != '0' AND @(_RefsToCheck->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Authentication.Google'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -3701,6 +3702,7 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
+		<IndirectReference Include="Microsoft.JSInterop" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(_RefsToCheck->Count()) != '0' AND @(_RefsToCheck->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Server.Kestrel'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
