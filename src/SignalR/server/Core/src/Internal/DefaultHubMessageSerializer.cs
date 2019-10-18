@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
             }
 
+            // REVIEW: Do we care about removing dupes, since that's a very unlikely scenario?
             var additionalProtocols = hubOptions.Value.AdditionalHubProtocols ?? globalHubOptions.Value.AdditionalHubProtocols ?? Array.Empty<IHubProtocol>();
             foreach (var protocol in additionalProtocols)
             {
