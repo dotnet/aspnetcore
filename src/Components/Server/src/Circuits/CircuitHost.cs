@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             else
             {
                 return $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                    $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'. {additionalInformation}";
+                    $"detailed exceptions by setting 'detailedErrors: true' in 'appSettings.Development.json' or set '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'. {additionalInformation}";
             }
         }
 
