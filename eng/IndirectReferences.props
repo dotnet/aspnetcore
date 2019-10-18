@@ -2,7 +2,7 @@
 
 	<ItemGroup>
 		<_RefsToCheck Include="@(Reference.Identity)" />
-		<_RefsToCheck Include="@(ProjectReference.Filename)" />
+		<_RefsToCheck Include="%(ProjectReference.Filename)" Condition="'%(ProjectReference.ReferenceOutputAssembly)' != 'false'" />
 	</ItemGroup>
 
 	<ItemGroup Condition="@(_RefsToCheck->Count()) != '0' AND @(_RefsToCheck->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.Diagnostics'))">
