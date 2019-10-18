@@ -1,7 +1,7 @@
 <Project>
 
 	<ItemGroup>
-		<_RefsToCheck Include="@(Reference.Identity)" />
+		<_RefsToCheck Include="@(Reference->'%(Identity)')"/>
 		<_ProjectRefsToCheck Include="@(ProjectReference)" Exclude="@(ProjectReference->WithMetadataValue('ReferenceOutputAssembly', 'false'))" />
 		<_RefsToCheck Include="@(_ProjectRefsToCheck->'%(Filename)')"/>
 	</ItemGroup>
