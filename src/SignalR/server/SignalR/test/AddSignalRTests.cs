@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
             var hubOptions = new HubOptionsSetup(new List<IHubProtocol>());
             serviceCollection.AddSingleton<IConfigureOptions<HubOptions>>(hubOptions);
+            serviceCollection.AddSingleton(typeof(IHubMessageSerializer<>), typeof(CustomHubMessageSerializer<>));
             serviceCollection.AddSignalR();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
+            Assert.IsType<CustomHubMessageSerializer<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubMessageSerializer<CustomDynamicHub>>());
             Assert.Equal(hubOptions, serviceProvider.GetRequiredService<IConfigureOptions<HubOptions>>());
             Assert.Equal(markerService, serviceProvider.GetRequiredService<SignalRCoreMarkerService>());
         }
@@ -56,6 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddScoped(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
             serviceCollection.AddSingleton(typeof(IHubContext<>), typeof(CustomHubContext<>));
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
+            serviceCollection.AddSingleton(typeof(IHubMessageSerializer<>), typeof(CustomHubMessageSerializer<>));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.IsType<CustomIdProvider>(serviceProvider.GetRequiredService<IUserIdProvider>());
@@ -65,6 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
+            Assert.IsType<CustomHubMessageSerializer<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubMessageSerializer<CustomDynamicHub>>());
         }
 
         [Fact]
@@ -75,11 +79,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
             {
                 options.SupportedProtocols.Clear();
+                options.AdditionalHubProtocols.Add(new JsonHubProtocol());
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
             Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
+
+            Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.AdditionalHubProtocols.Count);
+            Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.AdditionalHubProtocols.Count);
         }
 
         [Fact]
@@ -272,6 +280,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class CustomHubMessageSerializer<THub> : IHubMessageSerializer<THub> where THub : Hub
+    {
+        public SerializedHubMessage SerializeMessage(HubMessage message)
         {
             throw new System.NotImplementedException();
         }

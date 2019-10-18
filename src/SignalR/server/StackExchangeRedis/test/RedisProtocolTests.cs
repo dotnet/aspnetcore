@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
@@ -169,7 +171,23 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteInvocation(string testName)
         {
             var testData = _invocationTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol<EchoHub>(new [] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+
+            // Actual invocation doesn't matter because we're using a dummy hub protocol.
+            // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
+            var expected = testData.Decoded();
+            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, expected.ExcludedConnectionIds);
+
+            Assert.Equal(testData.Encoded, encoded);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvocationTestData))]
+        public void WriteInvocationWithHubMessageSerializer(string testName)
+        {
+            var testData = _invocationTestData[testName];
+            var hubMessageSerializer = CreateHubMessageSerializer(new List<IHubProtocol>() { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol<Hub>(hubMessageSerializer);
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
@@ -195,6 +213,19 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 Decoded = decoded;
                 Encoded = encoded;
             }
+        }
+
+        private IHubMessageSerializer<Hub> CreateHubMessageSerializer(List<IHubProtocol> protocols)
+        {
+            var hubTypeOptions = Options.Create(new HubOptions<Hub>()
+            {
+                AdditionalHubProtocols = protocols
+            });
+            var globalHubOptions = Options.Create(new HubOptions());
+
+            var protocolResolver = new DefaultHubProtocolResolver(new List<IHubProtocol>(), NullLogger<DefaultHubProtocolResolver>.Instance);
+
+            return new DefaultHubMessageSerializer<Hub>(protocolResolver, globalHubOptions, hubTypeOptions);
         }
     }
 }
