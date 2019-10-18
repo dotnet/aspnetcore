@@ -1,0 +1,9 @@
+Source Location: (157:2,7 [30] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    bool Foo { get; set; }
+|
+Generated Location: (1720:55,7 [30] )
+|
+    bool Foo { get; set; }
+|
+

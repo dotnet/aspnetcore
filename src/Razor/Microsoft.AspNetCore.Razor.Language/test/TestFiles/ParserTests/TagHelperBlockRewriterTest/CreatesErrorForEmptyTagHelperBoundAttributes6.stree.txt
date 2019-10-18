@@ -10,12 +10,12 @@ RazorDocument - [0..29)::29 - [<myth bound='true' bound=  />]
                     MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [13..17)::4
                         CSharpExpressionLiteral - [13..17)::4 - [true] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Text;[true];
-                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupTagHelperAttribute - [18..25)::7 - bound - DoubleQuotes - Bound - [ bound=]
                     MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -26,7 +26,7 @@ RazorDocument - [0..29)::29 - [<myth bound='true' bound=  />]
                     MarkupTagHelperAttributeValue - [25..25)::0
                         CSharpExpressionLiteral - [25..25)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                 MarkupMiscAttributeContent - [25..27)::2
-                    MarkupTextLiteral - [25..27)::2 - [  ] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [25..27)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[  ];
                 ForwardSlash;[/];
                 CloseAngle;[>];

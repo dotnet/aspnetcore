@@ -10,12 +10,12 @@ RazorDocument - [0..34)::34 - [<person birthday="DateTime.Now" />]
                     MarkupTextLiteral - [8..16)::8 - [birthday] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[birthday];
                     Equals;[=];
-                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [18..30)::12
                         CSharpExpressionLiteral - [18..30)::12 - [DateTime.Now] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Text;[DateTime.Now];
-                    MarkupTextLiteral - [30..31)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [30..31)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [31..32)::1
                     MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

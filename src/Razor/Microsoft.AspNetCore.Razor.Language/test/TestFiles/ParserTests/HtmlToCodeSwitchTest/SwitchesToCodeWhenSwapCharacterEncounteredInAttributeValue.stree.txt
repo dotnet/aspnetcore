@@ -21,7 +21,7 @@ RazorDocument - [0..21)::21 - [@{<foo bar="@baz" />}]
                                         MarkupTextLiteral - [7..10)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[bar];
                                         Equals;[=];
-                                        MarkupTextLiteral - [11..12)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [11..12)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                         GenericBlock - [12..16)::4
                                             MarkupDynamicAttributeValue - [12..16)::4 - [@baz]
@@ -34,7 +34,7 @@ RazorDocument - [0..21)::21 - [@{<foo bar="@baz" />}]
                                                                 CSharpCodeBlock - [13..16)::3
                                                                     CSharpExpressionLiteral - [13..16)::3 - [baz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                                                         Identifier;[baz];
-                                        MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [16..17)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                     MarkupMiscAttributeContent - [17..18)::1
                                         MarkupTextLiteral - [17..18)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

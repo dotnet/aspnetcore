@@ -48,18 +48,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <!--
-    For now we need to treat component files as if they have a single file generator. This will allow us
-    to trigger a workspace update for the declaration files when they change.
+    In order to properly support Blazor partial classes we need to ensure that older SDKs don't
+    add declaration files to the compile list. We do all the compilation work in-memory in latest
+    VS.
   -->
-  <ItemGroup>
-    <Content Update="**\*.razor">
-      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
-    </Content>
-
-    <Content Update="$(_RazorComponentInclude)">
-      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
-    </Content>
-  </ItemGroup>
+  <Target Name="_RemoveRazorDeclartionsFromCompile" AfterTargets="RazorGenerateComponentDeclaration">
+    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
+      <Compile Remove="@(_RazorComponentDeclaration)" />
+    </ItemGroup>
+  </Target>
 
   <!--
     WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.

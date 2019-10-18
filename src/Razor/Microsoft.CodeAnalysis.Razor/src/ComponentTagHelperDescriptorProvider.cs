@@ -573,10 +573,8 @@ namespace Microsoft.CodeAnalysis.Razor
                     return false;
                 }
 
-                return
-                    symbol.DeclaredAccessibility == Accessibility.Public &&
-                    !symbol.IsAbstract &&
-                    symbol.AllInterfaces.Contains(_symbols.IComponent);
+                var isComponent = ComponentDetectionConventions.IsComponent(symbol, _symbols.IComponent);
+                return isComponent;
             }
         }
     }

@@ -10,7 +10,7 @@ RazorDocument - [0..31)::31 - [<p class="btn bar="foo"<strong>]
                     MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [10..18)::8
                         MarkupLiteralAttributeValue - [10..13)::3 - [btn]
@@ -22,7 +22,7 @@ RazorDocument - [0..31)::31 - [<p class="btn bar="foo"<strong>]
                             MarkupTextLiteral - [14..18)::4 - [bar=] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[bar];
                                 Equals;[=];
-                    MarkupTextLiteral - [18..19)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [18..19)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMinimizedTagHelperAttribute - [19..23)::4 - foo" - Minimized - Unbound - [foo"]
                     MarkupTextLiteral - [19..23)::4 - [foo"] - Gen<Markup> - SpanEditHandler;Accepts:Any

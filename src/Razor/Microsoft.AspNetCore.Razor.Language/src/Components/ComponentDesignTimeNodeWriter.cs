@@ -85,6 +85,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
+            WriteCSharpExpressionInnards(context, node);
+        }
+
+        private void WriteCSharpExpressionInnards(CodeRenderingContext context, CSharpExpressionIntermediateNode node, string type = null)
+        {
             if (node.Children.Count == 0)
             {
                 return;
@@ -95,8 +100,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     var offset = DesignTimeVariable.Length + " = ".Length;
+
+                    if (type != null)
+                    {
+                        offset += type.Length + 2; // two parenthesis
+                    }
+
                     context.CodeWriter.WritePadding(offset, node.Source, context);
                     context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
+
+                    if (type != null)
+                    {
+                        context.CodeWriter.Write("(");
+                        context.CodeWriter.Write(type);
+                        context.CodeWriter.Write(")");
+                    }
 
                     for (var i = 0; i < node.Children.Count; i++)
                     {
@@ -209,6 +227,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
+            // This expression may contain code so we have to render it or else the design-time
+            // exprience is broken.
+            if (node.AttributeNameExpression is CSharpExpressionIntermediateNode expression)
+            {
+                WriteCSharpExpressionInnards(context, expression, "string");
+            }
+
             context.RenderChildren(node);
         }
 
@@ -275,11 +300,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Do nothing
         }
 
-        protected override void BeginWriteAttribute(CodeWriter codeWriter, string key)
+        protected override void BeginWriteAttribute(CodeRenderingContext context, string key)
         {
-            if (codeWriter == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(codeWriter));
+                throw new ArgumentNullException(nameof(context));
             }
 
             if (key == null)
@@ -287,12 +312,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(key));
             }
 
-            codeWriter
+            context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddAttribute)}")
                 .Write("-1")
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
+        }
+
+        protected override void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode expression)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}");
+            context.CodeWriter.Write("-1");
+            context.CodeWriter.WriteParameterSeparator();
+
+            var tokens = GetCSharpTokens(expression);
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                context.CodeWriter.Write(tokens[i].Content);
+            }
+
+            context.CodeWriter.WriteParameterSeparator();
         }
 
         public override void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node)
@@ -650,10 +700,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
+            static bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
             {
-                return n.BoundAttribute != null && !n.BoundAttribute.IsWeaklyTyped();
-            }   
+                // Weakly typed attributes will have their TypeName set to null.
+                return n.BoundAttribute != null && n.TypeName != null;
+            }
         }
 
         private IReadOnlyList<IntermediateToken> GetCSharpTokens(IntermediateNode node)
@@ -679,7 +730,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
             // OR
             // __builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
-            BeginWriteAttribute(context.CodeWriter, node.AttributeName);
+            BeginWriteAttribute(context, node.AttributeName);
             context.CodeWriter.Write($"({node.TypeName})(");
 
             WriteComponentChildContentInnards(context, node);

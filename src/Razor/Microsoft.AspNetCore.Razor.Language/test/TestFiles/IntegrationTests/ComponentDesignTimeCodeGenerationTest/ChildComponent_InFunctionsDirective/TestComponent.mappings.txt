@@ -5,7 +5,7 @@ Generated Location: (320:12,0 [48] )
 
 Source Location: (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml)
 | RenderChildComponent(__builder); |
-Generated Location: (1016:31,2 [34] )
+Generated Location: (1024:31,2 [34] )
 | RenderChildComponent(__builder); |
 
 Source Location: (101:4,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -13,7 +13,7 @@ Source Location: (101:4,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
     void RenderChildComponent(RenderTreeBuilder __builder)
     {
         |
-Generated Location: (1228:40,7 [77] )
+Generated Location: (1236:40,7 [77] )
 |
     void RenderChildComponent(RenderTreeBuilder __builder)
     {
@@ -23,7 +23,7 @@ Source Location: (193:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     }
 |
-Generated Location: (1741:60,23 [9] )
+Generated Location: (1749:60,23 [9] )
 |
     }
 |

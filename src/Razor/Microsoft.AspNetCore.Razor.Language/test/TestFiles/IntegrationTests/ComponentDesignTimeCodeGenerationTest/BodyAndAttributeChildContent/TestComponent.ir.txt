@@ -5,7 +5,7 @@ Document -
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -26,6 +26,6 @@ Document -
                     ComponentChildContent -  - ChildContent - context
                         HtmlContent - (120:1,28 [20] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (120:1,28 [20] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some Content\n
-                    ComponentAttribute - (112:1,20 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Header - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (112:1,20 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Header - Header - AttributeStructure.DoubleQuotes
                         CSharpExpression - (113:1,21 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (113:1,21 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - header

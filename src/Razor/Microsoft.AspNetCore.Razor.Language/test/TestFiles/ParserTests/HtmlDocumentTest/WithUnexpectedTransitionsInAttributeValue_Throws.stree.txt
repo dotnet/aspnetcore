@@ -10,7 +10,7 @@ RazorDocument - [0..18)::18 - [<span foo='@ @' />]
                     MarkupTextLiteral - [6..9)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[foo];
                     Equals;[=];
-                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [11..14)::3
                         MarkupDynamicAttributeValue - [11..12)::1 - [@]
@@ -35,7 +35,7 @@ RazorDocument - [0..18)::18 - [<span foo='@ @' />]
                                             CSharpCodeBlock - [14..14)::0
                                                 CSharpExpressionLiteral - [14..14)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                                     Marker;[];
-                    MarkupTextLiteral - [14..15)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [14..15)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [15..16)::1
                     MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

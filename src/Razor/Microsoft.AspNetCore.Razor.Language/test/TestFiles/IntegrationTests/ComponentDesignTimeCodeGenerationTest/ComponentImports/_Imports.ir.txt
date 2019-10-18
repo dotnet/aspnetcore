@@ -9,7 +9,7 @@ Document -
         UsingDirective - (21:1,1 [23] x:\dir\subdir\Test\_Imports.razor) - System.Reflection
         CSharpCode - 
             IntermediateToken -  - CSharp - [Microsoft.AspNetCore.Components.LayoutAttribute(typeof(MainLayout))]
-        ClassDeclaration -  - public - _Imports - System.Object - 
+        ClassDeclaration -  - public partial - _Imports - System.Object - 
             DesignTimeDirective - 
                 DirectiveToken - (56:3,8 [10] x:\dir\subdir\Test\_Imports.razor) - MainLayout
             CSharpCode - 

@@ -23,7 +23,7 @@ using System.Reflection;
 #line hidden
 #nullable disable
     [Microsoft.AspNetCore.Components.LayoutAttribute(typeof(MainLayout))]
-    public class _Imports : System.Object
+    public partial class _Imports : System.Object
     {
         #pragma warning disable 1998
         protected void Execute()

@@ -10,7 +10,7 @@ RazorDocument - [0..39)::39 - [<person age="@{flag == 0 ? 11 : 12}" />]
                     MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[age];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..35)::22
                         MarkupBlock - [13..35)::22
@@ -38,7 +38,7 @@ RazorDocument - [0..39)::39 - [<person age="@{flag == 0 ? 11 : 12}" />]
                                                 IntegerLiteral;[12];
                                         RazorMetaCode - [34..35)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                             RightBrace;[}];
-                    MarkupTextLiteral - [35..36)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [35..36)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [36..37)::1
                     MarkupTextLiteral - [36..37)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

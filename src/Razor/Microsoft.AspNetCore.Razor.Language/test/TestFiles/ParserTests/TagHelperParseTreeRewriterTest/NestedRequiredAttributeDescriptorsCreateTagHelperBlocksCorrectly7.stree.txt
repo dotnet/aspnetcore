@@ -10,13 +10,13 @@ RazorDocument - [0..45)::45 - [<p class="btn"><p class="btn"><p></p></p></p>]
                     MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [10..13)::3
                         MarkupLiteralAttributeValue - [10..13)::3 - [btn]
                             MarkupTextLiteral - [10..13)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
-                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 CloseAngle;[>];
             MarkupTagHelperElement - [15..41)::26 - p[StartTagAndEndTag] - pTagHelper
@@ -29,13 +29,13 @@ RazorDocument - [0..45)::45 - [<p class="btn"><p class="btn"><p></p></p></p>]
                         MarkupTextLiteral - [18..23)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Text;[class];
                         Equals;[=];
-                        MarkupTextLiteral - [24..25)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [24..25)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                         MarkupTagHelperAttributeValue - [25..28)::3
                             MarkupLiteralAttributeValue - [25..28)::3 - [btn]
                                 MarkupTextLiteral - [25..28)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[btn];
-                        MarkupTextLiteral - [28..29)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [28..29)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                     CloseAngle;[>];
                 MarkupElement - [30..37)::7

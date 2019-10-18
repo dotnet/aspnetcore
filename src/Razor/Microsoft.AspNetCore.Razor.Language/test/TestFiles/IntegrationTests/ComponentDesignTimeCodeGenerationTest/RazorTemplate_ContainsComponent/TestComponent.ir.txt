@@ -5,7 +5,7 @@ Document -
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -19,7 +19,7 @@ Document -
                 Template - (48:1,44 [45] x:\dir\subdir\Test\TestComponent.cshtml)
                     MarkupElement - (48:1,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         Component - (53:1,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                            ComponentAttribute - (72:1,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - AttributeStructure.DoubleQuotes
+                            ComponentAttribute - (72:1,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name - AttributeStructure.DoubleQuotes
                                 CSharpExpression - (73:1,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                                     IntermediateToken - (73:1,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (93:1,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)
