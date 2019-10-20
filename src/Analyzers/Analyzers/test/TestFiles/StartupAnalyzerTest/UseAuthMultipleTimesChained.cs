@@ -4,13 +4,14 @@
 using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest {
-    public class UseAuthConfiguredCorrectlyChained
+    public class UseAuthMultipleTimesChained
     {
         public void Configure(IApplicationBuilder app)
         {
             app.UseRouting()
-               .UseAuthorization()
-               .UseEndpoints(r => { });
+                .UseAuthorization()
+                .UseAuthorization()
+                .UseEndpoints(r => { });
         }
     }
 }
