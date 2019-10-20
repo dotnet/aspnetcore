@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new ExcludeBindingMetadataProvider(typeof(string));
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(Person).GetProperty(nameof(Person.Age)),
                 typeof(int),
-                nameof(Person.Age),
                 typeof(Person));
 
             var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new ExcludeBindingMetadataProvider(typeof(int));
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(Person).GetProperty(nameof(Person.Age)),
                 typeof(int),
-                nameof(Person.Age),
                 typeof(Person));
 
             var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
