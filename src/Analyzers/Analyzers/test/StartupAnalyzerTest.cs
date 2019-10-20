@@ -245,6 +245,21 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredCorrectlyChained_ReportsNoDiagnostics()
+        {
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectlyChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
         public async Task StartupAnalyzer_UseAuthorizationInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
         {
             // Arrange
