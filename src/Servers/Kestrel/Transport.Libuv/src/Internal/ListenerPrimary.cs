@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             ListenPipe = new UvPipeHandle(Log);
             ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
-            ListenPipe.Listen(LibuvConstants.ListenBacklog,
+            ListenPipe.Listen(TransportContext.Options.Backlog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
         }
 

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             EndPoint = listenSocket.LocalEndPoint;
 
-            listenSocket.Listen(512);
+            listenSocket.Listen(_options.Backlog);
 
             _listenSocket = listenSocket;
         }
