@@ -108,7 +108,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
             public InputModel() { }
