@@ -7,16 +7,23 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        Mouseover: <input id="mouseover_input" type="text" @onmouseover="@OnMouseOver" @onmouseout="@OnMouseOut" />
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" />
     </p>
     <p>
-        <span id="mousemove_input" @onmousemove="@OnMouseMove">Mousemove city!</span>
+        <span id="mousemove_input" @onmousemove="OnMouseMove">Mousemove city!</span>
     </p>
     <p>
-        Mousedown: <input id="mousedown_input" @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" />
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseDown" @onmouseup="OnMouseUp" />
     </p>
     <p>
-        <button @onclick="@Clear">Clear</button>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerDown" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
+        <button @onclick="Clear">Clear</button>
     </p>
 
     <p>
@@ -28,44 +35,65 @@
 
     string message;
 
-    void OnMouseOver(UIMouseEventArgs e)
+    void OnMouseOver(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseover,";
         StateHasChanged();
     }
 
-    void OnMouseOut(UIMouseEventArgs e)
+    void OnMouseOut(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseout,";
         StateHasChanged();
     }
 
-    void OnMouseMove(UIMouseEventArgs e)
+    void OnMouseMove(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousemove,";
         StateHasChanged();
     }
 
-    void OnMouseDown(UIMouseEventArgs e)
+    void OnMouseDown(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousedown,";
         StateHasChanged();
     }
 
-    void OnMouseUp(UIMouseEventArgs e)
+    void OnMouseUp(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseup,";
         StateHasChanged();
     }
 
-    void DumpEvent(UIMouseEventArgs e)
+    void OnPointerDown(PointerEventArgs e)
     {
-        Console.WriteLine(JsonSerializer.ToString(e));
+        DumpEvent(e);
+        message += "onpointerdown";
+        StateHasChanged();
+    }
+
+    void OnDragStart(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondragstart,";
+        StateHasChanged();
+    }
+
+    void OnDrop(DragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondrop,";
+        StateHasChanged();
+    }
+
+    void DumpEvent(MouseEventArgs e)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(e));
     }
 
     void Clear()

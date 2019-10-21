@@ -12,6 +12,17 @@
 
     <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
+    <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefPackageVersion)</DotnetTargetingPackDependencyVersion>
+    <DotnetTargetingPackDependencyVersion Condition="$(DotnetTargetingPackDependencyVersion.Contains('-'))">$(DotnetTargetingPackDependencyVersion.Substring(0, $(DotnetTargetingPackDependencyVersion.IndexOf('-'))))~$(DotnetTargetingPackDependencyVersion.Substring($([MSBuild]::Add($(DotnetTargetingPackDependencyVersion.IndexOf('-')), 1))))</DotnetTargetingPackDependencyVersion>
+
+    <PackageSummary>$(SharedFxProductName)</PackageSummary>
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <DebianConfigProperties>
+      DotnetTargetingPackDependencyVersion=$(DotnetTargetingPackDependencyVersion);
+    </DebianConfigProperties>
+
   </PropertyGroup>
 
   <ItemGroup>

@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task Anonymous_MissingConnectionFeatures_ThrowsNotSupported()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var ex = await Assert.ThrowsAsync<NotSupportedException>(() => SendAsync(server, "/Anonymous1", connection: null));
             Assert.Equal("Negotiate authentication requires a server that supports IConnectionItemsFeature like Kestrel.", ex.Message);
@@ -35,7 +36,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task Anonymous_NoChallenge_NoOps()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Anonymous1", new TestConnection());
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
@@ -44,7 +46,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task Anonymous_Http2_NoOps()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Anonymous2", connection: null, http2: true);
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
@@ -53,7 +56,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task Anonymous_Challenge_401Negotiate()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
@@ -63,7 +67,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task Anonymous_ChallengeHttp2_401Negotiate()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", connection: null, http2: true);
             // Clients will downgrade to HTTP/1.1 and authenticate.
@@ -74,7 +79,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task NtlmStage1Auth_401NegotiateServerBlob1()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientNtlmBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate ServerNtlmBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
@@ -83,7 +89,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task AnonymousAfterNtlmStage1_Throws()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await NtlmStage1Auth(server, testConnection);
 
@@ -94,7 +101,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task NtlmStage2Auth_WithoutStage1_Throws()
         {
-            var server = await CreateServerAsync();
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
 
             var ex = await Assert.ThrowsAsync<TrueException>(() => SendAsync(server, "/404", new TestConnection(), "Negotiate ClientNtlmBlob2"));
             Assert.Equal("Stage1Complete", ex.UserMessage);
@@ -105,7 +113,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task NtlmStage1And2Auth_Success(bool persistNtlm)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = persistNtlm);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persistNtlm);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await NtlmStage1And2Auth(server, testConnection);
         }
@@ -115,7 +124,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task KerberosAuth_Success(bool persistKerberos)
         {
-            var server = await CreateServerAsync(options => options.PersistKerberosCredentials = persistKerberos);
+            using var host = await CreateHostAsync(options => options.PersistKerberosCredentials = persistKerberos);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await KerberosAuth(server, testConnection);
         }
@@ -125,7 +135,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task KerberosTwoStageAuth_Success(bool persistKerberos)
         {
-            var server = await CreateServerAsync(options => options.PersistKerberosCredentials = persistKerberos);
+            using var host = await CreateHostAsync(options => options.PersistKerberosCredentials = persistKerberos);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await KerberosStage1And2Auth(server, testConnection);
         }
@@ -136,7 +147,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData("Kerberos2")]
         public async Task AnonymousAfterCompletedPersist_Cached(string protocol)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = true);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = true);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             if (protocol == "NTLM")
             {
@@ -162,7 +174,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData("Kerberos2")]
         public async Task AnonymousAfterCompletedNoPersist_Denied(string protocol)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = false);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = false);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             if (protocol == "NTLM")
             {
@@ -187,7 +200,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task AuthHeaderAfterNtlmCompleted_ReAuthenticates(bool persist)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = persist);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persist);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await NtlmStage1And2Auth(server, testConnection);
             await NtlmStage1And2Auth(server, testConnection);
@@ -198,7 +212,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task AuthHeaderAfterKerberosCompleted_ReAuthenticates(bool persist)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = persist);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persist);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await KerberosAuth(server, testConnection);
             await KerberosAuth(server, testConnection);
@@ -209,7 +224,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [InlineData(true)]
         public async Task AuthHeaderAfterKerberos2StageCompleted_ReAuthenticates(bool persist)
         {
-            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = persist);
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persist);
+            var server = host.GetTestServer();
             var testConnection = new TestConnection();
             await KerberosStage1And2Auth(server, testConnection);
             await KerberosStage1And2Auth(server, testConnection);
@@ -245,13 +261,47 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     });
                 });
 
-            var server = (await builder.StartAsync()).GetTestServer();
+            using var host = await builder.StartAsync();
+            var server = host.GetTestServer();
 
             var testConnection = new TestConnection();
             await NtlmStage1Auth(server, testConnection);
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientNtlmBlob2");
             Assert.Equal(StatusCodes.Status500InternalServerError, result.Response.StatusCode);
             Assert.False(result.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
+        }
+
+        [Fact]
+        public async Task CredentialError_401()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate CredentialError");
+            Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
+            Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+        }
+
+        [Fact]
+        public async Task ClientError_400()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+            var result = await SendAsync(server, "/404", testConnection, "Negotiate ClientError");
+            Assert.Equal(StatusCodes.Status400BadRequest, result.Response.StatusCode);
+            Assert.DoesNotContain(HeaderNames.WWWAuthenticate, result.Response.Headers);
+        }
+
+        [Fact]
+        public async Task OtherError_Throws()
+        {
+            using var host = await CreateHostAsync();
+            var server = host.GetTestServer();
+            var testConnection = new TestConnection();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() => SendAsync(server, "/404", testConnection, "Negotiate OtherError"));
+            Assert.Equal("A test other error occured", ex.Message);
         }
 
         // Single Stage
@@ -302,7 +352,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal("Negotiate ServerNtlmBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
-        private static async Task<TestServer> CreateServerAsync(Action<NegotiateOptions> configureOptions = null)
+        private static async Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
         {
             var builder = new HostBuilder()
                 .ConfigureServices(services => services
@@ -321,11 +371,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseEndpoints(ConfigureEndpoints);
-                    });                
+                    });
                 });
 
-            var server = (await builder.StartAsync()).GetTestServer();
-            return server;
+            return await builder.StartAsync();
         }
 
         private static void ConfigureEndpoints(IEndpointRouteBuilder builder)
@@ -458,7 +507,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return new GenericIdentity("name", _protocol);
             }
 
-            public string GetOutgoingBlob(string incomingBlob)
+            public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)
             {
                 if (IsDisposed)
                 {
@@ -468,6 +517,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     throw new InvalidOperationException("Authentication is already complete.");
                 }
+
+                errorType = BlobErrorType.None;
+                ex = null;
+
                 switch (incomingBlob)
                 {
                     case "ClientNtlmBlob1":
@@ -497,8 +550,22 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         Assert.Equal("Kerberos", _protocol);
                         IsCompleted = true;
                         return "ServerKerberosBlob2";
+                    case "CredentialError":
+                        errorType = BlobErrorType.CredentialError;
+                        ex = new Exception("A test credential error occured");
+                        return null;
+                    case "ClientError":
+                        errorType = BlobErrorType.ClientError;
+                        ex = new Exception("A test client error occured");
+                        return null;
+                    case "OtherError":
+                        errorType = BlobErrorType.Other;
+                        ex = new Exception("A test other error occured");
+                        return null;
                     default:
-                        throw new InvalidOperationException(incomingBlob);
+                        errorType = BlobErrorType.Other;
+                        ex = new InvalidOperationException(incomingBlob);
+                        return null;
                 }
             }
         }

@@ -3,6 +3,7 @@
 
 import { ILogger } from "../src/ILogger";
 import { TransferFormat } from "../src/ITransport";
+import { getUserAgentHeader } from "../src/Utils";
 import { WebSocketTransport } from "../src/WebSocketTransport";
 import { VerifyLogger } from "./Common";
 import { TestMessageEvent } from "./TestEventSource";
@@ -61,7 +62,7 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toBeNull();
+                .toThrow("There was an error with the transport.");
             expect(connectComplete).toBe(false);
         });
     });
@@ -202,6 +203,62 @@ describe("WebSocketTransport", () => {
                 });
             });
         });
+
+    it("sets user agent header on connect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const webSocket = await createAndStartWebSocket(logger);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const [, value] = getUserAgentHeader();
+            expect(TestWebSocket.webSocket.options!.headers[`User-Agent`]).toEqual(value);
+
+            await webSocket.stop();
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBeUndefined();
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
+
+    it("is closed from 'onreceive' callback throwing", async () => {
+        await VerifyLogger.run(async (logger) => {
+            (global as any).ErrorEvent = TestEvent;
+            const webSocket = await createAndStartWebSocket(logger);
+
+            let closeCalled: boolean = false;
+            let error: Error;
+            webSocket.onclose = (e) => {
+                closeCalled = true;
+                error = e!;
+            };
+
+            const receiveError = new Error("callback error");
+            webSocket.onreceive = (data) => {
+                throw receiveError;
+            };
+
+            const message = new TestMessageEvent();
+            message.data = "receive data";
+            TestWebSocket.webSocket.onmessage(message);
+
+            expect(closeCalled).toBe(true);
+            expect(error!).toBe(receiveError);
+
+            await expect(webSocket.send(""))
+                .rejects
+                .toBe("WebSocket is not in the OPEN state");
+        });
+    });
 });
 
 async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat): Promise<WebSocketTransport> {

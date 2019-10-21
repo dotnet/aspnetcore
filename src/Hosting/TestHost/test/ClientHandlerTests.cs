@@ -12,12 +12,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -54,7 +51,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
-                // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
+                Assert.True(features.Get<IHttpRequestLifetimeFeature>().RequestAborted.CanBeCanceled);
                 Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.TestHost
                 Assert.NotNull(features.Get<IHttpRequestFeature>().Body);
                 Assert.NotNull(features.Get<IHttpRequestFeature>().Headers);
                 Assert.NotNull(features.Get<IHttpResponseFeature>().Headers);
-                Assert.NotNull(features.Get<IHttpResponseFeature>().Body);
+                Assert.NotNull(features.Get<IHttpResponseBodyFeature>().Stream);
                 Assert.Equal(200, features.Get<IHttpResponseFeature>().StatusCode);
                 Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
                 Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
@@ -304,8 +301,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            var read = await readTask.WithTimeout();
-            Assert.Equal(0, read);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
             block.SetResult(0);
         }
 
@@ -421,7 +417,7 @@ namespace Microsoft.AspNetCore.TestHost
                 HttpCompletionOption.ResponseHeadersRead));
         }
 
-        private class DummyApplication : IHttpApplication<Context>
+        private class DummyApplication : ApplicationWrapper, IHttpApplication<TestHostingContext>
         {
             RequestDelegate _application;
 
@@ -430,26 +426,41 @@ namespace Microsoft.AspNetCore.TestHost
                 _application = application;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            internal override object CreateContext(IFeatureCollection features)
             {
-                return new Context()
+                return ((IHttpApplication<TestHostingContext>)this).CreateContext(features);
+            }
+
+            TestHostingContext IHttpApplication<TestHostingContext>.CreateContext(IFeatureCollection contextFeatures)
+            {
+                return new TestHostingContext()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            internal override void DisposeContext(object context, Exception exception)
+            {
+                ((IHttpApplication<TestHostingContext>)this).DisposeContext((TestHostingContext)context, exception);
+            }
+
+            void IHttpApplication<TestHostingContext>.DisposeContext(TestHostingContext context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            internal override Task ProcessRequestAsync(object context)
+            {
+                return ((IHttpApplication<TestHostingContext>)this).ProcessRequestAsync((TestHostingContext)context);
+            }
+
+            Task IHttpApplication<TestHostingContext>.ProcessRequestAsync(TestHostingContext context)
             {
                 return _application(context.HttpContext);
             }
         }
 
-        private class InspectingApplication : IHttpApplication<Context>
+        private class InspectingApplication : ApplicationWrapper, IHttpApplication<TestHostingContext>
         {
             Action<IFeatureCollection> _inspector;
 
@@ -458,26 +469,46 @@ namespace Microsoft.AspNetCore.TestHost
                 _inspector = inspector;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            internal override object CreateContext(IFeatureCollection features)
+            {
+                return ((IHttpApplication<TestHostingContext>)this).CreateContext(features);
+            }
+
+            TestHostingContext IHttpApplication<TestHostingContext>.CreateContext(IFeatureCollection contextFeatures)
             {
                 _inspector(contextFeatures);
-                return new Context()
+                return new TestHostingContext()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            internal override void DisposeContext(object context, Exception exception)
+            {
+                ((IHttpApplication<TestHostingContext>)this).DisposeContext((TestHostingContext)context, exception);
+            }
+
+            void IHttpApplication<TestHostingContext>.DisposeContext(TestHostingContext context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            internal override Task ProcessRequestAsync(object context)
+            {
+                return ((IHttpApplication<TestHostingContext>)this).ProcessRequestAsync((TestHostingContext)context);
+            }
+
+            Task IHttpApplication<TestHostingContext>.ProcessRequestAsync(TestHostingContext context)
             {
                 return Task.FromResult(0);
             }
         }
-        
+
+        private class TestHostingContext
+        {
+            public HttpContext HttpContext { get; set; }
+        }
+
         [Fact]
         public async Task ClientHandlerCreateContextWithDefaultRequestParameters()
         {

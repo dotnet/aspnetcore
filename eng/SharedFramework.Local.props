@@ -8,23 +8,27 @@
 <Project>
   <ItemGroup>
     <!-- These assemblies are available as both a NuGet package and in the shared framework -->
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Features" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Core" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Browser" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
 
     <!-- These assemblies are only in the shared framework -->
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.DataProtection" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Antiforgery" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting" />
@@ -40,8 +44,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
-    <AspNetCoreAppReference Include="Microsoft.Extensions.Identity.Core" />
-    <AspNetCoreAppReference Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
@@ -73,7 +75,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Cors" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TestGroupName>Kestrel.Core.Tests</TestGroupName>
   </PropertyGroup>
@@ -13,8 +13,10 @@
     <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
+    <Compile Include="$(KestrelSharedSourceRoot)\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />

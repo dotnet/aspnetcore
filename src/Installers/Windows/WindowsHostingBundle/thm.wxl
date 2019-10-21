@@ -63,7 +63,7 @@
   <String Id="Welcome">Welcome to the [WixBundleName] Setup.</String>
   <String Id="InstallResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;here&lt;/a&gt;.</String>
   <String Id="InstallNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;here&lt;/a&gt;.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;license terms&lt;/a&gt; and &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;privacy statement&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;license terms&lt;/a&gt; and &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;privacy statement&lt;/a&gt;.</String>
   <String Id="ModifyResetIIS">Please restart IIS after the installation completes. You can find additional information &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;here&lt;/a&gt;.</String>
   <String Id="ModifyNoIIS">IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;here&lt;/a&gt;.</String>
 </WixLocalization>

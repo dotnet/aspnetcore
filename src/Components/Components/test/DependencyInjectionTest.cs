@@ -194,10 +194,10 @@ namespace Microsoft.AspNetCore.Components.Test
             // not throw, then be sure also to add a test to verify that injection
             // occurs before lifecycle methods.
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => throw new NotImplementedException();
         }
     }

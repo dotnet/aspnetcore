@@ -2,8 +2,8 @@
 <div class="key-cases">
     <div class="model">
         <p>Model</p>
-        <textarea @bind="@modelJson" id="key-model"></textarea>
-        <button @onclick="@Update">Update</button>
+        <textarea @bind="modelJson" id="key-model"></textarea>
+        <button @onclick="Update">Update</button>
     </div>
     <div class="render-output">
         <p>Output</p>
@@ -53,7 +53,7 @@
     KeyCasesTreeNode.Node parsedRootNode;
     RenderContext renderContext = new RenderContext();
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         Update();
     }
@@ -61,7 +61,7 @@
     void Update()
     {
         renderContext.UpdateCount++;
-        parsedRootNode = JsonSerializer.Parse<KeyCasesTreeNode.Node>(modelJson, TestJsonSerializerOptionsProvider.Options);
+        parsedRootNode = JsonSerializer.Deserialize<KeyCasesTreeNode.Node>(modelJson, TestJsonSerializerOptionsProvider.Options);
     }
 
     public class RenderContext

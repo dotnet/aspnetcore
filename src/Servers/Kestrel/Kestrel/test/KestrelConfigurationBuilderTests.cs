@@ -7,13 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -24,10 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         private KestrelServerOptions CreateServerOptions()
         {
             var serverOptions = new KestrelServerOptions();
-            var env = new HostingEnvironment { ApplicationName = "TestApplication" };
+            var env = new MockHostingEnvironment { ApplicationName = "TestApplication" };
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
-                .AddSingleton<IWebHostEnvironment>(env)
                 .AddSingleton<IHostEnvironment>(env)
                 .BuildServiceProvider();
             return serverOptions;
@@ -168,8 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
             Assert.True(ran2);
 
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.Null(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.False(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]
@@ -210,8 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
 
             // You only get Https once per endpoint.
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.NotNull(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.True(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]
@@ -321,8 +319,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-        public void DefaultConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
+        public void DefaultConfigSectionCanSetProtocols_MacAndWin7(string input, HttpProtocols expected)
             => DefaultConfigSectionCanSetProtocols(input, expected);
 
         [ConditionalTheory]
@@ -330,7 +329,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DefaultConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7)]
+        public void DefaultConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected)
             => DefaultConfigSectionCanSetProtocols(input, expected);
 
         private void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
@@ -388,8 +388,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-        public void EndpointConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected) =>
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
+        public void EndpointConfigSectionCanSetProtocols_MacAndWin7(string input, HttpProtocols expected) =>
             EndpointConfigSectionCanSetProtocols(input, expected);
 
         [ConditionalTheory]
@@ -397,7 +398,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void EndpointConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected) =>
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7)]
+        public void EndpointConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected) =>
             EndpointConfigSectionCanSetProtocols(input, expected);
 
         private void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
@@ -461,6 +463,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
             basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
             return Path.Combine(basePath, $"TestApplication.pfx");
+        }
+
+        private class MockHostingEnvironment : IHostEnvironment
+        {
+            public string ApplicationName { get; set; }
+            public string EnvironmentName { get; set; }
+            public string ContentRootPath { get; set; }
+            public IFileProvider ContentRootFileProvider { get; set; }
         }
     }
 }

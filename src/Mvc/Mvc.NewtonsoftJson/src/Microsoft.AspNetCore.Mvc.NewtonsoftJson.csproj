@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC features that use Newtonsoft.Json. Includes input and output formatters for JSON and JSON PATCH.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;json</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
+    <DefineConstants>$(DefineConstants);JSONNET</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,5 +22,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\Mvc.Core\src\Formatters\ResponseContentTypeHelper.cs" />
+    <Compile Include="..\..\Mvc.Core\src\Infrastructure\AsyncEnumerableReader.cs" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -26,8 +27,8 @@ namespace Microsoft.AspNetCore.Owin
         IFeatureCollection,
         IHttpRequestFeature,
         IHttpResponseFeature,
+        IHttpResponseBodyFeature,
         IHttpConnectionFeature,
-        IHttpSendFileFeature,
         ITlsConnectionFeature,
         IHttpRequestIdentifierFeature,
         IHttpRequestLifetimeFeature,
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Owin
         IOwinEnvironmentFeature
     {
         public IDictionary<string, object> Environment { get; set; }
+        private PipeWriter _responseBodyWrapper;
         private bool _headersSent;
 
         public OwinFeatureCollection(IDictionary<string, object> environment)
@@ -150,6 +152,24 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.ResponseBody, value); }
         }
 
+        Stream IHttpResponseBodyFeature.Stream
+        {
+            get { return Prop<Stream>(OwinConstants.ResponseBody); }
+        }
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (_responseBodyWrapper == null)
+                {
+                    _responseBodyWrapper = PipeWriter.Create(Prop<Stream>(OwinConstants.ResponseBody), new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return _responseBodyWrapper;
+            }
+        }
+
         bool IHttpResponseFeature.HasStarted
         {
             get { return _headersSent; }
@@ -202,16 +222,7 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.CommonKeys.ConnectionId, value); }
         }
 
-        private bool SupportsSendFile
-        {
-            get
-            {
-                object obj;
-                return Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj) && obj != null;
-            }
-        }
-
-        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             object obj;
             if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))
@@ -329,11 +340,7 @@ namespace Microsoft.AspNetCore.Owin
             if (key.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
             {
                 // Check for conditional features
-                if (key == typeof(IHttpSendFileFeature))
-                {
-                    return SupportsSendFile;
-                }
-                else if (key == typeof(ITlsConnectionFeature))
+                if (key == typeof(ITlsConnectionFeature))
                 {
                     return SupportsClientCerts;
                 }
@@ -381,6 +388,7 @@ namespace Microsoft.AspNetCore.Owin
         {
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpResponseFeature), this);
+            yield return new KeyValuePair<Type, object>(typeof(IHttpResponseBodyFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpConnectionFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestIdentifierFeature), this);
             yield return new KeyValuePair<Type, object>(typeof(IHttpRequestLifetimeFeature), this);
@@ -388,10 +396,6 @@ namespace Microsoft.AspNetCore.Owin
             yield return new KeyValuePair<Type, object>(typeof(IOwinEnvironmentFeature), this);
 
             // Check for conditional features
-            if (SupportsSendFile)
-            {
-                yield return new KeyValuePair<Type, object>(typeof(IHttpSendFileFeature), this);
-            }
             if (SupportsClientCerts)
             {
                 yield return new KeyValuePair<Type, object>(typeof(ITlsConnectionFeature), this);
@@ -400,6 +404,31 @@ namespace Microsoft.AspNetCore.Owin
             {
                 yield return new KeyValuePair<Type, object>(typeof(IHttpWebSocketFeature), this);
             }
+        }
+
+        void IHttpResponseBodyFeature.DisableBuffering()
+        {
+        }
+
+        async Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (_responseBodyWrapper != null)
+            {
+                await _responseBodyWrapper.FlushAsync(cancellationToken);
+            }
+
+            // The pipe may or may not have flushed the stream. Make sure the stream gets flushed to trigger response start.
+            await Prop<Stream>(OwinConstants.ResponseBody).FlushAsync(cancellationToken);
+        }
+
+        Task IHttpResponseBodyFeature.CompleteAsync()
+        {
+            if (_responseBodyWrapper != null)
+            {
+                return _responseBodyWrapper.FlushAsync().AsTask();
+            }
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()

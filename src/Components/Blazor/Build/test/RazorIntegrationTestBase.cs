@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -384,7 +385,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         protected private RenderTreeFrame[] GetRenderTree(TestRenderer renderer, IComponent component)
         {
             renderer.AttachComponent(component);
-            var task = renderer.InvokeAsync(() => component.SetParametersAsync(ParameterCollection.Empty));
+            var task = renderer.Dispatcher.InvokeAsync(() => component.SetParametersAsync(ParameterView.Empty));
             // we will have to change this method if we add a test that does actual async work.
             Assert.True(task.Status.HasFlag(TaskStatus.RanToCompletion) || task.Status.HasFlag(TaskStatus.Faulted));
             if (task.IsFaulted)
@@ -396,7 +397,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected ArrayRange<RenderTreeFrame> GetFrames(RenderFragment fragment)
         {
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             fragment(builder);
             return builder.GetFrames();
         }
@@ -441,9 +442,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             public RenderTreeFrame[] LatestBatchReferenceFrames { get; private set; }
 

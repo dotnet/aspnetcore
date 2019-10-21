@@ -1,7 +1,7 @@
 
-<button @onclick="@OnClick">@Text</button>
+<button @onclick="OnClick">@Text</button>
 
 @code {
-    [Parameter] EventCallback OnClick { get; set; }
-    [Parameter] string Text { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public string Text { get; set; }
 }

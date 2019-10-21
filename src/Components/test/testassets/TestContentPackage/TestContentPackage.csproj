@@ -4,21 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>library</OutputType>
     <RazorLangVersion>3.0</RazorLangVersion>
+    <StaticWebAssetBasePath>_content/TestContentPackage</StaticWebAssetBasePath>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- .js files will be referenced via <script> tags -->
-    <EmbeddedResource Include="content\**\*.js" LogicalName="blazor:js:%(RecursiveDir)%(Filename)%(Extension)" />
-
-    <!-- .css files will be referenced via <link rel='Stylesheet'> tags -->
-    <EmbeddedResource Include="content\**\*.css" LogicalName="blazor:css:%(RecursiveDir)%(Filename)%(Extension)" />
-
-    <!-- Any other files will be included in the 'dist' output but without any tags referencing them -->
-    <EmbeddedResource Include="content\**" Exclude="**\*.js;**\*.css" LogicalName="blazor:file:%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
 </Project>

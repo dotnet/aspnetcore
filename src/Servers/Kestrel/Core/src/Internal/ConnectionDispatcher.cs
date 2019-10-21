@@ -51,7 +51,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             break;
                         }
 
-                        _ = Execute(new KestrelConnection(connection, _serviceContext.Log));
+                        // Add the connection to the connection manager before we queue it for execution
+                        var id = Interlocked.Increment(ref _lastConnectionId);
+                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+
+                        _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
+
+                        Log.ConnectionAccepted(connection.ConnectionId);
+
+                        ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                     }
                 }
                 catch (Exception ex)
@@ -64,56 +72,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _acceptLoopTcs.TrySetResult(null);
                 }
             }
-        }
-
-        internal async Task Execute(KestrelConnection connection)
-        {
-            var id = Interlocked.Increment(ref _lastConnectionId);
-            var connectionContext = connection.TransportConnection;
-
-            try
-            {
-                _serviceContext.ConnectionManager.AddConnection(id, connection);
-
-                Log.ConnectionStart(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStart(connectionContext);
-
-                using (BeginConnectionScope(connectionContext))
-                {
-                    try
-                    {
-                        await _connectionDelegate(connectionContext);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
-                    }
-                }
-            }
-            finally
-            {
-                await connection.FireOnCompletedAsync();
-
-                Log.ConnectionStop(connectionContext.ConnectionId);
-                KestrelEventSource.Log.ConnectionStop(connectionContext);
-
-                // Dispose the transport connection, this needs to happen before removing it from the
-                // connection manager so that we only signal completion of this connection after the transport
-                // is properly torn down.
-                await connection.TransportConnection.DisposeAsync();
-
-                _serviceContext.ConnectionManager.RemoveConnection(id);
-            }
-        }
-
-        private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
-        {
-            if (Log.IsEnabled(LogLevel.Critical))
-            {
-                return Log.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
-            }
-
-            return null;
         }
     }
 }

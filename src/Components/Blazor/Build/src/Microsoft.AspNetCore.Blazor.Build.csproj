@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
     <IsShippingPackage>true</IsShippingPackage>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepoRoot)src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
@@ -36,6 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Components\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
   </ItemGroup>
 </Project>

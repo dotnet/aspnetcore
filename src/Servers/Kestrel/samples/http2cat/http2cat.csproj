@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+</Project>

@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("TestDocument.txt");
 
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("TestDocument.txt");
 
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var last = File.GetLastWriteTimeUtc(Path.Combine(AppContext.BaseDirectory, "TestDocument.txt"));
                     var response = await client.GetAsync("TestDocument.txt");
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var response = await client.GetAsync(requestUrl);
@@ -182,7 +181,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var fileInfo = hostingEnvironment.WebRootFileProvider.GetFileInfo(Path.GetFileName(requestUrl));
                     var request = new HttpRequestMessage(HttpMethod.Head, requestUrl);
@@ -262,7 +261,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(serverType)))
             {
                 // We don't use HttpClient here because it's disconnect behavior varies across platforms.
-                var socket = SendSocketRequestAsync(server.GetAddress(), "/TestDocument1MB.txt");
+                var socket = SendSocketRequestAsync(Helpers.GetAddress(server), "/TestDocument1MB.txt");
                 await requestReceived.Task.TimeoutAfter(interval);
 
                 socket.LingerState = new LingerOption(true, 0);

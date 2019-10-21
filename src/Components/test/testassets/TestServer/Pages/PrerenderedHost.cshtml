@@ -7,7 +7,7 @@
     <base href="~/" />
 </head>
 <body>
-    <app>@(await Html.RenderComponentAsync<TestRouter>())</app>
+    <app>@(await Html.RenderComponentAsync<TestRouter>(RenderMode.ServerPrerendered))</app>
 
     @*
         So that E2E tests can make assertions about both the prerendered and
@@ -19,17 +19,17 @@
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
-    // Used by InteropOnInitializationComponent
-    function setElementValue(element, newValue) {
-      element.value = newValue;
-      return element.value;
-            }
+        // Used by InteropOnInitializationComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
 
-    function start() {
-        Blazor.start({
-            logLevel: 1 // LogLevel.Debug
-        });
-    }
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
     </script>
 </body>
 </html>

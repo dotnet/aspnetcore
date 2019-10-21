@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,12 +14,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 {
     internal sealed class TranscodingReadStream : Stream
     {
+        private static readonly int OverflowBufferSize = Encoding.UTF8.GetMaxByteCount(1); // The most number of bytes used to represent a single UTF char
+
         internal const int MaxByteBufferSize = 4096;
         internal const int MaxCharBufferSize = 3 * MaxByteBufferSize;
-        private static readonly int MaxByteCountForUTF8Char = Encoding.UTF8.GetMaxByteCount(charCount: 1);
 
         private readonly Stream _stream;
-        private readonly Encoder _encoder;
         private readonly Decoder _decoder;
 
         private ArraySegment<byte> _byteBuffer;
@@ -48,11 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 count: 0);
 
             _overflowBuffer = new ArraySegment<byte>(
-                ArrayPool<byte>.Shared.Rent(MaxByteCountForUTF8Char),
+                ArrayPool<byte>.Shared.Rent(OverflowBufferSize),
                 0,
                 count: 0);
 
-            _encoder = Encoding.UTF8.GetEncoder();
             _decoder = sourceEncoding.GetDecoder();
         }
 
@@ -60,7 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         public override bool CanSeek => false;
         public override bool CanWrite => false;
         public override long Length => throw new NotSupportedException();
-        public override long Position { get; set; }
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
 
         internal int ByteBufferCount => _byteBuffer.Count;
         internal int CharBufferCount => _charBuffer.Count;
@@ -76,6 +81,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         {
             ThrowArgumentOutOfRangeException(buffer, offset, count);
 
+            if (count == 0)
+            {
+                return 0;
+            }
+
             var readBuffer = new ArraySegment<byte>(buffer, offset, count);
 
             if (_overflowBuffer.Count > 0)
@@ -90,76 +100,55 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 return bytesToCopy;
             }
 
-            var totalBytes = 0;
-            bool encoderCompleted;
-            int bytesEncoded;
-
-            do
+            if (_charBuffer.Count == 0)
             {
-                // If we had left-over bytes from a previous read, move it to the start of the buffer and read content in to
-                // the segment that follows.
-                var eof = false;
-                if (_charBuffer.Count == 0)
-                {
-                    // Only read more content from the input stream if we have exhausted all the buffered chars.
-                    eof = await ReadInputChars(cancellationToken);
-                }
+                // Only read more content from the input stream if we have exhausted all the buffered chars.
+                await ReadInputChars(cancellationToken);
+            }
 
-                // We need to flush on the last write. This is true when we exhaust the input Stream and any buffered content.
-                var allContentRead = eof && _charBuffer.Count == 0 && _byteBuffer.Count == 0;
+            var operationStatus = Utf8.FromUtf16(_charBuffer, readBuffer, out var charsRead, out var bytesWritten, isFinalBlock: false);
+            _charBuffer = _charBuffer.Slice(charsRead);
 
-                if (_charBuffer.Count > 0 && readBuffer.Count < MaxByteCountForUTF8Char && readBuffer.Count < Encoding.UTF8.GetByteCount(_charBuffer.AsSpan(0, 1)))
-                {
-                    // It's possible that the passed in buffer is smaller than the size required to encode a single
-                    // char. For instance, the JsonSerializer may pass in a buffer of size 1 or 2 which
-                    // is insufficient if the character requires more than 2 bytes to represent. In this case, read
-                    // content in to an overflow buffer and fill up the passed in buffer.
-                    _encoder.Convert(
-                        _charBuffer,
-                        _overflowBuffer.Array,
-                        flush: false,
-                        out var charsUsed,
-                        out var bytesUsed,
-                        out _);
+            switch (operationStatus)
+            {
+                case OperationStatus.Done:
+                    return bytesWritten;
 
-                    _charBuffer = _charBuffer.Slice(charsUsed);
+                case OperationStatus.DestinationTooSmall:
+                    if (bytesWritten != 0)
+                    {
+                        return bytesWritten;
+                    }
 
-                    Debug.Assert(readBuffer.Count < bytesUsed);
+                    // Overflow buffer is always empty when we get here and we can use it's full length to write contents to.
+                    Utf8.FromUtf16(_charBuffer, _overflowBuffer.Array, out var overFlowChars, out var overflowBytes, isFinalBlock: false);
+
+                    Debug.Assert(overflowBytes > 0 && overFlowChars > 0, "We expect writes to the overflow buffer to always succeed since it is large enough to accommodate at least one char.");
+
+                    _charBuffer = _charBuffer.Slice(overFlowChars);
+
+                    // readBuffer: [ 0, 0, ], overflowBuffer: [ 7, 13, 34, ]
+                    // Fill up the readBuffer to capacity, so the result looks like so:
+                    // readBuffer: [ 7, 13 ], overflowBuffer: [ 34 ]
+                    Debug.Assert(readBuffer.Count < overflowBytes);
                     _overflowBuffer.Array.AsSpan(0, readBuffer.Count).CopyTo(readBuffer);
 
                     _overflowBuffer = new ArraySegment<byte>(
                         _overflowBuffer.Array,
                         readBuffer.Count,
-                        bytesUsed - readBuffer.Count);
+                        overflowBytes - readBuffer.Count);
 
-                    totalBytes += readBuffer.Count;
-                    // At this point we're done writing.
-                    break;
-                }
-                else
-                {
-                    _encoder.Convert(
-                        _charBuffer,
-                        readBuffer,
-                        flush: allContentRead,
-                        out var charsUsed,
-                        out bytesEncoded,
-                        out encoderCompleted);
+                    Debug.Assert(_overflowBuffer.Count != 0);
 
-                    totalBytes += bytesEncoded;
-                    _charBuffer = _charBuffer.Slice(charsUsed);
-                    readBuffer = readBuffer.Slice(bytesEncoded);
-                }
+                    return readBuffer.Count;
 
-                // We need to exit in one of the 2 conditions:
-                // * encoderCompleted will return false if "buffer" was too small for all the chars to be encoded.
-                // * no bytes were converted in an iteration. This can occur if there wasn't any input.
-            } while (encoderCompleted && bytesEncoded > 0);
-
-            return totalBytes;
+                default:
+                    Debug.Fail("We should never see this");
+                    throw new InvalidOperationException();
+            }
         }
 
-        private async ValueTask<bool> ReadInputChars(CancellationToken cancellationToken)
+        private async Task ReadInputChars(CancellationToken cancellationToken)
         {
             // If we had left-over bytes from a previous read, move it to the start of the buffer and read content in to
             // the segment that follows.
@@ -184,15 +173,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 out _);
 
             _byteBuffer = _byteBuffer.Slice(bytesUsed);
-
             _charBuffer = new ArraySegment<char>(_charBuffer.Array, 0, charsUsed);
-
-            return readBytes == 0;
         }
 
         private static void ThrowArgumentOutOfRangeException(byte[] buffer, int offset, int count)
         {
-            if (count <= 0)
+            if (count < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }

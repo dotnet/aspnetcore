@@ -60,5 +60,5 @@
   <String Id="FilesInUseCancelButton">&amp;Annulla</String>
 
   <String Id="Welcome">Installazione di [WixBundle].</String>
-  <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName].</String>
+  <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName].</String>
 </WixLocalization>

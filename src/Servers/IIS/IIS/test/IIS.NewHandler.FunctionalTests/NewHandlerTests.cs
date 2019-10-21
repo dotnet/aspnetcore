@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Sdk;
 

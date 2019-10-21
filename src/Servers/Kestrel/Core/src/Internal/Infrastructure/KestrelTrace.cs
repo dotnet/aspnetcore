@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -37,13 +36,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define(LogLevel.Debug, new EventId(16, nameof(NotAllConnectionsClosedGracefully)), "Some connections failed to close gracefully during server shutdown.");
 
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(17, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(17, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
 
         private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite =
             LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(18, nameof(ConnectionHeadResponseBodyWrite)), @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
 
         private static readonly Action<ILogger, string, Exception> _requestProcessingError =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(20, nameof(RequestProcessingError)), @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(20, nameof(RequestProcessingError)), @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
 
         private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
             LoggerMessage.Define(LogLevel.Debug, new EventId(21, nameof(NotAllConnectionsAborted)), "Some connections failed to abort during server shutdown.");
@@ -64,19 +63,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, nameof(RequestBodyDone)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
 
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
+            LoggerMessage.Define<string, string, double>(LogLevel.Debug, new EventId(27, nameof(RequestBodyMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(28, nameof(ResponseMinimumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed because the response was not read by the client at the specified minimum data rate.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
 
         private static readonly Action<ILogger, string, Exception> _http2StreamError =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(30, nameof(Http2StreamError)), @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(30, nameof(Http2StreamError)), @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
 
         private static readonly Action<ILogger, string, int, Exception> _hpackDecodingError =
-            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(31, nameof(HPackDecodingError)), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
+            LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(31, nameof(HPackDecodingError)), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyNotEntirelyRead =
             LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(32, nameof(RequestBodyNotEntirelyRead)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the application completed without reading the entire request body.");
@@ -111,11 +110,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, nameof(HPackEncodingError)),
                 @"Connection id ""{ConnectionId}"": HPACK encoding error while encoding headers for stream ID {StreamId}.");
 
+        private static readonly Action<ILogger, string, Exception> _connectionAccepted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, nameof(ConnectionAccepted)), @"Connection id ""{ConnectionId}"" accepted.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
         {
             _logger = logger;
+        }
+
+        public virtual void ConnectionAccepted(string connectionId)
+        {
+            _connectionAccepted(_logger, connectionId, null);
         }
 
         public virtual void ConnectionStart(string connectionId)

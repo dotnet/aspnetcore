@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Allows a component to notify the renderer that it should be rendered.
+    /// Allows a component to interact with its renderer.
     /// </summary>
     public readonly struct RenderHandle
     {
@@ -23,8 +21,24 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
+        /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with the component.
+        /// </summary>
+        public Dispatcher Dispatcher
+        {
+            get
+            {
+                if (_renderer == null)
+                {
+                    ThrowNotInitialized();
+                }
+
+                return _renderer.Dispatcher;
+            }
+        }
+
+        /// <summary>
         /// Gets a value that indicates whether the <see cref="RenderHandle"/> has been
-        /// initialised and is ready to use.
+        /// initialized and is ready to use.
         /// </summary>
         public bool IsInitialized
             => _renderer != null;
@@ -37,38 +51,15 @@ namespace Microsoft.AspNetCore.Components
         {
             if (_renderer == null)
             {
-                throw new InvalidOperationException("The render handle is not yet assigned.");
+                ThrowNotInitialized();
             }
 
             _renderer.AddToRenderQueue(_componentId, renderFragment);
         }
 
-        /// <summary>
-        /// Executes the supplied work item on the renderer's
-        /// synchronization context.
-        /// </summary>
-        /// <param name="workItem">The work item to execute.</param>
-        public Task Invoke(Action workItem)
+        private static void ThrowNotInitialized()
         {
-            if (_renderer == null)
-            {
-                throw new InvalidOperationException("The render handle is not yet assigned.");
-            }
-            return _renderer.Invoke(workItem);
-        }
-
-        /// <summary>
-        /// Executes the supplied work item on the renderer's
-        /// synchronization context.
-        /// </summary>
-        /// <param name="workItem">The work item to execute.</param>
-        public Task InvokeAsync(Func<Task> workItem)
-        {
-            if (_renderer == null)
-            {
-                throw new InvalidOperationException("The render handle is not yet assigned.");
-            }
-            return _renderer.InvokeAsync(workItem);
+            throw new InvalidOperationException("The render handle is not yet assigned.");
         }
     }
 }

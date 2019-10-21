@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -212,7 +213,7 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -288,7 +289,7 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -356,7 +357,7 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -434,7 +435,7 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints);
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
@@ -445,6 +446,48 @@ namespace Microsoft.AspNetCore.Builder
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             });
             return builder;
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a controller action using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a controller action using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            EnsureControllerServices(endpoints);
+
+            // Called for side-effect to make sure that the data source is registered.
+            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
+
+            endpoints.Map(
+                pattern, 
+                context =>
+                {
+                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                })
+                .Add(b =>
+                {
+                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer)));
+                });
         }
 
         private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)

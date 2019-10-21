@@ -1,14 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+#if !IGNITOR
+using Microsoft.AspNetCore.Components.RenderTree;
+#endif
 
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.Server.Circuits
+#endif
 {
     // TODO: We should consider *not* having this type of infrastructure in the .Server
     // project, but instead in some new project called .Remote or similar, since it
@@ -33,13 +38,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// </summary>
     internal class RenderBatchWriter : IDisposable
     {
-        private readonly List<string> _strings;
+        private readonly ArrayBuilder<string> _strings;
         private readonly Dictionary<string, int> _deduplicatedStringIndices;
         private readonly BinaryWriter _binaryWriter;
 
         public RenderBatchWriter(Stream output, bool leaveOpen)
         {
-            _strings = new List<string>();
+            _strings = new ArrayBuilder<string>();
             _deduplicatedStringIndices = new Dictionary<string, int>();
             _binaryWriter = new BinaryWriter(output, Encoding.UTF8, leaveOpen);
         }
@@ -130,16 +135,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         void Write(in RenderTreeFrame frame)
         {
+            // TODO: Change this to write as a short, saving 2 bytes per frame
             _binaryWriter.Write((int)frame.FrameType);
 
             // We want each frame to take up the same number of bytes, so that the
             // recipient can index into the array directly instead of having to
             // walk through it.
-            // Since we can fit every frame type into 3 ints, use that as the
+            // Since we can fit every frame type into 16 bytes, use that as the
             // common size. For smaller frames, we add padding to expand it to
-            // 12 bytes (i.e., 3 x 4-byte ints).
-            // The total size then for each frame is 16 bytes (frame type, then
-            // 3 other ints).
+            // 16 bytes.
             switch (frame.FrameType)
             {
                 case RenderTreeFrameType.Attribute:
@@ -160,41 +164,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         var attributeValueString = frame.AttributeValue as string;
                         WriteString(attributeValueString, allowDeduplication: string.IsNullOrEmpty(attributeValueString));
                     }
-                    _binaryWriter.Write(frame.AttributeEventHandlerId);
+                    _binaryWriter.Write(frame.AttributeEventHandlerId); // 8 bytes
                     break;
                 case RenderTreeFrameType.Component:
                     _binaryWriter.Write(frame.ComponentSubtreeLength);
                     _binaryWriter.Write(frame.ComponentId);
-                    WritePadding(_binaryWriter, 4);
+                    WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     // The client doesn't need to know about these. But we still have
                     // to include them in the array otherwise the ReferenceFrameIndex
                     // values in the edits data would be wrong.
-                    WritePadding(_binaryWriter, 12);
+                    WritePadding(_binaryWriter, 16);
                     break;
                 case RenderTreeFrameType.Element:
                     _binaryWriter.Write(frame.ElementSubtreeLength);
                     WriteString(frame.ElementName, allowDeduplication: true);
-                    WritePadding(_binaryWriter, 4);
+                    WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
                     WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Region:
                     _binaryWriter.Write(frame.RegionSubtreeLength);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Text:
                     WriteString(
                         frame.TextContent,
                         allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Markup:
                     WriteString(frame.MarkupContent, allowDeduplication: false);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 default:
                     throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
@@ -202,6 +206,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         int Write(in ArrayRange<int> numbers)
+        {
+            var startPos = (int)_binaryWriter.BaseStream.Position;
+            _binaryWriter.Write(numbers.Count);
+
+            var array = numbers.Array;
+            var count = numbers.Count;
+            for (var index = 0; index < count; index++)
+            {
+                _binaryWriter.Write(array[index]);
+            }
+
+            return startPos;
+        }
+
+        int Write(in ArrayRange<ulong> numbers)
         {
             var startPos = (int)_binaryWriter.BaseStream.Position;
             _binaryWriter.Write(numbers.Count);
@@ -229,7 +248,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (!allowDeduplication || !_deduplicatedStringIndices.TryGetValue(value, out stringIndex))
                 {
                     stringIndex = _strings.Count;
-                    _strings.Add(value);
+                    _strings.Append(value);
 
                     if (allowDeduplication)
                     {
@@ -249,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             for (var i = 0; i < stringsCount; i++)
             {
-                var stringValue = _strings[i];
+                var stringValue = _strings.Buffer[i];
                 locations[i] = (int)_binaryWriter.BaseStream.Position;
                 _binaryWriter.Write(stringValue);
             }
@@ -281,6 +300,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public void Dispose()
         {
+            _strings.Dispose();
             _binaryWriter.Dispose();
         }
     }

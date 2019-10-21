@@ -33,18 +33,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             foreach (var item in rootElement.EnumerateObject())
             {
                 object deserializedValue;
-                switch (item.Value.Type)
+                switch (item.Value.ValueKind)
                 {
-                    case JsonValueType.False:
-                    case JsonValueType.True:
+                    case JsonValueKind.False:
+                    case JsonValueKind.True:
                         deserializedValue = item.Value.GetBoolean();
                         break;
 
-                    case JsonValueType.Number:
+                    case JsonValueKind.Number:
                         deserializedValue = item.Value.GetInt32();
                         break;
 
-                    case JsonValueType.String:
+                    case JsonValueKind.String:
                         if (item.Value.TryGetGuid(out var guid))
                         {
                             deserializedValue = guid;
@@ -59,20 +59,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         }
                         break;
 
-                    case JsonValueType.Null:
+                    case JsonValueKind.Null:
                         deserializedValue = null;
                         break;
 
-                    case JsonValueType.Array:
+                    case JsonValueKind.Array:
                         deserializedValue = DeserializeArray(item.Value);
                         break;
 
-                    case JsonValueType.Object:
+                    case JsonValueKind.Object:
                         deserializedValue = DeserializeDictionaryEntry(item.Value);
                         break;
 
                     default:
-                        throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(item.Value.Type));
+                        throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(item.Value.ValueKind));
                 }
 
                 deserialized[item.Name] = deserializedValue;
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                 return null;
             }
 
-            if (arrayElement[0].Type == JsonValueType.String)
+            if (arrayElement[0].ValueKind == JsonValueKind.String)
             {
                 var array = new List<string>();
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 
                 return array.ToArray();
             }
-            else if (arrayElement[0].Type == JsonValueType.Number)
+            else if (arrayElement[0].ValueKind == JsonValueKind.Number)
             {
                 var array = new List<int>();
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                 return array.ToArray();
             }
 
-            throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(arrayElement.Type));
+            throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(arrayElement.ValueKind));
         }
 
         private static object DeserializeDictionaryEntry(in JsonElement objectElement)

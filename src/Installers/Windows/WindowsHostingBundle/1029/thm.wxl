@@ -63,7 +63,7 @@
   <String Id="Welcome">Vítá vás instalační program produktu [WixBundleName]</String>
   <String Id="InstallResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
   <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
-  <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
+  <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
   <String Id="ModifyResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
   <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
 </WixLocalization>

@@ -17,11 +17,16 @@
     <ContentTargetFolders>contentFiles</ContentTargetFolders>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <DefaultExcludeItems>$(DefaultExcludeItems);$(BaseOutputPath);$(BaseIntermediateOutputPath);</DefaultExcludeItems>
-    <NoWarn>$(NoWarn);NU5105;CS8021</NoWarn>
+    <NoWarn>$(NoWarn);CS8021</NoWarn>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="lib\**\*">
+      <Pack>True</Pack>
+      <PackagePath>lib</PackagePath>
+    </None>
+
     <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(DefaultExcludeItems)">
       <Pack>true</Pack>
       <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>

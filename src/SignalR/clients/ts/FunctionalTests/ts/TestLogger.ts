@@ -1,8 +1,8 @@
-import { ILogger, LogLevel } from "@aspnet/signalr";
+import { ILogger, LogLevel } from "@microsoft/signalr";
 
 // Since JavaScript modules are file-based, we can just pull in utilities from the
 // main library directly even if they aren't exported.
-import { ConsoleLogger } from "@aspnet/signalr/dist/esm/Utils";
+import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export class TestLog {
     public messages: Array<[Date, LogLevel, string]> = [];

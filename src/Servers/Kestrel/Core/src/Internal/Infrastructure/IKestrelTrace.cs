@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal interface IKestrelTrace : ILogger
     {
+        void ConnectionAccepted(string connectionId);
+
         void ConnectionStart(string connectionId);
 
         void ConnectionStop(string connectionId);

@@ -1,6 +1,6 @@
 {
   "iisSettings": {
-    "windowsAuthentication": false,
+    "windowsAuthentication": true,
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:6449",
@@ -12,13 +12,24 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        "ASPNETCORE_SERVER": "IISOutOfProc",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "HttpSys": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_SERVER": "HttpSys",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5000"
     },
     "NegotiateAuthSample": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
+        "ASPNETCORE_SERVER": "Kestrel",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:5001;http://localhost:5000"

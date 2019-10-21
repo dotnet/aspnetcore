@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// A component that provides a cascading value to all descendant components.
     /// </summary>
-    public class CascadingValue<T> : ICascadingValueComponent, IComponent
+    public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     {
         private RenderHandle _renderHandle;
         private HashSet<ComponentState> _subscribers; // Lazily instantiated
@@ -21,12 +20,12 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The content to which the value should be provided.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; private set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         /// <summary>
         /// The value to be provided.
         /// </summary>
-        [Parameter] public T Value { get; private set; }
+        [Parameter] public TValue Value { get; set; }
 
         /// <summary>
         /// Optionally gives a name to the provided value. Descendant components
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
         /// If no name is specified, then descendant components will receive the
         /// value based the type of value they are requesting.
         /// </summary>
-        [Parameter] public string Name { get; private set; }
+        [Parameter] public string Name { get; set; }
 
         /// <summary>
         /// If true, indicates that <see cref="Value"/> will not change. This is a
@@ -43,20 +42,20 @@ namespace Microsoft.AspNetCore.Components
         /// change notifications. Set this flag only if you will not change
         /// <see cref="Value"/> during the component's lifetime.
         /// </summary>
-        [Parameter] public bool IsFixed { get; private set; }
+        [Parameter] public bool IsFixed { get; set; }
 
         object ICascadingValueComponent.CurrentValue => Value;
 
         bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             // Implementing the parameter binding manually, instead of just calling
             // parameters.SetParameterProperties(this), is just a very slight perf optimization
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 if (parameter.Name.Equals(nameof(Value), StringComparison.OrdinalIgnoreCase))
                 {
-                    Value = (T)parameter.Value;
+                    Value = (TValue)parameter.Value;
                     hasSuppliedValue = true;
                 }
                 else if (parameter.Name.Equals(nameof(ChildContent), StringComparison.OrdinalIgnoreCase))
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Components
                     Name = (string)parameter.Value;
                     if (string.IsNullOrEmpty(Name))
                     {
-                        throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<T>)}' does not allow null or empty values.");
+                        throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<TValue>)}' does not allow null or empty values.");
                     }
                 }
                 else if (parameter.Name.Equals(nameof(IsFixed), StringComparison.OrdinalIgnoreCase))
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 else
                 {
-                    throw new ArgumentException($"The component '{nameof(CascadingValue<T>)}' does not accept a parameter with the name '{parameter.Name}'.");
+                    throw new ArgumentException($"The component '{nameof(CascadingValue<TValue>)}' does not accept a parameter with the name '{parameter.Name}'.");
                 }
             }
 
@@ -106,11 +105,11 @@ namespace Microsoft.AspNetCore.Components
 
             _hasSetParametersPreviously = true;
 
-            // It's OK for the value to be null, but some "Value" param must be suppled
+            // It's OK for the value to be null, but some "Value" param must be supplied
             // because it serves no useful purpose to have a <CascadingValue> otherwise.
             if (!hasSuppliedValue)
             {
-                throw new ArgumentException($"Missing required parameter '{nameof(Value)}' for component '{nameof(Parameter)}'.");
+                throw new ArgumentException($"Missing required parameter '{nameof(Value)}' for component '{GetType().Name}'.");
             }
 
             // Rendering is most efficient when things are queued from rootmost to leafmost.
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Components
 
             if (_subscribers != null && ChangeDetection.MayHaveChanged(previousValue, Value))
             {
-                NotifySubscribers();
+                NotifySubscribers(parameters.Lifetime);
             }
 
             return Task.CompletedTask;
@@ -136,7 +135,7 @@ namespace Microsoft.AspNetCore.Components
 
         bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)
         {
-            if (!requestedType.IsAssignableFrom(typeof(T)))
+            if (!requestedType.IsAssignableFrom(typeof(TValue)))
             {
                 return false;
             }
@@ -169,11 +168,11 @@ namespace Microsoft.AspNetCore.Components
             _subscribers.Remove(subscriber);
         }
 
-        private void NotifySubscribers()
+        private void NotifySubscribers(in ParameterViewLifetime lifetime)
         {
             foreach (var subscriber in _subscribers)
             {
-                subscriber.NotifyCascadingValueChanged();
+                subscriber.NotifyCascadingValueChanged(lifetime);
             }
         }
 

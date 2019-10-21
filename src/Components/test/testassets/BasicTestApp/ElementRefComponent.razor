@@ -19,7 +19,7 @@
 {
     <input id="capturedElement" @ref="_myInput" />
 }
-<button @onclick="@MakeInteropCall">Click me</button>
+<button @onclick="MakeInteropCall">Click me</button>
 <label>
     <input type="checkbox" @bind="_toggleCapturedElementPresence" />
     Toggle input
@@ -28,7 +28,7 @@
 @code {
     int _count = 0;
     bool _toggleCapturedElementPresence = true;
-    ElementRef _myInput;
+    ElementReference _myInput;
 
     async Task MakeInteropCall()
     {

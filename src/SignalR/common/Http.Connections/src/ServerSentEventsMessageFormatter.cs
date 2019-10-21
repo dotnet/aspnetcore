@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http.Connections
 {
-    public static class ServerSentEventsMessageFormatter
+    internal static class ServerSentEventsMessageFormatter
     {
         private static readonly byte[] DataPrefix = { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
         private static readonly byte[] Newline = { (byte)'\r', (byte)'\n' };

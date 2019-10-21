@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {

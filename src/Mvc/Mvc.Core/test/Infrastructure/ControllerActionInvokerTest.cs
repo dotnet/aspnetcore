@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1453,6 +1454,60 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         #endregion
 
+        #region Logs
+
+        [Fact]
+        public async Task InvokeAsync_Logs()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
+                FilterDescriptors = new List<FilterDescriptor>(),
+                Parameters = new List<ParameterDescriptor>(),
+                BoundProperties = new List<ParameterDescriptor>(),
+                MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod)),
+            };
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[0],
+                actionDescriptor,
+                new TestController(),
+                logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var actionSignature = $"{typeof(IActionResult).FullName} {nameof(TestController.ActionMethod)}()";
+            var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)}.{nameof(TestController.ActionMethod)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionResultName = $"{typeof(CommonResourceInvokerTest).FullName}+{nameof(TestResult)}";
+
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{}}. Executing controller action with signature {actionSignature} on controller {controllerName}.", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executed controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executing action method {actionName} - Validation state: Valid", m),
+                m => Assert.StartsWith($"Executed action method {actionName}, returned result {actionResultName} in ", m),
+                m => Assert.Equal($"Before executing action result {actionResultName}.", m),
+                m => Assert.Equal($"After executing action result {actionResultName}.", m),
+                m => Assert.StartsWith($"Executed action {actionName} in ", m));
+        }
+
+        #endregion
+
         protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
@@ -1567,7 +1622,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
 
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = services.BuildServiceProvider();

@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal partial class Http2Stream : IHttp2StreamIdFeature,
                                          IHttpMinRequestBodyDataRateFeature,
                                          IHttpResetFeature,
-                                         IHttpResponseCompletionFeature,
                                          IHttpResponseTrailersFeature
 
     {
@@ -53,26 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
 
                 MinRequestBodyDataRate = value;
-            }
-        }
-
-        async Task IHttpResponseCompletionFeature.CompleteAsync()
-        {
-            // Finalize headers
-            if (!HasResponseStarted)
-            {
-                await FireOnStarting();
-            }
-
-            // Flush headers, body, trailers...
-            if (!HasResponseCompleted)
-            {
-                if (!VerifyResponseContentLength(out var lengthException))
-                {
-                    throw lengthException;
-                }
-
-                await ProduceEnd();
             }
         }
 

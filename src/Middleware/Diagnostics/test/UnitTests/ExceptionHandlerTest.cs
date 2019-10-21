@@ -116,8 +116,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                     // add response buffering
                     app.Use(async (httpContext, next) =>
                     {
-                        httpContext.Features.Set<IHttpResponseStartFeature>(null);
-
                         var response = httpContext.Response;
                         var originalResponseBody = response.Body;
                         var bufferingStream = new MemoryStream();
@@ -176,112 +174,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Single(values);
                 Assert.Equal("-1", values.First());
                 Assert.False(response.Headers.TryGetValues("ETag", out values));
-            }
-        }
-
-        [Fact]
-        public async Task Redirect_StatusPage()
-        {
-            var expectedStatusCode = 432;
-            var destination = "/location";
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseStatusCodePagesWithRedirects("/errorPage?id={0}");
-
-                    app.Map(destination, (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run((httpContext) =>
-                        {
-                            httpContext.Response.StatusCode = expectedStatusCode;
-                            return Task.FromResult(1);
-                        });
-                    });
-
-                    app.Map("/errorPage", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run(async (httpContext) =>
-                        {
-                            await httpContext.Response.WriteAsync(httpContext.Request.QueryString.Value);
-                        });
-                    });
-
-                    app.Run((context) =>
-                    {
-
-                        throw new InvalidOperationException($"Invalid input provided. {context.Request.Path}");
-                    });
-                });
-            var expectedQueryString = $"?id={expectedStatusCode}";
-            var expectedUri = $"/errorPage{expectedQueryString}";
-            using (var server = new TestServer(builder))
-            {
-
-                var client = server.CreateClient();
-                var response = await client.GetAsync(destination);
-                Assert.Equal(HttpStatusCode.Found, response.StatusCode);
-                Assert.Equal(expectedUri, response.Headers.First(s => s.Key == "Location").Value.First());
-
-                response = await client.GetAsync(expectedUri);
-                var content = await response.Content.ReadAsStringAsync();
-                Assert.Equal(expectedQueryString, content);
-                Assert.Equal(expectedQueryString, response.RequestMessage.RequestUri.Query);
-            }
-        }
-
-        [Fact]
-        public async Task Reexecute_CanRetrieveInformationAboutOriginalRequest()
-        {
-            var expectedStatusCode = 432;
-            var destination = "/location";
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        var beforeNext = context.Request.QueryString;
-                        await next();
-                        var afterNext = context.Request.QueryString;
-
-                        Assert.Equal(beforeNext, afterNext);
-                    });
-                    app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
-
-                    app.Map(destination, (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run((httpContext) =>
-                        {
-                            httpContext.Response.StatusCode = expectedStatusCode;
-                            return Task.FromResult(1);
-                        });
-                    });
-
-                    app.Map("/errorPage", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run(async (httpContext) =>
-                        {
-                            var statusCodeReExecuteFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
-                            await httpContext.Response.WriteAsync(
-                                httpContext.Request.QueryString.Value
-                                + ", "
-                                + statusCodeReExecuteFeature.OriginalPath
-                                + ", "
-                                + statusCodeReExecuteFeature.OriginalQueryString);
-                        });
-                    });
-
-                    app.Run((context) =>
-                    {
-                        throw new InvalidOperationException("Invalid input provided.");
-                    });
-                });
-
-            using (var server = new TestServer(builder))
-            {
-                var client = server.CreateClient();
-                var response = await client.GetAsync(destination + "?name=James");
-                var content = await response.Content.ReadAsStringAsync();
-                Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
             }
         }
 

@@ -276,37 +276,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public override void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    BeginContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                        position = position,
-                        length = length,
-                        isLiteral = isLiteral,
-                    });
-            }
+            // noop
         }
 
         public override void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
-
-            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
-            {
-                DiagnosticSource.Write(
-                    EndContextEvent,
-                    new
-                    {
-                        httpContext = Context,
-                        path = Path,
-                    });
-            }
+            // noop
         }
 
         private void EnsureMethodCanBeInvoked(string methodName)

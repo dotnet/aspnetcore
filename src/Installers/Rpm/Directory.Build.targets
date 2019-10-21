@@ -30,6 +30,7 @@
   </PropertyGroup>
 
   <Target Name="Build" DependsOnTargets="RpmBuild" />
+  <Target Name="Pack" />
 
   <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
     <!-- Create layout: Create changelog -->

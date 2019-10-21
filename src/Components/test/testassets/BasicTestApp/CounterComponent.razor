@@ -1,9 +1,9 @@
 <h1>Counter</h1>
 <p>Current count: @currentCount</p>
-<p><button @onclick="@((handleClicks ? (Action)IncrementCount : null))">Click me</button></p>
+<p><button id="counter" @onclick="@(handleClicks ? (Action)IncrementCount : null)">Click me</button></p>
 
 <label>
-    <input type="checkbox" @bind="@handleClicks" />
+    <input type="checkbox" @bind="handleClicks" />
     Toggle click handler registration
 </label>
 

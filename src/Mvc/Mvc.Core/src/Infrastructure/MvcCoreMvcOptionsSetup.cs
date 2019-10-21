@@ -78,19 +78,25 @@ namespace Microsoft.AspNetCore.Mvc
             options.Filters.Add(new UnsupportedContentTypeFilter());
 
             // Set up default input formatters.
-            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value));
+            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value, _loggerFactory.CreateLogger<SystemTextJsonInputFormatter>()));
+
+            // Media type formatter mappings for JSON
+            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValues.ApplicationJson);
 
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
-            options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(_jsonOptions.Value));
+
+            var jsonOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(_jsonOptions.Value);
+            options.OutputFormatters.Add(jsonOutputFormatter);
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
             options.ValueProviderFactories.Add(new RouteValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
+            options.ValueProviderFactories.Add(new FormFileValueProviderFactory());
 
             // Set up metadata providers
             ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders);

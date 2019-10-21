@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,19 +79,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var createCount = 0;
-                Task<ConnectionContext> ConnectionFactory(TransferFormat format)
+                ValueTask<ConnectionContext> ConnectionFactory(EndPoint endPoint)
                 {
                     createCount += 1;
-                    return new TestConnection().StartAsync(format);
+                    return new TestConnection().StartAsync();
                 }
-
-                Task DisposeAsync(ConnectionContext connection)
-                {
-                    return connection.DisposeAsync().AsTask();
-                }
-
-                var builder = new HubConnectionBuilder();
-                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory, DisposeAsync);
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
                 await AsyncUsing(builder.Build(), async connection =>
@@ -116,16 +111,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // Set up StartAsync to wait on the syncPoint when starting
                 var createCount = 0;
                 var onDisposeForFirstConnection = SyncPoint.Create(out var syncPoint);
-                Task<ConnectionContext> ConnectionFactory(TransferFormat format)
+                ValueTask<ConnectionContext> ConnectionFactory(EndPoint endPoint)
                 {
                     createCount += 1;
-                    return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync(format);
+                    return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync();
                 }
 
-                Task DisposeAsync(ConnectionContext connection) => connection.DisposeAsync().AsTask();
-
-                var builder = new HubConnectionBuilder();
-                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory, DisposeAsync);
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+                var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
                 await AsyncUsing(builder.Build(), async connection =>
@@ -374,8 +367,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connectionClosed = new TaskCompletionSource<object>();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
-                    testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
                     connection.Closed += (e) =>
                     {
                         connectionClosed.TrySetResult(null);
@@ -390,7 +381,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testConnection.CompleteFromTransport();
 
                     // Wait for the connection to close.
-                    await testConnectionClosed.Task.OrTimeout();
+                    await testConnection.Transport.Input.CompleteAsync();
 
                     // The stop should be completed.
                     await stopTask.OrTimeout();
@@ -596,12 +587,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task HubConnectionClosesWithErrorIfTerminatedWithPartialMessage()
             {
-                var builder = new HubConnectionBuilder();
+                var builder = new HubConnectionBuilder().WithUrl("http://example.com");
                 var innerConnection = new TestConnection();
 
                 var delegateConnectionFactory = new DelegateConnectionFactory(
-                    format => innerConnection.StartAsync(format),
-                    connection => connection.DisposeAsync().AsTask());
+                    endPoint => innerConnection.StartAsync());
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
                 var hubConnection = builder.Build();

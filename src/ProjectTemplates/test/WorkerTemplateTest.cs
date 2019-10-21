@@ -20,7 +20,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "Microsoft.NET.Sdk.Worker isn't available yet")]
+        [Fact]
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);
@@ -32,20 +32,20 @@ namespace Templates.Test
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = Project.StartBuiltProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,

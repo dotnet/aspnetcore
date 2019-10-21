@@ -117,17 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ComponentParametersShouldNotBePublic_Description" xml:space="preserve">
-    <value>Component parameters should not have public setters.</value>
+  <data name="ComponentParameterSettersShouldBePublic_Description" xml:space="preserve">
+    <value>Component parameters should have public setters.</value>
   </data>
-  <data name="ComponentParametersShouldNotBePublic_FixTitle" xml:space="preserve">
-    <value>Make component parameter private</value>
+  <data name="ComponentParameterSettersShouldBePublic_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should have a public setter.</value>
   </data>
-  <data name="ComponentParametersShouldNotBePublic_Format" xml:space="preserve">
-    <value>Component parameter '{0}' has a public setter, but component parameters should not be publicly settable.</value>
-  </data>
-  <data name="ComponentParametersShouldNotBePublic_Title" xml:space="preserve">
-    <value>Component parameter has public setter</value>
+  <data name="ComponentParameterSettersShouldBePublic_Title" xml:space="preserve">
+    <value>Component parameter should have public setters.</value>
   </data>
   <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description" xml:space="preserve">
     <value>Components may only define a single parameter with CaptureUnmatchedValues.</value>
@@ -146,5 +143,35 @@
   </data>
   <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Title" xml:space="preserve">
     <value>Component parameter with CaptureUnmatchedValues has the wrong type</value>
+  </data>
+  <data name="ComponentParameterShouldBePublic_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should be public.</value>
+  </data>
+  <data name="ComponentParameterShouldBePublic_Title" xml:space="preserve">
+    <value>Component parameter should be public.</value>
+  </data>
+  <data name="ComponentParametersShouldBePublic_Description" xml:space="preserve">
+    <value>Component parameters should be public.</value>
+  </data>
+  <data name="ComponentParametersShouldBePublic_FixTitle" xml:space="preserve">
+    <value>Make component parameters public.</value>
+  </data>
+  <data name="ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Description" xml:space="preserve">
+    <value>Component parameters should not be set outside of their declared component. Doing so may result in unexpected behavior at runtime.</value>
+  </data>
+  <data name="ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should not be set outside of its component.</value>
+  </data>
+  <data name="ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title" xml:space="preserve">
+    <value>Component parameter should not be set outside of its component.</value>
+  </data>
+  <data name="DoNotUseRenderTreeTypes_Description" xml:space="preserve">
+    <value>The types in 'Microsoft.AspNetCore.Components.RenderTree' are not recommended for use outside of the Blazor framework. These  type definitions will change in future releases.</value>
+  </data>
+  <data name="DoNotUseRenderTreeTypes_Format" xml:space="preserve">
+    <value>The type or member {0} is is not recommended for use outside of the Blazor frameworks. Types defined in 'Microsoft.AspNetCore.Components.RenderTree' will change in future releases.</value>
+  </data>
+  <data name="DoNotUseRenderTreeTypes_Title" xml:space="preserve">
+    <value>Do not use RenderTree types</value>
   </data>
 </root>

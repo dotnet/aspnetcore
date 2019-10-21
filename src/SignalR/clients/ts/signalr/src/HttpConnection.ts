@@ -9,7 +9,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger, Platform } from "./Utils";
+import { Arg, createLogger, getUserAgentHeader, Platform } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
@@ -23,6 +23,8 @@ const enum ConnectionState {
 /** @private */
 export interface INegotiateResponse {
     connectionId?: string;
+    connectionToken?: string;
+    negotiateVersion?: number;
     availableTransports?: IAvailableTransport[];
     url?: string;
     accessToken?: string;
@@ -69,6 +71,8 @@ export class HttpConnection implements IConnection {
     public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
+
+    private readonly negotiateVersion: number = 1;
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         Arg.isRequired(url, "url");
@@ -230,7 +234,7 @@ export class HttpConnection implements IConnection {
                     this.transport = this.constructTransport(HttpTransportType.WebSockets);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
-                    await this.transport!.connect(url, transferFormat);
+                    await this.startTransport(url, transferFormat);
                 } else {
                     throw new Error("Negotiation can only be skipped when using the WebSocket transport directly.");
                 }
@@ -272,17 +276,12 @@ export class HttpConnection implements IConnection {
                     throw new Error("Negotiate redirection limit exceeded.");
                 }
 
-                this.connectionId = negotiateResponse.connectionId;
-
                 await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
             }
 
             if (this.transport instanceof LongPollingTransport) {
                 this.features.inherentKeepAlive = true;
             }
-
-            this.transport!.onreceive = this.onreceive;
-            this.transport!.onclose = (e) => this.stopConnection(e);
 
             if (this.connectionState === ConnectionState.Connecting) {
                 // Ensure the connection transitions to the connected state prior to completing this.startInternalPromise.
@@ -303,15 +302,16 @@ export class HttpConnection implements IConnection {
     }
 
     private async getNegotiationResponse(url: string): Promise<INegotiateResponse> {
-        let headers;
+        const headers = {};
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
             if (token) {
-                headers = {
-                    ["Authorization"]: `Bearer ${token}`,
-                };
+                headers[`Authorization`] = `Bearer ${token}`;
             }
         }
+
+        const [name, value] = getUserAgentHeader();
+        headers[name] = value;
 
         const negotiateUrl = this.resolveNegotiateUrl(url);
         this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);
@@ -325,32 +325,41 @@ export class HttpConnection implements IConnection {
                 return Promise.reject(new Error(`Unexpected status code returned from negotiate ${response.statusCode}`));
             }
 
-            return JSON.parse(response.content as string) as INegotiateResponse;
+            const negotiateResponse = JSON.parse(response.content as string) as INegotiateResponse;
+            if (!negotiateResponse.negotiateVersion || negotiateResponse.negotiateVersion < 1) {
+                // Negotiate version 0 doesn't use connectionToken
+                // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
+                negotiateResponse.connectionToken = negotiateResponse.connectionId;
+            }
+            return negotiateResponse;
         } catch (e) {
             this.logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
             return Promise.reject(e);
         }
     }
 
-    private createConnectUrl(url: string, connectionId: string | null | undefined) {
-        if (!connectionId) {
+    private createConnectUrl(url: string, connectionToken: string | null | undefined) {
+        if (!connectionToken) {
             return url;
         }
-        return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionId}`;
+
+        return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionToken}`;
     }
 
     private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
-        let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+        let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionToken);
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
-            await this.transport.connect(connectUrl, requestedTransferFormat);
+            await this.startTransport(connectUrl, requestedTransferFormat);
 
+            this.connectionId = negotiateResponse.connectionId;
             return;
         }
 
         const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
+        let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
             const transportOrError = this.resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
             if (transportOrError instanceof Error) {
@@ -358,20 +367,21 @@ export class HttpConnection implements IConnection {
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
             } else if (this.isITransport(transportOrError)) {
                 this.transport = transportOrError;
-                if (!negotiateResponse.connectionId) {
+                if (!negotiate) {
                     try {
-                        negotiateResponse = await this.getNegotiationResponse(url);
+                        negotiate = await this.getNegotiationResponse(url);
                     } catch (ex) {
                         return Promise.reject(ex);
                     }
-                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                    connectUrl = this.createConnectUrl(url, negotiate.connectionToken);
                 }
                 try {
-                    await this.transport!.connect(connectUrl, requestedTransferFormat);
+                    await this.startTransport(connectUrl, requestedTransferFormat);
+                    this.connectionId = negotiate.connectionId;
                     return;
                 } catch (ex) {
                     this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
-                    negotiateResponse.connectionId = undefined;
+                    negotiate = undefined;
                     transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
 
                     if (this.connectionState !== ConnectionState.Connecting) {
@@ -406,6 +416,12 @@ export class HttpConnection implements IConnection {
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
+    }
+
+    private startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
+        this.transport!.onreceive = this.onreceive;
+        this.transport!.onclose = (e) => this.stopConnection(e);
+        return this.transport!.connect(url, transferFormat);
     }
 
     private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
@@ -501,7 +517,7 @@ export class HttpConnection implements IConnection {
 
         // Setting the url to the href propery of an anchor tag handles normalization
         // for us. There are 3 main cases.
-        // 1. Relative  path normalization e.g "b" -> "http://localhost:5000/a/b"
+        // 1. Relative path normalization e.g "b" -> "http://localhost:5000/a/b"
         // 2. Absolute path normalization e.g "/a/b" -> "http://localhost:5000/a/b"
         // 3. Networkpath reference normalization e.g "//localhost:5000/a/b" -> "http://localhost:5000/a/b"
         const aTag = window.document.createElement("a");
@@ -519,6 +535,11 @@ export class HttpConnection implements IConnection {
         }
         negotiateUrl += "negotiate";
         negotiateUrl += index === -1 ? "" : url.substring(index);
+
+        if (negotiateUrl.indexOf("negotiateVersion") === -1) {
+            negotiateUrl += index === -1 ? "?" : "&";
+            negotiateUrl += "negotiateVersion=" + this.negotiateVersion;
+        }
         return negotiateUrl;
     }
 }

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(featureCollection));
             }
 
-            var httpContext = CreateHttpContext(featureCollection);
+            var httpContext = new DefaultHttpContext(featureCollection);
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = httpContext;
@@ -64,16 +64,6 @@ namespace Microsoft.AspNetCore.Http
             httpContext.ServiceScopeFactory = _serviceScopeFactory;
 
             return httpContext;
-        }
-
-        private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
-        {
-            if (featureCollection is IDefaultHttpContextContainer container)
-            {
-                return container.HttpContext;
-            }
-
-            return new DefaultHttpContext(featureCollection);
         }
 
         public void Dispose(HttpContext httpContext)

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpe
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_NoContextType"), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("MigrationsEndPointMiddleware_NoContextType"), content);
             Assert.True(content.Length > 512);
         }
 

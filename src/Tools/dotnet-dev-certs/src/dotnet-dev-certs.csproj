@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
     <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
@@ -9,6 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

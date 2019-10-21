@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using System;
 using System.Collections.Concurrent;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Components
         private static ReflectedCascadingParameterInfo[] CreateReflectedCascadingParameterInfos(Type componentType)
         {
             List<ReflectedCascadingParameterInfo> result = null;
-            var candidateProps = ParameterCollectionExtensions.GetCandidateBindableProperties(componentType);
+            var candidateProps = ComponentProperties.GetCandidateBindableProperties(componentType);
             foreach (var prop in candidateProps)
             {
                 var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();

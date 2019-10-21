@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
+        private readonly Pipe _input;
+        private Task _inputTask;
+        private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
         private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(Http2PeerSettings.DefaultInitialWindowSize);
@@ -64,7 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _gracefulCloseStarted;
 
         private readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
-        private int _activeStreamCount = 0;
+        private int _clientActiveStreamCount = 0;
+        private int _serverActiveStreamCount = 0;
 
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
@@ -87,7 +91,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
+                context.MemoryPool,
                 context.ServiceContext.Log);
+
+            var inputOptions = new PipeOptions(pool: context.MemoryPool,
+                readerScheduler: context.ServiceContext.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
+                useSynchronizationContext: false);
+
+            _input = new Pipe(inputOptions);
+            _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
             _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
 
@@ -99,10 +115,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+            _inputTask = ReadInputAsync();
         }
 
         public string ConnectionId => _context.ConnectionId;
-        public PipeReader Input => _context.Transport.Input;
+
+        public PipeReader Input => _input.Reader;
+
         public IKestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
@@ -185,27 +204,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 while (_isClosed == 0)
                 {
                     var result = await Input.ReadAsync();
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.Start;
+                    var buffer = result.Buffer;
 
                     // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceded their drain timeouts.
                     UpdateCompletedStreams();
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty)
+                        while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
-                            if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
-                            {
-                                Log.Http2FrameReceived(ConnectionId, _incomingFrame);
-                                consumed = examined = framePayload.End;
-                                await ProcessFrameAsync(application, framePayload);
-                            }
-                            else
-                            {
-                                examined = readableBuffer.End;
-                            }
+                            Log.Http2FrameReceived(ConnectionId, _incomingFrame);
+                            await ProcessFrameAsync(application, framePayload);
                         }
 
                         if (result.IsCompleted)
@@ -218,11 +227,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         Log.Http2StreamError(ConnectionId, ex);
                         // The client doesn't know this error is coming, allow draining additional frames for now.
                         AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
+
                         await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
                     }
                     finally
                     {
-                        Input.AdvanceTo(consumed, examined);
+                        Input.AdvanceTo(buffer.Start, buffer.End);
 
                         UpdateConnectionState();
                     }
@@ -231,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (ConnectionResetException ex)
             {
                 // Don't log ECONNRESET errors when there are no active streams on the connection. Browsers like IE will reset connections regularly.
-                if (_activeStreamCount > 0)
+                if (_clientActiveStreamCount > 0)
                 {
                     Log.RequestProcessingError(ConnectionId, ex);
                 }
@@ -239,6 +249,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 error = ex;
             }
             catch (IOException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+                error = ex;
+            }
+            catch (ConnectionAbortedException ex)
             {
                 Log.RequestProcessingError(ConnectionId, ex);
                 error = ex;
@@ -281,7 +296,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                     }
 
-                    while (_activeStreamCount > 0)
+                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
+                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
+                    while (_serverActiveStreamCount > 0)
                     {
                         await _streamCompletionAwaitable;
                         UpdateCompletedStreams();
@@ -301,6 +319,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 finally
                 {
                     Input.Complete();
+                    _context.Transport.Input.CancelPendingRead();
+                    await _inputTask;
                 }
             }
         }
@@ -379,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
-        private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
+        private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
             // Streams initiated by a client MUST use odd-numbered stream identifiers; ...
@@ -390,34 +410,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdEven(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            switch (_incomingFrame.Type)
+            return _incomingFrame.Type switch
             {
-                case Http2FrameType.DATA:
-                    return ProcessDataFrameAsync(payload);
-                case Http2FrameType.HEADERS:
-                    return ProcessHeadersFrameAsync(application, payload);
-                case Http2FrameType.PRIORITY:
-                    return ProcessPriorityFrameAsync();
-                case Http2FrameType.RST_STREAM:
-                    return ProcessRstStreamFrameAsync();
-                case Http2FrameType.SETTINGS:
-                    return ProcessSettingsFrameAsync(payload);
-                case Http2FrameType.PUSH_PROMISE:
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR);
-                case Http2FrameType.PING:
-                    return ProcessPingFrameAsync(payload);
-                case Http2FrameType.GOAWAY:
-                    return ProcessGoAwayFrameAsync();
-                case Http2FrameType.WINDOW_UPDATE:
-                    return ProcessWindowUpdateFrameAsync();
-                case Http2FrameType.CONTINUATION:
-                    return ProcessContinuationFrameAsync(payload);
-                default:
-                    return ProcessUnknownFrameAsync();
-            }
+                Http2FrameType.DATA => ProcessDataFrameAsync(payload),
+                Http2FrameType.HEADERS => ProcessHeadersFrameAsync(application, payload),
+                Http2FrameType.PRIORITY => ProcessPriorityFrameAsync(),
+                Http2FrameType.RST_STREAM => ProcessRstStreamFrameAsync(),
+                Http2FrameType.SETTINGS => ProcessSettingsFrameAsync(payload),
+                Http2FrameType.PUSH_PROMISE => throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR),
+                Http2FrameType.PING => ProcessPingFrameAsync(payload),
+                Http2FrameType.GOAWAY => ProcessGoAwayFrameAsync(),
+                Http2FrameType.WINDOW_UPDATE => ProcessWindowUpdateFrameAsync(),
+                Http2FrameType.CONTINUATION => ProcessContinuationFrameAsync(payload),
+                _ => ProcessUnknownFrameAsync(),
+            };
         }
 
-        private Task ProcessDataFrameAsync(ReadOnlySequence<byte> payload)
+        private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -473,7 +482,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
         }
 
-        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
+        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -640,7 +649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task ProcessSettingsFrameAsync(ReadOnlySequence<byte> payload)
+        private Task ProcessSettingsFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -711,7 +720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private Task ProcessPingFrameAsync(ReadOnlySequence<byte> payload)
+        private Task ProcessPingFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream != null)
             {
@@ -818,7 +827,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task ProcessContinuationFrameAsync(ReadOnlySequence<byte> payload)
+        private Task ProcessContinuationFrameAsync(in ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream == null)
             {
@@ -857,7 +866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task DecodeHeadersAsync(bool endHeaders, ReadOnlySequence<byte> payload)
+        private Task DecodeHeadersAsync(bool endHeaders, in ReadOnlySequence<byte> payload)
         {
             try
             {
@@ -879,7 +888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task DecodeTrailersAsync(bool endHeaders, ReadOnlySequence<byte> payload)
+        private Task DecodeTrailersAsync(bool endHeaders, in ReadOnlySequence<byte> payload)
         {
             _hpackDecoder.Decode(payload, endHeaders, handler: this);
 
@@ -902,11 +911,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_activeStreamCount >= _serverSettings.MaxConcurrentStreams)
+            if (_clientActiveStreamCount >= _serverSettings.MaxConcurrentStreams)
             {
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
             }
 
+            // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary
+            // counts get out of sync during shutdown. The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
+            // Also, we care about the dictionary size for too much memory consumption.
+            if (_streams.Count >= _serverSettings.MaxConcurrentStreams * 2)
+            {
+                // Server is getting hit hard with connection resets.
+                // Tell client to calm down.
+                // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
+            }
             // This must be initialized before we offload the request or else we may start processing request body frames without it.
             _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
 
@@ -916,8 +935,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _currentHeadersStream.OnEndStreamReceived();
             }
 
-            _activeStreamCount++;
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
+            IncrementActiveClientStreamCount();
+            _serverActiveStreamCount++;
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }
@@ -955,6 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_streams.TryGetValue(streamId, out var stream))
             {
+                stream.DecrementActiveClientStreamCount();
                 stream.Abort(error);
             }
         }
@@ -987,8 +1008,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (stream.DrainExpirationTicks == default)
                 {
-                    // This is our first time checking this stream.
-                    _activeStreamCount--;
+                    _serverActiveStreamCount--;
                     stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
                 }
 
@@ -1027,13 +1047,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 Log.Http2ConnectionClosing(_context.ConnectionId);
 
-                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && _activeStreamCount > 0)
+                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && _clientActiveStreamCount > 0)
                 {
                     _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.NO_ERROR);
                 }
             }
 
-            if (_activeStreamCount == 0)
+            if (_clientActiveStreamCount == 0)
             {
                 if (_gracefulCloseStarted)
                 {
@@ -1238,6 +1258,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             return false;
+        }
+
+        public void IncrementActiveClientStreamCount()
+        {
+            Interlocked.Increment(ref _clientActiveStreamCount);
+        }
+
+        public void DecrementActiveClientStreamCount()
+        {
+            Interlocked.Decrement(ref _clientActiveStreamCount);
+        }
+
+        private async Task ReadInputAsync()
+        {
+            Exception error = null;
+            try
+            {
+                while (true)
+                {
+                    var reader = _context.Transport.Input;
+                    var writer = _input.Writer;
+
+                    var readResult = await reader.ReadAsync();
+
+                    if ((readResult.IsCompleted && readResult.Buffer.Length == 0) || readResult.IsCanceled)
+                    {
+                        // FIN
+                        break;
+                    }
+
+                    var outputBuffer = writer.GetMemory(_minAllocBufferSize);
+
+                    var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
+                    var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
+
+                    bufferSlice.CopyTo(outputBuffer.Span);
+
+                    reader.AdvanceTo(bufferSlice.End);
+                    writer.Advance(copyAmount);
+
+                    var result = await writer.FlushAsync();
+
+                    if (result.IsCompleted || result.IsCanceled)
+                    {
+                        // flushResult should not be canceled.
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.
+                error = ex;
+            }
+            finally
+            {
+                await _context.Transport.Input.CompleteAsync();
+                _input.Writer.Complete(error);
+            }
         }
 
         private class StreamCloseAwaitable : ICriticalNotifyCompletion

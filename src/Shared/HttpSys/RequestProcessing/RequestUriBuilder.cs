@@ -28,9 +28,18 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 return "/";
             }
 
+            // OPTIONS *
+            // RemoveDotSegments Asserts path always starts with a '/'
+            if (rawPath.Length == 1 && rawPath[0] == (byte)'*')
+            {
+                return "*";
+            }
+
             var unescapedPath = Unescape(rawPath);
 
-            return UTF8.GetString(unescapedPath);
+            var length = PathNormalizer.RemoveDotSegments(unescapedPath);
+
+            return UTF8.GetString(unescapedPath.Slice(0, length));
         }
 
         /// <summary>
@@ -38,7 +47,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// </summary>
         /// <param name="rawPath">The raw path string to be unescaped</param>
         /// <returns>The unescaped path string</returns>
-        private static ReadOnlySpan<byte> Unescape(Span<byte> rawPath)
+        private static Span<byte> Unescape(Span<byte> rawPath)
         {
             // the slot to read the input
             var reader = 0;
@@ -63,10 +72,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     // If decoding process succeeds, the writer iterator will be moved
                     // to the next write-ready location. On the other hand if the scanned
                     // percent-encodings cannot be interpreted as sequence of UTF-8 octets,
-                    // these bytes should be copied to output as is. 
-                    // The decodeReader iterator is always moved to the first byte not yet 
+                    // these bytes should be copied to output as is.
+                    // The decodeReader iterator is always moved to the first byte not yet
                     // be scanned after the process. A failed decoding means the chars
-                    // between the reader and decodeReader can be copied to output untouched. 
+                    // between the reader and decodeReader can be copied to output untouched.
                     if (!DecodeCore(ref decodeReader, ref writer, end, rawPath))
                     {
                         Copy(reader, decodeReader, ref writer, rawPath);
@@ -236,18 +245,18 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         /// <summary>
         /// Read the percent-encoding and try unescape it.
-        /// 
-        /// The operation first peek at the character the <paramref name="scan"/> 
-        /// iterator points at. If it is % the <paramref name="scan"/> is then 
-        /// moved on to scan the following to characters. If the two following 
-        /// characters are hexadecimal literals they will be unescaped and the 
+        ///
+        /// The operation first peek at the character the <paramref name="scan"/>
+        /// iterator points at. If it is % the <paramref name="scan"/> is then
+        /// moved on to scan the following to characters. If the two following
+        /// characters are hexadecimal literals they will be unescaped and the
         /// value will be returned.
-        /// 
-        /// If the first character is not % the <paramref name="scan"/> iterator 
+        ///
+        /// If the first character is not % the <paramref name="scan"/> iterator
         /// will be removed beyond the location of % and -1 will be returned.
-        /// 
-        /// If the following two characters can't be successfully unescaped the 
-        /// <paramref name="scan"/> iterator will be move behind the % and -1 
+        ///
+        /// If the following two characters can't be successfully unescaped the
+        /// <paramref name="scan"/> iterator will be move behind the % and -1
         /// will be returned.
         /// </summary>
         /// <param name="scan">The value to read</param>
@@ -286,7 +295,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         /// <summary>
         /// Read the next char and convert it into hexadecimal value.
-        /// 
+        ///
         /// The <paramref name="scan"/> iterator will be moved to the next
         /// byte no matter no matter whether the operation successes.
         /// </summary>

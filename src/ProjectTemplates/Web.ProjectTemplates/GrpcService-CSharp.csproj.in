@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,10 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore.Server" Version="${GrpcAspNetCoreServerPackageVersion}" />
-    <PackageReference Include="Google.Protobuf" Version="${GoogleProtobufPackageVersion}" />
-
-    <PackageReference Include="Grpc.Tools" Version="${GrpcToolsPackageVersion}" PrivateAssets="All" />
+    <PackageReference Include="Grpc.AspNetCore" Version="${GrpcAspNetCorePackageVersion}" />
   </ItemGroup>
 
 </Project>

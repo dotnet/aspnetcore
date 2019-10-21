@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Provides scale-out support for ASP.NET Core SignalR using a Redis server and the StackExchange.Redis client.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
@@ -16,6 +16,11 @@
     <Reference Include="StackExchange.Redis" />
     <Reference Include="MessagePack" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
   </ItemGroup>
 
 </Project>

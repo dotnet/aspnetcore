@@ -245,7 +245,6 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
@@ -254,7 +253,6 @@ namespace Microsoft.AspNetCore.Routing
                 _binder = binderFactory.Create(ParsedTemplate, Defaults);
             }
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         private void EnsureLoggers(HttpContext context)
         {
@@ -267,7 +265,7 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (_logger != null)
                     {
-                        // Multiple threads might have tried to accquire the lock at the same time. Technically
+                        // Multiple threads might have tried to acquire the lock at the same time. Technically
                         // there is nothing wrong if things get reinitialized by a second thread, but its easy
                         // to prevent by just rechecking and returning here.
                         return;

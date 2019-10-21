@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
-using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {

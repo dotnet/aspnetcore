@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             Assert.Collection(stackFrames,
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => GenericMethod<string>(null));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => MethodWithOutParameter(out var value));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => MethodWithGenericOutParameter("Test", out int value));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => MethodWithRefParameter(ref value));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -113,7 +113,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => MethodWithGenericRefParameter(ref value));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -128,7 +128,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => MethodWithNullableParameter(value));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -142,7 +142,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => new GenericClass<int>().Throw(0));
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -175,7 +175,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
             var methodNames = stackFrames.Select(stackFrame => stackFrame.MethodDisplayInfo.ToString()).ToArray();
 
             // Assert
@@ -189,7 +189,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => InvokeMethodOnTypeWithStackTraceHiddenAttribute());
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => InvokeStaticMethodOnTypeWithStackTraceHiddenAttribute());
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -219,7 +219,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(() => new TypeWithMethodWithStackTraceHiddenAttribute().Throw());
 
             // Act
-            var stackFrames = StackTraceHelper.GetFrames(exception);
+            var stackFrames = StackTraceHelper.GetFrames(exception, out _);
 
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.Internal
             var exception = Record.Exception(action);
 
             // Act
-            var frames = StackTraceHelper.GetFrames(exception).ToArray();
+            var frames = StackTraceHelper.GetFrames(exception, out _).ToArray();
 
             // Assert
             var frame = frames[0];

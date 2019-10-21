@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests

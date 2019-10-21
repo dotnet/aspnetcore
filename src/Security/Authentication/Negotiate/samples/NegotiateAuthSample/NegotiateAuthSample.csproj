@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 

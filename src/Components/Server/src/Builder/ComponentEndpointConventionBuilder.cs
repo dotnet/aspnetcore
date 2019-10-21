@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.SignalR;
 
-namespace Microsoft.AspNetCore.Components.Server
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Builds conventions that will be used for customization of ComponentHub <see cref="EndpointBuilder"/> instances.
     /// </summary>
     public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionBuilder
     {
-        private readonly IEndpointConventionBuilder _endpointConventionBuilder;
+        private readonly IEndpointConventionBuilder _hubEndpoint;
+        private readonly IEndpointConventionBuilder _disconnectEndpoint;
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint)
         {
-            _endpointConventionBuilder = endpointConventionBuilder;
+            _hubEndpoint = hubEndpoint;
+            _disconnectEndpoint = disconnectEndpoint;
         }
 
         /// <summary>
@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <param name="convention">The convention to add to the builder.</param>
         public void Add(Action<EndpointBuilder> convention)
         {
-            _endpointConventionBuilder.Add(convention);
+            _hubEndpoint.Add(convention);
+            _disconnectEndpoint.Add(convention);
         }
     }
 }

@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -702,8 +701,8 @@ namespace Microsoft.AspNetCore.Hosting
                 await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
                 Assert.True(hostedServiceCalls1[0]);
                 Assert.False(hostedServiceCalls2[0]);
-                Assert.True(started.All(s => s));
-                Assert.True(started2.All(s => s));
+                Assert.False(started.All(s => s)); // Server doesn't start if hosted services throw
+                Assert.False(started2.All(s => s));
                 host.Dispose();
                 Assert.True(hostedServiceCalls1[1]);
                 Assert.True(hostedServiceCalls2[1]);
@@ -883,23 +882,21 @@ namespace Microsoft.AspNetCore.Hosting
         public async Task WebHost_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
         {
             // Arrange
-            HttpContext httpContext = null;
-            var requestDelegate = new RequestDelegate(innerHttpContext =>
-                {
-                    httpContext = innerHttpContext;
-                    return Task.FromResult(0);
-                });
-
-            using (var host = CreateHost(requestDelegate))
+            var requestDelegate = new RequestDelegate(httpContext =>
             {
-                // Act
-                await host.StartAsync();
-
                 // Assert
                 Assert.NotNull(httpContext);
                 var featuresTraceIdentifier = httpContext.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
                 Assert.False(string.IsNullOrWhiteSpace(httpContext.TraceIdentifier));
                 Assert.Same(httpContext.TraceIdentifier, featuresTraceIdentifier);
+
+                return Task.CompletedTask;
+            });
+
+            using (var host = CreateHost(requestDelegate))
+            {
+                // Act
+                await host.StartAsync();
             }
         }
 
@@ -907,13 +904,15 @@ namespace Microsoft.AspNetCore.Hosting
         public async Task WebHost_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
         {
             // Arrange
-            HttpContext httpContext = null;
-            var requestDelegate = new RequestDelegate(innerHttpContext =>
-            {
-                httpContext = innerHttpContext;
-                return Task.FromResult(0);
-            });
             var requestIdentifierFeature = new StubHttpRequestIdentifierFeature();
+            var requestDelegate = new RequestDelegate(httpContext =>
+            {
+                // Assert
+                Assert.NotNull(httpContext);
+                Assert.Same(requestIdentifierFeature, httpContext.Features.Get<IHttpRequestIdentifierFeature>());
+
+                return Task.CompletedTask;
+            });
 
             using (var host = CreateHost(requestDelegate))
             {
@@ -926,10 +925,6 @@ namespace Microsoft.AspNetCore.Hosting
                 };
                 // Act
                 await host.StartAsync();
-
-                // Assert
-                Assert.NotNull(httpContext);
-                Assert.Same(requestIdentifierFeature, httpContext.Features.Get<IHttpRequestIdentifierFeature>());
             }
         }
 
@@ -946,6 +941,36 @@ namespace Microsoft.AspNetCore.Hosting
                 var services2 = host.Services;
                 Assert.Equal(1, CountStartup.ConfigureCount);
                 Assert.Equal(1, CountStartup.ConfigureServicesCount);
+            }
+        }
+
+        [Fact]
+        public async Task WebHost_HttpContextUseAfterRequestEnd_Fails()
+        {
+            // Arrange
+            HttpContext capturedContext = null;
+            HttpRequest capturedRequest = null;
+            var requestDelegate = new RequestDelegate(httpContext =>
+            {
+                capturedContext = httpContext;
+                capturedRequest = httpContext.Request;
+
+                return Task.CompletedTask;
+            });
+
+            using (var host = CreateHost(requestDelegate))
+            {
+                // Act
+                await host.StartAsync();
+
+                // Assert
+                Assert.NotNull(capturedContext);
+                Assert.NotNull(capturedRequest);
+
+                Assert.Throws<ObjectDisposedException>(() => capturedContext.TraceIdentifier);
+                Assert.Throws<ObjectDisposedException>(() => capturedContext.Features.Get<IHttpRequestIdentifierFeature>());
+
+                Assert.Throws<ObjectDisposedException>(() => capturedRequest.Scheme);
             }
         }
 

@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class KeyTest : BasicTestAppTestBase
+    public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public KeyTest(
             BrowserFixture browserFixture,
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public async Task CanRetainFocusWhileMovingTextBox()
         {
-            var appElem = MountTestComponent<ReorderingFocusComponent>();
+            var appElem = Browser.MountTestComponent<ReorderingFocusComponent>();
             Func<IWebElement> textboxFinder = () => appElem.FindElement(By.CssSelector(".incomplete-items .item-1 input[type=text]"));
             var textToType = "Hello there!";
             var expectedTextTyped = "";
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanUpdateCheckboxStateWhileMovingIt()
         {
-            var appElem = MountTestComponent<ReorderingFocusComponent>();
+            var appElem = Browser.MountTestComponent<ReorderingFocusComponent>();
             Func<IWebElement> checkboxFinder = () => appElem.FindElement(By.CssSelector(".item-2 input[type=checkbox]"));
             Func<IEnumerable<bool>> incompleteItemStates = () => appElem
                 .FindElements(By.CssSelector(".incomplete-items input[type=checkbox]"))
@@ -276,10 +276,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var rootBefore = new Node(null, "root", before);
             var rootAfter = new Node(null, "root", after);
-            var jsonBefore = JsonSerializer.ToString(rootBefore, TestJsonSerializerOptionsProvider.Options);
-            var jsonAfter = JsonSerializer.ToString(rootAfter, TestJsonSerializerOptionsProvider.Options);
+            var jsonBefore = JsonSerializer.Serialize(rootBefore, TestJsonSerializerOptionsProvider.Options);
+            var jsonAfter = JsonSerializer.Serialize(rootAfter, TestJsonSerializerOptionsProvider.Options);
 
-            var appElem = MountTestComponent<KeyCasesComponent>();
+            var appElem = Browser.MountTestComponent<KeyCasesComponent>();
             var textbox = appElem.FindElement(By.TagName("textarea"));
             var updateButton = appElem.FindElement(By.TagName("button"));
 
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript(
-                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.ToString(value, TestJsonSerializerOptionsProvider.Options)}");
+                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.Serialize(value, TestJsonSerializerOptionsProvider.Options)}");
             textAreaElementWithId.SendKeys(" "); // So it fires the change event
         }
 

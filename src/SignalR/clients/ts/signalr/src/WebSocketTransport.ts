@@ -5,7 +5,7 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
-import { Arg, getDataDetail, Platform } from "./Utils";
+import { Arg, getDataDetail, getUserAgentHeader, Platform } from "./Utils";
 
 /** @private */
 export class WebSocketTransport implements ITransport {
@@ -50,12 +50,18 @@ export class WebSocketTransport implements ITransport {
             let webSocket: WebSocket | undefined;
             const cookies = this.httpClient.getCookieString(url);
 
-            if (Platform.isNode && cookies) {
+            if (Platform.isNode) {
+                const headers = {};
+                const [name, value] = getUserAgentHeader();
+                headers[name] = value;
+
+                if (cookies) {
+                    headers[`Cookie`] = `${cookies}`;
+                }
+
                 // Only pass cookies when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
-                    headers: {
-                        Cookie: `${cookies}`,
-                    },
+                    headers,
                 });
             }
 
@@ -80,14 +86,22 @@ export class WebSocketTransport implements ITransport {
                 // ErrorEvent is a browser only type we need to check if the type exists before using it
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
+                } else {
+                    error = new Error("There was an error with the transport.");
                 }
+
                 reject(error);
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
                 this.logger.log(LogLevel.Trace, `(WebSockets transport) data received. ${getDataDetail(message.data, this.logMessageContent)}.`);
                 if (this.onreceive) {
-                    this.onreceive(message.data);
+                    try {
+                        this.onreceive(message.data);
+                    } catch (error) {
+                        this.close(error);
+                        return;
+                    }
                 }
             };
 
@@ -122,15 +136,21 @@ export class WebSocketTransport implements ITransport {
         return Promise.resolve();
     }
 
-    private close(event?: CloseEvent): void {
+    private close(event?: CloseEvent | Error): void {
         // webSocket will be null if the transport did not start successfully
         this.logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
-            if (event && (event.wasClean === false || event.code !== 1000)) {
+            if (this.isCloseEvent(event) && (event.wasClean === false || event.code !== 1000)) {
                 this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason}).`));
+            } else if (event instanceof Error) {
+                this.onclose(event);
             } else {
                 this.onclose();
             }
         }
+    }
+
+    private isCloseEvent(event?: any): event is CloseEvent {
+        return event && typeof event.wasClean === "boolean" && typeof event.code === "number";
     }
 }

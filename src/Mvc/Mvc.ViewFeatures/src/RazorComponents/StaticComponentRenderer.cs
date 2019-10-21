@@ -6,11 +6,14 @@ using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
 {
@@ -25,19 +28,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         }
 
         public async Task<IEnumerable<string>> PrerenderComponentAsync(
-            ParameterCollection parameters,
+            ParameterView parameters,
             HttpContext httpContext,
             Type componentType)
         {
-            var dispatcher = Renderer.CreateDefaultDispatcher();
-
-            InitializeUriHelper(httpContext);
-            using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, _encoder.Encode, dispatcher))
+            InitializeStandardComponentServices(httpContext);
+            var loggerFactory = (ILoggerFactory)httpContext.RequestServices.GetService(typeof (ILoggerFactory));
+            using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, loggerFactory, _encoder.Encode))
             {
                 ComponentRenderedText result = default;
                 try
                 {
-                    result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
+                    result = await htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
                         componentType,
                         parameters));
                 }
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                         // all components have rendered.
                         throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
                             "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                            "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
+                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
                     }
 
                     httpContext.Response.Redirect(navigationException.Location);
@@ -62,17 +64,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
             }
         }
 
-        private void InitializeUriHelper(HttpContext httpContext)
+        private void InitializeStandardComponentServices(HttpContext httpContext)
         {
-            // We don't know here if we are dealing with the default HttpUriHelper registered
-            // by MVC or with the RemoteUriHelper registered by AddComponents.
             // This might not be the first component in the request we are rendering, so
-            // we need to check if we already initialized the uri helper in this request.
+            // we need to check if we already initialized the services in this request.
             if (!_initialized)
             {
                 _initialized = true;
-                var helper = (UriHelperBase)httpContext.RequestServices.GetRequiredService<IUriHelper>();
-                helper.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+
+                var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+                if (authenticationStateProvider != null)
+                {
+                    var authenticationState = new AuthenticationState(httpContext.User);
+                    authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+                }
+
+                var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
+                navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
             }
         }
 
@@ -89,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         private string GetContextBaseUri(HttpRequest request)
         {
             var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
-            
+
             // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
             // it has to end with a trailing slash
             return result.EndsWith("/") ? result : result += "/";

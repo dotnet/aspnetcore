@@ -3,9 +3,9 @@
 
 <h2>Render List</h2>
 
-Number of items: <input id="num-items" type="number" @bind=@numItems />
-<button id="show-list" @onclick=@Show>Show</button>
-<button id="hide-list" @onclick=@Hide>Hide</button>
+Number of items: <input id="num-items" type="number" @bind=numItems />
+<button id="show-list" @onclick=Show>Show</button>
+<button id="hide-list" @onclick=Hide>Hide</button>
 
 @if (show)
 {
@@ -46,7 +46,7 @@ Number of items: <input id="num-items" type="number" @bind=@numItems />
         show = true;
     }
 
-    protected override void OnAfterRender()
+    protected override void OnAfterRender(bool firstRender)
     {
         BenchmarkEvent.Send(JSRuntime, "Finished rendering list");
     }

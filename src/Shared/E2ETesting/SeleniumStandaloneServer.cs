@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static IMessageSink _diagnosticsMessageSink;
 
         // 1h 30 min
-        private static int SeleniumProcessTimeout = 5400;
+        private static int SeleniumProcessTimeout = 3600;
 
         public SeleniumStandaloneServer(IMessageSink diagnosticsMessageSink)
         {
@@ -64,13 +64,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public static async Task<SeleniumStandaloneServer> GetInstanceAsync(ITestOutputHelper output)
         {
-            await _semaphore.WaitAsync();
             try
             {
-                if (Instance == null)
-                {
-
-                }
+                await _semaphore.WaitAsync();
                 if (Instance._process == null)
                 {
                     // No process was started, meaning the instance wasn't initialized.
@@ -139,7 +135,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             process.BeginErrorReadLine();
 
             // The Selenium sever has to be up for the entirety of the tests and is only shutdown when the application (i.e. the test) exits.
-            AppDomain.CurrentDomain.ProcessExit += (sender, args) => ProcessCleanup(process, pidFilePath);
+            // AppDomain.CurrentDomain.ProcessExit += (sender, args) => ProcessCleanup(process, pidFilePath);
 
             // Log
             void LogOutput(object sender, DataReceivedEventArgs e)
@@ -183,7 +179,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             output = null;
             logOutput.CompleteAdding();
             var exitCodeString = process.HasExited ? process.ExitCode.ToString() : "Process has not yet exited.";
-            var message = @$"Failed to launch the server.
+            var message = $@"Failed to launch the server.
 ExitCode: {exitCodeString}
 Captured output lines:
 {string.Join(Environment.NewLine, logOutput.GetConsumingEnumerable())}.";
@@ -195,7 +191,7 @@ Captured output lines:
 
         private static Process StartSentinelProcess(Process process, string sentinelFile, int timeout)
         {
-            // This sentinel process will start and will kill any roge selenium server that want' torn down
+            // This sentinel process will start and will kill any rouge selenium server that want' torn down
             // via normal means.
             var psi = new ProcessStartInfo
             {
@@ -211,19 +207,20 @@ Captured output lines:
 
         private static void ProcessCleanup(Process process, string pidFilePath)
         {
-            if (process?.HasExited == false)
-            {
-                try
-                {
-                    process?.KillTree(TimeSpan.FromSeconds(10));
-                    process?.Dispose();
-                }
-                catch
-                {
-                }
-            }
             try
             {
+                if (process?.HasExited == false)
+                {
+                    try
+                    {
+                        process?.KillTree(TimeSpan.FromSeconds(10));
+                        process?.Dispose();
+                    }
+                    catch
+                    {
+                        // Ignore errors here since we can't do anything
+                    }
+                }
                 if (pidFilePath != null && File.Exists(pidFilePath))
                 {
                     File.Delete(pidFilePath);
@@ -231,6 +228,7 @@ Captured output lines:
             }
             catch
             {
+                // Ignore errors here since we can't do anything
             }
         }
 

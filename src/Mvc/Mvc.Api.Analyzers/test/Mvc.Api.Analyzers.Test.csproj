@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj" />
-    <ProjectReference Include="..\..\Mvc\ref\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\..\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>

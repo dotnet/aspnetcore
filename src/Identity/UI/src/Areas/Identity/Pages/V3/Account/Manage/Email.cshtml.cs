@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
 {
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnPostChangeEmailAsync() => throw new NotImplementedException();
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -95,15 +98,9 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             _emailSender = emailSender;
         }
 
-        public override async Task<IActionResult> OnGetAsync()
+        private async Task LoadAsync(TUser user)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
             var email = await _userManager.GetEmailAsync(user);
-
             Email = email;
 
             Input = new InputModel
@@ -112,21 +109,32 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
-
-            return Page();
         }
 
-        public override async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnGetAsync()
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            await LoadAsync(user);
+            return Page();
+        }
+
+        public override async Task<IActionResult> OnPostChangeEmailAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadAsync(user);
+                return Page();
             }
 
             var email = await _userManager.GetEmailAsync(user);
@@ -134,10 +142,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             {
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page(
                     "/Account/ConfirmEmailChange",
                     pageHandler: null,
-                    values: new { userId = userId, email = Input.NewEmail, code = code },
+                    values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code },
                     protocol: Request.Scheme);
                 await _emailSender.SendEmailAsync(
                     Input.NewEmail,
@@ -168,10 +177,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
                 pageHandler: null,
-                values: new { userId = userId, code = code },
+                values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,

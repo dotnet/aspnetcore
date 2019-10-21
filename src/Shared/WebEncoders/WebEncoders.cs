@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if NETCOREAPP
 using System.Buffers;
+#endif
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.WebEncoders.Sources;
@@ -221,7 +223,7 @@ namespace Microsoft.Extensions.Internal
 
             ValidateParameters(input.Length, nameof(input), offset, count);
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
             return Base64UrlEncode(input.AsSpan(offset, count));
 #else
             // Special-case empty input
@@ -285,7 +287,7 @@ namespace Microsoft.Extensions.Internal
                     nameof(count));
             }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
             return Base64UrlEncode(input.AsSpan(offset, count), output.AsSpan(outputOffset));
 #else
             // Special-case empty input.
@@ -336,7 +338,7 @@ namespace Microsoft.Extensions.Internal
             return checked(numWholeOrPartialInputBlocks * 4);
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
         /// <summary>
         /// Encodes <paramref name="input"/> using base64url encoding.
         /// </summary>

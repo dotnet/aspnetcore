@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Mvc.Core\test\Infrastructure\AsyncEnumerableReaderTest.cs" />
     <Compile Include="..\..\Mvc.Core\test\Formatters\JsonInputFormatterTestBase.cs" />
     <Compile Include="..\..\Mvc.Core\test\Formatters\JsonOutputFormatterTestBase.cs" />
     <Compile Include="..\..\Mvc.Core\test\Infrastructure\JsonResultExecutorTestBase.cs" />

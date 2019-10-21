@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -26,6 +28,14 @@ namespace Microsoft.AspNetCore.E2ETesting
         public ILogs Logs { get; private set; }
 
         public IMessageSink DiagnosticsMessageSink { get; }
+
+        public static void EnforceSupportedConfigurations()
+        {
+            // Do not change the current platform support without explicit approval.
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64,
+                "Selenium tests should be running in this platform.");
+        }
 
         public static bool IsHostAutomationSupported()
         {
@@ -78,7 +88,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            opts.AddArgument("--headless");
+            if (!Debugger.IsAttached)
+            {
+                opts.AddArgument("--headless");
+            }
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
@@ -95,7 +108,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
 
             var attempt = 0;
-            var maxAttempts = 3;
+            const int maxAttempts = 3;
             do
             {
                 try
@@ -105,7 +118,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     // To prevent this we let the client attempt several times to connect to the server, increasing
                     // the max allowed timeout for a command on each attempt linearly.
                     // This can also be caused if many tests are running concurrently, we might want to manage
-                    // chrome and chromedriver instances more aggresively if we have to.
+                    // chrome and chromedriver instances more aggressively if we have to.
                     // Additionally, if we think the selenium server has become irresponsive, we could spin up
                     // replace the current selenium server instance and let a new instance take over for the
                     // remaining tests.
@@ -119,18 +132,16 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                     return (driver, logs);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    if (attempt >= maxAttempts)
-                    {
-                        throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
-                    }
+                    output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
                 }
+
                 attempt++;
+
             } while (attempt < maxAttempts);
 
-            // We will never get here. Keeping the compiler happy.
-            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is unresponsive");
+            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
         }
     }
 }

@@ -11,8 +11,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed class HttpResponsePipeWriter : PipeWriter
     {
-        private HttpStreamState _state;
         private readonly IHttpResponseControl _pipeControl;
+
+        private HttpStreamState _state;
+        private Task _completeTask = Task.CompletedTask;
 
         public HttpResponsePipeWriter(IHttpResponseControl pipeControl)
         {
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void Complete(Exception exception = null)
         {
             ValidateState();
-            _pipeControl.Complete(exception);
+            _completeTask = _pipeControl.CompleteAsync(exception);
         }
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -56,12 +58,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _pipeControl.GetSpan(sizeHint);
         }
 
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-        {
-            ValidateState();
-            throw new NotSupportedException();
-        }
-
         public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
@@ -77,11 +73,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void StopAcceptingWrites()
+        public Task StopAcceptingWritesAsync()
         {
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
             _state = HttpStreamState.Closed;
+            return _completeTask;
         }
 
         public void Abort()
@@ -107,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ThrowObjectDisposedException();
             }
 
-            void ThrowObjectDisposedException()
+            static void ThrowObjectDisposedException()
             {
                 throw new ObjectDisposedException(nameof(HttpResponseStream), CoreStrings.WritingToResponseBodyAfterResponseCompleted);
             }

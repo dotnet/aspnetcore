@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public void Post_RunsAynchronously_WhenNotBusy_Exception()
+        public void Post_RunsAsynchronously_WhenNotBusy_Exception()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_Void_CanRunSynchronously_WhenNotBusy()
+        public async Task InvokeAsync_Action_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Thread capturedThread = null;
 
             // Act
-            var task = context.Invoke(() =>
+            var task = context.InvokeAsync(() =>
             {
                 capturedThread = Thread.CurrentThread;
             });
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_Void_CanRunAsynchronously_WhenBusy()
+        public async Task InvokeAsync_Action_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             Assert.True(e1.Wait(Timeout), "timeout");
 
-            var task2 = context.Invoke(() =>
+            var task2 = context.InvokeAsync(() =>
             {
                 capturedThread = Thread.CurrentThread;
 
@@ -462,32 +462,32 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_Void_CanRethrowExceptions()
+        public async Task InvokeAsync_Action_CanRethrowExceptions()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.Invoke(() =>
+            var task = context.InvokeAsync((Action)(() =>
             {
                 throw new InvalidTimeZoneException();
-            });
+            }));
 
             // Assert
             await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
         }
 
         [Fact]
-        public async Task Invoke_Void_CanReportCancellation()
+        public async Task InvokeAsync_Action_CanReportCancellation()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.Invoke(() =>
+            var task = context.InvokeAsync((Action)(() =>
             {
                 throw new OperationCanceledException();
-            });
+            }));
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);
@@ -495,14 +495,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_T_CanRunSynchronously_WhenNotBusy()
+        public async Task InvokeAsync_FuncT_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
 
             // Act
-            var task = context.Invoke(() =>
+            var task = context.InvokeAsync(() =>
             {
                 return Thread.CurrentThread;
             });
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_T_CanRunAsynchronously_WhenBusy()
+        public async Task InvokeAsync_FuncT_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             Assert.True(e1.Wait(Timeout), "timeout");
 
-            var task2 = context.Invoke(() =>
+            var task2 = context.InvokeAsync(() =>
             {
                 e3.Set();
 
@@ -550,32 +550,32 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task Invoke_T_CanRethrowExceptions()
+        public async Task InvokeAsync_FuncT_CanRethrowExceptions()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.Invoke<string>(() =>
+            var task = context.InvokeAsync<string>((Func<string>)(() =>
             {
                 throw new InvalidTimeZoneException();
-            });
+            }));
 
             // Assert
             await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
         }
 
         [Fact]
-        public async Task Invoke_T_CanReportCancellation()
+        public async Task InvokeAsync_FuncT_CanReportCancellation()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.Invoke<string>(() =>
+            var task = context.InvokeAsync<string>((Func<string>)(() =>
             {
                 throw new OperationCanceledException();
-            });
+            }));
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);
@@ -583,7 +583,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_Void_CanRunSynchronously_WhenNotBusy()
+        public async Task InvokeAsync_FuncTask_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -603,7 +603,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_Void_CanRunAsynchronously_WhenBusy()
+        public async Task InvokeAsync_FuncTask_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -644,7 +644,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_Void_CanRethrowExceptions()
+        public async Task InvokeAsync_FuncTask_CanRethrowExceptions()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_Void_CanReportCancellation()
+        public async Task InvokeAsync_FuncTask_CanReportCancellation()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_T_CanRunSynchronously_WhenNotBusy()
+        public async Task InvokeAsync_FuncTaskT_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_T_CanRunAsynchronously_WhenBusy()
+        public async Task InvokeAsync_FuncTaskT_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
@@ -732,32 +732,32 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        public async Task InvokeAsync_T_CanRethrowExceptions()
+        public async Task InvokeAsync_FuncTaskT_CanRethrowExceptions()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.InvokeAsync<string>(() =>
+            var task = context.InvokeAsync<string>((Func<Task<string>>)(() =>
             {
                 throw new InvalidTimeZoneException();
-            });
+            }));
 
             // Assert
             await Assert.ThrowsAsync<InvalidTimeZoneException>(async () => await task);
         }
 
         [Fact]
-        public async Task InvokeAsync_T_CanReportCancellation()
+        public async Task InvokeAsync_FuncTaskT_CanReportCancellation()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
             // Act
-            var task = context.InvokeAsync<string>(() =>
+            var task = context.InvokeAsync<string>((Func<Task<string>>)(() =>
             {
                 throw new OperationCanceledException();
-            });
+            }));
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);

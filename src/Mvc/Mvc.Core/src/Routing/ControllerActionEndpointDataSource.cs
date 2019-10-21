@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private int _order;
 
         public ControllerActionEndpointDataSource(
-            IActionDescriptorCollectionProvider actions, 
+            IActionDescriptorCollectionProvider actions,
             ActionEndpointFactory endpointFactory)
             : base(actions)
         {
             _endpointFactory = endpointFactory;
- 
+
             _routes = new List<ConventionalRouteEntry>();
 
             // In traditional conventional routing setup, the routes defined by a user have a order
@@ -38,12 +38,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
 
-            // IMPORTANT: this needs to be the last thing we do in the constructor. 
+            // IMPORTANT: this needs to be the last thing we do in the constructor.
             // Change notifications can happen immediately!
             Subscribe();
         }
 
         public ControllerActionEndpointConventionBuilder DefaultBuilder { get; }
+
+        // Used to control whether we create 'inert' (non-routable) endpoints for use in dynamic
+        // selection. Set to true by builder methods that do dynamic/fallback selection.
+        public bool CreateInertEndpoints { get; set; }
 
         public ControllerActionEndpointConventionBuilder AddRoute(
             string routeName,
@@ -80,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 if (actions[i] is ControllerActionDescriptor action)
                 {
-                    _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions);
+                    _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions, CreateInertEndpoints);
 
                     if (_routes.Count > 0)
                     {

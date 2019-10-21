@@ -26,7 +26,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 // Note that even if we check the value here, we can't prevent a user from adding an invalid quality
                 // value using Parameters.Add(). Even if we would prevent the user from adding an invalid value
-                // using Parameters.Add() he could always add invalid values using HttpHeaders.AddWithoutValidation().
+                // using Parameters.Add() they could always add invalid values using HttpHeaders.AddWithoutValidation().
                 // So this check is really for convenience to show users that they're trying to add an invalid
                 // value.
                 if ((value < 0) || (value > 1))

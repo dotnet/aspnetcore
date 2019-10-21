@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="${MicrosoftEntityFrameworkCoreRelationalPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
@@ -55,6 +56,7 @@
       <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(DistFiles.Identity)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </ResolvedFileToPublish>
     </ItemGroup>
   </Target>

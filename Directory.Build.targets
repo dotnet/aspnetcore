@@ -5,15 +5,18 @@
     <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(IsPackable)' != 'false' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
 
     <!--
-      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
-      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
-    -->
-    <IsShippingPackage Condition=" '$(IsShippingPackage)' == '' ">false</IsShippingPackage>
-
-    <!--
       By default, assemblies which are only in the Microsoft.AspNetCore.App shared framework are not available as NuGet packages.
     -->
     <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
+
+    <!-- Only build assemblies in Microsoft.AspNetCore.App in source build -->
+    <!-- Analyzer package are needed in source build for WebSDK -->
+    <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Resx settings">
+    <GenerateResxSource Condition="$(GenerateResxSource) == ''">true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods Condition="$(GenerateResxSourceEmitFormatMethods) == ''">true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
@@ -25,7 +28,11 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
+    <SiteExtensionSuffix>$(VersionPrefix)</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix.Replace('.','-'))</SiteExtensionPackageVersion>
+
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
+    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
     <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
 
     <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
@@ -93,6 +100,10 @@
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
+    <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
+  </ItemGroup>
+
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
@@ -116,6 +127,11 @@
       <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
+    <!-- Track compiler separately from Arcade.-->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">

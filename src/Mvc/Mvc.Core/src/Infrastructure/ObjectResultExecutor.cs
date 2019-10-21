@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -18,16 +19,35 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
+        private readonly AsyncEnumerableReader _asyncEnumerableReader;
+
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
+            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ObjectResultExecutor"/>.
+        /// </summary>
+        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+        public ObjectResultExecutor(
+            OutputFormatterSelector formatterSelector,
+            IHttpResponseStreamWriterFactory writerFactory,
+            ILoggerFactory loggerFactory,
+            IOptions<MvcOptions> mvcOptions)
         {
             if (formatterSelector == null)
             {
@@ -47,6 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
+            var options = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _asyncEnumerableReader = new AsyncEnumerableReader(options);
         }
 
         /// <summary>
@@ -87,16 +109,37 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             InferContentTypes(context, result);
 
             var objectType = result.DeclaredType;
+
             if (objectType == null || objectType == typeof(object))
             {
                 objectType = result.Value?.GetType();
             }
 
+            var value = result.Value;
+
+            if (value is IAsyncEnumerable<object> asyncEnumerable)
+            {
+                return ExecuteAsyncEnumerable(context, result, asyncEnumerable);
+            }
+
+            return ExecuteAsyncCore(context, result, objectType, value);
+        }
+
+        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, IAsyncEnumerable<object> asyncEnumerable)
+        {
+            Log.BufferingAsyncEnumerable(Logger, asyncEnumerable);
+
+            var enumerated = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+            await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
+        }
+
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
                 WriterFactory,
                 objectType,
-                result.Value);
+                value);
 
             var selectedFormatter = FormatterSelector.SelectFormatter(
                 formatterContext,
@@ -105,13 +148,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
-                Logger.NoFormatter(formatterContext);
+                Logger.NoFormatter(formatterContext, result.ContentTypes);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return Task.CompletedTask;
             }
 
-            Logger.ObjectResultExecuting(result.Value);
+            Logger.ObjectResultExecuting(value);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
@@ -137,6 +180,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
             }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+
+            static Log()
+            {
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                   LogLevel.Debug,
+                   new EventId(1, "BufferingAsyncEnumerable"),
+                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            }
+
+            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }
 }

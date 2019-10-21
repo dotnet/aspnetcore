@@ -131,9 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         private static void ReplaceAttributeRouteTokens(
-            ControllerModel controller, 
-            ActionModel action, 
-            SelectorModel selector, 
+            ControllerModel controller,
+            ActionModel action,
+            SelectorModel selector,
             List<string> errors)
         {
             if (selector.AttributeRouteModel == null)
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     { "action", action.ActionName },
                     { "controller", controller.ControllerName },
                 };
-                
+
                 foreach (var kvp in action.RouteValues)
                 {
                     routeValues.TryAdd(kvp.Key, kvp.Value);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         private static void AddActionToMethodInfoMap(
-            Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>> actionsByMethod, 
+            Dictionary<MethodInfo, List<(ActionModel, SelectorModel)>> actionsByMethod,
             ActionModel action,
             SelectorModel selector)
         {
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 // we compare it against the rest of the templates that have that same name
                 // associated.
                 // The moment we find one that is different we report the whole group to the
-                // user in the error message so that he can see the different actions and the
+                // user in the error message so that they can see the different actions and the
                 // different templates for a given named attribute route.
                 var template = actions[0].selector.AttributeRouteModel.Template;
 

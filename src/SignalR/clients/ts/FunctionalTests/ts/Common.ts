@@ -1,8 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr";
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
+import { HttpClient, HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { TestLogger } from "./TestLogger";
+
+import { FetchHttpClient } from "@microsoft/signalr/dist/esm/FetchHttpClient";
+import { NodeHttpClient } from "@microsoft/signalr/dist/esm/NodeHttpClient";
+import { Platform } from "@microsoft/signalr/dist/esm/Utils";
+import { XhrHttpClient } from "@microsoft/signalr/dist/esm/XhrHttpClient";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;
@@ -97,6 +103,34 @@ export function eachTransportAndProtocol(action: (transport: HttpTransportType, 
     });
 }
 
+export function eachTransportAndProtocolAndHttpClient(action: (transport: HttpTransportType, protocol: IHubProtocol, httpClient: HttpClient) => void) {
+    eachTransportAndProtocol((transport, protocol) => {
+        getHttpClients().forEach((httpClient) => {
+            action(transport, protocol, httpClient);
+        });
+    });
+}
+
 export function getGlobalObject(): any {
     return typeof window !== "undefined" ? window : global;
+}
+
+export function getHttpClients(): HttpClient[] {
+    const httpClients: HttpClient[] = [];
+    if (typeof XMLHttpRequest !== "undefined") {
+        httpClients.push(new XhrHttpClient(TestLogger.instance));
+    }
+    if (typeof fetch !== "undefined") {
+        httpClients.push(new FetchHttpClient(TestLogger.instance));
+    }
+    if (Platform.isNode) {
+        httpClients.push(new NodeHttpClient(TestLogger.instance));
+    }
+    return httpClients;
+}
+
+export function eachHttpClient(action: (transport: HttpClient) => void) {
+    return getHttpClients().forEach((t) => {
+        return action(t);
+    });
 }

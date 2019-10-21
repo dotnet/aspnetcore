@@ -1,0 +1,116 @@
+<Project>
+
+  <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
+
+  <ItemGroup>
+    <!-- Reset Arcade's defaults. -->
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <StrongNameSignInfo Remove="@(StrongNameSignInfo)" />
+    <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Signing config">
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
+    <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
+    <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
+
+    <!--
+      Map file extensions to a code-sign cert.
+      "None" means don't sign the file itself, but still scan the contents for signable files.
+    -->
+    <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJARSHA2" />
+    <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".dll;.exe" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
+    <FileExtensionSignInfo Include=".zip" CertificateName="None" />
+    <FileExtensionSignInfo Include=".cab" CertificateName="None" />
+    <FileExtensionSignInfo Include=".msi" CertificateName="None" />
+
+    <!--
+      Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.
+      'None' is required to ensure code signing does not attempt to re-sign them or submit
+      to ESPR for strong-naming signing. We don't delay sign, so we only need to authenticode sign.
+      See https://github.com/dotnet/arcade/issues/1911 for context.
+    -->
+    <!-- The AspNetCore strong name. -->
+    <StrongNameSignInfo Include="None" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
+    <!-- The MsSharedLib72 strong name. -->
+    <StrongNameSignInfo Include="None" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
+    <!-- The MsftStrongName strong name. -->
+    <StrongNameSignInfo Include="None" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
+    <!-- The MsftStrongName2 strong name. -->
+    <StrongNameSignInfo Include="None" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
+    <!-- The MsftOpenStrongName strong name. -->
+    <StrongNameSignInfo Include="None" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
+
+    <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
+    <FileSignInfo Include="aspnetcore.dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="aspnetcorev2_inprocess.dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="aspnetcorev2_outofprocess.dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="aspnetcorev2.dll" CertificateName="Microsoft400" />
+    <FileSignInfo Include="blazor-devserver.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-dev-certs.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-sql-cache.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-user-secrets.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-watch.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="dotnet-openapi.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="Microsoft400" />
+    <FileSignInfo Include="sni.dll" CertificateName="Microsoft400" />
+
+    <!-- Third-party components which should be signed.  -->
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="AngleSharp.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+    <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
+    <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
+  </PropertyGroup>
+
+  <ItemGroup Label="Code sign exclusions">
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionSignInfo Include=".js" CertificateName="None" />
+    <!-- We don't produce font files. We rebundle some for using the web brower, so they do not need to be signed. -->
+    <FileExtensionSignInfo Include=".otf" CertificateName="None" />
+    <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
+    <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
+    <FileSignInfo Include="ancm.mof" CertificateName="None" />
+    <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
+    <FileSignInfo Include="apphost.exe" CertificateName="None" />
+
+    <!--
+      These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
+      List all combinations of Windows RID's because CI may build multiple combinations of artitectures on the same machine.
+      This uses globs because some of the file names change on every build of .NET Core, like sos_amd64_$(fileversion).dll.
+    -->
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
+    <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" />
+
+    <!--
+      We include the Microsoft.Build.Locator.dll assembly in our global tool 'Microsoft.dotnet-openapi'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Build.Locator.dll" CertificateName="None" />
+
+    <!--
+      We include the Microsoft.Data.SqlClient.dll and Microsoft.Identity.Client.dll assembly in our global tool 'dotnet-sql-cache'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Data.SqlClient.dll" CertificateName="None" />
+    <FileSignInfo Include="Microsoft.Identity.Client.dll" CertificateName="None" />
+  </ItemGroup>
+
+</Project>

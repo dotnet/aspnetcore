@@ -29,7 +29,7 @@ __usage() {
     echo "    -e, --env <NAME=VAL>       Additional environment variables to add to the build container"
     echo ""
     echo "Description:"
-    echo "    This will run build.sh inside the dockerfile as defined in build/docker/\$image.Dockerfile."
+    echo "    This will run build.sh inside the dockerfile as defined in eng/docker/\$image.Dockerfile."
 
     if [[ "${1:-}" != '--no-exit' ]]; then
         exit 2
@@ -101,7 +101,7 @@ if [ ! -z "$commit_hash" ]; then
     build_args[${#build_args[*]}]="-p:SourceRevisionId=$commit_hash"
 fi
 
-dockerfile="$DIR/build/docker/$image.Dockerfile"
+dockerfile="$DIR/eng/docker/$image.Dockerfile"
 tagname="aspnetcore-build-$image"
 
 # Use docker pull with retries to pre-pull the image need by the dockerfile
@@ -124,14 +124,14 @@ docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
     --build-arg "USER_ID=$(id -u)" \
     --build-arg "GROUP_ID=$(id -g)" \
+    --build-arg "WORKDIR=$DIR" \
     --tag $tagname \
     -f "$dockerfile"
 
 docker run \
     --rm \
     -t \
-    -e CI \
-    -e TEAMCITY_VERSION \
+    -e TF_BUILD \
     -e BUILD_NUMBER \
     -e BUILD_BUILDNUMBER \
     -e BUILD_REPOSITORY_URI \
@@ -139,7 +139,7 @@ docker run \
     -e BUILD_SOURCEBRANCH \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
-    -v "$DIR:/code/build" \
+    -v "$DIR:$DIR" \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \

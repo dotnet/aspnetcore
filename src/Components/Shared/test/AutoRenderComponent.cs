@@ -4,8 +4,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
@@ -14,12 +13,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
     {
         private RenderHandle _renderHandle;
 
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }
 
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             TriggerRender();
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         // We do it this way so that we don't have to be doing renderer.Invoke on each and every test.
         public void TriggerRender()
         {
-            var t = _renderHandle.Invoke(() => _renderHandle.Render(BuildRenderTree));
+            var t = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(BuildRenderTree));
             // This should always be run synchronously
             Assert.True(t.IsCompleted);
             if (t.IsFaulted)

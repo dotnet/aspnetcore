@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Xunit;
 

@@ -7,17 +7,17 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        <button @ontouchstart=@OnTouch
-                @ontouchcancel=@OnTouch
-                @ontouchenter=@OnTouch
-                @ontouchleave=@OnTouch
-                @ontouchend=@OnTouch
-                @ontouchmove=@OnTouch>
+        <button @ontouchstart=OnTouch
+                @ontouchcancel=OnTouch
+                @ontouchenter=OnTouch
+                @ontouchleave=OnTouch
+                @ontouchend=OnTouch
+                @ontouchmove=OnTouch>
             TOUCH ME
         </button>
     </p>
     <p>
-        <button @onclick="@Clear">Clear</button>
+        <button @onclick="Clear">Clear</button>
     </p>
 </div>
 
@@ -25,10 +25,10 @@
 
     string message;
 
-    void OnTouch(UITouchEventArgs e)
+    void OnTouch(TouchEventArgs e)
     {
         message += e.Type;
-        Console.WriteLine(JsonSerializer.ToString(e));
+        Console.WriteLine(JsonSerializer.Serialize(e));
         StateHasChanged();
     }
 

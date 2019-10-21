@@ -482,7 +482,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             {
                 "BasicWebSite",
                 "Microsoft.AspNetCore.Components.Server",
-                "Microsoft.AspNetCore.Mvc.Components.Prerendering",
                 "Microsoft.AspNetCore.SpaServices",
                 "Microsoft.AspNetCore.SpaServices.Extensions",
                 "Microsoft.AspNetCore.Mvc.TagHelpers",

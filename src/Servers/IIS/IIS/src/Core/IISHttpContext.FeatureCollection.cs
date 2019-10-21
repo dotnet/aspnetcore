@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -14,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -23,11 +25,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext : IFeatureCollection,
                                             IHttpRequestFeature,
                                             IHttpResponseFeature,
+                                            IHttpResponseBodyFeature,
                                             IHttpUpgradeFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature,
-                                            IHttpBufferingFeature,
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
 
         private int _featureRevision;
-        private string _httpProtocolVersion = null;
+        private string _httpProtocolVersion;
         private X509Certificate2 _certificate;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
@@ -85,30 +87,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         string IHttpRequestFeature.Protocol
         {
-            get
-            {
-                if (_httpProtocolVersion == null)
-                {
-                    var protocol = HttpVersion;
-                    if (protocol.Major == 1 && protocol.Minor == 1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol.Major == 1 && protocol.Minor == 0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
-                }
-                return _httpProtocolVersion;
-            }
-            set
-            {
-                _httpProtocolVersion = value;
-            }
+            get => _httpProtocolVersion ??= HttpVersion.GetHttpProtocolVersion();
+            set => _httpProtocolVersion = value;
         }
 
         string IHttpRequestFeature.Scheme
@@ -184,6 +164,48 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         }
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
+
+        Stream IHttpResponseBodyFeature.Stream => ResponseBody;
+
+        PipeWriter IHttpResponseBodyFeature.Writer
+        {
+            get
+            {
+                if (ResponsePipeWrapper == null)
+                {
+                    ResponsePipeWrapper = PipeWriter.Create(ResponseBody, new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return ResponsePipeWrapper;
+            }
+        }
+
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (!HasResponseStarted)
+            {
+                return InitializeResponse(flushHeaders: false);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+            => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
+
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
+
+        // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
+        // any unflushed data gets flushed.
+        protected Task CompleteResponseBodyAsync()
+        {
+            if (ResponsePipeWrapper != null)
+            {
+                return ResponsePipeWrapper.CompleteAsync().AsTask();
+            }
+
+            return Task.CompletedTask;
+        }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;
 
@@ -269,6 +291,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
             }
 
+            MaxRequestBodySize = null;
             _wasUpgraded = true;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
@@ -353,11 +376,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        void IHttpBufferingFeature.DisableRequestBuffering()
-        {
-        }
-
-        void IHttpBufferingFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
             NativeMethods.HttpDisableBuffering(_pInProcessHandler);
             DisableCompression();

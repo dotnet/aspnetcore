@@ -64,9 +64,12 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
+    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Win32.SystemEvents"                       Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Drawing.Common"                              Version="$(SystemDrawingCommonPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Windows.Extensions"                          Version="$(SystemWindowsExtensionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">
@@ -90,7 +93,10 @@
     These compilation references are necessary to compile netstandard2.0 assemblies which are in the shared framework.
     This references are part of Microsoft.NETCore.App, so are listed here as references to be used during compilation only.
   -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or $(TargetFrameworks.Contains('netstandard2.0')) or '$(TargetFramework)' == 'netstandard2.1'">
+    <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
+    <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
+    <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
@@ -101,7 +107,7 @@
     These compilation references are necessary to workaround the mismatch of what is found in the ref pack for NETCore.App and what
     is actually present at runtime. See https://github.com/dotnet/corefx/issues/34906
   -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' or $(TargetFrameworks.Contains('$(DefaultNetCoreTargetFramework)'))">
     <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
     <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
     <_CompilationOnlyReference Include="System.Security.Principal.Windows" />

@@ -65,13 +65,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns>True if a response was generated, false otherwise.</returns>
         public async Task<bool> HandleRequestAsync()
         {
+            AuthPersistence persistence = null;
+            bool authFailedEventCalled = false;
             try
             {
-                if (_requestProcessed)
+                if (_requestProcessed || Options.DeferToServer)
                 {
                     // This request was already processed but something is re-executing it like an exception handler.
                     // Don't re-run because we could corrupt the connection state, e.g. if this was a stage2 NTLM request
                     // that we've already completed the handshake for.
+                    // Or we're in deferral mode where we let the server handle the authentication.
                     return false;
                 }
 
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var connectionItems = GetConnectionItems();
-                var persistence = (AuthPersistence)connectionItems[AuthPersistenceKey];
+                persistence = (AuthPersistence)connectionItems[AuthPersistenceKey];
                 _negotiateState = persistence?.State;
 
                 var authorizationHeader = Request.Headers[HeaderNames.Authorization];
@@ -125,7 +128,40 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 _negotiateState ??= Options.StateFactory.CreateInstance();
 
-                var outgoing = _negotiateState.GetOutgoingBlob(token);
+                var outgoing = _negotiateState.GetOutgoingBlob(token, out var errorType, out var exception);
+                Logger.LogInformation(errorType.ToString());
+                if (errorType != BlobErrorType.None)
+                {
+                    _negotiateState.Dispose();
+                    _negotiateState = null;
+                    if (persistence?.State != null)
+                    {
+                        persistence.State.Dispose();
+                        persistence.State = null;
+                    }
+
+                    if (errorType == BlobErrorType.CredentialError)
+                    {
+                        Logger.CredentialError(exception);
+                        authFailedEventCalled = true; // Could throw, and we don't want to double trigger the event.
+                        var result = await InvokeAuthenticateFailedEvent(exception);
+                        return result ?? false; // Default to skipping the handler, let AuthZ generate a new 401
+                    }
+                    else if (errorType == BlobErrorType.ClientError)
+                    {
+                        Logger.ClientError(exception);
+                        authFailedEventCalled = true; // Could throw, and we don't want to double trigger the event.
+                        var result = await InvokeAuthenticateFailedEvent(exception);
+                        if (result.HasValue)
+                        {
+                            return result.Value;
+                        }
+                        Context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        return true; // Default to terminating request
+                    }
+
+                    throw exception;
+                }
 
                 if (!_negotiateState.IsCompleted)
                 {
@@ -192,30 +228,56 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             }
             catch (Exception ex)
             {
-                Logger.ExceptionProcessingAuth(ex);
-                var errorContext = new AuthenticationFailedContext(Context, Scheme, Options) { Exception = ex };
-                await Events.AuthenticationFailed(errorContext);
-
-                if (errorContext.Result != null)
+                if (authFailedEventCalled)
                 {
-                    if (errorContext.Result.Handled)
-                    {
-                        return true;
-                    }
-                    else if (errorContext.Result.Skipped)
-                    {
-                        return false;
-                    }
-                    else if (errorContext.Result.Failure != null)
-                    {
-                        throw new Exception("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
-                    }
+                    throw;
+                }
+
+                Logger.ExceptionProcessingAuth(ex);
+
+                // Clear state so it's possible to retry on the same connection.
+                _negotiateState?.Dispose();
+                _negotiateState = null;
+                if (persistence?.State != null)
+                {
+                    persistence.State.Dispose();
+                    persistence.State = null;
+                }
+
+                var result = await InvokeAuthenticateFailedEvent(ex);
+                if (result.HasValue)
+                {
+                    return result.Value;
                 }
 
                 throw;
             }
 
             return false;
+        }
+
+        private async Task<bool?> InvokeAuthenticateFailedEvent(Exception ex)
+        {
+            var errorContext = new AuthenticationFailedContext(Context, Scheme, Options) { Exception = ex };
+            await Events.AuthenticationFailed(errorContext);
+
+            if (errorContext.Result != null)
+            {
+                if (errorContext.Result.Handled)
+                {
+                    return true;
+                }
+                else if (errorContext.Result.Skipped)
+                {
+                    return false;
+                }
+                else if (errorContext.Result.Failure != null)
+                {
+                    throw new Exception("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

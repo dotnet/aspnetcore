@@ -2,15 +2,15 @@
 
 <div>
     <span id="state">@state</span>
-    <button id="tick" @onclick="@Tick">Tick</button>
-    <button id="tock" @onclick="@Tock">Tock</button>
+    <button id="tick" @onclick="Tick">Tick</button>
+    <button id="tock" @onclick="Tock">Tock</button>
 </div>
 
 @code
 {
     TaskCompletionSource<object> _tcs;
     string state = "Stopped";
-    Task Tick(UIMouseEventArgs e)
+    Task Tick(MouseEventArgs e)
     {
         if (_tcs == null)
         {
@@ -27,7 +27,7 @@
         return Task.CompletedTask;
     }
 
-    void Tock(UIMouseEventArgs e)
+    void Tock(MouseEventArgs e)
     {
         _tcs.TrySetResult(null);
     }

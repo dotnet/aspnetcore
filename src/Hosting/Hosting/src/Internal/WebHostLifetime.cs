@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHostLifetime : IDisposable
     {
@@ -62,19 +62,21 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private void Shutdown()
         {
-            if (!_cts.IsCancellationRequested)
+            try 
             {
-                if (!string.IsNullOrEmpty(_shutdownMessage))
+                if (!_cts.IsCancellationRequested)
                 {
-                    Console.WriteLine(_shutdownMessage);
-                }
-                try
-                {
+                    if (!string.IsNullOrEmpty(_shutdownMessage))
+                    {
+                        Console.WriteLine(_shutdownMessage);
+                    }
                     _cts.Cancel();
                 }
-                catch (ObjectDisposedException) { }
             }
-
+            // When hosting with IIS in-process, we detach the Console handle on main thread exit.
+            // Console.WriteLine may throw here as we are logging to console on ProcessExit.
+            // We catch and ignore all exceptions here. Do not log to Console in thie exception handler.
+            catch (Exception) {}
             // Wait on the given reset event
             _resetEvent.Wait();
         }

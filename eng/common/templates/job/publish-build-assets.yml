@@ -47,6 +47,10 @@ jobs:
         downloadPath: '$(Build.StagingDirectory)/Download'
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+    
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: NuGetAuthenticate@0
+
     - task: PowerShell@2
       displayName: Publish Build Assets
       inputs:
@@ -59,6 +63,23 @@ jobs:
           /p:Configuration=$(_BuildConfig)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+    
+    - task: powershell@2
+      displayName: Create ReleaseConfigs Artifact
+      inputs:
+        targetType: inline
+        script: |
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
+    
+    - task: PublishBuildArtifacts@1
+      displayName: Publish ReleaseConfigs Artifact
+      inputs:
+        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs.txt'
+        PublishLocation: Container
+        ArtifactName: ReleaseConfigs
+    
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - task: PublishBuildArtifacts@1
         displayName: Publish Logs to VSTS

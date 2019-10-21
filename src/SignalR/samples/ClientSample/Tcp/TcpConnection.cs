@@ -53,7 +53,7 @@ namespace ClientSample
             return default;
         }
 
-        public async Task<ConnectionContext> StartAsync()
+        public async ValueTask<ConnectionContext> StartAsync()
         {
             await _socket.ConnectAsync(_endPoint);
 
@@ -244,12 +244,6 @@ namespace ClientSample
                     break;
                 }
             }
-        }
-
-        public Task StartAsync(TransferFormat transferFormat)
-        {
-            // Transfer format is irrelevant
-            return StartAsync();
         }
     }
 }

@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -32,56 +31,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ResponseSendFile_SupportKeys_Present()
-        {
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
-            {
-                try
-                {
-                    /* TODO:
-                    IDictionary<string, object> capabilities = httpContext.Get<IDictionary<string, object>>("server.Capabilities");
-                    Assert.NotNull(capabilities);
-
-                    Assert.Equal("1.0", capabilities.Get<string>("sendfile.Version"));
-
-                    IDictionary<string, object> support = capabilities.Get<IDictionary<string, object>>("sendfile.Support");
-                    Assert.NotNull(support);
-
-                    Assert.Equal("Overlapped", support.Get<string>("sendfile.Concurrency"));
-                    */
-
-                    var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
-                    Assert.NotNull(sendFile);
-                }
-                catch (Exception ex)
-                {
-                    byte[] body = Encoding.UTF8.GetBytes(ex.ToString());
-                    httpContext.Response.Body.Write(body, 0, body.Length);
-                }
-                return Task.FromResult(0);
-            }))
-            {
-                var response = await SendRequestAsync(address);
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> ignored;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
-                Assert.Equal(0, response.Content.Headers.ContentLength);
-                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
-            }
-        }
-
-        [ConditionalFact]
         public async Task ResponseSendFile_MissingFile_Throws()
         {
             var appThrew = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (Utilities.CreateHttpServer(out var address, httpContext =>
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 try
                 {
-                    sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
+                    await sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None);
                     appThrew.SetResult(false);
                 }
                 catch (Exception)
@@ -89,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     appThrew.SetResult(true);
                     throw;
                 }
-                return Task.FromResult(0);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
@@ -97,14 +54,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.True(await appThrew.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
             }
         }
-        
+
         [ConditionalFact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -123,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -142,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
@@ -161,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -181,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
             }))
             {
@@ -201,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
                     sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
                 completed = true;
@@ -220,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
                     sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
                 completed = true;
@@ -238,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
             {
@@ -257,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -278,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "10";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
             }))
@@ -299,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "0";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
@@ -327,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.Same(state, httpContext);
                     return Task.FromResult(0);
                 }, httpContext);
-                var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
+                var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
             }))
             {

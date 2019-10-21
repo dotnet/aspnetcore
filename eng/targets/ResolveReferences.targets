@@ -19,6 +19,8 @@
 <Project>
 
   <PropertyGroup>
+    <EnableCustomReferenceResolution Condition="'$(EnableCustomReferenceResolution)' == '' AND ('$(DotNetBuildFromSource)' != 'true' OR '$(ExcludeFromSourceBuild)' != 'true')">true</EnableCustomReferenceResolution>
+
     <ResolveReferencesDependsOn>
       ResolveCustomReferences;
       $(ResolveReferencesDependsOn);
@@ -60,7 +62,7 @@
     </Reference>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(EnableCustomReferenceResolution)' == 'true'">
     <Reference Update="@(Reference)">
       <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
     </Reference>
@@ -103,10 +105,6 @@
     </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
-
-    <!-- Use _ReferenceTemp to workaround issues in Visual Studio which causes a conflict between Reference, packages, and projects. -->
-    <_ReferenceTemp Include="@(Reference)" />
-    <Reference Remove="@(Reference)" />
   </ItemGroup>
 
   <!--
@@ -133,11 +131,8 @@
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
-      <Reference Include="@(_ReferenceTemp)" />
-      <_ReferenceTemp Remove="@(_ReferenceTemp)" />
-
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>

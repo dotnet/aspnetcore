@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -54,8 +55,11 @@ namespace Microsoft.Extensions.DependencyInjection
             // user's configuration. So even if the user has multiple independent server-side
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
-            services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
-
+            services.TryAddSingleton<CircuitFactory>();
+            services.TryAddSingleton<ServerComponentDeserializer>();
+            services.TryAddSingleton<ServerComponentTypeCache>();
+            services.TryAddSingleton<ComponentParameterDeserializer>();
+            services.TryAddSingleton<ComponentParametersTypeCache>();
             services.TryAddSingleton<CircuitIdFactory>();
 
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
@@ -63,24 +67,19 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<CircuitRegistry>();
 
-            // We explicitly take over the prerendering and components services here.
-            // We can't have two separate component implementations coexisting at the
-            // same time, so when you register components (Circuits) it takes over
-            // all the abstractions.
-            services.AddScoped<IComponentPrerenderer, CircuitPrerenderer>();
-
-            // Standard razor component services implementations
+            // Standard blazor hosting services implementations
             //
             // These intentionally replace the non-interactive versions included in MVC.
-            services.AddScoped<IUriHelper, RemoteUriHelper>();
+            services.AddScoped<NavigationManager, RemoteNavigationManager>();
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
             services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
-            services.AddScoped<IComponentContext, RemoteComponentContext>();
-            services.AddScoped<AuthenticationStateProvider, FixedAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
 
             if (configure != null)
             {
-                services.Configure<CircuitOptions>(configure);
+                services.Configure(configure);
             }
 
             return builder;

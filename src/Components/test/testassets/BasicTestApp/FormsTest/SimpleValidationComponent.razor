@@ -5,10 +5,10 @@
     <DataAnnotationsValidator />
 
     <p class="user-name">
-        User name: <input @bind="@UserName" class="@context.FieldClass(() => UserName)" />
+        User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />
     </p>
     <p class="accepts-terms">
-        Accept terms: <input type="checkbox" @bind="@AcceptsTerms" class="@context.FieldClass(() => AcceptsTerms)" />
+        Accept terms: <input type="checkbox" @bind="AcceptsTerms" class="@context.FieldCssClass(() => AcceptsTerms)" />
     </p>
 
     <button type="submit">Submit</button>

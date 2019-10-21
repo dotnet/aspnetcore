@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+using System.Diagnostics;
+
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Helpers for getting the right values from Activity no matter the format (w3c or hierarchical)

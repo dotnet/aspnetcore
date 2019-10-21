@@ -34,28 +34,24 @@ else
         </tbody>
     </table>
     <p>
-        <a href="fetchdata/@StartDate.AddDays(-5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-left">
+        <a href="fetchdata/@startDate.AddDays(-5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-left">
             ◀ Previous
         </a>
-        <a href="fetchdata/@StartDate.AddDays(5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-right">
+        <a href="fetchdata/@startDate.AddDays(5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-right">
             Next ▶
         </a>
     </p>
 }
 
 @code {
-    [Parameter] DateTime StartDate { get; set; }
+    [Parameter] public DateTime? StartDate { get; set; }
 
     WeatherForecast[] forecasts;
-
-    public override Task SetParametersAsync(ParameterCollection parameters)
-    {
-        StartDate = DateTime.Now;
-        return base.SetParametersAsync(parameters);
-    }
+    DateTime startDate;
 
     protected override async Task OnParametersSetAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(StartDate);
+        startDate = StartDate.GetValueOrDefault(DateTime.Now);
+        forecasts = await ForecastService.GetForecastAsync(startDate);
     }
 }

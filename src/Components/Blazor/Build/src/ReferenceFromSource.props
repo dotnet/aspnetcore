@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
-    <BlazorJsPath>$(RepoRoot)src\Components\Browser.JS\dist\$(Configuration)\blazor.*.js.*</BlazorJsPath>
+    <BlazorJsPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.*.js.*</BlazorJsPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
@@ -27,8 +27,8 @@
    -->
   <PropertyGroup>
     <RunCommand>dotnet</RunCommand>
-    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../DevServer/src/bin/$(Configuration)/netcoreapp3.0/blazor-devserver.dll</_BlazorCliLocation>
-    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve $(AdditionalRunArguments)</RunArguments>
+    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../DevServer/src/bin/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorCliLocation>
+    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve --applicationpath &quot;$(MSBuildProjectDirectory)/$(OutputPath)$(TargetFileName)&quot; $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,12 +46,11 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <UndefineProperties>TargetFramework</UndefineProperties>
     </ProjectReference>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <!-- Optimization. Do not require framework compatibility between these projects. -->
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <UndefineProperties>TargetFramework</UndefineProperties>
+    </ProjectReference>
   </ItemGroup>
-
-  <PropertyGroup>
-    <!-- When referencing from source, we need to disable VS's fast up-to-date check,
-         because otherwise changing the underlying Blazor library code isn't enough
-         to make it rebuild the affected library apps. -->
-    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-  </PropertyGroup>
 </Project>

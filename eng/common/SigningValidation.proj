@@ -3,7 +3,7 @@
   <!--
     This MSBuild file is intended to be used as the body of the default 
     publishing release pipeline. The release pipeline will use this file
-    to invoke the the SignCheck tool to validate that packages about to
+    to invoke the SignCheck tool to validate that packages about to
     be published are correctly signed.
   
     Parameters:

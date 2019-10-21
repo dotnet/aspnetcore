@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -46,6 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var firstPoll = true;
                 OnRequest(async (request, next, cancellationToken) =>
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (ResponseUtils.IsLongPollRequest(request) && firstPoll)
                     {
                         firstPoll = false;
@@ -116,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             });
             testHttpMessageHandler.OnRequest((request, next, cancellationToken) =>
             {
-                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.StartsWith("/?id="))
+                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.Contains("id="))
                 {
                     deleteCts.Cancel();
                     return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
@@ -156,6 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             OnRequest((request, next, cancellationToken) =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (request.Method.Equals(method) && string.Equals(request.RequestUri.PathAndQuery, pathAndQuery))
                 {
                     return handler(request, cancellationToken);

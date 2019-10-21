@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task EventCallbackOfT_Default()
         {
             // Arrange
-            var callback = default(EventCallback<UIEventArgs>);
+            var callback = default(EventCallback<EventArgs>);
 
             // Act & Assert (Does not throw)
             await callback.InvokeAsync(null);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             int runCount = 0;
-            var callback = new EventCallback<UIEventArgs>(null, (Action)(() => runCount++));
+            var callback = new EventCallback<EventArgs>(null, (Action)(() => runCount++));
 
             // Act
             await callback.InvokeAsync(null);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -104,8 +104,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Action<UIEventArgs>)((e) => { arg = e; runCount++; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
             await callback.InvokeAsync(null);
@@ -124,11 +124,11 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Action<UIEventArgs>)((e) => { arg = e; runCount++; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -164,8 +164,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Action<UIEventArgs>)((e) => { arg = e; runCount++; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() =>
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components
             var callback = new EventCallback(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -217,8 +217,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Func<UIEventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
             await callback.InvokeAsync(null);
@@ -237,11 +237,11 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Func<UIEventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -277,8 +277,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback(component, (Func<UIEventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
+            EventArgs arg = null;
+            var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() =>
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            var callback = new EventCallback<UIEventArgs>(component, (Action)(() => runCount++));
+            var callback = new EventCallback<EventArgs>(component, (Action)(() => runCount++));
 
             // Act
             await callback.InvokeAsync(null);
@@ -312,10 +312,10 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            var callback = new EventCallback<UIEventArgs>(component, (Action)(() => runCount++));
+            var callback = new EventCallback<EventArgs>(component, (Action)(() => runCount++));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -330,8 +330,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback<UIEventArgs>(component, (Action<UIEventArgs>)((e) => { arg = e; runCount++; }));
+            EventArgs arg = null;
+            var callback = new EventCallback<EventArgs>(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
             await callback.InvokeAsync(null);
@@ -350,11 +350,11 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback<UIEventArgs>(component, (Action<UIEventArgs>)((e) => { arg = e; runCount++; }));
+            EventArgs arg = null;
+            var callback = new EventCallback<EventArgs>(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            var callback = new EventCallback<UIEventArgs>(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
+            var callback = new EventCallback<EventArgs>(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
 
             // Act
             await callback.InvokeAsync(null);
@@ -388,10 +388,10 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            var callback = new EventCallback<UIEventArgs>(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
+            var callback = new EventCallback<EventArgs>(component, (Func<Task>)(() => { runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -406,8 +406,8 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback<UIEventArgs>(component, (Func<UIEventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
+            EventArgs arg = null;
+            var callback = new EventCallback<EventArgs>(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
             await callback.InvokeAsync(null);
@@ -426,11 +426,11 @@ namespace Microsoft.AspNetCore.Components
             var component = new EventCountingComponent();
 
             int runCount = 0;
-            UIEventArgs arg = null;
-            var callback = new EventCallback<UIEventArgs>(component, (Func<UIEventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
+            EventArgs arg = null;
+            var callback = new EventCallback<EventArgs>(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
             // Act
-            await callback.InvokeAsync(new UIEventArgs());
+            await callback.InvokeAsync(new EventArgs());
 
 
             // Assert
@@ -449,9 +449,9 @@ namespace Microsoft.AspNetCore.Components
                 return item.InvokeAsync(arg);
             }
 
-            public void Configure(RenderHandle renderHandle) => throw new NotImplementedException();
+            public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters) => throw new NotImplementedException();
+            public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
         }
     }
 }

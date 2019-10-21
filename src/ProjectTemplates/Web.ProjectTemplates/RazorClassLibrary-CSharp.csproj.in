@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(SupportPagesAndViews)' == 'True'">netcoreapp3.0</TargetFramework>
+    <TargetFramework Condition="'$(SupportPagesAndViews)' == 'True'">${DefaultNetCoreTargetFramework}</TargetFramework>
     <TargetFramework Condition="'$(SupportPagesAndViews)' != 'True'">netstandard2.0</TargetFramework>
     <RazorLangVersion Condition="'$(SupportPagesAndViews)' != 'True'">3.0</RazorLangVersion>
     <AddRazorSupportForMvc Condition="'$(SupportPagesAndViews)' == 'True'">true</AddRazorSupportForMvc>
@@ -11,8 +11,10 @@
   <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebPackageVersion}" />
   </ItemGroup>
 
 </Project>

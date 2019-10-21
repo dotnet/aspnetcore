@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
@@ -21,10 +22,11 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <summary>
         /// Configure the <see cref="IWebHostEnvironment"/> to use static web assets.
         /// </summary>
-        /// <param name="environment"></param>
-        public static void UseStaticWebAssets(IWebHostEnvironment environment)
+        /// <param name="environment">The application <see cref="IWebHostEnvironment"/>.</param>
+        /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
+        public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
         {
-            using (var manifest = ResolveManifest(environment))
+            using (var manifest = ResolveManifest(environment, configuration))
             {
                 if (manifest != null)
                 {
@@ -54,13 +56,13 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             }
         }
 
-        internal static Stream ResolveManifest(IWebHostEnvironment environment)
+        internal static Stream ResolveManifest(IWebHostEnvironment environment, IConfiguration configuration)
         {
             try
             {
-
-                var assembly = Assembly.Load(environment.ApplicationName);
-                var filePath = Path.Combine(Path.GetDirectoryName(GetAssemblyLocation(assembly)), $"{environment.ApplicationName}.StaticWebAssets.xml");
+                var manifestPath = configuration.GetValue<string>(WebHostDefaults.StaticWebAssetsKey);
+                var filePath = manifestPath ?? ResolveRelativeToAssembly(environment);
+                
                 if (File.Exists(filePath))
                 {
                     return File.OpenRead(filePath);
@@ -77,6 +79,12 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             {
                 return null;
             }
+        }
+
+        private static string ResolveRelativeToAssembly(IWebHostEnvironment environment)
+        {
+            var assembly = Assembly.Load(environment.ApplicationName);
+            return Path.Combine(Path.GetDirectoryName(GetAssemblyLocation(assembly)), $"{environment.ApplicationName}.StaticWebAssets.xml");
         }
 
         internal static string GetAssemblyLocation(Assembly assembly)

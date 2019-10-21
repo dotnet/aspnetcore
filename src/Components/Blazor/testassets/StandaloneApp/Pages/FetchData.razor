@@ -34,36 +34,32 @@ else
         </tbody>
     </table>
     <p>
-        <a href="fetchdata/@StartDate.AddDays(-5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-left">
+        <a href="fetchdata/@startDate.AddDays(-5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-left">
             ◀ Previous
         </a>
-        <a href="fetchdata/@StartDate.AddDays(5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-right">
+        <a href="fetchdata/@startDate.AddDays(5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-right">
             Next ▶
         </a>
     </p>
 }
 
 @code {
-    [Parameter] DateTime StartDate { get; set; }
+    [Parameter] public DateTime? StartDate { get; set; }
 
     WeatherForecast[] forecasts;
-
-    public override Task SetParametersAsync(ParameterCollection parameters)
-    {
-        StartDate = DateTime.Now;
-        return base.SetParametersAsync(parameters);
-    }
+    DateTime startDate;
 
     protected override async Task OnParametersSetAsync()
     {
+        startDate = StartDate.GetValueOrDefault(DateTime.Now);
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>(
-            $"sample-data/weather.json?date={StartDate.ToString("yyyy-MM-dd")}");
+            $"sample-data/weather.json?date={startDate.ToString("yyyy-MM-dd")}");
 
         // Because StandaloneApp doesn't really have a server endpoint to get dynamic data from,
         // fake the DateFormatted values here. This would not apply in a real app.
         for (var i = 0; i < forecasts.Length; i++)
         {
-            forecasts[i].DateFormatted = StartDate.AddDays(i).ToShortDateString();
+            forecasts[i].DateFormatted = startDate.AddDays(i).ToShortDateString();
         }
     }
 

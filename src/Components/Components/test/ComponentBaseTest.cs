@@ -3,8 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -261,6 +264,98 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public async Task RunsOnAfterRender_AfterRenderingCompletes()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent() { Counter = 1 };
+
+            var onAfterRenderCompleted = false;
+            component.OnAfterRenderLogic = (c, firstRender) =>
+            {
+                Assert.True(firstRender);
+                Assert.Single(renderer.Batches);
+                onAfterRenderCompleted = true;
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+            // Assert
+            await renderTask;
+            Assert.True(onAfterRenderCompleted);
+
+            // Component should not be rendered again. OnAfterRender doesn't do that.
+            Assert.Single(renderer.Batches);
+
+            // Act: Render again!
+            onAfterRenderCompleted = false;
+            component.OnAfterRenderLogic = (c, firstRender) =>
+            {
+                Assert.False(firstRender);
+                Assert.Equal(2, renderer.Batches.Count);
+                onAfterRenderCompleted = true;
+            };
+
+            renderTask = renderer.RenderRootComponentAsync(componentId);
+
+            // Assert
+            Assert.True(onAfterRenderCompleted);
+            Assert.Equal(2, renderer.Batches.Count);
+            await renderTask;
+        }
+
+        [Fact]
+        public async Task RunsOnAfterRenderAsync_AfterRenderingCompletes()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent() { Counter = 1 };
+
+            var onAfterRenderCompleted = false;
+            var tcs = new TaskCompletionSource<object>();
+            component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
+            {
+                Assert.True(firstRender);
+                Assert.Single(renderer.Batches);
+                onAfterRenderCompleted = true;
+                await tcs.Task;
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+            // Assert
+            tcs.SetResult(null);
+            await renderTask;
+            Assert.True(onAfterRenderCompleted);
+
+            // Component should not be rendered again. OnAfterRenderAsync doesn't do that.
+            Assert.Single(renderer.Batches);
+
+            // Act: Render again!
+            onAfterRenderCompleted = false;
+            tcs = new TaskCompletionSource<object>();
+            component.OnAfterRenderAsyncLogic = async (c, firstRender) =>
+            {
+                Assert.False(firstRender);
+                Assert.Equal(2, renderer.Batches.Count);
+                onAfterRenderCompleted = true;
+                await tcs.Task;
+            };
+
+            renderTask = renderer.RenderRootComponentAsync(componentId);
+
+            // Assert
+            tcs.SetResult(null);
+            await renderTask;
+            Assert.True(onAfterRenderCompleted);
+            Assert.Equal(2, renderer.Batches.Count);
+        }
+
+        [Fact]
         public async Task DoesNotRenderAfterOnInitAsyncTaskIsCancelledUsingCancellationToken()
         {
             // Arrange
@@ -385,6 +480,10 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public bool RunsBaseOnParametersSetAsync { get; set; } = true;
 
+            public bool RunsBaseOnAfterRender { get; set; } = true;
+
+            public bool RunsBaseOnAfterRenderAsync { get; set; } = true;
+
             public Action<TestComponent> OnInitLogic { get; set; }
 
             public Func<TestComponent, Task> OnInitAsyncLogic { get; set; }
@@ -392,6 +491,10 @@ namespace Microsoft.AspNetCore.Components.Test
             public Action<TestComponent> OnParametersSetLogic { get; set; }
 
             public Func<TestComponent, Task> OnParametersSetAsyncLogic { get; set; }
+
+            public Action<TestComponent, bool> OnAfterRenderLogic { get; set; }
+
+            public Func<TestComponent, bool, Task> OnAfterRenderAsyncLogic { get; set; }
 
             public int Counter { get; set; }
 
@@ -402,21 +505,21 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseElement();
             }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (RunsBaseOnInit)
                 {
-                    base.OnInit();
+                    base.OnInitialized();
                 }
 
                 OnInitLogic?.Invoke(this);
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (RunsBaseOnInitAsync)
                 {
-                    await base.OnInitAsync();
+                    await base.OnInitializedAsync();
                 }
 
                 if (OnInitAsyncLogic != null)
@@ -445,6 +548,32 @@ namespace Microsoft.AspNetCore.Components.Test
                 if (OnParametersSetAsyncLogic != null)
                 {
                     await OnParametersSetAsyncLogic(this);
+                }
+            }
+
+            protected override void OnAfterRender(bool firstRender)
+            {
+                if (RunsBaseOnAfterRender)
+                {
+                    base.OnAfterRender(firstRender);
+                }
+
+                if (OnAfterRenderLogic != null)
+                {
+                    OnAfterRenderLogic(this, firstRender);
+                }
+            }
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (RunsBaseOnAfterRenderAsync)
+                {
+                    await base.OnAfterRenderAsync(firstRender);
+                }
+
+                if (OnAfterRenderAsyncLogic != null)
+                {
+                    await OnAfterRenderAsyncLogic(this, firstRender);
                 }
             }
         }

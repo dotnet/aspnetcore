@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7000        ")]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7000")]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             using (var server = new TestServer(context =>
@@ -103,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
                 try
                 {
-                    if (Http2FrameReader.ReadFrame(buffer, frame, 16_384, out var framePayload))
+                    if (Http2FrameReader.TryReadFrame(ref buffer, frame, 16_384, out var framePayload))
                     {
                         consumed = examined = framePayload.End;
                         return frame;

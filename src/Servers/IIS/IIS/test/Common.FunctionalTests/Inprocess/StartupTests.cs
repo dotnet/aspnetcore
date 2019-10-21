@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Win32;
 using Xunit;
 
@@ -173,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 

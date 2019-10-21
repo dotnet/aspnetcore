@@ -66,31 +66,33 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // For action selection, ignore attribute routed actions
                 items: actions.Items.Where(a => a.AttributeRouteInfo == null),
 
-                getRouteKeys: a => a.RouteValues.Keys,
+                getRouteKeys: a => a.RouteValues?.Keys,
                 getRouteValue: (a, key) =>
                 {
-                    a.RouteValues.TryGetValue(key, out var value);
+                    string value = null;
+                    a.RouteValues?.TryGetValue(key, out value);
                     return value ?? string.Empty;
                 });
         }
 
-        public static ActionSelectionTable<RouteEndpoint> Create(IEnumerable<Endpoint> endpoints)
+        public static ActionSelectionTable<Endpoint> Create(IEnumerable<Endpoint> endpoints)
         {
-            return CreateCore<RouteEndpoint>(
+            return CreateCore<Endpoint>(
                 
                 // we don't use version for endpoints
                 version: 0, 
 
-                // Only include RouteEndpoints and only those that aren't suppressed. 
-                items: endpoints.OfType<RouteEndpoint>().Where(e =>
+                // Exclude RouteEndpoints - we only process inert endpoints here. 
+                items: endpoints.Where(e =>
                 {
-                    return e.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true;
+                    return e.GetType() == typeof(Endpoint);
                 }),
 
-                getRouteKeys: e => e.RoutePattern.RequiredValues.Keys,
+                getRouteKeys: e => e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.Keys,
                 getRouteValue: (e, key) =>
                 {
-                    e.RoutePattern.RequiredValues.TryGetValue(key, out var value);
+                    string value = null;
+                    e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.TryGetValue(key, out value);
                     return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
                 });
         }
@@ -112,9 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             foreach (var item in items)
             {
-                foreach (var key in getRouteKeys(item))
+                var keys = getRouteKeys(item);
+                if (keys != null)
                 {
-                    routeKeys.Add(key);
+                    foreach (var key in keys)
+                    {
+                        routeKeys.Add(key);
+                    }
                 }
             }
 

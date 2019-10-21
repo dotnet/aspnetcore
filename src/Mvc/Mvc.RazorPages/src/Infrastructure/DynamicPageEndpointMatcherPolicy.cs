@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -16,8 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly DynamicPageEndpointSelector _selector;
         private readonly PageLoader _loader;
+        private readonly EndpointMetadataComparer _comparer;
 
-        public DynamicPageEndpointMatcherPolicy(DynamicPageEndpointSelector selector, PageLoader loader)
+        public DynamicPageEndpointMatcherPolicy(DynamicPageEndpointSelector selector, PageLoader loader, EndpointMetadataComparer comparer)
         {
             if (selector == null)
             {
@@ -29,8 +31,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 throw new ArgumentNullException(nameof(loader));
             }
 
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             _selector = selector;
             _loader = loader;
+            _comparer = comparer;
         }
 
         public override int Order => int.MinValue + 100;
@@ -50,8 +58,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             for (var i = 0; i < endpoints.Count; i++)
             {
-                var metadata = endpoints[i].Metadata.GetMetadata<DynamicPageMetadata>();
-                if (metadata != null)
+                if (endpoints[i].Metadata.GetMetadata<DynamicPageMetadata>() != null)
+                {
+                    // Found a dynamic page endpoint
+                    return true;
+                }
+
+                if (endpoints[i].Metadata.GetMetadata<DynamicPageRouteValueTransformerMetadata>() != null)
                 {
                     // Found a dynamic page endpoint
                     return true;
@@ -84,40 +97,75 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 }
 
                 var endpoint = candidates[i].Endpoint;
+                var originalValues = candidates[i].Values;
 
-                var metadata = endpoint.Metadata.GetMetadata<DynamicPageMetadata>();
-                if (metadata == null)
+                RouteValueDictionary dynamicValues = null;
+
+                // We don't expect both of these to be provided, and they are internal so there's
+                // no realistic way this could happen.
+                var dynamicPageMetadata = endpoint.Metadata.GetMetadata<DynamicPageMetadata>();
+                var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicPageRouteValueTransformerMetadata>();
+                if (dynamicPageMetadata != null)
                 {
+                    dynamicValues = dynamicPageMetadata.Values;
+                }
+                else if (transformerMetadata != null)
+                {
+                    var transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
+                }
+                else
+                {
+                    // Not a dynamic page
                     continue;
                 }
 
-                var matchedValues = candidates[i].Values;
-                var endpoints = _selector.SelectEndpoints(metadata.Values);
-                if (endpoints.Count == 0)
+                if (dynamicValues == null)
                 {
-                    // If there's no match this is a configuration error. We can't really check
-                    // during startup that the action you configured exists.
-                    throw new InvalidOperationException(
-                        "Cannot find the fallback endpoint specified by route values: " +
-                        "{ " + string.Join(", ", metadata.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
+                    candidates.ReplaceEndpoint(i, null, null);
+                    continue;
                 }
 
-                // It is possible to have more than one result for pages but they are equivalent.
-
-                var compiled = await _loader.LoadAsync(endpoints[0].Metadata.GetMetadata<PageActionDescriptor>());
-                var replacement = compiled.Endpoint;
+                var endpoints = _selector.SelectEndpoints(dynamicValues);
+                if (endpoints.Count == 0 && dynamicPageMetadata != null)
+                {
+                    // Having no match for a fallback is a configuration error. We can't really check
+                    // during startup that the action you configured exists, so this is the best we can do.
+                    throw new InvalidOperationException(
+                        "Cannot find the fallback endpoint specified by route values: " +
+                        "{ " + string.Join(", ", dynamicValues.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
+                }
+                else if (endpoints.Count == 0)
+                {
+                    candidates.ReplaceEndpoint(i, null, null);
+                    continue;
+                }
 
                 // We need to provide the route values associated with this endpoint, so that features
                 // like URL generation work.
-                var values = new RouteValueDictionary(metadata.Values);
+                var values = new RouteValueDictionary(dynamicValues);
 
                 // Include values that were matched by the fallback route.
-                foreach (var kvp in matchedValues)
+                if (originalValues != null)
                 {
-                    values.TryAdd(kvp.Key, kvp.Value);
+                    foreach (var kvp in originalValues)
+                    {
+                        values.TryAdd(kvp.Key, kvp.Value);
+                    }
                 }
 
-                candidates.ReplaceEndpoint(i, replacement, values);
+                // Update the route values
+                candidates.ReplaceEndpoint(i, endpoint, values);
+
+                var loadedEndpoints = new List<Endpoint>(endpoints);
+                for (var j = 0; j < loadedEndpoints.Count; j++)
+                {
+                    var compiled = await _loader.LoadAsync(loadedEndpoints[j].Metadata.GetMetadata<PageActionDescriptor>());
+                    loadedEndpoints[j] = compiled.Endpoint;
+                }
+
+                // Expand the list of endpoints
+                candidates.ExpandEndpoint(i, loadedEndpoints, _comparer);
             }
         }
     }

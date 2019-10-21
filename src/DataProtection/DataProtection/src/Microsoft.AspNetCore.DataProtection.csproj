@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -17,13 +19,17 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="System.Security.Principal.Windows" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>

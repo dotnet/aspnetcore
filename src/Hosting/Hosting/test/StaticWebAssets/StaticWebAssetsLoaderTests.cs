@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
@@ -73,11 +75,38 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             };
 
             // Act
-            var manifest = StaticWebAssetsLoader.ResolveManifest(environment);
+            var manifest = StaticWebAssetsLoader.ResolveManifest(environment, new ConfigurationBuilder().Build());
 
             // Assert
             Assert.Equal(expectedManifest, new StreamReader(manifest).ReadToEnd());
         }
+
+        [Fact]
+        public void ResolveManifest_UsesConfigurationKey_WhenProvided()
+        {
+            // Arrange
+            var expectedManifest = @"<StaticWebAssets Version=""1.0"">
+  <ContentRoot Path=""/Path"" BasePath=""/BasePath"" />
+</StaticWebAssets>
+";
+            var path = Path.ChangeExtension(new Uri(typeof(StaticWebAssetsLoader).Assembly.CodeBase).LocalPath, ".StaticWebAssets.xml");
+            var environment = new HostingEnvironment()
+            {
+                ApplicationName = "NonExistingDll"
+            };
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>() {
+                    [WebHostDefaults.StaticWebAssetsKey] = path
+                }).Build();
+
+            // Act
+            var manifest = StaticWebAssetsLoader.ResolveManifest(environment, configuration);
+
+            // Assert
+            Assert.Equal(expectedManifest, new StreamReader(manifest).ReadToEnd());
+        }
+
 
         private Stream CreateManifest(string manifestContent)
         {

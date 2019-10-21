@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,14 +27,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
         /// </summary>
         /// <param name="value">The value to format as JSON.</param>
-        /// <param name="serializerSettings">The serializer settings to be used by the formatter.</param>
+        /// <param name="serializerSettings">
+        /// The serializer settings to be used by the formatter.
+        /// <para>
+        /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />.
+        /// </para>
+        /// <para>
+        /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
+        /// </para>
+        /// </param>
         public JsonResult(object value, object serializerSettings)
         {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
             Value = value;
             SerializerSettings = serializerSettings;
         }
@@ -46,6 +49,12 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets the serializer settings.
+        /// <para>
+        /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />
+        /// </para>
+        /// <para>
+        /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
+        /// </para>
         /// </summary>
         public object SerializerSettings { get; set; }
 

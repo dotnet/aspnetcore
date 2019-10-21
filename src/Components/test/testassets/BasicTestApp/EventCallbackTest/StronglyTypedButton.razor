@@ -1,7 +1,7 @@
 
-<button @onclick="@OnClick">@Text</button>
+<button @onclick="OnClick">@Text</button>
 
 @code {
-    [Parameter] EventCallback<UIMouseEventArgs> OnClick { get; set; }
-    [Parameter] string Text { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string Text { get; set; }
 }

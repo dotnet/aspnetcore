@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.FileProviders;
@@ -86,33 +87,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             var response = context.HttpContext.Response;
-            var physicalPath = fileInfo.PhysicalPath;
 
             if (range != null)
             {
                 Logger.WritingRangeToBody();
             }
 
-            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
+            if (range != null)
             {
-                if (range != null)
-                {
-                    return sendFile.SendFileAsync(
-                        physicalPath,
-                        offset: range.From ?? 0L,
-                        count: rangeLength,
-                        cancellation: default(CancellationToken));
-                }
-
-                return sendFile.SendFileAsync(
-                    physicalPath,
-                    offset: 0,
-                    count: null,
-                    cancellation: default(CancellationToken));
+                return response.SendFileAsync(fileInfo,
+                    offset: range.From ?? 0L,
+                    count: rangeLength);
             }
 
-            return WriteFileAsync(context.HttpContext, GetFileStream(fileInfo), range, rangeLength);
+            return response.SendFileAsync(fileInfo,
+                offset: 0,
+                count: null);
         }
 
         private IFileInfo GetFileInformation(VirtualFileResult result)
@@ -144,6 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return result.FileProvider;
         }
 
+        [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(IFileInfo fileInfo)
         {
             return fileInfo.CreateReadStream();

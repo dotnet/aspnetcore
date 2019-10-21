@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             {
                 if (_options.ExceptionHandlingPath == null)
                 {
-                    throw new InvalidOperationException(Resources.FormatExceptionHandlerOptions_NotConfiguredCorrectly());
+                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }
                 else
                 {
@@ -104,7 +104,8 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             try
             {
-                context.Response.Clear();
+                ClearHttpContext(context);
+
                 var exceptionHandlerFeature = new ExceptionHandlerFeature()
                 {
                     Error = edi.SourceException,
@@ -136,6 +137,17 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
 
             edi.Throw(); // Re-throw the original if we couldn't handle it
+        }
+
+        private static void ClearHttpContext(HttpContext context)
+        {
+            context.Response.Clear();
+
+            // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+            // the endpoint and route values to ensure things are re-calculated.
+            context.SetEndpoint(endpoint: null);
+            var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+            routeValuesFeature?.RouteValues?.Clear();
         }
 
         private static Task ClearCacheHeaders(object state)

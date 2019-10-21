@@ -1,4 +1,9 @@
 ﻿<Project>
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
@@ -16,12 +21,22 @@
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+
+    <!--
+      Following logic mimics core-setup approach as well as
+      https://github.com/dotnet/arcade/blob/694d59f090b743f894779d04a7ffe11cbaf352e7/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj#L30-L31
+      $(DotNetFinalVersionKind) is set globally when doing final aka stable builds. Arcade infrastructure should pick
+      up $(IsStableBuild) automatically; property is also used to control prerelease branding.
+    -->
+    <IsStableBuild>false</IsStableBuild>
+    <IsStableBuild Condition=" '$(DotNetFinalVersionKind)' == 'release' ">true</IsStableBuild>
   </PropertyGroup>
 
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
-
     <Product>Microsoft ASP.NET Core</Product>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
@@ -37,7 +52,7 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <DefaultNetCoreTargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>netcoreapp5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
@@ -47,25 +62,28 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
+    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
+    <!-- Needed until we resolve https://github.com/aspnet/AspNetCore-Internal/issues/3103 -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
   <PropertyGroup>
-    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
     <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
+
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-    <!-- These project types are disabled because the presence of a PackageReference causes issues for NuGet. -->
-    <DisableSourceLink Condition="'$(MSBuildProjectExtension)' == '.debproj' OR '$(MSBuildProjectExtension)' == '.rpmproj'">true</DisableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup>
     <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
+
+    <NETCoreAppFrameworkIdentifier>.NETCoreApp</NETCoreAppFrameworkIdentifier>
+    <NETCoreAppFramework>netcoreapp$(AspNetCoreMajorMinorVersion)</NETCoreAppFramework>
+    <AspNetCoreAppFrameworkBrandName>ASP.NET Core $(AspNetCoreMajorMinorVersion)</AspNetCoreAppFrameworkBrandName>
 
     <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
@@ -114,7 +132,7 @@
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
-  <!-- Artifacts layout -->
+  <!-- Artifacts layout. Keep these values consistent with items defined in eng/Publishing.props. -->
   <PropertyGroup>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>
@@ -133,10 +151,9 @@
     <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
-  <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+  <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!--
       Disable deterministic source paths in test assets and samples.
       In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths

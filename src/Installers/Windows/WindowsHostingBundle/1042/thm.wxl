@@ -63,7 +63,7 @@
   <String Id="Welcome">[WixBundleName] 설치를 시작합니다.</String>
   <String Id="InstallResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
   <String Id="InstallNoIIS">이 머신에는 IIS가 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
   <String Id="ModifyResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
   <String Id="ModifyNoIIS">이 머신에는 IIS가 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
 </WixLocalization>

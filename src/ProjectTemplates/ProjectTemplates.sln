@@ -167,15 +167,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR", "..\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj", "{F2002E05-8FDD-4F55-A5E4-25A52B46D692}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser", "..\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj", "{EEB670DC-9FE2-45A2-B7E9-9BCF7D1056E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web", "..\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{EEB670DC-9FE2-45A2-B7E9-9BCF7D1056E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components", "..\Components\Components\src\Microsoft.AspNetCore.Components.csproj", "{81B96508-D920-45F6-9534-0D348B11DFAB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{D64F966A-B33B-4554-BA8C-A1AF91265996}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "..\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{6012D544-32B4-4F5C-B335-A224AA4F661D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Components.Prerendering", "..\Mvc\Mvc.Components.Prerendering\src\Microsoft.AspNetCore.Mvc.Components.Prerendering.csproj", "{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "..\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}"
 EndProject

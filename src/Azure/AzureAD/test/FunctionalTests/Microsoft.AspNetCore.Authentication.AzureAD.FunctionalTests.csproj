@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +21,7 @@
 
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\AzureAD.WebSite.deps.json" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"

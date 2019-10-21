@@ -6,6 +6,7 @@ import { TransferFormat } from "../src/ITransport";
 import { HttpClient, HttpRequest } from "../src/HttpClient";
 import { ILogger } from "../src/ILogger";
 import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
+import { getUserAgentHeader } from "../src/Utils";
 import { VerifyLogger } from "./Common";
 import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
@@ -177,6 +178,26 @@ describe("ServerSentEventsTransport", () => {
             expect(closeCalled).toBe(true);
             expect(TestEventSource.eventSource.closed).toBe(true);
             expect(error).toEqual(new Error("error parsing"));
+        });
+    });
+
+    it("sets user agent header on connect and sends", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            const httpClient = new TestHttpClient().on((r) => {
+                request = r;
+                return "";
+            });
+
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient);
+
+            let [, value] = getUserAgentHeader();
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers[`User-Agent`]).toEqual(value);
+            await sse.send("");
+
+            [, value] = getUserAgentHeader();
+            expect(request!.headers![`User-Agent`]).toBe(value);
+            expect(request!.url).toBe("http://example.com");
         });
     });
 });

@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr@link:../signalr":
+"@microsoft/signalr@link:../signalr":
   version "0.0.0"
   uid ""
 

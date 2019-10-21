@@ -43,10 +43,10 @@
     string instanceId = Guid.NewGuid().ToString("D").Substring(0, 6);
     int firstCreatedOnUpdateCount;
 
-    [Parameter] Node Data { get; set; }
+    [Parameter] public Node Data { get; set; }
     [CascadingParameter] KeyCasesComponent.RenderContext RenderContext { get; set; }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         firstCreatedOnUpdateCount = RenderContext.UpdateCount;
     }

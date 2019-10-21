@@ -8,21 +8,31 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
 {
-    public class RenderTreeDiffBuilderTest
+    public class RenderTreeDiffBuilderTest : IDisposable
     {
         private readonly Renderer renderer;
         private readonly RenderTreeBuilder oldTree;
         private readonly RenderTreeBuilder newTree;
+        private RenderBatchBuilder batchBuilder;
 
         public RenderTreeDiffBuilderTest()
         {
             renderer = new FakeRenderer();
-            oldTree = new RenderTreeBuilder(renderer);
-            newTree = new RenderTreeBuilder(renderer);
+            oldTree = new RenderTreeBuilder();
+            newTree = new RenderTreeBuilder();
+        }
+
+        void IDisposable.Dispose()
+        {
+            renderer.Dispose();
+            ((IDisposable)oldTree).Dispose();
+            ((IDisposable)newTree).Dispose();
+            batchBuilder?.Dispose();
         }
 
         [Theory]
@@ -207,7 +217,8 @@ namespace Microsoft.AspNetCore.Components.Test
             oldTree.SetKey("retained key");
             oldTree.AddAttribute(1, "ParamName", "Param old value");
             oldTree.CloseComponent();
-            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            using var initial = new RenderTreeBuilder();
+            GetRenderedBatch(initial, oldTree, false); // Assign initial IDs
             var oldComponent = GetComponents<CaptureSetParametersComponent>(oldTree).Single();
 
             newTree.OpenComponent<CaptureSetParametersComponent>(0);
@@ -226,12 +237,12 @@ namespace Microsoft.AspNetCore.Components.Test
             // param on the second component.
 
             // Act
-            var batch = GetRenderedBatch(initializeFromFrames: false);
+            var batchBuilder = GetRenderedBatch(initializeFromFrames: false);
             var newComponents = GetComponents<CaptureSetParametersComponent>(newTree);
 
             // Assert: Inserts new component at position 0
-            Assert.Equal(1, batch.UpdatedComponents.Count);
-            Assert.Collection(batch.UpdatedComponents.Array[0].Edits,
+            Assert.Equal(1, batchBuilder.UpdatedComponents.Count);
+            Assert.Collection(batchBuilder.UpdatedComponents.Array[0].Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
 
             // Assert: Retains old component instance in position 1, and updates its params
@@ -254,7 +265,8 @@ namespace Microsoft.AspNetCore.Components.Test
             oldTree.CloseComponent();
 
             // Instantiate initial components
-            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            using var initial = new RenderTreeBuilder();
+            GetRenderedBatch(initial, oldTree, false);
             var oldComponents = GetComponents(oldTree);
 
             newTree.OpenComponent<FakeComponent>(0);
@@ -285,7 +297,8 @@ namespace Microsoft.AspNetCore.Components.Test
             oldTree.CloseComponent();
 
             // Instantiate initial component
-            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            using var renderTreeBuilder = new RenderTreeBuilder();
+            GetRenderedBatch(renderTreeBuilder, oldTree, false);
             var oldComponent = GetComponents(oldTree).Single();
             Assert.NotNull(oldComponent);
 
@@ -314,86 +327,54 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void HandlesClashingKeys_FirstUsage()
+        public void RejectsClashingKeysInOldTree()
         {
-            // This scenario is problematic for the algorithm if it uses a "first key
-            // usage wins" policy for duplicate keys. It would not end up with attrib1b
-            // anywhere in the output, because whenever it sees key1 in oldTree, it tries
-            // to diff against the first usage of key1 in newTree, which has attrib1a.
-
-            // However, because of the actual "duplicated keys are excluded from the
-            // dictionary match" policy, we don't preserve any of the key1 items, and
-            // the diff is valid.
-
             // Arrange
-            AddWithKey(oldTree, "key3", "attrib3");
-            AddWithKey(oldTree, "key1", "attrib1a");
             AddWithKey(oldTree, "key1", "attrib1a");
             AddWithKey(oldTree, "key2", "attrib2");
+            AddWithKey(oldTree, "key1", "attrib3");
 
-            AddWithKey(newTree, "key1", "attrib1a");
-            AddWithKey(newTree, "key2", "attrib2");
             AddWithKey(newTree, "key1", "attrib1b");
+            AddWithKey(newTree, "key2", "attrib2");
+            AddWithKey(newTree, "key3", "attrib3");
 
-            // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent();
-
-            // Assert
-            Assert.Collection(result.Edits,
-                // Insert key1+attrib1a at the top
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                },
-                // Delete key3+attrib3
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Delete key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Delete the other key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Insert key1+attrib1b at the bottom
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal("attrib1b", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                });
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
-        public void HandlesClashingKeys_LastUsage()
+        public void RejectsClashingKeysInNewTree()
         {
-            // This scenario is problematic for the algorithm if it uses a "last key
-            // usage wins" policy for duplicate keys. It would not end up with attrib1b
-            // anywhere in the output, because when it sees key1 in oldTree, it tries
-            // to diff against the last usage of key1 in newTree, which has attrib1a.
-
-            // However, because of the actual "duplicated keys are excluded from the
-            // dictionary match" policy, we don't preserve any of the key1 items, and
-            // the diff is valid.
-
             // Arrange
             AddWithKey(oldTree, "key1", "attrib1a");
             AddWithKey(oldTree, "key2", "attrib2");
+            AddWithKey(oldTree, "key3", "attrib3");
+
+            AddWithKey(newTree, "key1", "attrib1b");
+            AddWithKey(newTree, "key2", "attrib2");
+            AddWithKey(newTree, "key1", "attrib3");
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+        }
+
+        [Fact]
+        public void RejectsClashingKeysEvenIfAllPairsMatch()
+        {
+            // This sort of scenario would happen if you accidentally used a constant value for @key
+
+            // Arrange
+            AddWithKey(oldTree, "key1", "attrib1a");
             AddWithKey(oldTree, "key1", "attrib1b");
 
-            AddWithKey(newTree, "key2", "attrib2");
-            AddWithKey(newTree, "key1", "attrib1b");
             AddWithKey(newTree, "key1", "attrib1a");
+            AddWithKey(newTree, "key1", "attrib1b");
 
-            // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent();
-
-            // Assert
-            Assert.Collection(result.Edits,
-                // Delete key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
-                // Insert a new key1+attrib1a at the bottom
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                });
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -461,7 +442,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingAdded()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame without a key and a new frame with a key.
 
@@ -491,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void HandlesKeyBeingRemoved()
         {
-            // This is an anomolous situation that can't occur with .razor components.
+            // This is an anomalous situation that can't occur with .razor components.
             // It represents the case where, for the same sequence number, we have an
             // old frame with a key and a new frame without a key.
 
@@ -772,10 +753,11 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             oldTree.OpenComponent<FakeComponent>(123);
             oldTree.CloseComponent();
-            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            using var initial = new RenderTreeBuilder();
+            GetRenderedBatch(initial, oldTree, false); // Assign initial IDs
             newTree.OpenComponent<FakeComponent2>(123);
             newTree.CloseComponent();
-            var batchBuilder = new RenderBatchBuilder();
+            using var batchBuilder = new RenderBatchBuilder();
 
             // Act
             var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
@@ -870,9 +852,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RecognizesAttributeEventHandlerValuesChanged()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
-            Action<UIEventArgs> removedHandler = _ => { };
-            Action<UIEventArgs> addedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
+            Action<EventArgs> removedHandler = _ => { };
+            Action<EventArgs> addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "onfoo", retainedHandler);
             oldTree.AddAttribute(2, "onbar", removedHandler);
@@ -883,7 +865,7 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+            var (result, referenceFrames, batchBuilder) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
             var removedEventHandlerFrame = oldTree.GetFrames().Array[2];
 
             // Assert
@@ -894,10 +876,10 @@ namespace Microsoft.AspNetCore.Components.Test
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
             AssertFrame.Attribute(referenceFrames[0], "onbar", addedHandler);
-            Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, removedEventHandlerFrame.AttributeEventHandlerId);
             Assert.Equal(
                 new[] { removedEventHandlerFrame.AttributeEventHandlerId },
-                batch.DisposedEventHandlerIDs.AsEnumerable());
+                batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1587,7 +1569,9 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.CloseComponent();                           //       </FakeComponent2>
             newTree.CloseElement();                             //     </container>
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            using var batchBuilder = new RenderBatchBuilder();
+            using var renderTreeBuilder = new RenderTreeBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
             var originalFakeComponentInstance = oldTree.GetFrames().Array[2].Component;
             var originalFakeComponent2Instance = oldTree.GetFrames().Array[3].Component;
 
@@ -1608,7 +1592,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1617,7 +1601,7 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+            var (result, referenceFrames, batchBuilder) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
             var oldAttributeFrame = oldTree.GetFrames().Array[1];
             var newAttributeFrame = newTree.GetFrames().Array[1];
 
@@ -1625,16 +1609,16 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Empty(result.Edits);
             AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
-            Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
+            Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
         public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1644,7 +1628,7 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.CloseElement();
 
             // Act
-            var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
+            var (result, referenceFrames, batchBuilder) = GetSingleUpdatedComponentWithBatch(initializeFromFrames: true);
             var oldAttributeFrame = oldTree.GetFrames().Array[1];
             var newAttributeFrame = newTree.GetFrames().Array[2];
 
@@ -1652,9 +1636,9 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Single(result.Edits);
             AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
-            Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
+            Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1671,7 +1655,9 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
             newTree.CloseComponent();
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            using var batchBuilder = new RenderBatchBuilder();
+            using var renderTree = new RenderTreeBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
             var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
             // Act
@@ -1709,7 +1695,9 @@ namespace Microsoft.AspNetCore.Components.Test
                 tree.CloseComponent();
             }
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            using var batchBuilder = new RenderBatchBuilder();
+            using var renderTreeBuilder = new RenderTreeBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
             var originalComponentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
             Assert.Equal(1, originalComponentInstance.SetParametersCallCount);
 
@@ -1737,7 +1725,9 @@ namespace Microsoft.AspNetCore.Components.Test
                 tree.CloseComponent();
             }
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            using var batchBuilder = new RenderBatchBuilder();
+            using var renderTreeBuilder = new RenderTreeBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
             var componentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
             Assert.Equal(1, componentInstance.SetParametersCallCount);
 
@@ -1761,8 +1751,9 @@ namespace Microsoft.AspNetCore.Components.Test
             newTree.OpenComponent<DisposableComponent>(30);       // <DisposableComponent>
             newTree.CloseComponent();                             // </DisposableComponent>
 
-            var batchBuilder = new RenderBatchBuilder();
-            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            using var batchBuilder = new RenderBatchBuilder();
+            using var renderTree = new RenderTreeBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
 
             // Act/Assert
             // Note that we track NonDisposableComponent was disposed even though it's not IDisposable,
@@ -1776,9 +1767,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AssignsDistinctIdToNewElementReferenceCaptures()
         {
             // Arrange
-            ElementRef ref1 = default, ref2 = default;
-            Action<ElementRef> capture1 = val => { ref1 = val; };
-            Action<ElementRef> capture2 = val => { ref2 = val; };
+            ElementReference ref1 = default, ref2 = default;
+            Action<ElementReference> capture1 = val => { ref1 = val; };
+            Action<ElementReference> capture2 = val => { ref2 = val; };
             newTree.OpenElement(0, "My element");
             newTree.AddElementReferenceCapture(1, capture1);
             newTree.AddElementReferenceCapture(2, capture2);
@@ -1817,8 +1808,8 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var refWriteCount = 0;
-            ElementRef ref1 = default;
-            Action<ElementRef> capture1 = val => { ref1 = val; refWriteCount++; };
+            ElementReference ref1 = default;
+            Action<ElementReference> capture1 = val => { ref1 = val; refWriteCount++; };
             oldTree.OpenElement(0, "My element");
             oldTree.AddElementReferenceCapture(1, capture1);
             oldTree.CloseElement();
@@ -1971,7 +1962,8 @@ namespace Microsoft.AspNetCore.Components.Test
             oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Second param");
             oldTree.CloseComponent();
 
-            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            using var renderTreeBuilder = new RenderTreeBuilder();
+            GetRenderedBatch(renderTreeBuilder, oldTree, false); // Assign initial IDs
             var oldComponents = GetComponents<CaptureSetParametersComponent>(oldTree);
 
             newTree.OpenComponent<CaptureSetParametersComponent>(0);
@@ -2172,12 +2164,19 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             if (initializeFromFrames)
             {
-                var emptyFrames = new RenderTreeBuilder(renderer).GetFrames();
+                using var renderTreeBuilder = new RenderTreeBuilder();
+                using var initializeBatchBuilder = new RenderBatchBuilder();
+
+                var emptyFrames = renderTreeBuilder.GetFrames();
                 var oldFrames = from.GetFrames();
-                RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, emptyFrames, oldFrames);
+
+                RenderTreeDiffBuilder.ComputeDiff(renderer, initializeBatchBuilder, 0, emptyFrames, oldFrames);
             }
 
-            var batchBuilder = new RenderBatchBuilder();
+            batchBuilder?.Dispose();
+            // This gets disposed as part of the test type's Dispose
+            batchBuilder = new RenderBatchBuilder();
+
             var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             return batchBuilder.ToBatch();
@@ -2207,9 +2206,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeRenderer : Renderer
         {
-            public FakeRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
+            public FakeRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
                 => throw new NotImplementedException();
@@ -2221,24 +2222,24 @@ namespace Microsoft.AspNetCore.Components.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            internal int IntProperty { get; set; }
+            public int IntProperty { get; set; }
 
             [Parameter]
-            internal string StringProperty { get; set; }
+            public string StringProperty { get; set; }
 
             [Parameter]
-            internal object ObjectProperty { get; set; }
+            public object ObjectProperty { get; set; }
 
             [Parameter]
-            internal string ReadonlyProperty { get; private set; }
+            public string ReadonlyProperty { get; set; }
 
             [Parameter]
-            string PrivateProperty { get; set; }
+            public string PrivateProperty { get; set; }
 
             public string NonParameterProperty { get; set; }
 
-            public void Configure(RenderHandle renderHandle) { }
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public void Attach(RenderHandle renderHandle) { }
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 parameters.SetParameterProperties(this);
                 return Task.CompletedTask;
@@ -2247,22 +2248,22 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeComponent2 : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class CaptureSetParametersComponent : IComponent
         {
             public int SetParametersCallCount { get; private set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 SetParametersCallCount++;
                 return Task.CompletedTask;
@@ -2274,16 +2275,16 @@ namespace Microsoft.AspNetCore.Components.Test
             public int DisposalCount { get; private set; }
             public void Dispose() => DisposalCount++;
 
-            public void Configure(RenderHandle renderHandle) { }
+            public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class NonDisposableComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle) { }
+            public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private static void AssertEdit(

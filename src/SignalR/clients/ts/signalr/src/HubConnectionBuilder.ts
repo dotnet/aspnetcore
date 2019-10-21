@@ -38,7 +38,7 @@ function parseLogLevel(name: string): LogLevel {
     }
 }
 
-/** A builder for configuring {@link @aspnet/signalr.HubConnection} instances. */
+/** A builder for configuring {@link @microsoft/signalr.HubConnection} instances. */
 export class HubConnectionBuilder {
     /** @internal */
     public protocol?: IHubProtocol;
@@ -53,32 +53,32 @@ export class HubConnectionBuilder {
     /** @internal */
     public reconnectPolicy?: IRetryPolicy;
 
-    /** Configures console logging for the {@link @aspnet/signalr.HubConnection}.
+    /** Configures console logging for the {@link @microsoft/signalr.HubConnection}.
      *
      * @param {LogLevel} logLevel The minimum level of messages to log. Anything at this level, or a more severe level, will be logged.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logLevel: LogLevel): HubConnectionBuilder;
 
-    /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
+    /** Configures custom logging for the {@link @microsoft/signalr.HubConnection}.
      *
-     * @param {ILogger} logger An object implementing the {@link @aspnet/signalr.ILogger} interface, which will be used to write all log messages.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @param {ILogger} logger An object implementing the {@link @microsoft/signalr.ILogger} interface, which will be used to write all log messages.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logger: ILogger): HubConnectionBuilder;
 
-    /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
+    /** Configures custom logging for the {@link @microsoft/signalr.HubConnection}.
      *
      * @param {string} logLevel A string representing a LogLevel setting a minimum level of messages to log.
-     *    See {@link https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
+     *    See {@link https://docs.microsoft.com/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
      */
     public configureLogging(logLevel: string): HubConnectionBuilder;
 
-    /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
+    /** Configures custom logging for the {@link @microsoft/signalr.HubConnection}.
      *
-     * @param {LogLevel | string | ILogger} logging A {@link @aspnet/signalr.LogLevel}, a string representing a LogLevel, or an object implementing the {@link @aspnet/signalr.ILogger} interface.
-     *    See {@link https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @param {LogLevel | string | ILogger} logging A {@link @microsoft/signalr.LogLevel}, a string representing a LogLevel, or an object implementing the {@link @microsoft/signalr.ILogger} interface.
+     *    See {@link https://docs.microsoft.com/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logging: LogLevel | string | ILogger): HubConnectionBuilder;
     public configureLogging(logging: LogLevel | string | ILogger): HubConnectionBuilder {
@@ -96,28 +96,28 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to use HTTP-based transports to connect to the specified URL.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to use HTTP-based transports to connect to the specified URL.
      *
      * The transport will be selected automatically based on what the server and client support.
      *
      * @param {string} url The URL the connection will use.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public withUrl(url: string): HubConnectionBuilder;
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to use the specified HTTP-based transport to connect to the specified URL.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to use the specified HTTP-based transport to connect to the specified URL.
      *
      * @param {string} url The URL the connection will use.
      * @param {HttpTransportType} transportType The specific transport to use.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public withUrl(url: string, transportType: HttpTransportType): HubConnectionBuilder;
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to use HTTP-based transports to connect to the specified URL.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to use HTTP-based transports to connect to the specified URL.
      *
      * @param {string} url The URL the connection will use.
      * @param {IHttpConnectionOptions} options An options object used to configure the connection.
-     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public withUrl(url: string, options: IHttpConnectionOptions): HubConnectionBuilder;
     public withUrl(url: string, transportTypeOrOptions?: IHttpConnectionOptions | HttpTransportType): HubConnectionBuilder {
@@ -139,9 +139,9 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to use the specified Hub Protocol.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to use the specified Hub Protocol.
      *
-     * @param {IHubProtocol} protocol The {@link @aspnet/signalr.IHubProtocol} implementation to use.
+     * @param {IHubProtocol} protocol The {@link @microsoft/signalr.IHubProtocol} implementation to use.
      */
     public withHubProtocol(protocol: IHubProtocol): HubConnectionBuilder {
         Arg.isRequired(protocol, "protocol");
@@ -150,21 +150,21 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
      * By default, the client will wait 0, 2, 10 and 30 seconds respectively before trying up to 4 reconnect attempts.
      */
     public withAutomaticReconnect(): HubConnectionBuilder;
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
      *
      * @param {number[]} retryDelays An array containing the delays in milliseconds before trying each reconnect attempt.
      * The length of the array represents how many failed reconnect attempts it takes before the client will stop attempting to reconnect.
      */
     public withAutomaticReconnect(retryDelays: number[]): HubConnectionBuilder;
 
-    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+    /** Configures the {@link @microsoft/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
      *
-     * @param {IRetryPolicy} reconnectPolicy An {@link @aspnet/signalR.IRetryPolicy} that controls the timing and number of reconnect attempts.
+     * @param {IRetryPolicy} reconnectPolicy An {@link @microsoft/signalR.IRetryPolicy} that controls the timing and number of reconnect attempts.
      */
     public withAutomaticReconnect(reconnectPolicy: IRetryPolicy): HubConnectionBuilder;
     public withAutomaticReconnect(retryDelaysOrReconnectPolicy?: number[] | IRetryPolicy): HubConnectionBuilder {
@@ -183,9 +183,9 @@ export class HubConnectionBuilder {
         return this;
     }
 
-    /** Creates a {@link @aspnet/signalr.HubConnection} from the configuration options specified in this builder.
+    /** Creates a {@link @microsoft/signalr.HubConnection} from the configuration options specified in this builder.
      *
-     * @returns {HubConnection} The configured {@link @aspnet/signalr.HubConnection}.
+     * @returns {HubConnection} The configured {@link @microsoft/signalr.HubConnection}.
      */
     public build(): HubConnection {
         // If httpConnectionOptions has a logger, use it. Otherwise, override it with the one

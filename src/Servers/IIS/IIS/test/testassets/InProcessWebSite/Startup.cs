@@ -371,12 +371,40 @@ namespace TestSite
             }
         }
 
+#if !FORWARDCOMPAT
+        private Task UnflushedResponsePipe(HttpContext ctx)
+        {
+            var writer = ctx.Response.BodyWriter;
+            var memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+            return Task.CompletedTask;
+        }
+
+        private async Task FlushedPipeAndThenUnflushedPipe(HttpContext ctx)
+        {
+            var writer = ctx.Response.BodyWriter;
+            var memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+            await writer.FlushAsync();
+            memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+        }
+#endif
         private async Task ResponseHeaders(HttpContext ctx)
         {
             ctx.Response.Headers["UnknownHeader"] = "test123=foo";
             ctx.Response.ContentType = "text/plain";
             ctx.Response.Headers["MultiHeader"] = new StringValues(new string[] { "1", "2" });
             await ctx.Response.WriteAsync("Request Complete");
+        }
+
+        private async Task ResponseEmptyHeaders(HttpContext ctx)
+        {
+            ctx.Response.Headers["EmptyHeader"] = "";
+            await ctx.Response.WriteAsync("EmptyHeaderShouldBeSkipped");
         }
 
         private async Task ResponseInvalidOrdering(HttpContext ctx)
@@ -515,8 +543,13 @@ namespace TestSite
 
         private async Task ReadAndWriteEchoLinesNoBuffering(HttpContext ctx)
         {
+#if FORWARDCOMPAT
             var feature = ctx.Features.Get<IHttpBufferingFeature>();
             feature.DisableResponseBuffering();
+#else
+            var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
+            feature.DisableBuffering();
+#endif
 
             if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
             {
@@ -806,6 +839,12 @@ namespace TestSite
         private async Task BasePath(HttpContext ctx)
         {
             await ctx.Response.WriteAsync(AppDomain.CurrentDomain.BaseDirectory);
+        }
+
+        private Task RequestPath(HttpContext ctx)
+        {
+            ctx.Request.Headers.ContentLength = ctx.Request.Path.Value.Length;
+            return ctx.Response.WriteAsync(ctx.Request.Path.Value);
         }
 
         private async Task Shutdown(HttpContext ctx)

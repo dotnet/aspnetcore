@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
+            var reader = new Utf8JsonReader(payload, isFinalBlock: true, state: default);
 
             reader.CheckRead();
             reader.EnsureObjectStart();
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
+            var reader = new Utf8JsonReader(payload, isFinalBlock: true, state: default);
 
             reader.CheckRead();
             reader.EnsureObjectStart();

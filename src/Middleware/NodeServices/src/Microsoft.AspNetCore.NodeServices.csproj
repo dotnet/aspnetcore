@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
@@ -22,14 +22,6 @@
   <Target Name="YarnInstall">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
     <Yarn Command="install --mutex network" />
-  </Target>
-
-  <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
-    <ItemGroup>
-      <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
-        <Targets>YarnInstall</Targets>
-      </CustomRestoreTargets>
-    </ItemGroup>
   </Target>
 
   <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

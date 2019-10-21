@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -13,6 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         public const string PageFilter = "Page Filter";
 
+        private static readonly Action<ILogger, string, string, Exception> _pageModelFactoryExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _pageModelFactoryExecuted;
+        private static readonly Action<ILogger, string, string, Exception> _pageFactoryExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _pageFactoryExecuted;
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
         private static readonly Action<ILogger, ModelValidationState, Exception> _implicitHandlerMethodExecuting;
         private static readonly Action<ILogger, string, string[], Exception> _handlerMethodExecutingWithArguments;
@@ -26,6 +31,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         static PageLoggerExtensions()
         {
             // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
+
+            _pageModelFactoryExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(101, "ExecutingModelFactory"),
+               "Executing page model factory for page {Page} ({AssemblyName})");
+
+            _pageModelFactoryExecuted = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(102, "ExecutedModelFactory"),
+                "Executed page model factory for page {Page} ({AssemblyName})");
+
+            _pageFactoryExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(101, "ExecutingPageFactory"),
+               "Executing page factory for page {Page} ({AssemblyName})");
+
+            _pageFactoryExecuted = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(102, "ExecutedPageFactory"),
+                "Executed page factory for page {Page} ({AssemblyName})");
 
             _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
                 LogLevel.Information,
@@ -73,11 +98,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 "{FilterType}: After executing {Method} on filter {Filter}.");
         }
 
+        public static void ExecutingPageModelFactory(this ILogger logger, PageContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+            _pageModelFactoryExecuting(logger, pageName, pageType.Assembly.GetName().Name, null);
+        }
+
+        public static void ExecutedPageModelFactory(this ILogger logger, PageContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+            _pageModelFactoryExecuted(logger, pageName, pageType.Assembly.GetName().Name, null);
+        }
+
+        public static void ExecutingPageFactory(this ILogger logger, PageContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+            _pageFactoryExecuting(logger, pageName, pageType.Assembly.GetName().Name, null);
+        }
+
+        public static void ExecutedPageFactory(this ILogger logger, PageContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var pageType = context.ActionDescriptor.PageTypeInfo.AsType();
+            var pageName = TypeNameHelper.GetTypeDisplayName(pageType);
+            _pageFactoryExecuted(logger, pageName, pageType.Assembly.GetName().Name, null);
+        }
+
         public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var handlerName = handler.MethodInfo.DeclaringType.FullName + "." + handler.MethodInfo.Name;
+                var declaringTypeName = TypeNameHelper.GetTypeDisplayName(handler.MethodInfo.DeclaringType);
+                var handlerName = declaringTypeName + "." + handler.MethodInfo.Name;
 
                 var validationState = context.ModelState.ValidationState;
                 _handlerMethodExecuting(logger, handlerName, validationState, null);

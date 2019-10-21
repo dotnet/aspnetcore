@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@aspnet/signalr";
+import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
 describe("MessagePackHubProtocol", () => {

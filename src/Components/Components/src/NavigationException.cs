@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Exception thrown when an <see cref="IUriHelper"/> is not able to navigate to a different url.
+    /// Exception thrown when an <see cref="NavigationManager"/> is not able to navigate to a different url.
     /// </summary>
     public class NavigationException : Exception
     {

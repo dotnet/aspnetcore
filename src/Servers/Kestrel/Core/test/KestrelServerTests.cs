@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StartDummyApplication(server);
 
                 Assert.True(server.Options.ListenOptions.Any());
-                Assert.Contains(server.Options.ListenOptions[0].ConnectionAdapters, adapter => adapter.IsHttps);
+                Assert.True(server.Options.ListenOptions[0].IsTls);
             }
         }
 

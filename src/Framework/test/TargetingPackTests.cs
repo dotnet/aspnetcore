@@ -5,6 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +26,33 @@ namespace Microsoft.AspNetCore
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
             _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
+        }
+
+        [Fact]
+        public void AssembliesAreReferenceAssemblies()
+        {
+            IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                var assemblyName = AssemblyName.GetAssemblyName(path);
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var assemblyDefinition = reader.GetAssemblyDefinition();
+                var hasRefAssemblyAttribute = assemblyDefinition.GetCustomAttributes().Any(attr =>
+                {
+                    var attribute = reader.GetCustomAttribute(attr);
+                    var attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
+                    return reader.StringComparer.Equals(attributeType.Namespace, typeof(ReferenceAssemblyAttribute).Namespace)
+                        && reader.StringComparer.Equals(attributeType.Name, nameof(ReferenceAssemblyAttribute));
+                });
+
+                Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
+                Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+            });
         }
 
         [Fact]
@@ -67,7 +98,7 @@ namespace Microsoft.AspNetCore
             {
                 var parts = line.Split('|');
                 Assert.Equal(4, parts.Length);
-                Assert.Equal("Microsoft.AspNetCore.App", parts[1]);
+                Assert.Equal("Microsoft.AspNetCore.App.Ref", parts[1]);
                 if (parts[2].Length > 0)
                 {
                     Assert.True(Version.TryParse(parts[2], out _), "Assembly version must be convertable to System.Version");

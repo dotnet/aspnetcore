@@ -16,13 +16,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, new EventId(1, "ReceivedHubInvocation"), "Received hub invocation: {InvocationMessage}.");
 
             private static readonly Action<ILogger, string, Exception> _unsupportedMessageReceived =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(2, "UnsupportedMessageReceived"), "Received unsupported message of type '{MessageType}'.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "UnsupportedMessageReceived"), "Received unsupported message of type '{MessageType}'.");
 
             private static readonly Action<ILogger, string, Exception> _unknownHubMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, "UnknownHubMethod"), "Unknown hub method '{HubMethod}'.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "UnknownHubMethod"), "Unknown hub method '{HubMethod}'.");
 
-            private static readonly Action<ILogger, Exception> _outboundChannelClosed =
-                LoggerMessage.Define(LogLevel.Warning, new EventId(4, "OutboundChannelClosed"), "Outbound channel was closed while trying to write hub message.");
+            // 4, OutboundChannelClosed - removed
 
             private static readonly Action<ILogger, string, Exception> _hubMethodNotAuthorized =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "HubMethodNotAuthorized"), "Failed to invoke '{HubMethod}' because user is unauthorized.");
@@ -49,13 +48,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 LoggerMessage.Define<StreamInvocationMessage>(LogLevel.Debug, new EventId(12, "ReceivedStreamHubInvocation"), "Received stream hub invocation: {InvocationMessage}.");
 
             private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _streamingMethodCalledWithInvoke =
-                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(13, "StreamingMethodCalledWithInvoke"), "A streaming method was invoked with a non-streaming invocation : {InvocationMessage}.");
+                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Debug, new EventId(13, "StreamingMethodCalledWithInvoke"), "A streaming method was invoked with a non-streaming invocation : {InvocationMessage}.");
 
             private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _nonStreamingMethodCalledWithStream =
-                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(14, "NonStreamingMethodCalledWithStream"), "A non-streaming method was invoked with a streaming invocation : {InvocationMessage}.");
+                LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Debug, new EventId(14, "NonStreamingMethodCalledWithStream"), "A non-streaming method was invoked with a streaming invocation : {InvocationMessage}.");
 
             private static readonly Action<ILogger, string, Exception> _invalidReturnValueFromStreamingMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(15, "InvalidReturnValueFromStreamingMethod"), "A streaming method returned a value that cannot be used to build enumerator {HubMethod}.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(15, "InvalidReturnValueFromStreamingMethod"), "A streaming method returned a value that cannot be used to build enumerator {HubMethod}.");
 
             private static readonly Action<ILogger, string, Exception> _receivedStreamItem =
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(16, "ReceivedStreamItem"), "Received item for stream '{StreamId}'.");
@@ -67,13 +66,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 LoggerMessage.Define<string>(LogLevel.Trace, new EventId(18, "CompletingStream"), "Stream '{StreamId}' has been completed by client.");
 
             private static readonly Action<ILogger, string, string, Exception> _closingStreamWithBindingError =
-                LoggerMessage.Define<string, string>(LogLevel.Warning, new EventId(19, "ClosingStreamWithBindingError"), "Stream '{StreamId}' closed with error '{Error}'.");
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(19, "ClosingStreamWithBindingError"), "Stream '{StreamId}' closed with error '{Error}'.");
 
             private static readonly Action<ILogger, Exception> _unexpectedStreamCompletion =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(20, "UnexpectedStreamCompletion"), "StreamCompletionMessage received unexpectedly.");
 
             private static readonly Action<ILogger, Exception> _unexpectedStreamItem =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(21, "UnexpectedStreamItem"), "StreamItemMessage received unexpectedly.");
+
+            private static readonly Action<ILogger, string, Exception> _invalidHubParameters =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(22, "InvalidHubParameters"), "Parameters to hub method '{HubMethod}' are incorrect.");
 
             public static void ReceivedHubInvocation(ILogger logger, InvocationMessage invocationMessage)
             {
@@ -88,11 +90,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             public static void UnknownHubMethod(ILogger logger, string hubMethod)
             {
                 _unknownHubMethod(logger, hubMethod, null);
-            }
-
-            public static void OutboundChannelClosed(ILogger logger)
-            {
-                _outboundChannelClosed(logger, null);
             }
 
             public static void HubMethodNotAuthorized(ILogger logger, string hubMethod)
@@ -183,6 +180,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             public static void UnexpectedStreamItem(ILogger logger)
             {
                 _unexpectedStreamItem(logger, null);
+            }
+
+            public static void InvalidHubParameters(ILogger logger, string hubMethod, Exception exception)
+            {
+                _invalidHubParameters(logger, hubMethod, exception);
             }
         }
     }

@@ -1,13 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     /// <summary>
-    /// Describes changes to a component's render tree between successive renders.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in future release.
     /// </summary>
+    //
+    // Describes changes to a component's render tree between successive renders.
     public readonly struct RenderTreeDiff
     {
         /// <summary>
@@ -18,11 +23,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Gets the changes to the render tree since a previous state.
         /// </summary>
-        public readonly ArraySegment<RenderTreeEdit> Edits;
+        public readonly ArrayBuilderSegment<RenderTreeEdit> Edits;
 
         internal RenderTreeDiff(
             int componentId,
-            ArraySegment<RenderTreeEdit> entries)
+            ArrayBuilderSegment<RenderTreeEdit> entries)
         {
             ComponentId = componentId;
             Edits = entries;

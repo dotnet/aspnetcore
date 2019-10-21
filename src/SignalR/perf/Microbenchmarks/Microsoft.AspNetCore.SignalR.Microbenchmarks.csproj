@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +10,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="Internal\TextMessageFormatter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="Internal\TextMessageParser.cs" />
+    <Compile Include="..\..\common\Http.Connections\src\ServerSentEventsMessageFormatter.cs" Link="ServerSentEventsMessageFormatter.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
   </ItemGroup>
 

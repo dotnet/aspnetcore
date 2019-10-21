@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
@@ -875,7 +876,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override int GetCountFast()
         {
-            return (_contentLength.HasValue ? 1 : 0 ) + BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
         protected override bool TryGetValueFast(string key, out StringValues value)
@@ -7310,7 +7311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         protected override int GetCountFast()
         {
-            return (_contentLength.HasValue ? 1 : 0 ) + BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
         protected override bool TryGetValueFast(string key, out StringValues value)
@@ -10275,7 +10276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _contentLength = null;
             var tempBits = _bits;
             _bits = 0;
-            if(HttpHeaders.BitCount(tempBits) > 12)
+            if(BitOperations.PopCount((ulong)tempBits) > 12)
             {
                 _headers = default(HeaderReferences);
                 return;
@@ -11848,7 +11849,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override int GetCountFast()
         {
-            return (_contentLength.HasValue ? 1 : 0 ) + BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitOperations.PopCount((ulong)_bits) + (MaybeUnknown?.Count ?? 0);
         }
 
         protected override bool TryGetValueFast(string key, out StringValues value)
@@ -11985,7 +11986,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _contentLength = null;
             var tempBits = _bits;
             _bits = 0;
-            if(HttpHeaders.BitCount(tempBits) > 12)
+            if(BitOperations.PopCount((ulong)tempBits) > 12)
             {
                 _headers = default(HeaderReferences);
                 return;

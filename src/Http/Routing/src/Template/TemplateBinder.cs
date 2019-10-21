@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.ObjectPool;
 
@@ -19,9 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class TemplateBinder
     {
         private readonly UrlEncoder _urlEncoder;
-#pragma warning disable CS0618 // Type or member is obsolete
         private readonly ObjectPool<UriBuildingContext> _pool;
-#pragma warning restore CS0618 // Type or member is obsolete
 
         private readonly (string parameterName, IRouteConstraint constraint)[] _constraints;
         private readonly RouteValueDictionary _defaults;
@@ -42,14 +39,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="template">The <see cref="RouteTemplate"/> to bind values to.</param>
         /// <param name="defaults">The default values for <paramref name="template"/>.</param>
-        [Obsolete(
-            "This constructor is obsolete and will be marked internal in a furture release. Use the TemplateBinderFactory service " +
-            "to create TemplateBinder instances.")]
-        public TemplateBinder(
+        internal TemplateBinder(
             UrlEncoder urlEncoder,
-#pragma warning disable PUB0001
             ObjectPool<UriBuildingContext> pool,
-#pragma warning restore PUB0001
             RouteTemplate template,
             RouteValueDictionary defaults)
             : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicies: null)
@@ -67,14 +59,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="parameterPolicies">
         /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
         /// </param>
-        [Obsolete(
-            "This constructor is obsolete and will be marked internal in a future release. Use the TemplateBinderFactory service " +
-            "to create TemplateBinder instances.")]
-        public TemplateBinder(
+        internal TemplateBinder(
             UrlEncoder urlEncoder,
-#pragma warning disable PUB0001
             ObjectPool<UriBuildingContext> pool,
-#pragma warning restore PUB0001
             RoutePattern pattern,
             RouteValueDictionary defaults,
             IEnumerable<string> requiredKeys,
@@ -124,9 +111,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         internal TemplateBinder(
             UrlEncoder urlEncoder,
-#pragma warning disable CS0618 // Type or member is obsolete
             ObjectPool<UriBuildingContext> pool,
-#pragma warning restore CS0618 // Type or member is obsolete
             RoutePattern pattern,
             IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
         {
@@ -506,7 +491,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         private bool TryBindValuesCore(UriBuildingContext context, RouteValueDictionary acceptedValues)
         {
             // If we have any output parameter transformers, allow them a chance to influence the parameter values
@@ -647,7 +631,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
             return false;
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Compares two objects for equality as parts of a case-insensitive path.

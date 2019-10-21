@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection
+    public partial class HubConnection : IAsyncDisposable
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly IRetryPolicy _reconnectPolicy;
+        private readonly EndPoint _endPoint;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
         // Holds all mutable state other than user-defined handlers and settable properties.
@@ -172,6 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="reconnectPolicy">
@@ -181,8 +184,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
         /// </remarks>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
-            : this(connectionFactory, protocol, serviceProvider, loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, EndPoint endPoint, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
+            : this(connectionFactory, protocol, endPoint, serviceProvider, loggerFactory)
         {
             _reconnectPolicy = reconnectPolicy;
         }
@@ -192,27 +195,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <remarks>
         /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
         /// </remarks>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-            : this(connectionFactory, protocol, loggerFactory)
-        {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HubConnection"/> class.
-        /// </summary>
-        /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
-        /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory,
+                             IHubProtocol protocol,
+                             EndPoint endPoint,
+                             IServiceProvider serviceProvider,
+                             ILoggerFactory loggerFactory)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            _endPoint = endPoint ?? throw new ArgumentException(nameof(endPoint));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
@@ -293,8 +291,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
-        public async Task DisposeAsync()
+        /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
+        public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -424,7 +422,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Starting(_logger);
 
             // Start the connection
-            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cancellationToken);
+            var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken);
             var startingConnectionState = new ConnectionState(connection, this);
 
             // From here on, if an error occurs we need to shut down the connection because
@@ -450,9 +448,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private Task CloseAsync(ConnectionContext connection)
+        private ValueTask CloseAsync(ConnectionContext connection)
         {
-            return _connectionFactory.DisposeAsync(connection);
+            return connection.DisposeAsync();
         }
 
         // This method does both Dispose and Start, the 'disposing' flag indicates which.
@@ -505,8 +503,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 if (disposing)
                 {
-                    (_serviceProvider as IDisposable)?.Dispose();
+                    // Must set this before calling DisposeAsync because the service provider has a reference to the HubConnection and will try to dispose it again
                     _disposed = true;
+                    if (_serviceProvider is IAsyncDisposable asyncDispose)
+                    {
+                        await asyncDispose.DisposeAsync();
+                    }
+                    else
+                    {
+                        (_serviceProvider as IDisposable)?.Dispose();
+                    }
                 }
             }
             finally
@@ -533,7 +539,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </returns>
         public IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
+            var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, default) : new CancellationTokenSource();
             var stream = CastIAsyncEnumerable<TResult>(methodName, args, cts);
             var cancelableStream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cts);
             return cancelableStream;

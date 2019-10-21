@@ -21,7 +21,13 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public const string DefaultFramework = "netcoreapp3.0";
+        public const string DefaultFramework = "netcoreapp5.0";
+
+        public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "ContinuousIntegrationBuild");
+
+        public static string ArtifactsLogDir => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(a => a.Key == "ArtifactsLogDir")?.Value;
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -41,36 +47,52 @@ namespace Templates.Test.Helpers
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
 
-        internal async Task<ProcessEx> RunDotNetNewAsync(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
+        internal async Task<ProcessEx> RunDotNetNewAsync(
+            string templateName,
+            string auth = null,
+            string language = null,
+            bool useLocalDB = false,
+            bool noHttps = false,
+            string[] args = null,
+            // Used to set special options in MSBuild
+            IDictionary<string, string> environmentVariables = null)
         {
             var hiveArg = $"--debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-            var args = $"new {templateName} {hiveArg}";
-
+            var argString = $"new {templateName} {hiveArg}";
+            environmentVariables ??= new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(auth))
             {
-                args += $" --auth {auth}";
+                argString += $" --auth {auth}";
             }
 
             if (!string.IsNullOrEmpty(language))
             {
-                args += $" -lang {language}";
+                argString += $" -lang {language}";
             }
 
             if (useLocalDB)
             {
-                args += $" --use-local-db";
+                argString += $" --use-local-db";
             }
 
             if (noHttps)
             {
-                args += $" --no-https";
+                argString += $" --no-https";
+            }
+
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    argString += " " + arg;
+                }
             }
 
             // Save a copy of the arguments used for better diagnostic error messages later.
             // We omit the hive argument and the template output dir as they are not relevant and add noise.
-            ProjectArguments = args.Replace(hiveArg, "");
+            ProjectArguments = argString.Replace(hiveArg, "");
 
-            args += $" -o {TemplateOutputDir}";
+            argString += $" -o {TemplateOutputDir}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -78,7 +100,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
+                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return execution;
             }
@@ -88,14 +110,9 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
-
-            // Workaround for issue with runtime store not yet being published
-            // https://github.com/aspnet/Home/issues/2254#issuecomment-339709628
-            var extraArgs = "-p:PublishWithAspNetCoreTargetManifest=false";
-
 
             // This is going to trigger a build, so we need to acquire the lock like in the other cases.
             // We want to take the node lock as some builds run NPM as part of the build and we want to make sure
@@ -104,8 +121,9 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
                 await result.Exited;
+                CaptureBinLogOnFailure(result);
                 return result;
             }
             finally
@@ -114,7 +132,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -125,8 +143,9 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
                 await result.Exited;
+                CaptureBinLogOnFailure(result);
                 return result;
             }
             finally
@@ -179,27 +198,35 @@ namespace Templates.Test.Helpers
             return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
         }
 
-        internal AspNetProcess StartBuiltProjectAsync()
+        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true)
         {
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
-        internal AspNetProcess StartPublishedProjectAsync()
+        internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
         {
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = $"{ProjectName}.dll";
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment);
+            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
         internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)
@@ -260,7 +287,7 @@ namespace Templates.Test.Helpers
             try
             {
                 output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                var result = await ProcessEx.RunViaShellAsync(output, workingDirectory, "npm install");
+                var result = ProcessEx.RunViaShell(output, workingDirectory, "npm install");
                 return result;
             }
             finally
@@ -482,6 +509,17 @@ namespace Templates.Test.Helpers
                         _nodeLockTaken = false;
                     }
                 }
+            }
+        }
+
+        private void CaptureBinLogOnFailure(ProcessEx result)
+        {
+            if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
+            {
+                var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
+                Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
+                var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
+                File.Move(sourceFile, destination);
             }
         }
 

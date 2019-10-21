@@ -14,6 +14,8 @@ namespace BasicWebSite
             services
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
+
+            services.AddSingleton<ContactsRepository>();
         }
 
         public void Configure(IApplicationBuilder app)

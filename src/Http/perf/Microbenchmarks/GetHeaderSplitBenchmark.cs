@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 

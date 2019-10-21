@@ -5,12 +5,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object>>
     {
+        private const string LogPreamble = "Request starting ";
+        private const string EmptyEntry = "-";
+
         internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestStartingLog)state).ToString();
 
         private readonly HttpRequest _request;
@@ -19,35 +23,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public int Count => 9;
 
-        public KeyValuePair<string, object> this[int index]
+        public KeyValuePair<string, object> this[int index] => index switch
         {
-            get
-            {
-                switch (index)
-                {
-                    case 0:
-                        return new KeyValuePair<string, object>("Protocol", _request.Protocol);
-                    case 1:
-                        return new KeyValuePair<string, object>("Method", _request.Method);
-                    case 2:
-                        return new KeyValuePair<string, object>("ContentType", _request.ContentType);
-                    case 3:
-                        return new KeyValuePair<string, object>("ContentLength", _request.ContentLength);
-                    case 4:
-                        return new KeyValuePair<string, object>("Scheme", _request.Scheme);
-                    case 5:
-                        return new KeyValuePair<string, object>("Host", _request.Host.ToString());
-                    case 6:
-                        return new KeyValuePair<string, object>("PathBase", _request.PathBase.ToString());
-                    case 7:
-                        return new KeyValuePair<string, object>("Path", _request.Path.ToString());
-                    case 8:
-                        return new KeyValuePair<string, object>("QueryString", _request.QueryString.ToString());
-                    default:
-                        throw new IndexOutOfRangeException(nameof(index));
-                }
-            }
-        }
+            0 => new KeyValuePair<string, object>(nameof(_request.Protocol), _request.Protocol),
+            1 => new KeyValuePair<string, object>(nameof(_request.Method), _request.Method),
+            2 => new KeyValuePair<string, object>(nameof(_request.ContentType), _request.ContentType),
+            3 => new KeyValuePair<string, object>(nameof(_request.ContentLength), _request.ContentLength),
+            4 => new KeyValuePair<string, object>(nameof(_request.Scheme), _request.Scheme),
+            5 => new KeyValuePair<string, object>(nameof(_request.Host), _request.Host.Value),
+            6 => new KeyValuePair<string, object>(nameof(_request.PathBase), _request.PathBase.Value),
+            7 => new KeyValuePair<string, object>(nameof(_request.Path), _request.Path.Value),
+            8 => new KeyValuePair<string, object>(nameof(_request.QueryString), _request.QueryString.Value),
+            _ => throw new IndexOutOfRangeException(nameof(index)),
+        };
 
         public HostingRequestStartingLog(HttpContext httpContext)
         {
@@ -58,18 +46,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             if (_cachedToString == null)
             {
-                _cachedToString = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Request starting {0} {1} {2}://{3}{4}{5}{6} {7} {8}",
-                    _request.Protocol,
-                    _request.Method,
-                    _request.Scheme,
-                    _request.Host.Value,
-                    _request.PathBase.Value,
-                    _request.Path.Value,
-                    _request.QueryString.Value,
-                    _request.ContentType,
-                    _request.ContentLength);
+                var request = _request;
+                _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
             }
 
             return _cachedToString;
@@ -87,5 +65,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             return GetEnumerator();
         }
+
+        internal string ToStringWithoutPreamble()
+            => ToString().Substring(LogPreamble.Length);
+
+        internal static string EscapedValueOrEmptyMarker(string potentialValue)
+            // Encode space as +
+            => potentialValue?.Length > 0 ? potentialValue.Replace(' ', '+') : EmptyEntry;
+
+        internal static string ValueOrEmptyMarker<T>(T? potentialValue) where T : struct, IFormattable
+            => potentialValue?.ToString(null, CultureInfo.InvariantCulture) ?? EmptyEntry;
     }
 }

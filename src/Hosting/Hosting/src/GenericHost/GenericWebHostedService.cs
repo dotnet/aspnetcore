@@ -22,7 +22,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class GenericWebHostService : IHostedService
     {
@@ -167,11 +167,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 .InformationalVersion;
             model.ClrVersion = clrVersion;
             model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+            model.ShowRuntimeDetails = showDetailedErrors;
 
             if (showDetailedErrors)
             {
                 var exceptionDetailProvider = new ExceptionDetailsProvider(
                     HostingEnvironment.ContentRootFileProvider,
+                    Logger,
                     sourceCodeLineCount: 6);
 
                 model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);

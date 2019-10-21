@@ -26,6 +26,8 @@ namespace FormatterWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

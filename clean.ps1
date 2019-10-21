@@ -38,4 +38,5 @@ if ($Help) {
     exit 0
 }
 
-git clean -dix -e .dotnet/ -e .tools/ -e src/SignalR/clients/ts/FunctionalTests/node_modules/ @GitArguments
+git clean -dix -e .dotnet/ -e .tools/ @GitArguments
+git checkout -- $(git ls-files -d)

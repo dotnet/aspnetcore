@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             _bytePool = bytePool;
-            if (memoryThreshold < _maxRentedBufferSize)
+            if (memoryThreshold <= _maxRentedBufferSize)
             {
                 _rentedBuffer = bytePool.Rent(memoryThreshold);
                 _buffer = new MemoryStream(_rentedBuffer);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             _bytePool = bytePool;
-            if (memoryThreshold < _maxRentedBufferSize)
+            if (memoryThreshold <= _maxRentedBufferSize)
             {
                 _rentedBuffer = bytePool.Rent(memoryThreshold);
                 _buffer = new MemoryStream(_rentedBuffer);

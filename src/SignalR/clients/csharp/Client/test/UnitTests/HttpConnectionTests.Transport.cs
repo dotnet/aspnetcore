@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType, accessTokenProvider: AccessTokenProvider),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 1"));
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello world 2"));
                     });
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
 
                             var feature = connection.Features.Get<IConnectionInherentKeepAliveFeature>();
                             Assert.NotNull(feature);
@@ -113,16 +114,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var userAgentHeaderCollection = request.Headers.UserAgent;
-                    var userAgentHeader = Assert.Single(userAgentHeaderCollection);
-                    Assert.Equal("Microsoft.AspNetCore.Http.Connections.Client", userAgentHeader.Product.Name);
+                    var userAgentHeader = request.Headers.UserAgent.ToString();
+
+                    Assert.NotNull(userAgentHeader);
+                    Assert.StartsWith("Microsoft SignalR/", userAgentHeader);
 
                     // user agent version should come from version embedded in assembly metadata
                     var assemblyVersion = typeof(Constants)
                             .Assembly
                             .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
 
-                    Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
+                    Assert.Contains(assemblyVersion.InformationalVersion, userAgentHeader);
 
                     requestsExecuted = true;
 
@@ -138,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -178,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler, transportType: transportType),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
                     });
                 // Fail safe in case the code is modified and some requests don't execute as a result
@@ -210,7 +212,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         Assert.Contains("This is a test", Encoding.UTF8.GetString(await connection.Transport.Input.ReadAllAsync()));
                     });
             }
@@ -237,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(testHttpHandler),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
 
                         await connection.Transport.Output.WriteAsync(data).OrTimeout();
 
@@ -267,7 +269,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
                         var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
@@ -284,12 +286,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(transport: transport),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         await connection.DisposeAsync().OrTimeout();
 
                         // This will throw OperationCanceledException if it's forcibly terminated
                         // which we don't want
                         await transport.Receiving.OrTimeout();
+                    });
+            }
+
+            [Fact]
+            public Task StartAsyncTransferFormatOverridesOptions()
+            {
+                var transport = new TestTransport();
+
+                return WithConnectionAsync(
+                    CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+
+                        Assert.Equal(TransferFormat.Text, transport.Format);
                     });
             }
         }

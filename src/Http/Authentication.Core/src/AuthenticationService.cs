@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultChallengeScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultForbidScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Authentication
                 scheme = defaultScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignOutScheme found. The default schemes can be set using either AddAuthentication(string defaultScheme) or AddAuthentication(Action<AuthenticationOptions> configureOptions).");
                 }
             }
 
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Authentication
             var schemes = await GetAllSignInSchemeNames();
 
             // CookieAuth is the only implementation of sign-in.
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the only implementation of sign-in.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-in schemes are: {schemes}.");
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             var schemes = await GetAllSignOutSchemeNames();
 
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-out schemes are: {schemes}.");

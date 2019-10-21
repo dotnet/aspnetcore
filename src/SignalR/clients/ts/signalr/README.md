@@ -1,18 +1,20 @@
-JavaScript and TypeScript clients for SignalR for ASP.NET Core
+JavaScript and TypeScript clients for SignalR for ASP.NET Core and Azure SignalR Service
 
 ## Installation
 
 ```bash
-npm install @aspnet/signalr
+npm install @microsoft/signalr
 ```
 or
 ```bash
-yarn add @aspnet/signalr
+yarn add @microsoft/signalr
 ```
 
 ## Usage
 
-See the [SignalR Documentation](https://docs.microsoft.com/en-us/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr/?view=signalr-js-latest) is also available on docs.microsoft.com.
+See the [SignalR Documentation](https://docs.microsoft.com/aspnet/core/signalr) at docs.microsoft.com for documentation on the latest release. [API Reference Documentation](https://docs.microsoft.com/javascript/api/%40aspnet/signalr/?view=signalr-js-latest) is also available on docs.microsoft.com.
+
+For documentation on using this client with Azure SignalR Service and Azure Functions, see the [SignalR Service serverless developer guide](https://docs.microsoft.com/azure/azure-signalr/signalr-concept-serverless-development-config).
 
 ### Browser
 
@@ -24,7 +26,7 @@ To use the client in a webworker, copy `*.js` files from the `dist/webworker` fo
 
 ### Node.js
 
-To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@aspnet/signalr')` to load the module. The object returned by `require('@aspnet/signalr')` has the same members as the global `signalR` object (when used in a browser).
+To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@microsoft/signalr')` to load the module. The object returned by `require('@microsoft/signalr')` has the same members as the global `signalR` object (when used in a browser).
 
 ### Example (Browser)
 
@@ -63,7 +65,7 @@ connection.start()
 ### Example (NodeJS)
 
 ```JavaScript
-const signalR = require("@aspnet/signalr");
+const signalR = require("@microsoft/signalr");
 
 let connection = new signalR.HubConnectionBuilder()
     .withUrl("/chat")

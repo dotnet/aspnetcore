@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             new DiagnosticDescriptor(
                 "MVC1004",
                 "Rename model bound parameter.",
-                "Property on type '{0}' has the same name as parameter '{1}'. This may result in incorrect model binding. Consider renaming the parameter or using a model binding attribute to override the name.",
+                "Property on type '{0}' has the same name as parameter '{1}'. This may result in incorrect model binding. " +
+                "Consider renaming the parameter or the property to avoid conflicts. If the type '{0}' has a custom type converter or custom model binder, you can suppress this message.",
                 "Naming",
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             new DiagnosticDescriptor(
                 "MVC1006",
                 "Methods containing TagHelpers must be async and return Task.",
-                "The method contains a TagHelper and therefore must be async and return a Task.",
+                "The method contains a TagHelper and therefore must be async and return a Task. For instance, usage of ~/ typically results in a TagHelper and requires an async Task returning parent method.",
                 "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);

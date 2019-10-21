@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Common serialiation primitives for SignalR Clients Servers</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -28,12 +29,17 @@
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.0'">
+  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '5.0'">
     <!-- This dependency was replaced by System.Text.Json between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
     <SuppressBaselineReference Include="Newtonsoft.Json" />
 
     <!-- System.Text.Json (for .NET Standard 2.0) and ShardFx bring System.Buffers in (transitively). No need for both here. -->
     <SuppressBaselineReference Include="System.Buffers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
   </ItemGroup>
 
 </Project>

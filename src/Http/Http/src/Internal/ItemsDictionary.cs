@@ -4,9 +4,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public class ItemsDictionary : IDictionary<object, object>
+    internal class ItemsDictionary : IDictionary<object, object>
     {
         private IDictionary<object, object> _items;
 

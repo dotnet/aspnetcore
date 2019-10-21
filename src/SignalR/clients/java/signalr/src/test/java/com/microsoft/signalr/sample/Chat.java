@@ -37,6 +37,6 @@ public class Chat {
             hubConnection.send("Send", message);
         }
 
-        hubConnection.stop();
+        hubConnection.stop().blockingAwait();
     }
 }

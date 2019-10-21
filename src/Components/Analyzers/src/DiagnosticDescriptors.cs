@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         // no change of clashing between that and the BL prefix used here.
         //
         // Tracking https://github.com/aspnet/AspNetCore/issues/10382 to rationalize this
-        public static readonly DiagnosticDescriptor ComponentParametersShouldNotBePublic = new DiagnosticDescriptor(
+        public static readonly DiagnosticDescriptor ComponentParameterSettersShouldBePublic = new DiagnosticDescriptor(
             "BL0001",
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Title), Resources.ResourceManager, typeof(Resources)),
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Format), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Format), Resources.ResourceManager, typeof(Resources)),
             "Encapsulation",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Error,
             isEnabledByDefault: true,
-            description: new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Description), Resources.ResourceManager, typeof(Resources)));
+            description: new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Description), Resources.ResourceManager, typeof(Resources)));
 
         public static readonly DiagnosticDescriptor ComponentParameterCaptureUnmatchedValuesMustBeUnique = new DiagnosticDescriptor(
             "BL0002",
@@ -37,5 +37,32 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(Resources.ComponentParameterCaptureUnmatchedValuesHasWrongType_Description), Resources.ResourceManager, typeof(Resources)));
+
+        public static readonly DiagnosticDescriptor ComponentParametersShouldBePublic = new DiagnosticDescriptor(
+            "BL0004",
+            new LocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Format), Resources.ResourceManager, typeof(Resources)),
+            "Encapsulation",
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            description: new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBePublic_Description), Resources.ResourceManager, typeof(Resources)));
+
+        public static readonly DiagnosticDescriptor ComponentParametersShouldNotBeSetOutsideOfTheirDeclaredComponent = new DiagnosticDescriptor(
+            "BL0005",
+            new LocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Format), Resources.ResourceManager, typeof(Resources)),
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: new LocalizableResourceString(nameof(Resources.ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Description), Resources.ResourceManager, typeof(Resources)));
+
+        public static readonly DiagnosticDescriptor DoNotUseRenderTreeTypes = new DiagnosticDescriptor(
+            "BL0006",
+            new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Description), Resources.ResourceManager, typeof(Resources)),
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Description), Resources.ResourceManager, typeof(Resources)));
     }
 }

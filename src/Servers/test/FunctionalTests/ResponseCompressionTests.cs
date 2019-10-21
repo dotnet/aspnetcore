@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -33,7 +33,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix NoCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx,  ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -45,7 +45,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -57,7 +57,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix AppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -69,7 +69,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostAndAppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]

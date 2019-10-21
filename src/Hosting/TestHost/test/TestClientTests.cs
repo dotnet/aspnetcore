@@ -13,9 +13,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -172,6 +173,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
                 {
+                    Assert.False(ctx.Request.Headers.ContainsKey(HeaderNames.SecWebSocketProtocol));
                     var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
                     var receiveArray = new byte[1024];
                     while (true)
@@ -228,6 +230,58 @@ namespace Microsoft.AspNetCore.TestHost
             result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketState.Closed, clientSocket.State);
+
+            clientSocket.Dispose();
+        }
+
+        [Fact]
+        public async Task WebSocketSubProtocolsWorks()
+        {
+            // Arrange
+            RequestDelegate appDelegate = async ctx =>
+            {
+                if (ctx.WebSockets.IsWebSocketRequest)
+                {
+                    if (ctx.WebSockets.WebSocketRequestedProtocols.Contains("alpha") &&
+                        ctx.WebSockets.WebSocketRequestedProtocols.Contains("bravo"))
+                    {
+                        // according to rfc6455, the "server needs to include the same field and one of the selected subprotocol values"
+                        // however, this isn't enforced by either our server or client so it's possible to accept an arbitrary protocol.
+                        // Done here to demonstrate not "correct" behaviour, simply to show it's possible. Other clients may not allow this.
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync("charlie");
+                        await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
+                    }
+                    else
+                    {
+                        var subprotocols = ctx.WebSockets.WebSocketRequestedProtocols.Any()
+                            ? string.Join(", ", ctx.WebSockets.WebSocketRequestedProtocols)
+                            : "<none>";
+                        var closeReason = "Unexpected subprotocols: " + subprotocols;
+                        var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                        await websocket.CloseAsync(WebSocketCloseStatus.InternalServerError, closeReason, CancellationToken.None);
+                    }
+                }
+            };
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var client = server.CreateWebSocketClient();
+            client.SubProtocols.Add("alpha");
+            client.SubProtocols.Add("bravo");
+            var clientSocket = await client.ConnectAsync(new Uri("wss://localhost"), CancellationToken.None);
+            var buffer = new byte[1024];
+            var result = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(WebSocketMessageType.Close, result.MessageType);
+            Assert.Equal("Normal Closure", result.CloseStatusDescription);
+            Assert.Equal(WebSocketState.CloseReceived, clientSocket.State);
+            Assert.Equal("charlie", clientSocket.SubProtocol);
 
             clientSocket.Dispose();
         }
@@ -366,7 +420,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientDisposalAbortsRequest()
         {
             // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             RequestDelegate appDelegate = async ctx =>
             {
                 // Write Headers
@@ -399,30 +453,26 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task ClientCancellationAbortsRequest()
         {
-            // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            RequestDelegate appDelegate = async ctx =>
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
             {
-                var sem = new SemaphoreSlim(0);
                 try
                 {
-                    await sem.WaitAsync(ctx.RequestAborted);
+                    await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
+                    tcs.SetResult(0);
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
+                    return;
                 }
-            };
+                throw new InvalidOperationException("The request was not aborted");
+            }));
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
 
-            // Act
-            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(500);
-            var response = await client.GetAsync("http://localhost:12345", cts.Token);
-
-            // Assert
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
         }
 

@@ -157,15 +157,15 @@ fetch_tizen_pkgs()
 Inform "Initialize arm base"
 fetch_tizen_pkgs_init standard base
 Inform "fetch common packages"
-fetch_tizen_pkgs armv7l gcc glibc glibc-devel libicu libicu-devel
+fetch_tizen_pkgs armv7l gcc glibc glibc-devel libicu libicu-devel libatomic
 fetch_tizen_pkgs noarch linux-glibc-devel
 Inform "fetch coreclr packages"
-fetch_tizen_pkgs armv7l lldb lldb-devel libgcc libstdc++ libstdc++-devel libunwind libunwind-devel tizen-release lttng-ust-devel lttng-ust userspace-rcu-devel userspace-rcu
+fetch_tizen_pkgs armv7l lldb lldb-devel libgcc libstdc++ libstdc++-devel libunwind libunwind-devel lttng-ust-devel lttng-ust userspace-rcu-devel userspace-rcu
 Inform "fetch corefx packages"
 fetch_tizen_pkgs armv7l libcom_err libcom_err-devel zlib zlib-devel libopenssl libopenssl-devel krb5 krb5-devel libcurl libcurl-devel
 
 Inform "Initialize standard unified"
 fetch_tizen_pkgs_init standard unified
 Inform "fetch corefx packages"
-fetch_tizen_pkgs armv7l gssdp gssdp-devel
+fetch_tizen_pkgs armv7l gssdp gssdp-devel tizen-release
 

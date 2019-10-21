@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -8,12 +8,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -146,6 +146,11 @@ namespace Microsoft.AspNetCore.Localization
             context.Features.Set<IRequestCultureFeature>(new RequestCultureFeature(requestCulture, winningProvider));
 
             SetCurrentThreadCulture(requestCulture);
+
+            if (_options.ApplyCurrentCultureToResponseHeaders)
+            {
+                context.Response.Headers.Add(HeaderNames.ContentLanguage, requestCulture.UICulture.Name);
+            }
 
             await _next(context);
         }

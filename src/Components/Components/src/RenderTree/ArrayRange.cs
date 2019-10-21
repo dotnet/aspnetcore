@@ -1,12 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     /// <summary>
-    /// Represents a range of elements in an array that are in use.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in future release.
     /// </summary>
-    /// <typeparam name="T">The array item type.</typeparam>
+    /// <typeparam name="T"></typeparam>
+    //
+    // Represents a range of elements in an array that are in use.
     public readonly struct ArrayRange<T>
     {
         /// <summary>

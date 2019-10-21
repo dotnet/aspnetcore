@@ -3,10 +3,11 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Hosting;
@@ -21,8 +22,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
         private const string MSAspNetCoreToken = "MS-ASPNETCORE-TOKEN";
         private const string MSAspNetCoreEvent = "MS-ASPNETCORE-EVENT";
+        private const string MSAspNetCoreWinAuthToken = "MS-ASPNETCORE-WINAUTHTOKEN";
         private const string ANCMShutdownEventHeaderValue = "shutdown";
         private static readonly PathString ANCMRequestPath = new PathString("/iisintegration");
+        private static readonly Func<object, Task> ClearUserDelegate = ClearUser;
 
         private readonly RequestDelegate _next;
         private readonly IISOptions _options;
@@ -131,10 +134,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (_options.ForwardWindowsAuthentication)
             {
                 // We must always process and clean up the windows identity, even if we don't assign the User.
-                var result = await httpContext.AuthenticateAsync(IISDefaults.AuthenticationScheme);
-                if (result.Succeeded && _options.AutomaticAuthentication)
+                var user = GetUser(httpContext);
+                if (user != null)
                 {
-                    httpContext.User = result.Principal;
+                    // Flow it through to the authentication handler.
+                    httpContext.Features.Set(user);
+
+                    if (_options.AutomaticAuthentication)
+                    {
+                        httpContext.User = user;
+                    }
                 }
             }
 
@@ -146,6 +155,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
 
             await _next(httpContext);
+        }
+
+        private WindowsPrincipal GetUser(HttpContext context)
+        {
+            var tokenHeader = context.Request.Headers[MSAspNetCoreWinAuthToken];
+
+            if (!StringValues.IsNullOrEmpty(tokenHeader)
+                && int.TryParse(tokenHeader, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var hexHandle))
+            {
+                // Always create the identity if the handle exists, we need to dispose it so it does not leak.
+                var handle = new IntPtr(hexHandle);
+                var winIdentity = new WindowsIdentity(handle, IISDefaults.AuthenticationScheme);
+
+                // WindowsIdentity just duplicated the handle so we need to close the original.
+                NativeMethods.CloseHandle(handle);
+
+                context.Response.OnCompleted(ClearUserDelegate, context);
+                context.Response.RegisterForDispose(winIdentity);
+                return new WindowsPrincipal(winIdentity);
+            }
+
+            return null;
+        }
+
+        private static Task ClearUser(object arg)
+        {
+            var context = (HttpContext)arg;
+            // We don't want loggers accessing a disposed identity.
+            // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
+            if (context.User is WindowsPrincipal)
+            {
+                context.User = null;
+            }
+            return Task.CompletedTask;
         }
     }
 }

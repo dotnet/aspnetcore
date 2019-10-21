@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         public RazorPageActivatorTest()
         {
-            DiagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+            DiagnosticListener = new DiagnosticListener("Microsoft.AspNetCore");
             HtmlEncoder = new HtmlTestEncoder();
             JsonHelper = Mock.Of<IJsonHelper>();
             MetadataProvider = new EmptyModelMetadataProvider();
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             UrlHelperFactory = new UrlHelperFactory();
         }
 
-        private DiagnosticSource DiagnosticSource { get; }
+        private DiagnosticListener DiagnosticListener { get; }
 
         private HtmlEncoder HtmlEncoder { get; }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
 
             // When we don't have a model property, the activator will just leave ViewData alone.
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticSource, instance.DiagnosticSource);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private RazorPageActivator CreateActivator()
         {
-            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticSource, HtmlEncoder, ModelExpressionProvider);
+            return new RazorPageActivator(MetadataProvider, UrlHelperFactory, JsonHelper, DiagnosticListener, HtmlEncoder, ModelExpressionProvider);
         }
 
         private ViewContext CreateViewContext(ViewDataDictionary viewData = null)

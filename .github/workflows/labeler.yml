@@ -1,0 +1,12 @@
+name: "Pull Request Labeler"
+on:
+- pull_request
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@v2
+      if: github.repository == 'aspnet/AspNetCore'
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"

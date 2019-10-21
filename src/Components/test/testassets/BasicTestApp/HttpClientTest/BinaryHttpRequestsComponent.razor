@@ -6,10 +6,10 @@
 
 <p>
     <div>URI:</div>
-    <input id="request-uri" @bind="@uri" size="60"/>
+    <input id="request-uri" @bind="uri" size="60"/>
 </p>
 
-<button id="send-request" @onclick="@DoRequest">Request</button>
+<button id="send-request" @onclick="DoRequest">Request</button>
 
 @if (responseStatusCode.HasValue)
 {

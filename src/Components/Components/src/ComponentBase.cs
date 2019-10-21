@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
     // about IComponent). This gives us flexibility to change the lifecycle concepts easily,
     // or for developers to design their own lifecycles as different base classes.
 
-    // TODO: When the component lifecycle design stabilises, add proper unit tests for ComponentBase.
+    // TODO: When the component lifecycle design stabilizes, add proper unit tests for ComponentBase.
 
     /// <summary>
     /// Optional base class for components. Alternatively, components may
@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Components
         private bool _initialized;
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
+        private bool _hasCalledOnAfterRender;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentBase"/>.
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Components
         /// Method invoked when the component is ready to start, having received its
         /// initial parameters from its parent in the render tree.
         /// </summary>
-        protected virtual void OnInit()
+        protected virtual void OnInitialized()
         {
         }
 
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Components
         /// want the component to refresh when that operation is completed.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
-        protected virtual Task OnInitAsync()
+        protected virtual Task OnInitializedAsync()
             => Task.CompletedTask;
 
         /// <summary>
@@ -129,7 +130,17 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Method invoked after each time the component has been rendered.
         /// </summary>
-        protected virtual void OnAfterRender()
+        /// <param name="firstRender">
+        /// Set to <c>true</c> if this is the first time <see cref="OnAfterRender(bool)"/> has been invoked
+        /// on this component instance; otherwise <c>false</c>.
+        /// </param>
+        /// <remarks>
+        /// The <see cref="OnAfterRender(bool)"/> and <see cref="OnAfterRenderAsync(bool)"/> lifecycle methods
+        /// are useful for performing interop, or interacting with values received from <c>@ref</c>.
+        /// Use the <paramref name="firstRender"/> parameter to ensure that initialization work is only performed
+        /// once.
+        /// </remarks>
+        protected virtual void OnAfterRender(bool firstRender)
         {
         }
 
@@ -138,8 +149,18 @@ namespace Microsoft.AspNetCore.Components
         /// not automatically re-render after the completion of any returned <see cref="Task"/>, because
         /// that would cause an infinite render loop.
         /// </summary>
+        /// <param name="firstRender">
+        /// Set to <c>true</c> if this is the first time <see cref="OnAfterRender(bool)"/> has been invoked
+        /// on this component instance; otherwise <c>false</c>.
+        /// </param>
         /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
-        protected virtual Task OnAfterRenderAsync()
+        /// <remarks>
+        /// The <see cref="OnAfterRender(bool)"/> and <see cref="OnAfterRenderAsync(bool)"/> lifecycle methods
+        /// are useful for performing interop, or interacting with values received from <c>@ref</c>.
+        /// Use the <paramref name="firstRender"/> parameter to ensure that initialization work is only performed
+        /// once.
+        /// </remarks>
+        protected virtual Task OnAfterRenderAsync(bool firstRender)
             => Task.CompletedTask;
 
         /// <summary>
@@ -147,8 +168,8 @@ namespace Microsoft.AspNetCore.Components
         /// synchronization context.
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
-        protected Task Invoke(Action workItem)
-            => _renderHandle.Invoke(workItem);
+        protected Task InvokeAsync(Action workItem)
+            => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
         /// <summary>
         /// Executes the supplied work item on the associated renderer's
@@ -156,9 +177,9 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
         protected Task InvokeAsync(Func<Task> workItem)
-            => _renderHandle.InvokeAsync(workItem);
+            => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
-        void IComponent.Configure(RenderHandle renderHandle)
+        void IComponent.Attach(RenderHandle renderHandle)
         {
             // This implicitly means a ComponentBase can only be associated with a single
             // renderer. That's the only use case we have right now. If there was ever a need,
@@ -171,11 +192,26 @@ namespace Microsoft.AspNetCore.Components
             _renderHandle = renderHandle;
         }
 
+
         /// <summary>
-        /// Method invoked to apply initial or updated parameters to the component.
+        /// Sets parameters supplied by the component's parent in the render tree.
         /// </summary>
-        /// <param name="parameters">The parameters to apply.</param>
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>A <see cref="Task"/> that completes when the component has finished updating and rendering itself.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <see cref="SetParametersAsync(ParameterView)"/> method should be passed the entire set of parameter values each
+        /// time <see cref="SetParametersAsync(ParameterView)"/> is called. It not required that the caller supply a parameter
+        /// value for all parameters that are logically understood by the component.
+        /// </para>
+        /// <para>
+        /// The default implementation of <see cref="SetParametersAsync(ParameterView)"/> will set the value of each property
+        /// decorated with <see cref="ParameterAttribute" /> or <see cref="CascadingParameterAttribute" /> that has
+        /// a corresponding value in the <see cref="ParameterView" />. Parameters that do not have a corresponding value
+        /// will be unchanged.
+        /// </para>
+        /// </remarks>
+        public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             if (!_initialized)
@@ -192,8 +228,8 @@ namespace Microsoft.AspNetCore.Components
 
         private async Task RunInitAndSetParametersAsync()
         {
-            OnInit();
-            var task = OnInitAsync();
+           OnInitialized();
+            var task = OnInitializedAsync();
 
             if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
             {
@@ -210,7 +246,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 catch // avoiding exception filters for AOT runtime support
                 {
-                    // Ignore exceptions from task cancelletions.
+                    // Ignore exceptions from task cancellations.
                     // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of
                     // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled).
                     // It's much easier to check the state of the Task (i.e. Task.IsCanceled) rather than catch two distinct exceptions.
@@ -253,7 +289,7 @@ namespace Microsoft.AspNetCore.Components
             }
             catch // avoiding exception filters for AOT runtime support
             {
-                // Ignore exceptions from task cancelletions, but don't bother issuing a state change.
+                // Ignore exceptions from task cancellations, but don't bother issuing a state change.
                 if (task.IsCanceled)
                 {
                     return;
@@ -283,9 +319,12 @@ namespace Microsoft.AspNetCore.Components
 
         Task IHandleAfterRender.OnAfterRenderAsync()
         {
-            OnAfterRender();
+            var firstRender = !_hasCalledOnAfterRender;
+            _hasCalledOnAfterRender |= true;
 
-            return OnAfterRenderAsync();
+            OnAfterRender(firstRender);
+
+            return OnAfterRenderAsync(firstRender);
 
             // Note that we don't call StateHasChanged to trigger a render after
             // handling this, because that would be an infinite loop. The only

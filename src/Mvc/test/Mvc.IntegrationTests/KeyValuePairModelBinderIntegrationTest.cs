@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10", entry.RawValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_NoData()
         {
             // Arrange
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10", entry.RawValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_NoData()
         {
             // Arrange

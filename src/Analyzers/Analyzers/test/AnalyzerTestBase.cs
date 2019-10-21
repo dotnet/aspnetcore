@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers
@@ -17,6 +16,11 @@ namespace Microsoft.AspNetCore.Analyzers
 
         public TestSource Read(string source)
         {
+            if (!source.EndsWith(".cs"))
+            {
+                source = source + ".cs";
+            }
+
             var filePath = Path.Combine(ProjectDirectory, "TestFiles", GetType().Name, source);
             if (!File.Exists(filePath))
             {

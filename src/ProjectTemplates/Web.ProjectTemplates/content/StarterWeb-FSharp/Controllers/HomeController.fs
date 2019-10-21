@@ -7,9 +7,8 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Logging
 
-type HomeController (_logger : ILogger<HomeController>) =
+type HomeController (logger : ILogger<HomeController>) =
     inherit Controller()
-    let mutable logger = _logger
 
     member this.Index () =
         this.View()

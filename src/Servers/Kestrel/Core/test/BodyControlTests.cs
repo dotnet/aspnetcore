@@ -101,8 +101,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Throws<Exception>(() => requestPipe.TryRead(out var res)));
             Assert.Same(ex,
                 Assert.Throws<Exception>(() => requestPipe.Complete()));
-            Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.OnWriterCompleted(null, null)));
         }
 
         [Fact]
@@ -112,14 +110,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
-            bodyControl.Stop();
+            await bodyControl.StopAsync();
 
             Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition()));
             Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()));
             Assert.Throws<ObjectDisposedException>(() => requestPipe.CancelPendingRead());
             Assert.Throws<ObjectDisposedException>(() => requestPipe.TryRead(out var res));
             Assert.Throws<ObjectDisposedException>(() => requestPipe.Complete());
-            Assert.Throws<ObjectDisposedException>(() => requestPipe.OnWriterCompleted(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await requestPipe.ReadAsync());
         }
 
@@ -130,14 +127,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
-            bodyControl.Stop();
+            await bodyControl.StopAsync();
 
             Assert.Throws<ObjectDisposedException>(() => responsePipe.Advance(1));
             Assert.Throws<ObjectDisposedException>(() => responsePipe.CancelPendingFlush());
             Assert.Throws<ObjectDisposedException>(() => responsePipe.GetMemory());
             Assert.Throws<ObjectDisposedException>(() => responsePipe.GetSpan());
             Assert.Throws<ObjectDisposedException>(() => responsePipe.Complete());
-            Assert.Throws<ObjectDisposedException>(() => responsePipe.OnReaderCompleted(null, null));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await responsePipe.WriteAsync(new Memory<byte>()));
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await responsePipe.FlushAsync());
         }
@@ -166,11 +162,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             public override void Complete(Exception exception)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void OnWriterCompleted(Action<Exception, object> callback, object state)
             {
                 throw new NotImplementedException();
             }

@@ -3,7 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -196,6 +196,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(settings.DateTimeZoneHandling, actual.DateTimeZoneHandling);
         }
 
+        [Fact]
+        public override Task JsonFormatter_EscapedKeys()
+        {
+            return base.JsonFormatter_EscapedKeys();
+        }
+
+        [Fact]
+        public override Task JsonFormatter_EscapedKeys_Bracket()
+        {
+            return base.JsonFormatter_EscapedKeys_Bracket();
+        }
+
         [Theory]
         [InlineData(" ", true, true)]
         [InlineData(" ", false, false)]
@@ -233,6 +245,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var modelError = formatterContext.ModelState[modelStateKey].Errors.Single();
             Assert.Equal(expectedMessage, modelError.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ReadAsync_AllowMultipleErrors()
+        {
+            // Arrange
+            var content = "[5, 'seven', 3, 'notnum']";
+
+            var formatter = CreateFormatter(allowInputFormatterExceptionMessages: true);
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(List<int>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal("[1]", kvp.Key);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.StartsWith("Could not convert string to integer:", error.ErrorMessage);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[3]", kvp.Key);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.StartsWith("Could not convert string to integer:", error.ErrorMessage);
+                });
         }
 
         [Fact]
@@ -324,6 +369,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     AllowInputFormatterExceptionMessages = allowInputFormatterExceptionMessages,
                 });
         }
+
+        internal override string JsonFormatter_EscapedKeys_Expected => "[0]['It\"s a key']";
+
+        internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "[0][\'It[s a key\']";
+
+        internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "Age";
+
+        internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "[2].Age";
+
+        internal override string ReadAsync_ComplexPoco_Expected => "Person.Numbers[2]";
+
+        internal override string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected => "names[1].Small";
+
+        internal override string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected => "[2]";
 
         private class Location
         {

@@ -1,5 +1,4 @@
-using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Company.WebApplication1.Data.Migrations
@@ -86,7 +85,7 @@ namespace Company.WebApplication1.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -107,7 +106,7 @@ namespace Company.WebApplication1.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<string>(nullable: false),
                     ClaimType = table.Column<string>(nullable: true),
                     ClaimValue = table.Column<string>(nullable: true)
@@ -231,6 +230,16 @@ namespace Company.WebApplication1.Data.Migrations
                 table: "DeviceCodes",
                 column: "DeviceCode",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeviceCodes_Expiration",
+                table: "DeviceCodes",
+                column: "Expiration");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PersistedGrants_Expiration",
+                table: "PersistedGrants",
+                column: "Expiration");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_SubjectId_ClientId_Type",

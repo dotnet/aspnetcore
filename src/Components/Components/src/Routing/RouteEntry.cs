@@ -1,20 +1,25 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
     internal class RouteEntry
     {
-        public RouteEntry(RouteTemplate template, Type handler)
+        public RouteEntry(RouteTemplate template, Type handler, string[] unusedRouteParameterNames)
         {
             Template = template;
+            UnusedRouteParameterNames = unusedRouteParameterNames;
             Handler = handler;
         }
 
         public RouteTemplate Template { get; }
+
+        public string[] UnusedRouteParameterNames { get; }
 
         public Type Handler { get; }
 
@@ -26,8 +31,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // Parameters will be lazily initialized.
-            IDictionary<string, object> parameters = null;
-            for (int i = 0; i < Template.Segments.Length; i++)
+            Dictionary<string, object> parameters = null;
+            for (var i = 0; i < Template.Segments.Length; i++)
             {
                 var segment = Template.Segments[i];
                 var pathSegment = context.Segments[i];
@@ -39,23 +44,26 @@ namespace Microsoft.AspNetCore.Components.Routing
                 {
                     if (segment.IsParameter)
                     {
-                        GetParameters()[segment.Value] = matchedParameterValue;
+                        parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
+                        parameters[segment.Value] = matchedParameterValue;
                     }
+                }
+            }
+
+            // In addition to extracting parameter values from the URL, each route entry
+            // also knows which other parameters should be supplied with null values. These
+            // are parameters supplied by other route entries matching the same handler.
+            if (UnusedRouteParameterNames.Length > 0)
+            {
+                parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
+                for (var i = 0; i < UnusedRouteParameterNames.Length; i++)
+                {
+                    parameters[UnusedRouteParameterNames[i]] = null;
                 }
             }
 
             context.Parameters = parameters;
             context.Handler = Handler;
-
-            IDictionary<string, object> GetParameters()
-            {
-                if (parameters == null)
-                {
-                    parameters = new Dictionary<string, object>();
-                }
-
-                return parameters;
-            }
         }
     }
 }

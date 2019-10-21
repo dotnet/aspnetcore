@@ -40,12 +40,18 @@
     <Exec Condition="'$(OS)' != 'Windows_NT'"
           Command="echo '$(ProjectListContentLines.Replace('\t','\\t'))' > $(_RefProjectFileOutputPath)" />
 
+    <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
   <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
     <PropertyGroup>
+      <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
+      <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
+      <_RefProjectFileTFM>$(TargetFramework)</_RefProjectFileTFM>
+      <_RefProjectFileTFM Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">%24(DefaultNetCoreTargetFramework)</_RefProjectFileTFM>
+
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
-      <_RefSourceFileName>$(AssemblyName).$(TargetFramework).cs</_RefSourceFileName>
+      <_RefSourceFileName>$(AssemblyName).$(_RefSourceFileTFM).cs</_RefSourceFileName>
       <_RefSourceFileOutputPath>$(_RefSourceOutputPath)$(_RefSourceFileName)</_RefSourceFileOutputPath>
     </PropertyGroup>
 
@@ -55,16 +61,23 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <_GenApiFile>$([MSBuild]::NormalizePath('$(ArtifactsDir)', 'log', 'GenAPI.rsp'))</_GenApiFile>
       <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
-      <_GenAPICmd>$(_GenAPICommand)</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --lib-path "@(_ReferencePathDirectories)"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --out "$(_RefSourceFileOutputPath)"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepoRoot)/eng/LicenseHeader.txt"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --exclude-api-list "$(RepoRoot)/eng/GenAPI.exclusions.txt"</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICommand) @"$(_GenApiFile)"</_GenAPICmd>
+      <_GenApiArguments><![CDATA[
+"$(TargetPath)"
+--lib-path "@(_ReferencePathDirectories, '%3B')"
+--out "$(_RefSourceFileOutputPath)"
+--header-file "$(RepoRoot)/eng/LicenseHeader.txt"
+--exclude-api-list "$(RepoRoot)/eng/GenAPI.exclusions.txt"
+]]>
+      </_GenApiArguments>
     </PropertyGroup>
 
+    <WriteLinesToFile File="$(_GenApiFile)" Lines="$(_GenApiArguments)" Overwrite="true" />
+
     <MakeDir Directories="$(_RefSourceOutputPath)" />
+    <Message Importance="High" Text="Generating $(_RefSourceFileOutputPath)" />
     <Exec Command="$(_GenAPICmd)" />
 
     <ItemGroup>
@@ -74,13 +87,9 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ProjectListFile>$(MSBuildThisFileDirectory)..\eng\ProjectReferences.props</ProjectListFile>
-      <RefsTargetFramework>$(TargetFrameworks)</RefsTargetFramework>
-      <RefsTargetFramework Condition="'$(RefsTargetFramework)' == ''">$(TargetFramework)</RefsTargetFramework>
-
       <ReferencesContent>
       <![CDATA[
-  <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
+  <ItemGroup Condition="'%24(TargetFramework)' == '$(_RefProjectFileTFM)'">
     <Compile Include="$(_RefSourceFileName)" />
     @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
   </ItemGroup>
@@ -89,7 +98,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectListContent Include="$(ReferencesContent)" TargetFramework="$(TargetFramework)" />
+      <ProjectListContent Include="$(ReferencesContent)" TargetFramework="$(_RefProjectFileTFM)" />
     </ItemGroup>
   </Target>
 

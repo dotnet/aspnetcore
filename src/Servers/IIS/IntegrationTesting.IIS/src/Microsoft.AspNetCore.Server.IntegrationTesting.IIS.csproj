@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
     <Description>Provides support for integration testing using IIS based servers.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -44,7 +44,7 @@
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="ANCM\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 

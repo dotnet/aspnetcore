@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +19,7 @@
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Shared\TaskToApm.cs" />
   </ItemGroup>
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
@@ -44,6 +45,9 @@
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(InProcessComponents)" />
+  </ItemGroup>
 
   <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
@@ -55,6 +59,7 @@
 
   <Target Name="AddRunNativeComponents"
           BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="DebugSymbolsProjectOutputGroup"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />

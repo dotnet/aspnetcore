@@ -2,14 +2,14 @@
 
 <h2>Focus and activation</h2>
 
-<p @onfocusin="@OnFocusIn" @onfocusout="@OnFocusOut">
-    Input: <input id="input" type="text" @onfocus="@OnFocus" @onblur="@OnBlur"/>
+<p @onfocusin="OnFocusIn" @onfocusout="OnFocusOut">
+    Input: <input id="input" type="text" @onfocus="OnFocus" @onblur="OnBlur"/>
 </p>
 <p>
     Output: <span id="output">@message</span>
 </p>
 <p>
-    <button @onclick="@Clear">Clear</button>
+    <button @onclick="Clear">Clear</button>
 </p>
 
 <p>
@@ -20,25 +20,25 @@
 
     string message;
 
-    void OnFocus(UIFocusEventArgs e)
+    void OnFocus(FocusEventArgs e)
     {
         message += "onfocus,";
         StateHasChanged();
     }
 
-    void OnBlur(UIFocusEventArgs e)
+    void OnBlur(FocusEventArgs e)
     {
         message += "onblur,";
         StateHasChanged();
     }
 
-    void OnFocusIn(UIFocusEventArgs e)
+    void OnFocusIn(FocusEventArgs e)
     {
         message += "onfocusin,";
         StateHasChanged();
     }
 
-    void OnFocusOut(UIFocusEventArgs e)
+    void OnFocusOut(FocusEventArgs e)
     {
         message += "onfocusout,";
         StateHasChanged();

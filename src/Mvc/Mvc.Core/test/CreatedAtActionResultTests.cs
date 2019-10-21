@@ -91,13 +91,14 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
-            options.Value.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonOptions()));
+            options.Value.OutputFormatters.Add(SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions()));
 
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
 
             return services.BuildServiceProvider();
         }

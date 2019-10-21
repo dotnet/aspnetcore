@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Antiforgery
     /// <summary>
     /// Allows providing or validating additional custom data for antiforgery tokens.
     /// For example, the developer could use this to supply a nonce when the token is
-    /// generated, then he could validate the nonce when the token is validated.
+    /// generated, then validate it when the token is validated.
     /// </summary>
     /// <remarks>
     /// The antiforgery system already embeds the client's username within the

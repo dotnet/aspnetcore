@@ -3,10 +3,12 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
 {
@@ -63,7 +65,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             /// </summary>
             [Required]
             public string Code { get; set; }
-
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             {
                 Input = new InputModel
                 {
-                    Code = code
+                    Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code))
                 };
                 return Page();
             }

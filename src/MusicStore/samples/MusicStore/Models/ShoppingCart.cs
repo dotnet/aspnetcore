@@ -121,6 +121,7 @@ namespace MusicStore.Models
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
+            // No way to do decimal sum on server with SQLite, but client eval is fine here
             return (await _dbContext
                 .CartItems
                 .Where(c => c.CartId == _shoppingCartId)

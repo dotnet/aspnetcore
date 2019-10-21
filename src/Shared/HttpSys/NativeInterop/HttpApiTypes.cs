@@ -602,6 +602,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_INITIALIZE_SERVER = 0x00000001,
             HTTP_INITIALIZE_CBT = 0x00000004,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = 0x00000040,
+            HTTP_SEND_RESPONSE_FLAG_GOAWAY = 0x00000100,
         }
 
         [Flags]
@@ -613,6 +614,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_AUTH_ENABLE_NTLM = 0x00000004,
             HTTP_AUTH_ENABLE_NEGOTIATE = 0x00000008,
             HTTP_AUTH_ENABLE_KERBEROS = 0x00000010,
+        }
+
+        [Flags]
+        internal enum HTTP_CREATE_REQUEST_QUEUE_FLAG : uint
+        {
+            None = 0,
+            // The HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING flag allows applications to open an existing request queue by name and retrieve the request queue handle. The pName parameter must contain a valid request queue name; it cannot be NULL.
+            OpenExisting = 1,
+            // The handle to the request queue created using this flag cannot be used to perform I/O operations. This flag can be set only when the request queue handle is created.
+            Controller = 2,
         }
 
         internal static class HTTP_RESPONSE_HEADER_ID

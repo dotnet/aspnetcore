@@ -472,6 +472,22 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.NotNull(responseType.ModelMetadata);
         }
 
+        [Fact]
+        public void GetApiDescription_PopulatesResponseType_WithValueTaskOfProduct()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(ReturnsValueTaskOfProduct));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(typeof(Product), responseType.Type);
+            Assert.NotNull(responseType.ModelMetadata);
+        }
+
         [Theory]
         [InlineData(nameof(ReturnsObject))]
         [InlineData(nameof(ReturnsActionResult))]
@@ -479,6 +495,9 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData(nameof(ReturnsTaskOfObject))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
+        [InlineData(nameof(ReturnsValueTaskOfObject))]
+        [InlineData(nameof(ReturnsValueTaskOfActionResult))]
+        [InlineData(nameof(ReturnsValueTaskOfJsonResult))]
         public void GetApiDescription_DoesNotPopulatesResponseInformation_WhenUnknown(string methodName)
         {
             // Arrange
@@ -521,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     },
                     {
                         typeof(DefaultApiDescriptionProviderTest),
-                        nameof(DefaultApiDescriptionProviderTest.ReturnsActionResult),
+                        nameof(DefaultApiDescriptionProviderTest.ReturnsValueTaskOfActionResult),
                         filterDescriptors
                     },
                     {
@@ -625,6 +644,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
                         filterDescriptors
                     },
                     {
+                        typeof(DefaultApiDescriptionProviderTest),
+                        nameof(DefaultApiDescriptionProviderTest.ReturnsValueTask),
+                        filterDescriptors
+                    },
+                    {
                         typeof(DerivedProducesController),
                         nameof(DerivedProducesController.ReturnsVoid),
                         filterDescriptors
@@ -632,6 +656,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     {
                         typeof(DerivedProducesController),
                         nameof(DerivedProducesController.ReturnsTask),
+                        filterDescriptors
+                    },
+                    {
+                        typeof(DerivedProducesController),
+                        nameof(DerivedProducesController.ReturnsValueTask),
                         filterDescriptors
                     },
                 };
@@ -895,6 +924,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
+        [InlineData(nameof(ReturnsValueTask))]
         public void GetApiDescription_DefaultVoidStatus(string methodName)
         {
             // Arrange
@@ -914,6 +944,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [Theory]
         [InlineData(nameof(ReturnsVoid))]
         [InlineData(nameof(ReturnsTask))]
+        [InlineData(nameof(ReturnsValueTask))]
         public void GetApiDescription_VoidWithResponseTypeAttributeStatus(string methodName)
         {
             // Arrange
@@ -944,6 +975,10 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData(nameof(ReturnsTask))]
         [InlineData(nameof(ReturnsTaskOfActionResult))]
         [InlineData(nameof(ReturnsTaskOfJsonResult))]
+        [InlineData(nameof(ReturnsValueTask))]
+        [InlineData(nameof(ReturnsValueTaskOfObject))]
+        [InlineData(nameof(ReturnsValueTaskOfActionResult))]
+        [InlineData(nameof(ReturnsValueTaskOfJsonResult))]
         public void GetApiDescription_PopulatesResponseInformation_WhenSetByFilter(string methodName)
         {
             // Arrange
@@ -1486,6 +1521,66 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
+        public void GetApiDescription_ParameterDescription_DuplicatePropertiesWithChildren_ExpandBoth()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsMultipleProperties));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(4, description.ParameterDescriptions.Count);
+
+            var parentNames = new[] { "Parent1", "Parent2" };
+
+            foreach (var parentName in parentNames)
+            {
+                var id = Assert.Single(description.ParameterDescriptions, p => p.Name == $"{parentName}.Child.Id");
+                Assert.Same(BindingSource.Query, id.Source);
+                Assert.Equal(typeof(int), id.Type);
+
+                var name = Assert.Single(description.ParameterDescriptions, p => p.Name == $"{parentName}.Child.Name");
+                Assert.Same(BindingSource.Query, name.Source);
+                Assert.Equal(typeof(string), name.Type);
+            }
+        }
+
+        [Fact]
+        public void GetApiDescription_ParameterDescription_DuplicatePropertiesWithChildren_Nested_ExpandAll()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsMultiplePropertiesNested));
+            var parameterDescriptor = action.Parameters.Single();
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Equal(8, description.ParameterDescriptions.Count);
+
+            var groupNames = new[] { "Group1", "Group2" };
+            var parentNames = new[] { "Parent1", "Parent2" };
+
+            foreach (var groupName in groupNames)
+            {
+                foreach (var parentName in parentNames)
+                {
+                    var id = Assert.Single(description.ParameterDescriptions, p => p.Name == $"{groupName}.{parentName}.Child.Id");
+                    Assert.Same(BindingSource.Query, id.Source);
+                    Assert.Equal(typeof(int), id.Type);
+
+                    var name = Assert.Single(description.ParameterDescriptions, p => p.Name == $"{groupName}.{parentName}.Child.Name");
+                    Assert.Same(BindingSource.Query, name.Source);
+                    Assert.Equal(typeof(string), name.Type);
+                }
+            }
+        }
+
+        [Fact]
         public void GetApiDescription_ParameterDescription_BreaksCycles()
         {
             // Arrange
@@ -1966,6 +2061,31 @@ namespace Microsoft.AspNetCore.Mvc.Description
             return null;
         }
 
+        private ValueTask<Product> ReturnsValueTaskOfProduct()
+        {
+            return default;
+        }
+
+        private ValueTask<object> ReturnsValueTaskOfObject()
+        {
+            return default;
+        }
+
+        private ValueTask ReturnsValueTask()
+        {
+            return default;
+        }
+
+        private ValueTask<IActionResult> ReturnsValueTaskOfActionResult()
+        {
+            return default;
+        }
+
+        private ValueTask<JsonResult> ReturnsValueTaskOfJsonResult()
+        {
+            return default;
+        }
+
         private Product ReturnsProduct()
         {
             return null;
@@ -2081,6 +2201,14 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
+        private void AcceptsMultipleProperties([FromQuery]MultipleProperties model)
+        {
+        }
+
+        private void AcceptsMultiplePropertiesNested([FromQuery]MultiplePropertiesContainer model)
+        {
+        }
+
         private void ParameterDefaultValue(int value = 10) { }
 
         private class TestController
@@ -2126,6 +2254,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             public Task ReturnsTask()
             {
                 return null;
+            }
+
+            public ValueTask ReturnsValueTask()
+            {
+                return default;
             }
 
             public void ReturnsVoid()
@@ -2235,6 +2368,23 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
             [FromForm]
             public int Id { get; set; }
+        }
+
+        private class MultiplePropertiesContainer
+        {
+            public MultipleProperties Group1 { get; set; }
+            public MultipleProperties Group2 { get; set; }
+        }
+
+        private class MultipleProperties
+        {
+            public Parent Parent1 { get; set; }
+            public Parent Parent2 { get; set; }
+        }
+
+        private class Parent
+        {
+            public Child Child { get; set; }
         }
 
         private class MockInputFormatter : TextInputFormatter

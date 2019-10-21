@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Denotes the target member as a component parameter.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class ParameterAttribute : Attribute
     {
         /// <summary>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components
         /// </para>
         /// <para>
         /// <see cref="CaptureUnmatchedValues"/> should only be applied to parameters of a type that
-        /// can be used with <see cref="RenderTreeBuilder.AddMultipleAttributes{T}(int, System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{string, T}})"/>
+        /// can be used with <see cref="RenderTreeBuilder.AddMultipleAttributes(int, System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{string, System.Object}})"/>
         /// such as <see cref="Dictionary{String, Object}"/>.
         /// </para>
         /// </remarks>

@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "react" "react" "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-dev.nupkg" $true
+Test-Template "react" "react" "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0.5.0.0-dev.nupkg" $true

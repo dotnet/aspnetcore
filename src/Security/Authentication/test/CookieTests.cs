@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Contains(" path=/foo", setCookie1);
             Assert.Contains(" domain=another.com", setCookie1);
             Assert.Contains(" secure", setCookie1);
-            Assert.DoesNotContain(" samesite", setCookie1);
+            Assert.Contains(" samesite=none", setCookie1);
             Assert.Contains(" httponly", setCookie1);
 
             var server2 = CreateServer(o =>
@@ -1452,7 +1452,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         {
                             res.StatusCode = 200;
                         }
-                        else if (req.Path == new PathString("/forbid")) // Simulate forbidden 
+                        else if (req.Path == new PathString("/forbid")) // Simulate forbidden
                         {
                             await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                         }

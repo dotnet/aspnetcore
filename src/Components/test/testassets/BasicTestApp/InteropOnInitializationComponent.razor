@@ -1,7 +1,6 @@
 @page "/prerendered-interop"
 @using Microsoft.AspNetCore.Components
 @using Microsoft.JSInterop
-@inject IComponentContext ComponentContext
 @inject IJSRuntime JSRuntime
 
 <p>
@@ -24,19 +23,11 @@
 
 @code {
     string infoFromJs;
-    ElementRef myElem;
+    ElementReference myElem;
 
-    protected override async Task OnAfterRenderAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // TEMPORARY: Currently we need this guard to avoid making the interop
-        // call during prerendering. Soon this will be unnecessary because we
-        // will change OnAfterRenderAsync not to run during the prerendering phase.
-        if (!ComponentContext.IsConnected)
-        {
-            return;
-        }
-
-        if (infoFromJs == null)
+        if (firstRender)
         {
             // We can only use the ElementRef in OnAfterRenderAsync (and not any
             // earlier lifecycle method), because there is no JS element until

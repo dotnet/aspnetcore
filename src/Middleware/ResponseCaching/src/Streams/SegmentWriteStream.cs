@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal class SegmentWriteStream : Stream
     {

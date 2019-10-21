@@ -1,9 +1,9 @@
-﻿@inject IUriHelper Helper
+﻿@inject NavigationManager NavigationManager
 
 @functions{
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
-        Helper.NavigateTo("/navigation-redirect");
+        NavigationManager.NavigateTo("/navigation-redirect");
     }
 }

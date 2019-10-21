@@ -45,8 +45,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets the response body pipe <see cref="PipeWriter"/>
+        /// Gets the response body <see cref="PipeWriter"/>
         /// </summary>
+        /// <value>The response body <see cref="PipeWriter"/>.</value>
         public virtual PipeWriter BodyWriter { get => throw new NotImplementedException(); }
 
         /// <summary>
@@ -126,9 +127,13 @@ namespace Microsoft.AspNetCore.Http
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <remarks>
-        /// If the <see cref="IHttpResponseStartFeature"/> isn't set, StartAsync will default to calling HttpResponse.Body.FlushAsync().
-        /// </remarks>
         public virtual Task StartAsync(CancellationToken cancellationToken = default) { throw new NotImplementedException(); }
+
+        /// <summary>
+        /// Flush any remaining response headers, data, or trailers.
+        /// This may throw if the response is in an invalid state such as a Content-Length mismatch.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task CompleteAsync() { throw new NotImplementedException(); }
     }
 }

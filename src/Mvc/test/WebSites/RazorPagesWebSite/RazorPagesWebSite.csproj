@@ -1,8 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsTestAssetProject>true</IsTestAssetProject>
+
+    <!-- Resx files are embedded data -->
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <ItemGroup>

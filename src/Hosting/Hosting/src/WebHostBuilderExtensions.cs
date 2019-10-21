@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -177,6 +177,22 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder ConfigureLogging(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, ILoggingBuilder> configureLogging)
         {
             return hostBuilder.ConfigureServices((context, collection) => collection.AddLogging(builder => configureLogging(context, builder)));
+        }
+
+        /// <summary>
+        /// Configures the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to use static web assets
+        /// defined by referenced projects and packages.
+        /// </summary>
+        /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseStaticWebAssets(this IWebHostBuilder builder)
+        {
+            builder.ConfigureAppConfiguration((context, configBuilder) =>
+            {
+                StaticWebAssetsLoader.UseStaticWebAssets(context.HostingEnvironment, context.Configuration);
+            });
+
+            return builder;
         }
     }
 }

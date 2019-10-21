@@ -43,8 +43,10 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
+        & $repoRoot/restore.cmd -ci -NoBuildNodeJS
     }
+
+    . "$repoRoot/activate.ps1"
 
     #
     # Duplicate .csproj files can cause issues with a shared build output folder
@@ -55,7 +57,7 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
-        | ? { $_.FullName -notmatch 'submodules' } `
+        | ? { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
         | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
         | % {
             $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -122,16 +124,12 @@ try {
             -filepath "$repoRoot\eng\Versions.props"
     }
 
-    #
-    # Solutions
-    #
-
     Write-Host "Checking that solutions are up to date"
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
             # These .sln files are used by the templating engine.
-            ($_.Name -ne "RazorComponentsWeb-CSharp.sln")
+            ($_.Name -ne "BlazorServerWeb_CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
@@ -164,29 +162,24 @@ try {
     }
 
     Write-Host "Re-generating package baselines"
-    $dotnet = 'dotnet'
-    if ($ci) {
-        $dotnet = "$repoRoot/.dotnet/dotnet.exe"
-    }
     Invoke-Block {
-        & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
-    }
-
-    Write-Host "Re-generating Browser.JS files"
-    Invoke-Block {
-        & $dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
+        & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
     Write-Host "Run git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
-    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>nul'
+    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-change --name-only 2>nul'
+
+    # Temporary: Disable check for blazor js file
+    $changedFilesExclusion = "src/Components/Web.JS/dist/Release/blazor.server.js"
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
+            if ($file -eq $changedFilesExclusion) {continue}
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
-            & git --no-pager diff --ignore-space-at-eol $filePath
+            & git --no-pager diff --ignore-space-change $filePath
         }
     }
 }

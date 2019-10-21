@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 Router component
 <Router AppAssembly="System.Reflection.Assembly.GetAssembly(typeof(RouterContainer))">
-    <NotFoundContent>
+    <Found Context="routeData"><RouteView RouteData="@routeData" /></Found>
+    <NotFound>
         <p>Route not found</p>
-    </NotFoundContent>
+    </NotFound>
 </Router>

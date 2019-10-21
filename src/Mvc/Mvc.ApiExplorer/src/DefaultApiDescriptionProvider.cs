@@ -585,6 +585,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     if (Visited.Add(key))
                     {
                         Visit(propertyContext, source ?? ambientSource, newContainerName);
+                        Visited.Remove(key);
                     }
                     else
                     {

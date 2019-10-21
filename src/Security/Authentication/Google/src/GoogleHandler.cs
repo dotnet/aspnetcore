@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Google+ API is enabled.");
+                throw new HttpRequestException($"An error occurred when retrieving Google user information ({response.StatusCode}). Please check if the authentication information is correct.");
             }
 
             using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))

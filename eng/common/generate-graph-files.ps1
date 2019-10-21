@@ -25,7 +25,7 @@ function CheckExitCode ([string]$stage)
 
 try {
   Push-Location $PSScriptRoot
-    
+
   Write-Host "Installing darc..."
   . .\darc-init.ps1 -darcVersion $darcVersion
   CheckExitCode "Running darc-init"
@@ -40,9 +40,9 @@ try {
 
   $darcExe = "$env:USERPROFILE\.dotnet\tools"
   $darcExe = Resolve-Path "$darcExe\darc.exe"
-  
+
   Create-Directory $outputFolder
-  
+
   # Generate 3 graph descriptions:
   # 1. Flat with coherency information
   # 2. Graphviz (dot) file
@@ -51,26 +51,26 @@ try {
   $graphVizImageFilePath = "$outputFolder\graph.png"
   $normalGraphFilePath = "$outputFolder\graph-full.txt"
   $flatGraphFilePath = "$outputFolder\graph-flat.txt"
-  $baseOptions = "get-dependency-graph --github-pat $gitHubPat --azdev-pat $azdoPat --password $barToken"
-  
+  $baseOptions = @( "--github-pat", "$gitHubPat", "--azdev-pat", "$azdoPat", "--password", "$barToken" )
+
   if ($includeToolset) {
     Write-Host "Toolsets will be included in the graph..."
-    $baseOptions += " --include-toolset"
+    $baseOptions += @( "--include-toolset" )
   }
 
   Write-Host "Generating standard dependency graph..."
-  Invoke-Expression "& `"$darcExe`" $baseOptions --output-file $normalGraphFilePath"
+  & "$darcExe" get-dependency-graph @baseOptions --output-file $normalGraphFilePath
   CheckExitCode "Generating normal dependency graph"
 
   Write-Host "Generating flat dependency graph and graphviz file..."
-  Invoke-Expression "& `"$darcExe`" $baseOptions --flat --coherency --graphviz $graphVizFilePath --output-file $flatGraphFilePath"
+  & "$darcExe" get-dependency-graph @baseOptions --flat --coherency --graphviz $graphVizFilePath --output-file $flatGraphFilePath
   CheckExitCode "Generating flat and graphviz dependency graph"
 
   Write-Host "Generating graph image $graphVizFilePath"
   $dotFilePath = Join-Path $installBin "graphviz\$graphvizVersion\release\bin\dot.exe"
-  Invoke-Expression "& `"$dotFilePath`" -Tpng -o'$graphVizImageFilePath' `"$graphVizFilePath`""
+  & "$dotFilePath" -Tpng -o"$graphVizImageFilePath" "$graphVizFilePath"
   CheckExitCode "Generating graphviz image"
-  
+
   Write-Host "'$graphVizFilePath', '$flatGraphFilePath', '$normalGraphFilePath' and '$graphVizImageFilePath' created!"
 }
 catch {

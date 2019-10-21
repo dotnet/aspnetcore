@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.StackTrace.Sources;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHost : IWebHost, IAsyncDisposable
     {
@@ -149,6 +149,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _applicationLifetime = _applicationServices.GetRequiredService<ApplicationLifetime>();
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
+
+            // Fire IHostedService.Start
+            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
+
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
@@ -158,8 +162,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
-            // Fire IHostedService.Start
-            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.Started();
 
@@ -262,11 +264,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     .InformationalVersion;
                 model.ClrVersion = clrVersion;
                 model.OperatingSystemDescription = RuntimeInformation.OSDescription;
+                model.ShowRuntimeDetails = showDetailedErrors;
 
                 if (showDetailedErrors)
                 {
                     var exceptionDetailProvider = new ExceptionDetailsProvider(
                         hostingEnv.ContentRootFileProvider,
+                        logger,
                         sourceCodeLineCount: 6);
 
                     model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
@@ -339,7 +343,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             // Fire the IHostedService.Stop
-            if (_hostedServiceExecutor != null && _startedServer)
+            if (_hostedServiceExecutor != null)
             {
                 await _hostedServiceExecutor.StopAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -352,7 +356,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

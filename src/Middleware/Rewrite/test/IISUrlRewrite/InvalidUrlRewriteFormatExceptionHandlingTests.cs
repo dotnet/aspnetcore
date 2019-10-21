@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -208,6 +208,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     </rules>
 </rewrite>",
             "Could not parse the UrlRewrite file. Message: 'The appendQueryString parameter 'foo' was not recognized'. Line number '5': '14'.")]
+        [InlineData(
+            "<rules><rule></rule></rules>",
+            "Could not parse the UrlRewrite file. Message: 'The root element '<rewrite>' is missing'. Line number '0': '0'.")]
         public void ThrowInvalidUrlRewriteFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert

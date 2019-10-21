@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Components.Builder;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
@@ -38,7 +40,8 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
         public async Task<WebAssemblyRenderer> CreateRendererAsync()
         {
-            var renderer = new WebAssemblyRenderer(Services);
+            var loggerFactory = (ILoggerFactory)Services.GetService(typeof(ILoggerFactory));
+            var renderer = new WebAssemblyRenderer(Services, loggerFactory);
             for (var i = 0; i < Entries.Count; i++)
             {
                 var (componentType, domElementSelector) = Entries[i];

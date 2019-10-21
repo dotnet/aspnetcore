@@ -5,30 +5,30 @@
     <DataAnnotationsValidator />
 
     <p class="name">
-        Name: <InputText @bind-Value="@person.Name" placeholder="Enter your name" />
+        Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
     </p>
     <p class="email">
-        Email: <InputText @bind-Value="@person.Email" />
+        Email: <InputText @bind-Value="person.Email" />
         <ValidationMessage For="@(() => person.Email)" />
     </p>
     <p class="age">
-        Age (years): <InputNumber @bind-Value="@person.AgeInYears" placeholder="Enter your age" />
+        Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
     </p>
     <p class="height">
-        Height (optional): <InputNumber @bind-Value="@person.OptionalHeight" />
+        Height (optional): <InputNumber @bind-Value="person.OptionalHeight" />
     </p>
     <p class="description">
-        Description: <InputTextArea @bind-Value="@person.Description" placeholder="Tell us about yourself" />
+        Description: <InputTextArea @bind-Value="person.Description" placeholder="Tell us about yourself" />
     </p>
     <p class="renewal-date">
-        Renewal date: <InputDate @bind-Value="@person.RenewalDate" placeholder="Enter the date" />
+        Renewal date: <InputDate @bind-Value="person.RenewalDate" placeholder="Enter the date" />
     </p>
     <p class="expiry-date">
-        Expiry date (optional): <InputDate @bind-Value="@person.OptionalExpiryDate" />
+        Expiry date (optional): <InputDate @bind-Value="person.OptionalExpiryDate" />
     </p>
     <p class="ticket-class">
         Ticket class:
-        <InputSelect @bind-Value="@person.TicketClass" size="4">
+        <InputSelect @bind-Value="person.TicketClass" size="4">
             <option>(select)</option>
             <option value="@TicketClass.Economy">Economy class</option>
             <option value="@TicketClass.Premium">Premium class</option>
@@ -37,10 +37,10 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="accepts-terms">
-        Accepts terms: <InputCheckbox @bind-Value="@person.AcceptsTerms" title="You have to check this" />
+        Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
     </p>
     <p class="is-evil">
-        Is evil: <InputCheckbox @bind-Value="@person.IsEvil" />
+        Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
     </p>
 
     <button type="submit">Submit</button>

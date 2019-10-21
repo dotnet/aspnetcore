@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
-            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
+            _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
             _exceptionHandler = DisplayException;
 
             foreach (var filter in filters.Reverse())

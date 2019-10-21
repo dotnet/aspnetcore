@@ -18,15 +18,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
-            { typeof(IHttpSendFileFeature), _identityFunc },
+            { typeof(IHttpResponseBodyFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-            { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
+            { typeof(IHttpSysRequestInfoFeature), _identityFunc },
         };
 
         private readonly FeatureContext _featureContext;

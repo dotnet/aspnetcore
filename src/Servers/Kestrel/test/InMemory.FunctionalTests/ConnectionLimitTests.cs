@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -207,10 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter)
         {
-            var serviceContext = new TestServiceContext(LoggerFactory)
-            {
-                ExpectedConnectionMiddlewareCount = 1
-            };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>

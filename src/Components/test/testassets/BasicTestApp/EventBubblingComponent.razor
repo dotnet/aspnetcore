@@ -1,15 +1,67 @@
 <h3 id="event-bubbling">Bubbling standard event</h3>
 
+@* Temporarily hard-coding the internal names - this will be replaced once the Razor compiler supports @onevent:stopPropagation and @onevent:preventDefault *@
 <div @onclick="@(() => LogEvent("parent onclick"))">
-    <button id="button-with-onclick" @onclick="@(() => LogEvent("target onclick"))">Button with onclick handler</button>
-    <button id="button-without-onclick" >Button without onclick handler</button>
+    @* This element shows you can stop propagation even without necessarily also handling the event *@
+    <div __internal_stopPropagation_onclick="@intermediateStopPropagation">
+        <button id="button-with-onclick" @onclick="@(() => LogEvent("target onclick"))" __internal_stopPropagation_onclick="@targetStopPropagation">
+            Button with onclick handler
+        </button>
+        <button id="button-without-onclick">
+            Button without onclick handler
+        </button>
+    </div>
 </div>
+
+<fieldset>
+    <legend>Options</legend>
+    <label>
+        <input id="intermediate-stop-propagation" type="checkbox" @bind="intermediateStopPropagation" />
+        Stop propagation on intermediate element
+    </label>
+    <label>
+        <input id="target-stop-propagation" type="checkbox" @bind="targetStopPropagation" />
+        Stop propagation on target element
+    </label>
+</fieldset>
+
+<h3>PreventDefault</h3>
+
+<div __internal_preventDefault_onclick="@ancestorPreventDefault">
+    <p>
+        <label>
+            <input type="checkbox" id="checkbox-with-preventDefault-true" __internal_preventDefault_onclick @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
+            Checkbox with onclick preventDefault
+        </label>
+    </p>
+    <p>
+        <label>
+            <input type="checkbox" id="checkbox-with-preventDefault-false" __internal_preventDefault_onclick="@false" @onclick="@(() => LogEvent("Checkbox click"))" @onchange="@(() => LogEvent("Checkbox change"))" />
+            Checkbox with onclick preventDefault = false
+        </label>
+    </p>
+    <p>
+        Textbox that can block keystrokes: <input id="textbox-that-can-block-keystrokes" __internal_preventDefault_onkeydown="@preventOnKeyDown" @onkeydown="@(() => LogEvent("Received keydown"))" />
+    </p>
+</div>
+
+<fieldset>
+    <legend>Options</legend>
+    <label>
+        <input id="ancestor-prevent-default" type="checkbox" @bind="ancestorPreventDefault" />
+        Prevent default on ancestor
+    </label>
+    <label>
+        <input id="prevent-keydown" type="checkbox" @bind="preventOnKeyDown" />
+        Block keystrokes
+    </label>
+</fieldset>
 
 <h3>Bubbling custom event</h3>
 
 <div onsneeze="@(new Action(() => LogEvent("parent onsneeze")))">
     <div id="element-with-onsneeze" onsneeze="@(new Action(() => LogEvent("target onsneeze")))">Element with onsneeze handler</div>
-    <div id="element-without-onsneeze" >Element without onsneeze handler</div>
+    <div id="element-without-onsneeze">Element without onsneeze handler</div>
 </div>
 
 <h3>Non-bubbling standard event</h3>
@@ -22,9 +74,14 @@
 
 <h3>Event log</h3>
 
-<textarea readonly @bind="@logValue"></textarea>
+<textarea readonly @bind="logValue"></textarea>
+<button id="clear-log" @onclick="@(() => { logValue = string.Empty; })">Clear log</button>
 
 @code {
+    bool intermediateStopPropagation;
+    bool targetStopPropagation;
+    bool ancestorPreventDefault;
+    bool preventOnKeyDown;
     string logValue = string.Empty;
 
     void LogEvent(string message)

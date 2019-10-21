@@ -68,10 +68,6 @@ export class Login extends Component {
         const result = await authService.signIn(state);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
-                // We replace the location here so that in case the user hits the back
-                // arrow from within the login page he doesn't get into an infinite
-                // redirect loop.
-                window.location.replace(result.redirectUrl);
                 break;
             case AuthenticationResultStatus.Success:
                 await this.navigateToReturnUrl(returnUrl);
@@ -124,7 +120,7 @@ export class Login extends Component {
     redirectToApiAuthorizationPath(apiAuthorizationPath) {
         const redirectUrl = `${window.location.origin}${apiAuthorizationPath}`;
         // It's important that we do a replace here so that when the user hits the back arrow on the
-        // browser he gets sent back to where it was on the app instead of to an endpoint on this
+        // browser they get sent back to where it was on the app instead of to an endpoint on this
         // component.
         window.location.replace(redirectUrl);
     }

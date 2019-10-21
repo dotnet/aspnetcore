@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
+        private bool _decrementCalled;
         public Pipe RequestBodyPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
@@ -51,7 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 context.StreamId,
                 context.FrameWriter,
                 _outputFlowControl,
-                context.TimeoutControl,
                 context.MemoryPool,
                 this,
                 context.ServiceContext.Log);
@@ -95,9 +95,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
 
-                    var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
-                    if (states.OldState != states.NewState)
+                    var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+                    if (oldState != newState)
                     {
+                        Debug.Assert(_decrementCalled);
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
                         RequestBodyPipe.Writer.Complete();
@@ -320,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task OnDataAsync(Http2Frame dataFrame, ReadOnlySequence<byte> payload)
+        public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
         {
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)
@@ -420,15 +421,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void AbortRstStreamReceived()
         {
+            // Client sent a reset stream frame, decrement total count.
+            DecrementActiveClientStreamCount();
+
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
             Abort(new IOException(CoreStrings.Http2StreamResetByClient));
         }
 
         public void Abort(IOException abortReason)
         {
-            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            if (states.OldState == states.NewState)
+            if (oldState == newState)
             {
                 return;
             }
@@ -452,15 +456,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
             // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
-            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            if (states.OldState == states.NewState)
+            if (oldState == newState)
             {
                 return;
             }
 
             Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
 
+            DecrementActiveClientStreamCount();
             // Don't block on IO. This never faults.
             _ = _http2Output.WriteRstStreamAsync(error);
 
@@ -469,9 +474,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void AbortCore(Exception abortReason)
         {
-            // Call _http2Output.Dispose() prior to poisoning the request body stream or pipe to
+            // Call _http2Output.Stop() prior to poisoning the request body stream or pipe to
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http2Output.Dispose();
+            _http2Output.Stop();
 
             AbortRequest();
 
@@ -480,6 +485,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
+        }
+
+        public void DecrementActiveClientStreamCount()
+        {
+            // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
+            // Only decrement once total.
+            lock (_completionLock)
+            {
+                if (_decrementCalled)
+                {
+                    return;
+                }
+
+                _decrementCalled = true;
+            }
+          
+            _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
         private Pipe CreateRequestBodyPipe(uint windowSize)

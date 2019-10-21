@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpe
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -120,8 +120,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 var content = await response.Content.ReadAsStringAsync();
                 Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_NoDbOrMigrationsTitle", typeof(BloggingContext).Name), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
             }
         }
 
@@ -179,11 +179,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                 var content = await response.Content.ReadAsStringAsync();
                 Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingMigrationsTitle", typeof(BloggingContextWithMigrations).Name), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
                 Assert.Contains("<li>111111111111111_MigrationOne</li>", content);
                 Assert.Contains("<li>222222222222222_MigrationTwo</li>", content);
 
-                Assert.DoesNotContain(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.DoesNotContain(StringsHelpers.GetResourceString("DatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
             }
         }
 
@@ -215,10 +215,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                 var content = await response.Content.ReadAsStringAsync();
                 Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_PendingChangesTitle", typeof(BloggingContextWithPendingModelChanges).Name), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandCLI").Replace(">", "&gt;"), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandCLI").Replace(">", "&gt;"), content);
-                Assert.Contains(StringsHelpers.GetResourceString("FormatDatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_AddMigrationCommandCLI").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_AddMigrationCommandPMC").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_ApplyMigrationsCommandCLI").Replace(">", "&gt;"), content);
+                Assert.Contains(StringsHelpers.GetResourceString("DatabaseErrorPage_ApplyMigrationsCommandPMC").Replace(">", "&gt;"), content);
             }
         }
 
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 }
 
                 Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
-                    m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_Exception")));
+                    m.StartsWith(StringsHelpers.GetResourceString("DatabaseErrorPageMiddleware_Exception")));
             }
         }
 

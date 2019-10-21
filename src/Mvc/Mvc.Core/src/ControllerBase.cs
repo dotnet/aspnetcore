@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         private IModelBinderFactory _modelBinderFactory;
         private IObjectModelValidator _objectValidator;
         private IUrlHelper _url;
+        private ProblemDetailsFactory _problemDetailsFactory;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
@@ -186,6 +188,28 @@ namespace Microsoft.AspNetCore.Mvc
                 }
 
                 _objectValidator = value;
+            }
+        }
+
+        public ProblemDetailsFactory ProblemDetailsFactory
+        {
+            get
+            {
+                if (_problemDetailsFactory == null)
+                {
+                    _problemDetailsFactory = HttpContext?.RequestServices?.GetRequiredService<ProblemDetailsFactory>();
+                }
+
+                return _problemDetailsFactory;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _problemDetailsFactory = value;
             }
         }
 
@@ -1236,6 +1260,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileStream">The <see cref="Stream"/> with the contents of the file.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType)
             => File(fileStream, contentType, fileDownloadName: null);
@@ -1250,6 +1277,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, bool enableRangeProcessing)
             => File(fileStream, contentType, fileDownloadName: null, enableRangeProcessing: enableRangeProcessing);
@@ -1265,6 +1295,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName)
             => new FileStreamResult(fileStream, contentType) { FileDownloadName = fileDownloadName };
@@ -1281,6 +1314,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, bool enableRangeProcessing)
             => new FileStreamResult(fileStream, contentType)
@@ -1300,6 +1336,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
@@ -1322,6 +1361,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
@@ -1345,6 +1387,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag)
         {
@@ -1369,6 +1414,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="FileStreamResult"/> for the response.</returns>
+        /// <remarks>
+        /// The <paramref name="fileStream" /> parameter is disposed after the response is sent.
+        /// </remarks>        
         [NonAction]
         public virtual FileStreamResult File(Stream fileStream, string contentType, string fileDownloadName, DateTimeOffset? lastModified, EntityTagHeaderValue entityTag, bool enableRangeProcessing)
         {
@@ -1822,6 +1870,34 @@ namespace Microsoft.AspNetCore.Mvc
             => new ConflictObjectResult(modelState);
 
         /// <summary>
+        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+        /// </summary>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ObjectResult Problem(
+            string detail = null,
+            string instance = null,
+            int? statusCode = null,
+            string title = null,
+            string type = null)
+        {
+            var problemDetails = ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
+                statusCode: statusCode ?? 500,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
+
+            return new ObjectResult(problemDetails);
+        }
+
+        /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
@@ -1837,31 +1913,64 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with validation errors from <paramref name="modelStateDictionary"/>.
         /// </summary>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
-        {
-            if (modelStateDictionary == null)
-            {
-                throw new ArgumentNullException(nameof(modelStateDictionary));
-            }
+             => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
-            var validationProblem = new ValidationProblemDetails(modelStateDictionary);
-            return new BadRequestObjectResult(validationProblem);
-        }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with validation errors from <see cref="ModelState"/>.
         /// </summary>
-        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem()
+            => ValidationProblem(ModelState);
+
+        /// <summary>
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with a <see cref="ValidationProblemDetails"/> value.
+        /// </summary>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>. 
+        /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ActionResult ValidationProblem(
+            string detail = null,
+            string instance = null,
+            int? statusCode = null,
+            string title = null,
+            string type = null,
+            [ActionResultObjectValue] ModelStateDictionary modelStateDictionary = null)
         {
-            var validationProblem = new ValidationProblemDetails(ModelState);
-            return new BadRequestObjectResult(validationProblem);
+            modelStateDictionary ??= ModelState;
+
+            var validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
+                HttpContext,
+                modelStateDictionary,
+                statusCode: statusCode,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
+
+            if (validationProblem.Status == 400)
+            {
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                return new BadRequestObjectResult(validationProblem);
+            }
+
+            return new ObjectResult(validationProblem);
         }
 
         /// <summary>

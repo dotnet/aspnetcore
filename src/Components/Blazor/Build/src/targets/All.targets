@@ -29,4 +29,18 @@
       <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
+
+  <PropertyGroup>
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _ClearCurrentStaticWebAssetsForReferenceDiscovery
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_ClearCurrentStaticWebAssetsForReferenceDiscovery">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
+    </ItemGroup>
+  </Target>
+
 </Project>

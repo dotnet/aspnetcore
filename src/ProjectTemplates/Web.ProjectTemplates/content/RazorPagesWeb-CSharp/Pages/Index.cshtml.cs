@@ -10,12 +10,13 @@ namespace Company.WebApplication1.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly ILogger<IndexModel> logger;
+        private readonly ILogger<IndexModel> _logger;
 
-        public IndexModel(ILogger<IndexModel> _logger)
+        public IndexModel(ILogger<IndexModel> logger)
         {
-            logger = _logger;
+            _logger = logger;
         }
+
         public void OnGet()
         {
 

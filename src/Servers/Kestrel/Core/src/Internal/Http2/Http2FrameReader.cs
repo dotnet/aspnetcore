@@ -31,16 +31,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public const int SettingSize = 6; // 2 bytes for the id, 4 bytes for the value.
 
-        public static bool ReadFrame(ReadOnlySequence<byte> readableBuffer, Http2Frame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
+        public static bool TryReadFrame(ref ReadOnlySequence<byte> buffer, Http2Frame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
         {
             framePayload = ReadOnlySequence<byte>.Empty;
 
-            if (readableBuffer.Length < HeaderLength)
+            if (buffer.Length < HeaderLength)
             {
                 return false;
             }
 
-            var headerSlice = readableBuffer.Slice(0, HeaderLength);
+            var headerSlice = buffer.Slice(0, HeaderLength);
             var header = headerSlice.ToSpan();
 
             var payloadLength = (int)Bitshifter.ReadUInt24BigEndian(header);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Make sure the whole frame is buffered
             var frameLength = HeaderLength + payloadLength;
-            if (readableBuffer.Length < frameLength)
+            if (buffer.Length < frameLength)
             {
                 return false;
             }
@@ -61,15 +61,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             frame.Flags = header[FlagsOffset];
             frame.StreamId = (int)Bitshifter.ReadUInt31BigEndian(header.Slice(StreamIdOffset));
 
-            var extendedHeaderLength = ReadExtendedFields(frame, readableBuffer);
+            var extendedHeaderLength = ReadExtendedFields(frame, buffer);
 
             // The remaining payload minus the extra fields
-            framePayload = readableBuffer.Slice(HeaderLength + extendedHeaderLength, payloadLength - extendedHeaderLength);
+            framePayload = buffer.Slice(HeaderLength + extendedHeaderLength, payloadLength - extendedHeaderLength);
+            buffer = buffer.Slice(framePayload.End);
 
             return true;
         }
 
-        private static int ReadExtendedFields(Http2Frame frame, ReadOnlySequence<byte> readableBuffer)
+        private static int ReadExtendedFields(Http2Frame frame, in ReadOnlySequence<byte> readableBuffer)
         {
             // Copy in any extra fields for the given frame type
             var extendedHeaderLength = GetPayloadFieldsLength(frame);
@@ -217,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public static IList<Http2PeerSetting> ReadSettings(ReadOnlySequence<byte> payload)
+        public static IList<Http2PeerSetting> ReadSettings(in ReadOnlySequence<byte> payload)
         {
             var data = payload.ToSpan();
             Debug.Assert(data.Length % SettingSize == 0, "Invalid settings payload length");

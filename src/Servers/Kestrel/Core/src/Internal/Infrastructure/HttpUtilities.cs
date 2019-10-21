@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
@@ -422,15 +422,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string VersionToString(HttpVersion httpVersion)
         {
-            switch (httpVersion)
+            return httpVersion switch
             {
-                case HttpVersion.Http10:
-                    return Http10Version;
-                case HttpVersion.Http11:
-                    return Http11Version;
-                default:
-                    return null;
-            }
+                HttpVersion.Http10 => Http10Version,
+                HttpVersion.Http11 => Http11Version,
+                _ => null,
+            };
         }
         public static string MethodToString(HttpMethod method)
         {
@@ -445,15 +442,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public static string SchemeToString(HttpScheme scheme)
         {
-            switch (scheme)
+            return scheme switch
             {
-                case HttpScheme.Http:
-                    return HttpUriScheme;
-                case HttpScheme.Https:
-                    return HttpsUriScheme;
-                default:
-                    return null;
-            }
+                HttpScheme.Http => HttpUriScheme,
+                HttpScheme.Https => HttpsUriScheme,
+                _ => null,
+            };
         }
 
         public static bool IsHostHeaderValid(string hostText)

@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -38,10 +37,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                     ct.Register(() => canceled.SetResult(0));
-                    Assert.True(ct.WaitHandle.WaitOne(interval));
-                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
                     await canceled.Task.TimeoutAfter(interval);
+                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
                     context.Dispose();
                 }
@@ -71,7 +68,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var ct = context.DisconnectToken;
                     Assert.False(ct.CanBeCanceled, "CanBeCanceled");
                     ct.Register(() => canceled.SetResult(0));
-                    Assert.False(ct.WaitHandle.WaitOne(interval));
                     Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
 
                     Assert.False(canceled.Task.IsCompleted, "canceled");

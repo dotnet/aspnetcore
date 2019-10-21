@@ -60,7 +60,6 @@ public:
     {
     }
 
-    void Load();
     void Load(HMODULE moduleHandle);
     void Load(const std::wstring& location);
 

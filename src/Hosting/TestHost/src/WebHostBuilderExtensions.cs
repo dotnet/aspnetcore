@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -61,9 +60,11 @@ namespace Microsoft.AspNetCore.TestHost
             }
             else
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 webHostBuilder.ConfigureServices(
                     s => s.AddSingleton<IStartupConfigureServicesFilter>(
                         new ConfigureTestServicesStartupConfigureServicesFilter(servicesConfiguration)));
+#pragma warning restore CS0612 // Type or member is obsolete
             }
 
             return webHostBuilder;
@@ -81,9 +82,11 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(servicesConfiguration));
             }
 
+#pragma warning disable CS0612 // Type or member is obsolete
             webHostBuilder.ConfigureServices(
                 s => s.AddSingleton<IStartupConfigureContainerFilter<TContainer>>(
                     new ConfigureTestServicesStartupConfigureContainerFilter<TContainer>(servicesConfiguration)));
+#pragma warning restore CS0612 // Type or member is obsolete
 
             return webHostBuilder;
         }
@@ -129,7 +132,9 @@ namespace Microsoft.AspNetCore.TestHost
             throw new InvalidOperationException($"Solution root could not be located using application root {applicationBasePath}.");
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         private class ConfigureTestServicesStartupConfigureServicesFilter : IStartupConfigureServicesFilter
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             private readonly Action<IServiceCollection> _servicesConfiguration;
 
@@ -151,7 +156,9 @@ namespace Microsoft.AspNetCore.TestHost
                 };
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         private class ConfigureTestServicesStartupConfigureContainerFilter<TContainer> : IStartupConfigureContainerFilter<TContainer>
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             private readonly Action<TContainer> _servicesConfiguration;
 

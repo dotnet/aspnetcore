@@ -3,7 +3,7 @@
 {
     protected bool isAfterDelay;
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         // If there are lots of instances of this component, the following delay
         // will result in a lot of them triggering a re-render simultaneously

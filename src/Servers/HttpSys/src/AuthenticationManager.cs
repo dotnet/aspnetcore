@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
         }
 
+        /// <summary>
+        /// When attaching to an existing queue this setting must match the one used to create the queue.
+        /// </summary>
         public AuthenticationSchemes Schemes
         {
             get { return _authSchemes; }
@@ -42,11 +45,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Indicates if anonymous requests will be surfaced to the application or challenged by the server.
+        /// The default value is true.
+        /// </summary>
         public bool AllowAnonymous
         {
             get { return _allowAnonymous; }
             set { _allowAnonymous = value; }
         }
+
+        /// <summary>
+        /// If true the server should set HttpContext.User. If false the server will only provide an
+        /// identity when explicitly requested by the AuthenticationScheme. The default is true.
+        /// </summary>
+        public bool AutomaticAuthentication { get; set; } = true;
 
         internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {

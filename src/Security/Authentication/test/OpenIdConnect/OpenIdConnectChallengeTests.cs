@@ -437,6 +437,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var server = settings.CreateTestServer();
             var transaction = await server.SendAsync(ChallengeEndpoint);
 
+            Assert.Contains("samesite=none", transaction.SetCookie.First());
             var challengeCookies = SetCookieHeaderValue.ParseList(transaction.SetCookie);
             var nonceCookie = challengeCookies.Where(cookie => cookie.Name.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal)).Single();
             Assert.True(nonceCookie.Expires.HasValue);
@@ -452,6 +453,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(correlationCookie.HttpOnly);
             Assert.Equal("/signin-oidc", correlationCookie.Path);
             Assert.False(StringSegment.IsNullOrEmpty(correlationCookie.Value));
+            Assert.Equal(Net.Http.Headers.SameSiteMode.None, correlationCookie.SameSite);
 
             Assert.Equal(2, challengeCookies.Count);
         }

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
             // Arrange
             var input = "Hello world";
             var encoding = Encoding.Unicode;
-            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            using var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
             var bytes = new byte[4];
 
             // Act
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
             // Arrange
             var input = "Hello world";
             var encoding = Encoding.Unicode;
-            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            using var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
             var bytes = new byte[3];
             var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
             // Arrange
             var input = new string('A', 1024 + 10);
             var encoding = Encoding.Unicode;
-            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            using var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
             var bytes = new byte[1024];
             var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
 
@@ -88,27 +88,69 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         {
             // Arrange
             // Test ensures that the overflow buffer works correctly
-            var input = new string('A', 4096 + 4);
+            var input = "☀";
             var encoding = Encoding.Unicode;
-            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
-            var bytes = new byte[4096];
-            var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
+            using var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[1];
+            var expected = Encoding.UTF8.GetBytes(input);
 
             // Act
             var readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
 
             // Assert
-            Assert.Equal(bytes.Length, readBytes);
-            Assert.Equal(expected, bytes);
+            Assert.Equal(1, readBytes);
+            Assert.Equal(expected[0], bytes[0]);
             Assert.Equal(0, stream.ByteBufferCount);
             Assert.Equal(0, stream.CharBufferCount);
-            Assert.Equal(4, stream.OverflowCount);
+            Assert.Equal(2, stream.OverflowCount);
 
+            bytes = new byte[expected.Length - 1];
             readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
-            Assert.Equal(4, readBytes);
+            Assert.Equal(bytes.Length, readBytes);
             Assert.Equal(0, stream.ByteBufferCount);
             Assert.Equal(0, stream.CharBufferCount);
             Assert.Equal(0, stream.OverflowCount);
+
+            readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+            Assert.Equal(0, readBytes);
+        }
+
+        public static TheoryData<string> ReadAsync_WithOverflowBuffer_AtBoundariesData => new TheoryData<string>
+        {
+            new string('a', TranscodingReadStream.MaxCharBufferSize - 1) + "☀",
+            new string('a', TranscodingReadStream.MaxCharBufferSize - 2) + "☀",
+            new string('a', TranscodingReadStream.MaxCharBufferSize) + "☀",
+        };
+
+        [Theory]
+        [MemberData(nameof(ReadAsync_WithOverflowBuffer_AtBoundariesData))]
+        public Task ReadAsync_WithOverflowBuffer_WithBufferSize1(string input) => ReadAsync_WithOverflowBufferAtCharBufferBoundaries(input, bufferSize: 1);
+
+        [Theory]
+        [MemberData(nameof(ReadAsync_WithOverflowBuffer_AtBoundariesData))]
+        public Task ReadAsync_WithOverflowBuffer_WithBufferSize2(string input) => ReadAsync_WithOverflowBufferAtCharBufferBoundaries(input, bufferSize: 1);
+
+        private static async Task<TranscodingReadStream> ReadAsync_WithOverflowBufferAtCharBufferBoundaries(string input, int bufferSize)
+        {
+            // Arrange
+            // Test ensures that the overflow buffer works correctly
+            var encoding = Encoding.Unicode;
+            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[1];
+            var expected = Encoding.UTF8.GetBytes(input);
+
+            // Act
+            int read;
+            var buffer = new byte[bufferSize];
+            var actual = new List<byte>();
+
+            while ((read = await stream.ReadAsync(buffer)) != 0)
+            {
+                actual.AddRange(buffer);
+            }
+
+            Assert.Equal(expected, actual);
+            return stream;
         }
 
         public static TheoryData ReadAsyncInputLatin =>
@@ -198,7 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
             var transcodingStream = new TranscodingReadStream(stream, sourceEncoding);
 
-            var model = await JsonSerializer.ReadAsync(transcodingStream, typeof(TestModel));
+            var model = await JsonSerializer.DeserializeAsync(transcodingStream, typeof(TestModel));
             var testModel = Assert.IsType<TestModel>(model);
 
             Assert.Equal(message, testModel.Message);

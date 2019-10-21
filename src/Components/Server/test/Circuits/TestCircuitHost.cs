@@ -3,33 +3,25 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Browser;
-using Microsoft.AspNetCore.Components.Browser.Rendering;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IList<ComponentDescriptor> descriptors, IDispatcher dispatcher, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
-            : base(circuitId, scope, client, rendererRegistry, renderer, descriptors, dispatcher, jsRuntime, circuitHandlers, logger)
+        private TestCircuitHost(CircuitId circuitId, IServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+            : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
         {
-        }
-
-        protected override void OnHandlerError(CircuitHandler circuitHandler, string handlerMethod, Exception ex)
-        {
-            ExceptionDispatchInfo.Capture(ex).Throw();
         }
 
         public static CircuitHost Create(
-            string circuitId = null,
+            CircuitId? circuitId = null,
             IServiceScope serviceScope = null,
             RemoteRenderer remoteRenderer = null,
             CircuitHandler[] handlers = null,
@@ -37,31 +29,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
-            var renderRegistry = new RendererRegistry();
-            var jsRuntime = new RemoteJSRuntime();
-            var dispatcher = Rendering.Renderer.CreateDefaultDispatcher();
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
             if (remoteRenderer == null)
             {
                 remoteRenderer = new RemoteRenderer(
                     serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
-                    new RendererRegistry(),
-                    jsRuntime,
+                    NullLoggerFactory.Instance,
+                    new CircuitOptions(),
                     clientProxy,
-                    dispatcher,
-                    HtmlEncoder.Default,
                     NullLogger.Instance);
             }
 
             handlers = handlers ?? Array.Empty<CircuitHandler>();
             return new TestCircuitHost(
-                circuitId ?? Guid.NewGuid().ToString(),
+                circuitId is null ? new CircuitId(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()) : circuitId.Value,
                 serviceScope,
+                new CircuitOptions(),
                 clientProxy,
-                renderRegistry,
                 remoteRenderer,
                 new List<ComponentDescriptor>(),
-                dispatcher,
                 jsRuntime,
                 handlers,
                 NullLogger<CircuitHost>.Instance);

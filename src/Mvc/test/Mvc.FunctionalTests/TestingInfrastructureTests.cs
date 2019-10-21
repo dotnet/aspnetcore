@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_CreateClientThrowsInvalidOperationForNonEntryPoint()
         {
-            var factory = new WebApplicationFactory<ClassLibraryStartup>();
+            using var factory = new WebApplicationFactory<ClassLibraryStartup>();
             var ex = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
             Assert.Equal($"The provided Type '{typeof(RazorPagesClassLibrary.ClassLibraryStartup).Name}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.",
                ex.Message);
@@ -63,6 +63,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Content = new ObjectContent<Number>(new Number { Value = 5 }, new JsonMediaTypeFormatter())
             };
             request.Headers.Add("X-Pass-Thru", "Some-Value");
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var xPassThruValue = Assert.Single(response.Headers.GetValues("X-Pass-Thru"));
+            Assert.Equal("Some-Value", xPassThruValue);
+
+            var handlerResponse = await response.Content.ReadAsAsync<RedirectHandlerResponse>();
+            Assert.Equal(5, handlerResponse.Url);
+            Assert.Equal(5, handlerResponse.Body);
+        }
+
+        [Fact]
+        public async Task TestingInfrastructure_RedirectHandlerWorksWithInvalidRequestAndContentHeaders()
+        {
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Post, "Testing/RedirectHandler/2")
+            {
+                Content = new ObjectContent<Number>(new Number { Value = 5 }, new JsonMediaTypeFormatter())
+            };
+            request.Headers.Add("X-Pass-Thru", "Some-Value");
+            Assert.True(request.Headers.TryAddWithoutValidation("X-Invalid-Request-Header", "Bearer 1234,5678"));
+            Assert.True(request.Content.Headers.TryAddWithoutValidation("X-Invalid-Content-Header", "Bearer 1234,5678"));
             var response = await Client.SendAsync(request);
 
             // Assert
@@ -123,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task TestingInfrastructure_WorksWithGenericHost()
         {
-            var factory = new WebApplicationFactory<GenericHostWebSite.Program>()
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Program>()
                 .WithWebHostBuilder(builder =>
                     builder.ConfigureTestServices(s => s.AddSingleton<GenericHostWebSite.TestGenericService, OverridenGenericService>()));
 
@@ -135,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_HasServicesUsingWebHostProgram()
         {
-            var factory = new WebApplicationFactory<BasicWebSite.Program>();
+            using var factory = new WebApplicationFactory<BasicWebSite.Program>();
 
             Assert.NotNull(factory.Services);
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
@@ -144,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_HasServicesUsingWebHostStartup()
         {
-            var factory = new WebApplicationFactory<BasicWebSite.Startup>();
+            using var factory = new WebApplicationFactory<BasicWebSite.Startup>();
 
             Assert.NotNull(factory.Services);
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
@@ -153,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_HasServicesUsingGenericHostProgram()
         {
-            var factory = new WebApplicationFactory<GenericHostWebSite.Program>();
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Program>();
 
             Assert.NotNull(factory.Services);
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
@@ -162,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_HasServicesUsingGenericHostStartup()
         {
-            var factory = new WebApplicationFactory<GenericHostWebSite.Startup>();
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Startup>();
 
             Assert.NotNull(factory.Services);
             Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
