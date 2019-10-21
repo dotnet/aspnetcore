@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
     public class RedisProtocolBenchmark
     {
-        private RedisProtocol<Hub> _protocol;
+        private RedisProtocol _protocol;
         private RedisGroupCommand _groupCommand;
         private object[] _args;
         private string _methodName;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _protocol = new RedisProtocol<Hub>(new [] {
+            _protocol = new RedisProtocol(new [] {
                 new DummyProtocol("protocol1"),
                 new DummyProtocol("protocol2")
             });

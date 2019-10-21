@@ -5,17 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class DefaultHubMessageSerializer<THub> where THub : Hub
+    internal class DefaultHubMessageSerializer
     {
         private readonly List<IHubProtocol> _hubProtocols = new List<IHubProtocol>();
 
-        public DefaultHubMessageSerializer(IHubProtocolResolver hubProtocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions)
+        public DefaultHubMessageSerializer(IHubProtocolResolver hubProtocolResolver, IList<string> globalSupportedProtocols, IList<string> hubSupportedProtocols)
         {
-            var supportedProtocols = hubOptions.Value.SupportedProtocols ?? globalHubOptions.Value.SupportedProtocols ?? Array.Empty<string>();
+            var supportedProtocols = hubSupportedProtocols ?? globalSupportedProtocols ?? Array.Empty<string>();
             foreach (var protocolName in supportedProtocols)
             {
                 var protocol = hubProtocolResolver.GetProtocol(protocolName, (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList());

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         private readonly RedisOptions _options;
         private readonly RedisChannels _channels;
         private readonly string _serverName = GenerateServerName();
-        private readonly RedisProtocol<THub> _protocol;
+        private readonly RedisProtocol _protocol;
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1);
 
         private readonly AckHandler _ackHandler;
@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             _channels = new RedisChannels(typeof(THub).FullName);
             if (globalHubOptions != null && hubOptions != null)
             {
-                _protocol = new RedisProtocol<THub>(new DefaultHubMessageSerializer<THub>(hubProtocolResolver, globalHubOptions, hubOptions));
+                _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, globalHubOptions.Value.SupportedProtocols, hubOptions.Value.SupportedProtocols));
             }
             else
             {
-                _protocol = new RedisProtocol<THub>(hubProtocolResolver.AllProtocols);
+                _protocol = new RedisProtocol(hubProtocolResolver.AllProtocols);
             }
 
             RedisLog.ConnectingToEndpoints(_logger, options.Value.Configuration.EndPoints, _serverName);

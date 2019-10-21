@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
 
             var decoded = protocol.ReadAck(testData.Encoded);
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
 
             var encoded = protocol.WriteAck(testData.Decoded);
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
 
             var decoded = protocol.ReadGroupCommand(testData.Encoded);
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
 
             var encoded = protocol.WriteGroupCommand(testData.Decoded);
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             var testData = _invocationTestData[testName];
             var hubProtocols = new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") };
-            var protocol = new RedisProtocol<EchoHub>(hubProtocols);
+            var protocol = new RedisProtocol(hubProtocols);
 
             var expected = testData.Decoded();
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteInvocation(string testName)
         {
             var testData = _invocationTestData[testName];
-            var protocol = new RedisProtocol<EchoHub>(new [] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol(new [] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             var testData = _invocationTestData[testName];
             var hubMessageSerializer = CreateHubMessageSerializer(new List<IHubProtocol>() { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
-            var protocol = new RedisProtocol<Hub>(hubMessageSerializer);
+            var protocol = new RedisProtocol(hubMessageSerializer);
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
@@ -215,17 +215,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             }
         }
 
-        private DefaultHubMessageSerializer<Hub> CreateHubMessageSerializer(List<IHubProtocol> protocols)
+        private DefaultHubMessageSerializer CreateHubMessageSerializer(List<IHubProtocol> protocols)
         {
-            var hubTypeOptions = Options.Create(new HubOptions<Hub>());
-            var globalHubOptions = Options.Create(new HubOptions()
-            {
-                SupportedProtocols = protocols.ConvertAll(p => p.Name)
-            });
-
             var protocolResolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
 
-            return new DefaultHubMessageSerializer<Hub>(protocolResolver, globalHubOptions, hubTypeOptions);
+            return new DefaultHubMessageSerializer(protocolResolver, protocols.ConvertAll(p => p.Name), hubSupportedProtocols: null);
         }
     }
 }

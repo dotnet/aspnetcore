@@ -437,13 +437,10 @@ namespace Microsoft.AspNetCore.SignalR
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
                                     if (Protocol == null)
                                     {
-                                        if (Protocol == null)
-                                        {
-                                            Log.HandshakeFailed(_logger, null);
+                                        Log.HandshakeFailed(_logger, null);
 
-                                            await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"The protocol '{handshakeRequestMessage.Protocol}' is not supported."));
-                                            return false;
-                                        }
+                                        await WriteHandshakeResponseAsync(new HandshakeResponseMessage($"The protocol '{handshakeRequestMessage.Protocol}' is not supported."));
+                                        return false;
                                     }
 
                                     if (!Protocol.IsVersionSupported(handshakeRequestMessage.Version))

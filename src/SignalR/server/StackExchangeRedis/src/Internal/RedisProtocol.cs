@@ -13,17 +13,17 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
-    internal class RedisProtocol<THub> where THub : Hub
+    internal class RedisProtocol
     {
         private readonly IReadOnlyList<IHubProtocol> _protocols;
-        private readonly DefaultHubMessageSerializer<THub> _messageSerializer;
+        private readonly DefaultHubMessageSerializer _messageSerializer;
 
         public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
         {
             _protocols = protocols;
         }
 
-        public RedisProtocol(DefaultHubMessageSerializer<THub> messageSerializer)
+        public RedisProtocol(DefaultHubMessageSerializer messageSerializer)
         {
             _messageSerializer = messageSerializer;
         }

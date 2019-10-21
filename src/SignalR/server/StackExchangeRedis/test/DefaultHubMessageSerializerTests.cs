@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
             var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
             var protocolNames = testData.SupportedHubProtocols.ConvertAll(p => p.Name);
-            var serializer = new DefaultHubMessageSerializer<Hub>(resolver, Options.Create(new HubOptions() { SupportedProtocols = protocolNames }), Options.Create(new HubOptions<Hub>()));
+            var serializer = new DefaultHubMessageSerializer(resolver, protocolNames, hubSupportedProtocols: null);
             var serializedHubMessage = serializer.SerializeMessage(_testMessage);
 
             var serializedMessages = serializedHubMessage.GetAllSerializations();
