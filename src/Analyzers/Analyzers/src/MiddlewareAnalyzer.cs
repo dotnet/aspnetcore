@@ -37,11 +37,13 @@ namespace Microsoft.AspNetCore.Analyzers
                 if (context.Operation is IInvocationOperation invocation &&
                     invocation.Instance == null &&
                     invocation.Arguments.Length >= 1 &&
-                    invocation.Arguments[0].Parameter?.Type == _context.StartupSymbols.IApplicationBuilder) {
+                    invocation.Arguments[0].Parameter?.Type == _context.StartupSymbols.IApplicationBuilder)
+                {
                     var middlewareItem = new MiddlewareItem(invocation);
 
                     // First call of a new set of operations, i.e. the previous chained block has finished.
-                    if (invocation.Parent.Parent.Kind == OperationKind.Block) {
+                    if (invocation.Parent.Parent.Kind == OperationKind.Block)
+                    {
                         AddPreviousItems(middleware, previousMiddlewareCalls);
                     }
 
@@ -66,7 +68,8 @@ namespace Microsoft.AspNetCore.Analyzers
             // [0] UseEndpoints()
             // [1] UseAuthorization()
             // [2] UseRouting()
-            while (previousMiddlewareCalls.Count > 0) {
+            while (previousMiddlewareCalls.Count > 0)
+            {
                 middleware.Add(previousMiddlewareCalls.Pop());
             }
         }
