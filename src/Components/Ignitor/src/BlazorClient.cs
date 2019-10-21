@@ -31,7 +31,7 @@ namespace Ignitor
             });
         }
 
-        public TimeSpan? DefaultConnectionTimeout { get; set; } = TimeSpan.FromSeconds(10);
+        public TimeSpan? DefaultConnectionTimeout { get; set; } = TimeSpan.FromSeconds(20);
         public TimeSpan? DefaultOperationTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
