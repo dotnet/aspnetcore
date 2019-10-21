@@ -27,11 +27,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             var serializer = new DefaultHubMessageSerializer(resolver, protocolNames, hubSupportedProtocols: null);
             var serializedHubMessage = serializer.SerializeMessage(_testMessage);
 
-            var serializedMessages = serializedHubMessage.GetAllSerializations();
-
             var allBytes = new List<byte>();
-            Assert.Equal(testData.SerializedCount, serializedMessages.Count);
-            foreach (var message in serializedMessages)
+            Assert.Equal(testData.SerializedCount, serializedHubMessage.Count);
+            foreach (var message in serializedHubMessage)
             {
                 allBytes.AddRange(message.Serialized.ToArray());
             }

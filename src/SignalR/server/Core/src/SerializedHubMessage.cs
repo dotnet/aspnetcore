@@ -70,11 +70,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        /// <summary>
-        /// Gets all serialized hub messages for all protocols used on this <see cref="SerializedHubMessage"/> instance.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of already serialized hub messages for each protocol.</returns>
-        public IReadOnlyList<SerializedMessage> GetAllSerializations()
+        // Used for unit testing.
+        internal IReadOnlyList<SerializedMessage> GetAllSerializations()
         {
             // Even if this is only used in tests, let's do it right.
             lock (_lock)

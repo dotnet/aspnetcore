@@ -190,12 +190,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             }
             else
             {
-                var serializedHubMessage = _messageSerializer.SerializeMessage(message);
-                var serializedMessages = serializedHubMessage.GetAllSerializations();
+                var serializedHubMessages = _messageSerializer.SerializeMessage(message);
 
-                MessagePackBinary.WriteMapHeader(stream, serializedMessages.Count);
+                MessagePackBinary.WriteMapHeader(stream, serializedHubMessages.Count);
 
-                foreach (var serializedMessage in serializedMessages)
+                foreach (var serializedMessage in serializedHubMessages)
                 {
                     MessagePackBinary.WriteString(stream, serializedMessage.ProtocolName);
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public SerializedHubMessage SerializeMessage(HubMessage message)
+        public IReadOnlyList<SerializedMessage> SerializeMessage(HubMessage message)
         {
             var list = new List<SerializedMessage>(_hubProtocols.Count);
             foreach (var protocol in _hubProtocols)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 list.Add(new SerializedMessage(protocol.Name, protocol.GetMessageBytes(message)));
             }
 
-            return new SerializedHubMessage(list);
+            return list;
         }
     }
 }
