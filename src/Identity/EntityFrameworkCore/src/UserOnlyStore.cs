@@ -251,15 +251,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            return Users.FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
+            return (await GetUsersAsync()).FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
         /// <summary>
         /// A navigation property for the users the store contains.
         /// </summary>
-        public override IQueryable<TUser> Users
+        public override Task<IQueryable<TUser>> GetUsersAsync()
         {
-            get { return UsersSet; }
+            return Task.FromResult(UsersSet);
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <returns>The user if it exists.</returns>
         protected override Task<TUser> FindUserAsync(TKey userId, CancellationToken cancellationToken)
         {
-            return Users.SingleOrDefaultAsync(u => u.Id.Equals(userId), cancellationToken);
+            return (await GetUsersAsync).SingleOrDefaultAsync(u => u.Id.Equals(userId), cancellationToken);
         }
 
         /// <summary>
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
+            return Task.FromResult((await GetUsersAsync).Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
         }
 
         /// <summary>

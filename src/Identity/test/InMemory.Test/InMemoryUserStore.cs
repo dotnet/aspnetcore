@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.Identity.InMemory
 
         private readonly Dictionary<string, TUser> _users = new Dictionary<string, TUser>();
 
-        public IQueryable<TUser> Users
+        public Task<IQueryable<TUser>> GetUsersAsync()
         {
-            get { return _users.Values.AsQueryable(); }
+            return Task.FromResult(_users.Values.AsQueryable());
         }
 
         public Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))

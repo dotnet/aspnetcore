@@ -12,9 +12,12 @@ namespace Microsoft.AspNetCore.Identity
     public interface IQueryableUserStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Returns an <see cref="IQueryable{T}"/> collection of users.
+        ///  Returns an <see cref="IQueryable{T}"/> collection of users as an asynchronous operation.
         /// </summary>
-        /// <value>An <see cref="IQueryable{T}"/> collection of users.</value>
-        IQueryable<TUser> Users { get; }
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a collection of users <see cref="IQueryable{T}"/>s.
+        /// </returns>
+        Task<IQueryable<TUser>> GetUsersAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }
