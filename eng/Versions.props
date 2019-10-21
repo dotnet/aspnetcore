@@ -236,7 +236,7 @@
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.8.0</GoogleProtobufPackageVersion>
-    <GrpcAspNetCorePackageVersion>2.23.2</GrpcAspNetCorePackageVersion>
+    <GrpcAspNetCorePackageVersion>2.24.0</GrpcAspNetCorePackageVersion>
     <IdentityServer4AspNetIdentityPackageVersion>3.0.0</IdentityServer4AspNetIdentityPackageVersion>
     <IdentityServer4EntityFrameworkPackageVersion>3.0.0</IdentityServer4EntityFrameworkPackageVersion>
     <IdentityServer4PackageVersion>3.0.0</IdentityServer4PackageVersion>
