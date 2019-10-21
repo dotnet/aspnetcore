@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
     /// <summary>
     /// Implements the SignalR Hub Protocol using MessagePack with limited type support.
     /// </summary>
+    [NonDefaultHubProtocol]
     internal sealed class BlazorPackHubProtocol : IHubProtocol
     {
         internal const string ProtocolName = "blazorpack";

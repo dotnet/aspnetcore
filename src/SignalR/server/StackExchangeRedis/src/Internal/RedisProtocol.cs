@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
     internal class RedisProtocol<THub> where THub : Hub
     {
         private readonly IReadOnlyList<IHubProtocol> _protocols;
-        private readonly IHubMessageSerializer<THub> _messageSerializer;
+        private readonly DefaultHubMessageSerializer<THub> _messageSerializer;
 
         public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
         {
             _protocols = protocols;
         }
 
-        public RedisProtocol(IHubMessageSerializer<THub> messageSerializer)
+        public RedisProtocol(DefaultHubMessageSerializer<THub> messageSerializer)
         {
             _messageSerializer = messageSerializer;
         }
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             else
             {
                 var serializedHubMessage = _messageSerializer.SerializeMessage(message);
-                var serializedMessages = serializedHubMessage.GetAllSerializations().ToList();
+                var serializedMessages = serializedHubMessage.GetAllSerializations();
 
                 MessagePackBinary.WriteMapHeader(stream, serializedMessages.Count);
 

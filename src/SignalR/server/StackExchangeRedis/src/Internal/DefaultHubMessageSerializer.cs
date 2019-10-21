@@ -9,9 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class DefaultHubMessageSerializer<THub> : IHubMessageSerializer<THub> where THub : Hub
+    internal class DefaultHubMessageSerializer<THub> where THub : Hub
     {
-        private List<IHubProtocol> _hubProtocols = new List<IHubProtocol>();
+        private readonly List<IHubProtocol> _hubProtocols = new List<IHubProtocol>();
 
         public DefaultHubMessageSerializer(IHubProtocolResolver hubProtocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions)
         {
@@ -23,13 +23,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     _hubProtocols.Add(protocol);
                 }
-            }
-
-            // REVIEW: Do we care about removing dupes, since that's a very unlikely scenario?
-            var additionalProtocols = hubOptions.Value.AdditionalHubProtocols ?? globalHubOptions.Value.AdditionalHubProtocols ?? Array.Empty<IHubProtocol>();
-            foreach (var protocol in additionalProtocols)
-            {
-                _hubProtocols.Add(protocol);
             }
         }
 

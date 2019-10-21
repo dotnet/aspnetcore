@@ -215,15 +215,15 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             }
         }
 
-        private IHubMessageSerializer<Hub> CreateHubMessageSerializer(List<IHubProtocol> protocols)
+        private DefaultHubMessageSerializer<Hub> CreateHubMessageSerializer(List<IHubProtocol> protocols)
         {
-            var hubTypeOptions = Options.Create(new HubOptions<Hub>()
+            var hubTypeOptions = Options.Create(new HubOptions<Hub>());
+            var globalHubOptions = Options.Create(new HubOptions()
             {
-                AdditionalHubProtocols = protocols
+                SupportedProtocols = protocols.ConvertAll(p => p.Name)
             });
-            var globalHubOptions = Options.Create(new HubOptions());
 
-            var protocolResolver = new DefaultHubProtocolResolver(new List<IHubProtocol>(), NullLogger<DefaultHubProtocolResolver>.Instance);
+            var protocolResolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
 
             return new DefaultHubMessageSerializer<Hub>(protocolResolver, globalHubOptions, hubTypeOptions);
         }

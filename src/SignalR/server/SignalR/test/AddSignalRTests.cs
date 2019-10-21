@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -30,7 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
             var hubOptions = new HubOptionsSetup(new List<IHubProtocol>());
             serviceCollection.AddSingleton<IConfigureOptions<HubOptions>>(hubOptions);
-            serviceCollection.AddSingleton(typeof(IHubMessageSerializer<>), typeof(CustomHubMessageSerializer<>));
             serviceCollection.AddSignalR();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -41,7 +43,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
-            Assert.IsType<CustomHubMessageSerializer<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubMessageSerializer<CustomDynamicHub>>());
             Assert.Equal(hubOptions, serviceProvider.GetRequiredService<IConfigureOptions<HubOptions>>());
             Assert.Equal(markerService, serviceProvider.GetRequiredService<SignalRCoreMarkerService>());
         }
@@ -58,7 +59,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddScoped(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
             serviceCollection.AddSingleton(typeof(IHubContext<>), typeof(CustomHubContext<>));
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
-            serviceCollection.AddSingleton(typeof(IHubMessageSerializer<>), typeof(CustomHubMessageSerializer<>));
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.IsType<CustomIdProvider>(serviceProvider.GetRequiredService<IUserIdProvider>());
@@ -68,7 +68,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
-            Assert.IsType<CustomHubMessageSerializer<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubMessageSerializer<CustomDynamicHub>>());
         }
 
         [Fact]
@@ -79,15 +78,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
             {
                 options.SupportedProtocols.Clear();
-                options.AdditionalHubProtocols.Add(new JsonHubProtocol());
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
             Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
-
-            Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.AdditionalHubProtocols.Count);
-            Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.AdditionalHubProtocols.Count);
         }
 
         [Fact]
@@ -155,6 +150,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.HandshakeTimeout);
             Assert.Null(globalOptions.SupportedProtocols);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
+        }
+
+        [Fact]
+        public void HubProtocolsWithNonDefaultAttributeNotAddedToSupportedProtocols()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+            });
+
+            serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, CustomHubProtocol>());
+            serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, MessagePackHubProtocol>());
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Assert.Collection(serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols,
+                p =>
+                {
+                    Assert.Equal("json", p);
+                },
+                p =>
+                {
+                    Assert.Equal("messagepack", p);
+                });
         }
     }
 
@@ -285,11 +304,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
-    public class CustomHubMessageSerializer<THub> : IHubMessageSerializer<THub> where THub : Hub
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    internal class NonDefaultHubProtocol : Attribute
     {
-        public SerializedHubMessage SerializeMessage(HubMessage message)
+    }
+
+    [NonDefaultHubProtocol]
+    internal class CustomHubProtocol : IHubProtocol
+    {
+        public string Name => throw new NotImplementedException();
+
+        public int Version => throw new NotImplementedException();
+
+        public TransferFormat TransferFormat => throw new NotImplementedException();
+
+        public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public bool IsVersionSupported(int version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            throw new NotImplementedException();
         }
     }
 }

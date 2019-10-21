@@ -74,30 +74,30 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets all serialized hub messages for all protocols used on this <see cref="SerializedHubMessage"/> instance.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of already serialized hub messages for each protocol.</returns>
-        public IEnumerable<SerializedMessage> GetAllSerializations()
+        public IReadOnlyList<SerializedMessage> GetAllSerializations()
         {
             // Even if this is only used in tests, let's do it right.
             lock (_lock)
             {
                 if (_cachedItem1.ProtocolName == null)
                 {
-                    yield break;
+                    return Array.Empty<SerializedMessage>();
                 }
 
-                yield return _cachedItem1;
+                var list = new List<SerializedMessage>(2);
+                list.Add(_cachedItem1);
 
                 if (_cachedItem2.ProtocolName != null)
                 {
-                    yield return _cachedItem2;
+                    list.Add(_cachedItem2);
 
                     if (_cachedItems != null)
                     {
-                        foreach (var item in _cachedItems)
-                        {
-                            yield return item;
-                        }
+                        list.AddRange(_cachedItems);
                     }
                 }
+
+                return list;
             }
         }
 

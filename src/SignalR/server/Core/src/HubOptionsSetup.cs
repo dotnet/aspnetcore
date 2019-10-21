@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             foreach (var hubProtocol in protocols)
             {
+                if (hubProtocol.GetType().CustomAttributes.Where(a => a.AttributeType.Name == "NonDefaultHubProtocol").Any())
+                {
+                    continue;
+                }
                 _defaultProtocols.Add(hubProtocol.Name);
             }
         }
@@ -52,11 +57,6 @@ namespace Microsoft.AspNetCore.SignalR
             if (options.SupportedProtocols == null)
             {
                 options.SupportedProtocols = new List<string>();
-            }
-
-            if (options.AdditionalHubProtocols == null)
-            {
-                options.AdditionalHubProtocols = new List<IHubProtocol>();
             }
 
             if (options.StreamBufferCapacity == null)

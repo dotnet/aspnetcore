@@ -52,11 +52,5 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the max buffer size for client upload streams. The default size is 10.
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
-
-        /// <summary>
-        /// Add protocols specific to this Hub so other Hubs do not get these protocols by default.
-        /// When using this you do not need to add the IHubProtocol to DI.
-        /// </summary>
-        public IList<IHubProtocol> AdditionalHubProtocols { get; set; } = null;
     }
 }

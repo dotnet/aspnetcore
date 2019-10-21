@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,18 +23,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             var testData = _invocationTestData[testName];
 
             var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
-            var protocolNames = new List<string>();
-            foreach (var protocol in testData.SupportedHubProtocols)
-            {
-                protocolNames.Add(protocol.Name);
-            }
-            var serializer = new DefaultHubMessageSerializer<Hub>(resolver, Options.Create(new HubOptions() { SupportedProtocols = protocolNames, AdditionalHubProtocols = testData.AdditionalHubProtocols }), Options.Create(new HubOptions<Hub>()));
+            var protocolNames = testData.SupportedHubProtocols.ConvertAll(p => p.Name);
+            var serializer = new DefaultHubMessageSerializer<Hub>(resolver, Options.Create(new HubOptions() { SupportedProtocols = protocolNames }), Options.Create(new HubOptions<Hub>()));
             var serializedHubMessage = serializer.SerializeMessage(_testMessage);
 
-            var serializedMessages = serializedHubMessage.GetAllSerializations().ToList();
+            var serializedMessages = serializedHubMessage.GetAllSerializations();
 
             var allBytes = new List<byte>();
-            Assert.Equal(testData.SupportedHubProtocols.Count + testData.AdditionalHubProtocols.Count, serializedMessages.Count);
+            Assert.Equal(testData.SerializedCount, serializedMessages.Count);
             foreach (var message in serializedMessages)
             {
                 allBytes.AddRange(message.Serialized.ToArray());
@@ -46,13 +44,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             return new DefaultHubProtocolResolver(hubProtocols, NullLogger<DefaultHubProtocolResolver>.Instance);
         }
 
-        // We use a func so we are guaranteed to get a new SerializedHubMessage for each test
         private static Dictionary<string, ProtocolTestData> _invocationTestData = new[]
         {
             new ProtocolTestData(
                 "Single supported protocol",
                 new List<IHubProtocol>() { new MessagePackHubProtocol() },
-                new List<IHubProtocol>(),
+                1,
                 0x0D,
                   0x96,
                     0x01,
@@ -62,29 +59,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                     0x90,
                     0x90),
             new ProtocolTestData(
-                "Supported protocol with same additional protocol",
-                new List<IHubProtocol>() { new MessagePackHubProtocol() },
-                new List<IHubProtocol>() { new MessagePackHubProtocol() },
-                0x0D,
-                  0x96,
-                    0x01,
-                    0x80,
-                    0xC0,
-                    0xA6, (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t',
-                    0x90,
-                    0x90,
-                0x0D,
-                  0x96,
-                    0x01,
-                    0x80,
-                    0xC0,
-                    0xA6, (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t',
-                    0x90,
-                    0x90),
-            new ProtocolTestData(
-                "Supported protocol with different additional protocol",
-                new List<IHubProtocol>() { new MessagePackHubProtocol() },
-                new List<IHubProtocol>() { new JsonHubProtocol() },
+                "Multiple supported protocols",
+                new List<IHubProtocol>() { new MessagePackHubProtocol(), new JsonHubProtocol() },
+                2,
                 0x0D,
                   0x96,
                     0x01,
@@ -99,9 +76,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                 (byte)',', (byte)'"', (byte)'a', (byte)'r', (byte)'g', (byte)'u', (byte)'m', (byte)'e', (byte)'n', (byte)'t', (byte)'s', (byte)'"',
                 (byte)':', (byte)'[', (byte)']', (byte)'}', 0x1e),
             new ProtocolTestData(
-                "No supported protocol with additional protocol",
-                new List<IHubProtocol>(),
-                new List<IHubProtocol>() { new MessagePackHubProtocol() },
+                "Multiple protocols, one not in hub protocol resolver",
+                new List<IHubProtocol>() { new MessagePackHubProtocol(), new TestHubProtocol() },
+                1,
                 0x0D,
                   0x96,
                     0x01,
@@ -113,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             new ProtocolTestData(
                 "No protocols",
                 new List<IHubProtocol>(),
-                new List<IHubProtocol>()),
+                0)
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> InvocationTestData = _invocationTestData.Keys.Select(k => new object[] { k });
@@ -122,19 +99,48 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         {
             public string Name { get; }
             public byte[] Encoded { get; }
-            public List<IHubProtocol> AdditionalHubProtocols { get; }
+            public int SerializedCount { get; }
             public List<IHubProtocol> SupportedHubProtocols { get; }
 
-            public ProtocolTestData(string name, List<IHubProtocol> supportedHubProtocols, List<IHubProtocol> additionalHubProtocols, params byte[] encoded)
+            public ProtocolTestData(string name, List<IHubProtocol> supportedHubProtocols, int serializedCount, params byte[] encoded)
             {
                 Name = name;
                 Encoded = encoded;
-                AdditionalHubProtocols = additionalHubProtocols;
+                SerializedCount = serializedCount;
                 SupportedHubProtocols = supportedHubProtocols;
             }
         }
 
         // The actual invocation message doesn't matter
         private static InvocationMessage _testMessage = new InvocationMessage("target", Array.Empty<object>());
+
+        internal class TestHubProtocol : IHubProtocol
+        {
+            public string Name => "test";
+
+            public int Version => throw new NotImplementedException();
+
+            public TransferFormat TransferFormat => throw new NotImplementedException();
+
+            public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsVersionSupported(int version)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

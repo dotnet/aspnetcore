@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.Extensions.Logging;
@@ -36,22 +37,23 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver)
-            : this(logger, options, hubProtocolResolver, hubMessageSerializer: null)
+            : this(logger, options, hubProtocolResolver, globalHubOptions: null, hubOptions: null)
         {
         }
 
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver,
-                                       IHubMessageSerializer<THub> hubMessageSerializer)
+                                       IOptions<HubOptions> globalHubOptions,
+                                       IOptions<HubOptions<THub>> hubOptions)
         {
             _logger = logger;
             _options = options.Value;
             _ackHandler = new AckHandler();
             _channels = new RedisChannels(typeof(THub).FullName);
-            if (hubMessageSerializer != null)
+            if (globalHubOptions != null && hubOptions != null)
             {
-                _protocol = new RedisProtocol<THub>(hubMessageSerializer);
+                _protocol = new RedisProtocol<THub>(new DefaultHubMessageSerializer<THub>(hubProtocolResolver, globalHubOptions, hubOptions));
             }
             else
             {

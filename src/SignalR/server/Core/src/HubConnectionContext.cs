@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
-            IUserIdProvider userIdProvider, bool enableDetailedErrors, IList<IHubProtocol> additionalProtocols)
+            IUserIdProvider userIdProvider, bool enableDetailedErrors)
         {
             try
             {
@@ -437,15 +437,6 @@ namespace Microsoft.AspNetCore.SignalR
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
                                     if (Protocol == null)
                                     {
-                                        foreach (var protocol in additionalProtocols)
-                                        {
-                                            if (string.Equals(handshakeRequestMessage.Protocol, protocol.Name, StringComparison.OrdinalIgnoreCase))
-                                            {
-                                                Protocol = protocol;
-                                                break;
-                                            }
-                                        }
-
                                         if (Protocol == null)
                                         {
                                             Log.HandshakeFailed(_logger, null);
