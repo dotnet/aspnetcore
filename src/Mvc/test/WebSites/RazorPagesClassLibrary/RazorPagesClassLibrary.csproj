@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 

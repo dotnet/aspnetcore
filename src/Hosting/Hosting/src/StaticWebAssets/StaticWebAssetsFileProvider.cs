@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         public StaticWebAssetsFileProvider(string pathPrefix, string contentRoot)
         {
-            BasePath = new PathString(pathPrefix.StartsWith("/") ? pathPrefix : "/" + pathPrefix);
+            BasePath = NormalizePath(pathPrefix);
             InnerProvider = new PhysicalFileProvider(contentRoot);
         }
 
@@ -44,16 +44,19 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <inheritdoc />
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            var modifiedSub = subpath.StartsWith("/") ? subpath : "/" + subpath;
+            var modifiedSub = NormalizePath(subpath);
 
             if (StartsWithBasePath(modifiedSub, out var physicalPath))
             {
                 return InnerProvider.GetDirectoryContents(physicalPath.Value);
             }
-            else
-            if (string.Equals(subpath, string.Empty) || BasePath.StartsWithSegments(modifiedSub))
+            else if (string.Equals(subpath, string.Empty))
             {
-                return new FakeRoot(BasePath, modifiedSub);
+                return new StaticWebAssetsDirectoryRoot(BasePath);
+            }
+            else if (BasePath.StartsWithSegments(modifiedSub, FilePathComparison, out PathString remaining))
+            {
+                return new StaticWebAssetsDirectoryRoot(remaining);
             }
             else
             {
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// <inheritdoc />
         public IFileInfo GetFileInfo(string subpath)
         {
-            var modifiedSub = subpath.StartsWith("/") ? subpath : "/" + subpath;
+            var modifiedSub = NormalizePath(subpath);
 
             if (!StartsWithBasePath(modifiedSub, out var physicalPath))
             {
@@ -82,19 +85,23 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             return InnerProvider.Watch(filter);
         }
 
+        private static string NormalizePath(string path)
+        {
+            return path != null && path.StartsWith("/") ? path : "/" + path;
+        }
+
         private bool StartsWithBasePath(string subpath, out PathString rest)
         {
             return new PathString(subpath).StartsWithSegments(BasePath, FilePathComparison, out rest);
         }
 
-        private class FakeRoot : IDirectoryContents
+        private class StaticWebAssetsDirectoryRoot : IDirectoryContents
         {
             private readonly string _nextSegment;
 
-            public FakeRoot(string basePath, string subPath)
+            public StaticWebAssetsDirectoryRoot(PathString remainingPath)
             {
-                var trimmedBase = basePath.Substring(subPath.Length);
-                _nextSegment = trimmedBase.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                _nextSegment = remainingPath.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             }
 
             public bool Exists => true;
@@ -111,13 +118,13 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
             private IEnumerator<IFileInfo> GenerateEnum()
             {
-                return new[] { new FakeFileInfo(_nextSegment) }
+                return new[] { new StaticWebAssetsFileInfo(_nextSegment) }
                     .Cast<IFileInfo>().GetEnumerator();
             }
 
-            private class FakeFileInfo : IFileInfo
+            private class StaticWebAssetsFileInfo : IFileInfo
             {
-                public FakeFileInfo(string name)
+                public StaticWebAssetsFileInfo(string name)
                 {
                     Name = name;
                 }
