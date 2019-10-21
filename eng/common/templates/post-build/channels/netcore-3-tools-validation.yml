@@ -1,10 +1,12 @@
 parameters:
   artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
   publishInstallersAndChecksums: false
 
 stages:
 - stage: NetCore_3_Tools_Validation_Publish
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: .NET 3 Tools - Validation Publishing

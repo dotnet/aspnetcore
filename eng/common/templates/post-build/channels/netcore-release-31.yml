@@ -1,11 +1,13 @@
 parameters:
-  symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
   publishInstallersAndChecksums: false
+  symbolPublishingAdditionalParameters: ''
 
 stages:
 - stage: NetCore_Release31_Publish
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: .NET Core 3.1 Release Publishing
@@ -116,7 +118,6 @@ stages:
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
-            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'

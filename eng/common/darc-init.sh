@@ -58,7 +58,7 @@ function InstallDarcCli {
     echo $($dotnet_root/dotnet tool uninstall $darc_cli_package_name -g)
   fi
 
-  local arcadeServicesSource="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
+  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
 
   echo "Installing Darc CLI version $darcVersion..."
   echo "You may need to restart your command shell if this is the first dotnet tool you have installed."

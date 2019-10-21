@@ -1,10 +1,12 @@
 parameters:
-  symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
+  symbolPublishingAdditionalParameters: ''
 
 stages:
 - stage: NetCore_30_Internal_Servicing_Publishing
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: .NET Core 3.0 Internal Servicing Publishing
@@ -31,6 +33,18 @@ stages:
         inputs:
           artifactName: 'PDBArtifacts'
         continueOnError: true
+
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise it'll complain about accessing a private feed.
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
 
       - task: PowerShell@2
         displayName: Publish
@@ -114,7 +128,6 @@ stages:
             /p:ChecksumsAzureAccountKey=$(InternalChecksumsBlobFeedKey)
             /p:InstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(InternalInstallersBlobFeedKey)
-            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v3/index.json'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v3/index.json'
