@@ -24,15 +24,15 @@ jobs:
       buildType: current
       downloadType: specific files
       matchingPattern: "**"
-      downloadPath: $(Build.SourcesDirectory)\artifacts
+      downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
-      -ExtractPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
+      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
+      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
     displayName: Extract Blob Artifacts
     continueOnError: ${{ parameters.sdlContinueOnError }}
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
-      -ExtractPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
+      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
+      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
     displayName: Extract Package Artifacts
     continueOnError: ${{ parameters.sdlContinueOnError }}
   - task: NuGetToolInstaller@1

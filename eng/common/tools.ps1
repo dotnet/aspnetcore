@@ -154,15 +154,6 @@ function InitializeDotNetCli([bool]$install) {
   # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
   Write-PipelinePrependPath -Path $dotnetRoot
 
-  # Work around issues with Azure Artifacts credential provider
-  # https://github.com/dotnet/arcade/issues/3932
-  if ($ci) {
-    $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
-    $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
-    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
-    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
-  }
-
   Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
 
@@ -504,6 +495,11 @@ function MSBuild() {
     # https://github.com/dotnet/arcade/issues/3932
     if ($ci -and $buildTool.Tool -eq "dotnet") {
       dotnet nuget locals http-cache -c
+
+      $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
+      $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
+      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
+      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
     }
 
     $toolsetBuildProject = InitializeToolset
@@ -603,3 +599,10 @@ Write-PipelineSetVariable -Name 'Artifacts.Toolset' -Value $ToolsetDir
 Write-PipelineSetVariable -Name 'Artifacts.Log' -Value $LogDir
 Write-PipelineSetVariable -Name 'TEMP' -Value $TempDir
 Write-PipelineSetVariable -Name 'TMP' -Value $TempDir
+
+# Import custom tools configuration, if present in the repo.
+# Note: Import in global scope so that the script set top-level variables without qualification.
+$configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
+if (Test-Path $configureToolsetScript) {
+    . $configureToolsetScript
+}
