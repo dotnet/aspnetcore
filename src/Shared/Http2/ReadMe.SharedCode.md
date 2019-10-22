@@ -22,8 +22,14 @@ To copy code from AspNetCore to CoreFx set COREFX_REPO to the CoreFx repo root a
 
 ## Building AspNetCore code:
 - https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md
+- Run restore in the root once: `PS D:\github\AspNetCore> .\restore.cmd`
+- Activate to use the repo local runtime: `PS D:\github\AspNetCore> . .\activate.ps1`
+- Build the individual projects:
+- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet msbuild`
+
+### Running AspNetCore tests:
+- `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\test> dotnet test`
 
 TODO:
-- Build instructions for each repo
 - Shared tests
 - Code owners

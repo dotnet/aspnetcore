@@ -108,7 +108,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return asciiString;
         }
 
-        public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
+        public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
+            => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -129,6 +132,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             return asciiString;
         }
+
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
