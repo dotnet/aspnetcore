@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         public DefaultFilesOptions() : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
         public DefaultFilesOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
-        public System.Collections.Generic.IList<string> DefaultFileNames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<string> DefaultFileNames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class DirectoryBrowserExtensions
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         public DirectoryBrowserOptions() : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
         public DirectoryBrowserOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
-        public Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter Formatter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter Formatter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class FileServerExtensions
     {
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Builder
     public partial class FileServerOptions : Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptionsBase
     {
         public FileServerOptions() : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
-        public Microsoft.AspNetCore.Builder.DefaultFilesOptions DefaultFilesOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Builder.DirectoryBrowserOptions DirectoryBrowserOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool EnableDefaultFiles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool EnableDirectoryBrowsing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Builder.StaticFileOptions StaticFileOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Builder.DefaultFilesOptions DefaultFilesOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Builder.DirectoryBrowserOptions DirectoryBrowserOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool EnableDefaultFiles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool EnableDirectoryBrowsing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Builder.StaticFileOptions StaticFileOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class StaticFileExtensions
     {
@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Builder
     {
         public StaticFileOptions() : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
         public StaticFileOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
-        public Microsoft.AspNetCore.StaticFiles.IContentTypeProvider ContentTypeProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string DefaultContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.Features.HttpsCompressionMode HttpsCompression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext> OnPrepareResponse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool ServeUnknownFileTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.StaticFiles.IContentTypeProvider ContentTypeProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string DefaultContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.Features.HttpsCompressionMode HttpsCompression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext> OnPrepareResponse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool ServeUnknownFileTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class StaticFilesEndpointRouteBuilderExtensions
     {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public FileExtensionContentTypeProvider() { }
         public FileExtensionContentTypeProvider(System.Collections.Generic.IDictionary<string, string> mapping) { }
-        public System.Collections.Generic.IDictionary<string, string> Mappings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, string> Mappings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool TryGetContentType(string subpath, out string contentType) { throw null; }
     }
     public partial class HtmlDirectoryFormatter : Microsoft.AspNetCore.StaticFiles.IDirectoryFormatter
@@ -110,8 +110,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         [System.ObsoleteAttribute("Use the constructor that passes in the HttpContext and IFileInfo parameters: StaticFileResponseContext(HttpContext context, IFileInfo file)", false)]
         public StaticFileResponseContext() { }
         public StaticFileResponseContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.Extensions.FileProviders.IFileInfo file) { }
-        public Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.FileProviders.IFileInfo File { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.FileProviders.IFileInfo File { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
@@ -119,8 +119,8 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
     public partial class SharedOptions
     {
         public SharedOptions() { }
-        public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RedirectToAppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RedirectToAppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
     }
     public abstract partial class SharedOptionsBase
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { get { throw null; } set { } }
         public bool RedirectToAppendTrailingSlash { get { throw null; } set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
-        protected Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions SharedOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions SharedOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

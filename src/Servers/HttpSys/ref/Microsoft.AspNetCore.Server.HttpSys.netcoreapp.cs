@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         internal AuthenticationManager() { }
         public bool AllowAnonymous { get { throw null; } set { } }
-        public bool AutomaticAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool AutomaticAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes Schemes { get { throw null; } set { } }
     }
     [System.FlagsAttribute]
@@ -56,15 +56,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public Microsoft.AspNetCore.Server.HttpSys.ClientCertificateMethod ClientCertificateMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool EnableResponseCaching { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.HttpSys.Http503VerbosityLevel Http503Verbosity { get { throw null; } set { } }
-        public int MaxAccepts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int MaxAccepts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public long? MaxConnections { get { throw null; } set { } }
         public long? MaxRequestBodySize { get { throw null; } set { } }
         public long RequestQueueLimit { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode RequestQueueMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.HttpSys.RequestQueueMode RequestQueueMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string RequestQueueName { get { throw null; } set { } }
-        public bool ThrowWriteExceptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.HttpSys.TimeoutManager Timeouts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection UrlPrefixes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool ThrowWriteExceptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Server.HttpSys.TimeoutManager Timeouts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Server.HttpSys.UrlPrefixCollection UrlPrefixes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial interface IHttpSysRequestInfoFeature
     {
@@ -89,13 +89,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public partial class UrlPrefix
     {
         internal UrlPrefix() { }
-        public string FullPrefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsHttps { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int PortValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FullPrefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsHttps { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int PortValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix Create(string prefix) { throw null; }
         public static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix Create(string scheme, string host, int? portValue, string path) { throw null; }
         public static Microsoft.AspNetCore.Server.HttpSys.UrlPrefix Create(string scheme, string host, string port, string path) { throw null; }
