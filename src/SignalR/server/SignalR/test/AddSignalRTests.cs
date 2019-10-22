@@ -304,15 +304,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    internal class NonDefaultHubProtocol : Attribute
-    {
-    }
-
     [NonDefaultHubProtocol]
     internal class CustomHubProtocol : IHubProtocol
     {
-        public string Name => throw new NotImplementedException();
+        public string Name => "custom";
 
         public int Version => throw new NotImplementedException();
 
@@ -337,5 +332,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             throw new NotImplementedException();
         }
+    }
+}
+
+namespace Microsoft.AspNetCore.SignalR.Internal
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    internal class NonDefaultHubProtocolAttribute : Attribute
+    {
     }
 }

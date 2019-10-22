@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Internal
@@ -35,6 +34,29 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             }
 
             Assert.Equal(testData.Encoded, allBytes);
+        }
+
+        [Fact]
+        public void GlobalSupportedProtocolsOverriddenByHubSupportedProtocols()
+        {
+            var testData = _invocationTestData["Single supported protocol"];
+
+            var resolver = CreateHubProtocolResolver(new List<IHubProtocol> { new MessagePackHubProtocol(), new JsonHubProtocol() });
+
+            var serializer = new DefaultHubMessageSerializer(resolver, new List<string>() { "json" }, new List<string>() { "messagepack" });
+            var serializedHubMessage = serializer.SerializeMessage(_testMessage);
+
+            Assert.Equal(1, serializedHubMessage.Count);
+
+            Assert.Equal(new List<byte>() { 0x0D,
+                  0x96,
+                    0x01,
+                    0x80,
+                    0xC0,
+                    0xA6, (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t',
+                    0x90,
+                    0x90 },
+                    serializedHubMessage[0].Serialized.ToArray());
         }
 
         private IHubProtocolResolver CreateHubProtocolResolver(List<IHubProtocol> hubProtocols)

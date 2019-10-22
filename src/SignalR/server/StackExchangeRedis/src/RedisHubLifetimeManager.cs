@@ -57,7 +57,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             }
             else
             {
-                _protocol = new RedisProtocol(hubProtocolResolver.AllProtocols);
+                var supportedProtocols = hubProtocolResolver.AllProtocols.Select(p => p.Name).ToList();
+                _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, supportedProtocols, null));
             }
 
             RedisLog.ConnectingToEndpoints(_logger, options.Value.Configuration.EndPoints, _serverName);

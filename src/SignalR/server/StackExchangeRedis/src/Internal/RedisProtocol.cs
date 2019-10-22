@@ -15,13 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
     internal class RedisProtocol
     {
-        private readonly IReadOnlyList<IHubProtocol> _protocols;
         private readonly DefaultHubMessageSerializer _messageSerializer;
-
-        public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
-        {
-            _protocols = protocols;
-        }
 
         public RedisProtocol(DefaultHubMessageSerializer messageSerializer)
         {
@@ -174,34 +168,17 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             // Written as a MessagePack 'map' where the keys are the name of the protocol (as a MessagePack 'str')
             // and the values are the serialized blob (as a MessagePack 'bin').
 
-            if (_protocols != null)
+            var serializedHubMessages = _messageSerializer.SerializeMessage(message);
+
+            MessagePackBinary.WriteMapHeader(stream, serializedHubMessages.Count);
+
+            foreach (var serializedMessage in serializedHubMessages)
             {
-                MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
+                MessagePackBinary.WriteString(stream, serializedMessage.ProtocolName);
 
-                foreach (var protocol in _protocols)
-                {
-                    MessagePackBinary.WriteString(stream, protocol.Name);
-
-                    var serialized = protocol.GetMessageBytes(message);
-                    var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
-                    Debug.Assert(isArray);
-                    MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
-                }
-            }
-            else
-            {
-                var serializedHubMessages = _messageSerializer.SerializeMessage(message);
-
-                MessagePackBinary.WriteMapHeader(stream, serializedHubMessages.Count);
-
-                foreach (var serializedMessage in serializedHubMessages)
-                {
-                    MessagePackBinary.WriteString(stream, serializedMessage.ProtocolName);
-
-                    var isArray = MemoryMarshal.TryGetArray(serializedMessage.Serialized, out var array);
-                    Debug.Assert(isArray);
-                    MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
-                }
+                var isArray = MemoryMarshal.TryGetArray(serializedMessage.Serialized, out var array);
+                Debug.Assert(isArray);
+                MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
             }
         }
 
