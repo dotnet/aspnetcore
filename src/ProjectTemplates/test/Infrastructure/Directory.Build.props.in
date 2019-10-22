@@ -1,10 +1,5 @@
 <Project>
 <!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository -->
 
-  <ItemGroup>
-    <!-- Workaround missing entries in deps files. Still under investigation -->
-    <RuntimeHostConfigurationOption
-      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
-      Value="true" />
-  </ItemGroup>
+  <Import Project="${IndirectReferences}" />
 </Project>
