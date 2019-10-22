@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private int _partialMatchIndex = 0;
 
+        private static byte[] CrlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
+        private static byte[] EndOfFileDelimiter = new byte[] { (byte)'-', (byte)'-' };
+
 
         public override bool CanRead => true;
 
@@ -280,15 +283,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool TrySkipMetadata(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
-
-            var crlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
-            var endOfFileDelimiter = new byte[] { (byte)'-', (byte)'-' };
-
+            
             while (!sequenceReader.End)
             {
-                if (!sequenceReader.TryReadTo(out var body, crlfDelimiter))
+                if (!sequenceReader.TryReadTo(out var body, CrlfDelimiter))
                 {
-                    if (sequenceReader.TryReadTo(out var _, endOfFileDelimiter))
+                    if (sequenceReader.TryReadTo(out var _, EndOfFileDelimiter))
                     {
                         sequence = sequence.Slice(sequenceReader.Position);
                         RawLength += sequenceReader.Consumed;
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 var position = sequenceReader.Position;
                 sequenceReader.Rewind(sequenceReader.Consumed);
-                if (sequenceReader.TryReadTo(out var _, endOfFileDelimiter))
+                if (sequenceReader.TryReadTo(out var _, EndOfFileDelimiter))
                 {
                     //Debug.Assert(sequenceReader.Consumed < consumed, "Un-expected data found on the boundary line: " + body);
                     sequence = sequence.Slice(position);

@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private MultipartPipeReaderStream _currentStream;
 
+        private static readonly byte[] ColonDelimiter = new byte[] { (byte)':' };
+        private static readonly byte[] CrlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
+
 
         public MultipartPipeReader(string boundary, PipeReader pipeReader)
         {
@@ -130,13 +133,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             ReadOnlySpan<byte> key;
             ReadOnlySpan<byte> value;
             consumed = 0;
-            var colonDelimiter = new byte[] { (byte)':' };
-            var crlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
 
             while (span.Length > 0)
             {
                 // Find the end of the header.
-                var newLine = span.IndexOf(crlfDelimiter);
+                var newLine = span.IndexOf(CrlfDelimiter);
                 ReadOnlySpan<byte> line;
                 int colon;
                 var foundNewLine = newLine != -1;
@@ -144,8 +145,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (foundNewLine)
                 {
                     line = span.Slice(0, newLine);
-                    span = span.Slice(line.Length + crlfDelimiter.Length);
-                    consumed += line.Length + crlfDelimiter.Length;
+                    span = span.Slice(line.Length + CrlfDelimiter.Length);
+                    consumed += line.Length + CrlfDelimiter.Length;
                 }
                 else
                 {
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     return true;
                 }
 
-                colon = line.IndexOf(colonDelimiter);
+                colon = line.IndexOf(ColonDelimiter);
 
                 if (colon == -1)
                 {
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                     }
                     key = line.Slice(0, colon);
-                    value = line.Slice(colon + colonDelimiter.Length);
+                    value = line.Slice(colon + ColonDelimiter.Length);
                 }
 
                 var decodedKey = GetDecodedString(key);
@@ -205,12 +206,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var position = sequenceReader.Position;
             var consumedBytes = default(long);
-            var colonDelimiter = new byte[] { (byte)':' };
-            var crlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
 
             while (!sequenceReader.End)
             {
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> line, crlfDelimiter))
+                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> line, CrlfDelimiter))
                 {
                     if (!isFinalBlock)
                     {
@@ -258,7 +257,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     return true;
                 }
 
-                if (lineReader.TryReadTo(out var key, colonDelimiter))
+                if (lineReader.TryReadTo(out var key, ColonDelimiter))
                 {
                     value = line.Slice(lineReader.Position);
                 }
