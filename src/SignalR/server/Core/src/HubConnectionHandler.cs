@@ -59,21 +59,22 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = loggerFactory.CreateLogger<HubConnectionHandler<THub>>();
             _userIdProvider = userIdProvider;
 
-            _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
-            if (_hubOptions._maximumReceiveMessageSizeSet)
+            _enableDetailedErrors = false;
+            if (_hubOptions.UserHasSetValues)
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
+                _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             }
             else
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
+                _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             }
 
             _dispatcher = new DefaultHubDispatcher<THub>(
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
-                hubOptions,
-                globalHubOptions,
+                _enableDetailedErrors,
                 new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
         }
 

@@ -83,6 +83,29 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public void HubSpecificOptionsHaveSameValuesAsGlobalHubOptions()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var hubOptions = serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value;
+            var globalHubOptions = serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value;
+
+            Assert.Equal(globalHubOptions.MaximumReceiveMessageSize, hubOptions.MaximumReceiveMessageSize);
+            Assert.Equal(globalHubOptions.StreamBufferCapacity, hubOptions.StreamBufferCapacity);
+            Assert.Equal(globalHubOptions.EnableDetailedErrors, hubOptions.EnableDetailedErrors);
+            Assert.Equal(globalHubOptions.KeepAliveInterval, hubOptions.KeepAliveInterval);
+            Assert.Equal(globalHubOptions.HandshakeTimeout, hubOptions.HandshakeTimeout);
+            Assert.Equal(globalHubOptions.SupportedProtocols, hubOptions.SupportedProtocols);
+            Assert.Equal(globalHubOptions.ClientTimeoutInterval, hubOptions.ClientTimeoutInterval);
+            Assert.True(hubOptions.UserHasSetValues);
+        }
+
+        [Fact]
         public void StreamBufferCapacityGetSet()
         {
             var serviceCollection = new ServiceCollection();

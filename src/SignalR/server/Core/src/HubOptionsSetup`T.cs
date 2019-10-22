@@ -23,6 +23,12 @@ namespace Microsoft.AspNetCore.SignalR
             }
             options.KeepAliveInterval = _hubOptions.KeepAliveInterval;
             options.HandshakeTimeout = _hubOptions.HandshakeTimeout;
+            options.ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval;
+            options.EnableDetailedErrors = _hubOptions.EnableDetailedErrors;
+            options.MaximumReceiveMessageSize = _hubOptions.MaximumReceiveMessageSize;
+            options.StreamBufferCapacity = _hubOptions.StreamBufferCapacity;
+
+            options.UserHasSetValues = true;
         }
     }
 }
