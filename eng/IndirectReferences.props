@@ -1146,7 +1146,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.SpaServices" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
-		<IndirectReference Include="MonoSanityClient" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.IIS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Localization.Abstractions" KeepDuplicates="false" />
@@ -1203,7 +1202,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -1745,7 +1743,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
@@ -1995,7 +1992,6 @@
 		<IndirectReference Include="Microsoft.Extensions.WebEncoders" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" KeepDuplicates="false" />
-		<IndirectReference Include="ControllersFromServicesClassLibrary" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Html.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Net.Http.Headers" KeepDuplicates="false" />
@@ -2139,7 +2135,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
@@ -2801,7 +2796,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.HostFiltering" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -2870,7 +2864,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.IIS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Abstractions" KeepDuplicates="false" />
@@ -2953,7 +2946,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Abstractions" KeepDuplicates="false" />
@@ -3460,7 +3452,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
@@ -5387,7 +5378,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Console" KeepDuplicates="false" />
-		<IndirectReference Include="ResourcesClassLibraryWithAttribute" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
@@ -8474,7 +8464,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Blazor.Build" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(_RefsToCheck->Count()) != '0' AND @(_RefsToCheck->AnyHaveMetadataValue('Identity', 'LargeResponseApp'))">
@@ -9650,7 +9639,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
@@ -10486,7 +10474,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
 	</ItemGroup>
