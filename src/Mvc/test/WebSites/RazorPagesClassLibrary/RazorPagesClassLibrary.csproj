@@ -5,10 +5,6 @@
     <IsTestAssetProject>true</IsTestAssetProject>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="wwwroot\**\*" />
-  </ItemGroup>
   
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />

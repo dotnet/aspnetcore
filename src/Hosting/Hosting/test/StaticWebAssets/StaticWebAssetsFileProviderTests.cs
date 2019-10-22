@@ -42,6 +42,9 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         [InlineData("", "_content")]
         [InlineData("/_content", "RazorClassLib")]
         [InlineData("/_content/RazorClassLib", "Dir")]
+        [InlineData("/_content/RazorClassLib/Dir", "Castle.Core.dll")]
+        [InlineData("/_content/RazorClassLib/Dir/testroot/", "TextFile.txt")]
+        [InlineData("/_content/RazorClassLib/Dir/testroot/wwwroot/", "README")]
         public void GetDirectoryContents_WalksUpContentRoot(string searchDir, string expected)
         {
             // Arrange
@@ -56,7 +59,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         }
 
         [Fact]
-        public void GetDirectoryContents_DoesNotGoTooFar()
+        public void GetDirectoryContents_DoesNotFindNonExistentFiles()
         {
             // Arrange
             var provider = new StaticWebAssetsFileProvider("/_content/RazorClassLib/", AppContext.BaseDirectory);
@@ -68,14 +71,16 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             Assert.Empty(directory);
         }
 
-        [Fact]
-        public void GetDirectoryContents_PartialMatchFails()
+        [Theory]
+        [InlineData("/False/_content/RazorClassLib/")]
+        [InlineData("/_content/RazorClass")]
+        public void GetDirectoryContents_PartialMatchFails(string requestedUrl)
         {
             // Arrange
             var provider = new StaticWebAssetsFileProvider("/_content/RazorClassLib", AppContext.BaseDirectory);
 
             // Act
-            var directory = provider.GetDirectoryContents("/False/_content/RazorClassLib/");
+            var directory = provider.GetDirectoryContents(requestedUrl);
 
             // Assert
             Assert.Empty(directory);
