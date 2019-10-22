@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Regenerates the user's application cookie, whilst preserving the existing
-        /// AuthenticationProperties like rememberMe, as an asynchronous operation.
+        /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+        /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
         /// </summary>
-        /// <param name="user">The user whose sign-in cookie should be refreshed.</param>
+        /// <param name="user">The user to sign-in.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task RefreshSignInAsync(TUser user)
         {
