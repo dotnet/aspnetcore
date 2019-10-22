@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public partial class OAuthCodeExchangeContext
     {
         public OAuthCodeExchangeContext(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string code, string redirectUri) { }
-        public string Code { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Code { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class OAuthConstants
     {
@@ -46,13 +46,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     {
         public OAuthCreatingTicketContext(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions options, System.Net.Http.HttpClient backchannel, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens, System.Text.Json.JsonElement user) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions)) { }
         public string AccessToken { get { throw null; } }
-        public System.Net.Http.HttpClient Backchannel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Net.Http.HttpClient Backchannel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.TimeSpan? ExpiresIn { get { throw null; } }
         public System.Security.Claims.ClaimsIdentity Identity { get { throw null; } }
         public string RefreshToken { get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse TokenResponse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse TokenResponse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string TokenType { get { throw null; } }
-        public System.Text.Json.JsonElement User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Text.Json.JsonElement User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void RunClaimActions() { }
         public void RunClaimActions(System.Text.Json.JsonElement userData) { }
     }
@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public partial class OAuthEvents : Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents
     {
         public OAuthEvents() { }
-        public System.Func<Microsoft.AspNetCore.Authentication.OAuth.OAuthCreatingTicketContext, System.Threading.Tasks.Task> OnCreatingTicket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions>, System.Threading.Tasks.Task> OnRedirectToAuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.OAuth.OAuthCreatingTicketContext, System.Threading.Tasks.Task> OnCreatingTicket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions>, System.Threading.Tasks.Task> OnRedirectToAuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Threading.Tasks.Task CreatingTicket(Microsoft.AspNetCore.Authentication.OAuth.OAuthCreatingTicketContext context) { throw null; }
         public virtual System.Threading.Tasks.Task RedirectToAuthorizationEndpoint(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions> context) { throw null; }
     }
@@ -89,27 +89,27 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public partial class OAuthOptions : Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions
     {
         public OAuthOptions() { }
-        public string AuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection ClaimActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ClientId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ClientSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection ClaimActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ClientId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ClientSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents Events { get { throw null; } set { } }
-        public System.Collections.Generic.ICollection<string> Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string TokenEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool UsePkce { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string UserInformationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.ICollection<string> Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string TokenEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool UsePkce { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string UserInformationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Validate() { }
     }
     public partial class OAuthTokenResponse : System.IDisposable
     {
         internal OAuthTokenResponse() { }
-        public string AccessToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Exception Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ExpiresIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RefreshToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Text.Json.JsonDocument Response { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string TokenType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AccessToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Exception Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ExpiresIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RefreshToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Text.Json.JsonDocument Response { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string TokenType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Dispose() { }
         public static Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse Failed(System.Exception error) { throw null; }
         public static Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse Success(System.Text.Json.JsonDocument response) { throw null; }
@@ -120,8 +120,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
     public abstract partial class ClaimAction
     {
         public ClaimAction(string claimType, string valueType) { }
-        public string ClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ValueType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ValueType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public abstract void Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity identity, string issuer);
     }
     public partial class ClaimActionCollection : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction>, System.Collections.IEnumerable
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
     public partial class CustomJsonClaimAction : Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction
     {
         public CustomJsonClaimAction(string claimType, string valueType, System.Func<System.Text.Json.JsonElement, string> resolver) : base (default(string), default(string)) { }
-        public System.Func<System.Text.Json.JsonElement, string> Resolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Func<System.Text.Json.JsonElement, string> Resolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override void Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity identity, string issuer) { }
     }
     public partial class DeleteClaimAction : Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction
@@ -147,13 +147,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
     public partial class JsonKeyClaimAction : Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction
     {
         public JsonKeyClaimAction(string claimType, string valueType, string jsonKey) : base (default(string), default(string)) { }
-        public string JsonKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string JsonKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override void Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity identity, string issuer) { }
     }
     public partial class JsonSubKeyClaimAction : Microsoft.AspNetCore.Authentication.OAuth.Claims.JsonKeyClaimAction
     {
         public JsonSubKeyClaimAction(string claimType, string valueType, string jsonKey, string subKey) : base (default(string), default(string), default(string)) { }
-        public string SubKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string SubKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override void Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity identity, string issuer) { }
     }
     public partial class MapAllClaimsAction : Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction

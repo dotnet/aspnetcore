@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.Owin
     public partial class OwinEnvironmentFeature : Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature
     {
         public OwinEnvironmentFeature() { }
-        public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class OwinFeatureCollection : Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature, Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature, Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         public OwinFeatureCollection(System.Collections.Generic.IDictionary<string, object> environment) { }
-        public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsReadOnly { get { throw null; } }
         public object this[System.Type key] { get { throw null; } set { } }
         System.Security.Claims.ClaimsPrincipal Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature.User { get { throw null; } set { } }
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Owin
         bool Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature.IsWebSocketRequest { get { throw null; } }
         System.Security.Cryptography.X509Certificates.X509Certificate2 Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.ClientCertificate { get { throw null; } set { } }
         public int Revision { get { throw null; } }
-        public bool SupportsWebSockets { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool SupportsWebSockets { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Dispose() { }
         public object Get(System.Type key) { throw null; }
         public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>> GetEnumerator() { throw null; }

@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public HtmlAttributeNameAttribute() { }
         public HtmlAttributeNameAttribute(string name) { }
         public string DictionaryAttributePrefix { get { throw null; } set { } }
-        public bool DictionaryAttributePrefixSet { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool DictionaryAttributePrefixSet { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
     public sealed partial class HtmlAttributeNotBoundAttribute : System.Attribute
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public const string ElementCatchAllTarget = "*";
         public HtmlTargetElementAttribute() { }
         public HtmlTargetElementAttribute(string tag) { }
-        public string Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ParentTag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Tag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Razor.TagHelpers.TagStructure TagStructure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ParentTag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Tag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Razor.TagHelpers.TagStructure TagStructure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface ITagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent
     {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public sealed partial class NullHtmlEncoder : System.Text.Encodings.Web.HtmlEncoder
     {
         internal NullHtmlEncoder() { }
-        public static new Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static new Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override int MaxOutputCharactersPerInputCharacter { get { throw null; } }
         public override void Encode(System.IO.TextWriter output, char[] value, int startIndex, int characterCount) { }
         public override void Encode(System.IO.TextWriter output, string value, int startIndex, int characterCount) { }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public sealed partial class OutputElementHintAttribute : System.Attribute
     {
         public OutputElementHintAttribute(string outputElement) { }
-        public string OutputElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string OutputElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class ReadOnlyTagHelperAttributeList : System.Collections.ObjectModel.ReadOnlyCollection<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute>
     {
@@ -94,12 +94,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public sealed partial class RestrictChildrenAttribute : System.Attribute
     {
         public RestrictChildrenAttribute(string childTag, params string[] childTags) { }
-        public System.Collections.Generic.IEnumerable<string> ChildTags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> ChildTags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class TagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper, Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent
     {
         protected TagHelper() { }
-        public virtual int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual void Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) { }
         public virtual void Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { }
         public virtual System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
@@ -109,9 +109,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public TagHelperAttribute(string name) { }
         public TagHelperAttribute(string name, object value) { }
         public TagHelperAttribute(string name, object value, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle valueStyle) { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle ValueStyle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle ValueStyle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void CopyTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) { }
         public bool Equals(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute other) { throw null; }
         public override bool Equals(object obj) { throw null; }
@@ -174,24 +174,24 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public TagHelperContext(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) { }
         public TagHelperContext(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList allAttributes, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) { }
         public Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList AllAttributes { get { throw null; } }
-        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TagName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string UniqueId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TagName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string UniqueId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Reinitialize(System.Collections.Generic.IDictionary<object, object> items, string uniqueId) { }
         public void Reinitialize(string tagName, System.Collections.Generic.IDictionary<object, object> items, string uniqueId) { }
     }
     public partial class TagHelperOutput : Microsoft.AspNetCore.Html.IHtmlContent, Microsoft.AspNetCore.Html.IHtmlContentContainer
     {
         public TagHelperOutput(string tagName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList attributes, System.Func<bool, System.Text.Encodings.Web.HtmlEncoder, System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>> getChildContentAsync) { }
-        public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent Content { get { throw null; } set { } }
         public bool IsContentModified { get { throw null; } }
         public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent PostContent { get { throw null; } }
         public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent PostElement { get { throw null; } }
         public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent PreContent { get { throw null; } }
         public Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent PreElement { get { throw null; } }
-        public Microsoft.AspNetCore.Razor.TagHelpers.TagMode TagMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string TagName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Razor.TagHelpers.TagMode TagMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string TagName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent> GetChildContentAsync() { throw null; }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent> GetChildContentAsync(bool useCachedResult) { throw null; }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent> GetChildContentAsync(bool useCachedResult, System.Text.Encodings.Web.HtmlEncoder encoder) { throw null; }

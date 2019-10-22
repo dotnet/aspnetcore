@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
     public partial class GoogleOptions : Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions
     {
         public GoogleOptions() { }
-        public string AccessType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AccessType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

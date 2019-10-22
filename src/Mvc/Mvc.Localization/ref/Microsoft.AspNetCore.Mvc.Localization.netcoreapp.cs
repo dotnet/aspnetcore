@@ -65,9 +65,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public LocalizedHtmlString(string name, string value) { }
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound) { }
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound, params object[] arguments) { }
-        public bool IsResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) { }
     }
     public partial class ViewLocalizer : Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer, Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer, Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware

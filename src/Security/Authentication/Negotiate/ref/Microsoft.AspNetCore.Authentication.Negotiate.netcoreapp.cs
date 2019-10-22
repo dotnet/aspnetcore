@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     public partial class AuthenticationFailedContext : Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
     {
         public AuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class ChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
     {
         public ChallengeContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void HandleResponse() { }
     }
     public static partial class NegotiateDefaults
@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     public partial class NegotiateEvents
     {
         public NegotiateEvents() { }
-        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticatedContext, System.Threading.Tasks.Task> OnAuthenticated { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthenticationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext, System.Threading.Tasks.Task> OnChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticatedContext, System.Threading.Tasks.Task> OnAuthenticated { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthenticationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext, System.Threading.Tasks.Task> OnChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Threading.Tasks.Task Authenticated(Microsoft.AspNetCore.Authentication.Negotiate.AuthenticatedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.Negotiate.AuthenticationFailedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task Challenge(Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext context) { throw null; }
@@ -48,8 +48,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     {
         public NegotiateOptions() { }
         public new Microsoft.AspNetCore.Authentication.Negotiate.NegotiateEvents Events { get { throw null; } set { } }
-        public bool PersistKerberosCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool PersistNtlmCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool PersistKerberosCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool PersistNtlmCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class PostConfigureNegotiateOptions : Microsoft.Extensions.Options.IPostConfigureOptions<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
     {

@@ -15,18 +15,18 @@ namespace Microsoft.AspNetCore.Builder
     public partial class ForwardedHeadersOptions
     {
         public ForwardedHeadersOptions() { }
-        public System.Collections.Generic.IList<string> AllowedHosts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardedForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders ForwardedHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardedHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ForwardedProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int? ForwardLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork> KnownNetworks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<System.Net.IPAddress> KnownProxies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string OriginalForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string OriginalHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string OriginalProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool RequireHeaderSymmetry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<string> AllowedHosts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardedForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders ForwardedHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardedHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ForwardedProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int? ForwardLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork> KnownNetworks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<System.Net.IPAddress> KnownProxies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string OriginalForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string OriginalHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string OriginalProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool RequireHeaderSymmetry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class HttpMethodOverrideExtensions
     {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Builder
     public partial class HttpMethodOverrideOptions
     {
         public HttpMethodOverrideOptions() { }
-        public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.HttpOverrides
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
     {
         public System.Func<string, System.Security.Cryptography.X509Certificates.X509Certificate2> HeaderConverter;
         public CertificateForwardingOptions() { }
-        public string CertificateHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string CertificateHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.FlagsAttribute]
     public enum ForwardedHeaders
@@ -63,12 +63,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
     }
     public static partial class ForwardedHeadersDefaults
     {
-        public static string XForwardedForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static string XForwardedHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static string XForwardedProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static string XOriginalForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static string XOriginalHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static string XOriginalProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static string XForwardedForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public static string XForwardedHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public static string XForwardedProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public static string XOriginalForHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public static string XOriginalHostHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public static string XOriginalProtoHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class ForwardedHeadersMiddleware
     {
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
     public partial class IPNetwork
     {
         public IPNetwork(System.Net.IPAddress prefix, int prefixLength) { }
-        public System.Net.IPAddress Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int PrefixLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Net.IPAddress Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int PrefixLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Contains(System.Net.IPAddress address) { throw null; }
     }
 }

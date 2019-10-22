@@ -6,24 +6,24 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     public partial class WebApplicationFactoryClientOptions
     {
         public WebApplicationFactoryClientOptions() { }
-        public bool AllowAutoRedirect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool HandleCookies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MaxAutomaticRedirections { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool AllowAutoRedirect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool HandleCookies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MaxAutomaticRedirections { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, Inherited=false, AllowMultiple=true)]
     public sealed partial class WebApplicationFactoryContentRootAttribute : System.Attribute
     {
         public WebApplicationFactoryContentRootAttribute(string key, string contentRootPath, string contentRootTest, string priority) { }
-        public string ContentRootPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ContentRootTest { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Priority { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ContentRootPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ContentRootTest { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int Priority { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class WebApplicationFactory<TEntryPoint> : System.IDisposable where TEntryPoint : class
     {
         public WebApplicationFactory() { }
-        public Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions ClientOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions ClientOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>> Factories { get { throw null; } }
         public Microsoft.AspNetCore.TestHost.TestServer Server { get { throw null; } }
         public virtual System.IServiceProvider Services { get { throw null; } }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
     {
         public CookieContainerHandler() { }
         public CookieContainerHandler(System.Net.CookieContainer cookieContainer) { }
-        public System.Net.CookieContainer Container { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Net.CookieContainer Container { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
     {
         public RedirectHandler() { }
         public RedirectHandler(int maxRedirects) { }
-        public int MaxRedirects { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int MaxRedirects { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }

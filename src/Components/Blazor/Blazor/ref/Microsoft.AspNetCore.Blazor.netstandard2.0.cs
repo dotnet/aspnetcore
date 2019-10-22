@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
     public sealed partial class WebAssemblyHostBuilderContext
     {
         public WebAssemblyHostBuilderContext(System.Collections.Generic.IDictionary<object, object> properties) { }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class WebAssemblyHostBuilderExtensions
     {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
     {
         public const string FetchArgs = "WebAssemblyHttpMessageHandler.FetchArgs";
         public WebAssemblyHttpMessageHandler() { }
-        public static Microsoft.AspNetCore.Blazor.Http.FetchCredentialsOption DefaultCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public static Microsoft.AspNetCore.Blazor.Http.FetchCredentialsOption DefaultCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }

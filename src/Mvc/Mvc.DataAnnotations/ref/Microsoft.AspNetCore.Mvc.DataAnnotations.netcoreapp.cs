@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc
     public sealed partial class HiddenInputAttribute : System.Attribute
     {
         public HiddenInputAttribute() { }
-        public bool DisplayValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool DisplayValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
     public abstract partial class ValidationAttributeAdapter<TAttribute> : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator where TAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute
     {
         public ValidationAttributeAdapter(TAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) { }
-        public TAttribute Attribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public TAttribute Attribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public abstract void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context);
         protected virtual string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata modelMetadata, params object[] arguments) { throw null; }
         protected static bool MergeAttribute(System.Collections.Generic.IDictionary<string, string> attributes, string key, string value) { throw null; }

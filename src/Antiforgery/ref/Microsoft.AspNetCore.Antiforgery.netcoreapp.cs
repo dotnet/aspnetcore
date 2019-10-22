@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.Antiforgery
         public AntiforgeryOptions() { }
         public Microsoft.AspNetCore.Http.CookieBuilder Cookie { get { throw null; } set { } }
         public string FormFieldName { get { throw null; } set { } }
-        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool SuppressXFrameOptionsHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool SuppressXFrameOptionsHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class AntiforgeryTokenSet
     {
         public AntiforgeryTokenSet(string requestToken, string cookieToken, string formFieldName, string headerName) { }
-        public string CookieToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string RequestToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string CookieToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string RequestToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class AntiforgeryValidationException : System.Exception
     {

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy ExceptionPolicy { get { throw null; } }
         public int MaxDepth { get { throw null; } set { } }
         public System.Runtime.Serialization.DataContractSerializerSettings SerializerSettings { get { throw null; } set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Xml.XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas { get { throw null; } }
         protected override bool CanReadType(System.Type type) { throw null; }
         protected virtual System.Runtime.Serialization.DataContractSerializer CreateSerializer(System.Type type) { throw null; }
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public XmlDataContractSerializerOutputFormatter(System.Xml.XmlWriterSettings writerSettings) { }
         public XmlDataContractSerializerOutputFormatter(System.Xml.XmlWriterSettings writerSettings, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public System.Runtime.Serialization.DataContractSerializerSettings SerializerSettings { get { throw null; } set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Xml.XmlWriterSettings WriterSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Xml.XmlWriterSettings WriterSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override bool CanWriteType(System.Type type) { throw null; }
         protected virtual System.Runtime.Serialization.DataContractSerializer CreateSerializer(System.Type type) { throw null; }
         public virtual System.Xml.XmlWriter CreateXmlWriter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.IO.TextWriter writer, System.Xml.XmlWriterSettings xmlWriterSettings) { throw null; }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public XmlSerializerInputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
         public virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy ExceptionPolicy { get { throw null; } }
         public int MaxDepth { get { throw null; } set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Xml.XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas { get { throw null; } }
         protected override bool CanReadType(System.Type type) { throw null; }
         protected virtual System.Xml.Serialization.XmlSerializer CreateSerializer(System.Type type) { throw null; }
@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public XmlSerializerOutputFormatter(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public XmlSerializerOutputFormatter(System.Xml.XmlWriterSettings writerSettings) { }
         public XmlSerializerOutputFormatter(System.Xml.XmlWriterSettings writerSettings, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Xml.XmlWriterSettings WriterSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory> WrapperProviderFactories { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Xml.XmlWriterSettings WriterSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override bool CanWriteType(System.Type type) { throw null; }
         protected virtual System.Xml.Serialization.XmlSerializer CreateSerializer(System.Type type) { throw null; }
         public virtual System.Xml.XmlWriter CreateXmlWriter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.IO.TextWriter writer, System.Xml.XmlWriterSettings xmlWriterSettings) { throw null; }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     public partial class EnumerableWrapperProvider : Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProvider
     {
         public EnumerableWrapperProvider(System.Type sourceEnumerableOfT, Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProvider elementWrapperProvider) { }
-        public System.Type WrappingType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type WrappingType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public object Wrap(object original) { throw null; }
     }
     public partial class EnumerableWrapperProviderFactory : Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     {
         public SerializableErrorWrapper() { }
         public SerializableErrorWrapper(Microsoft.AspNetCore.Mvc.SerializableError error) { }
-        public Microsoft.AspNetCore.Mvc.SerializableError SerializableError { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.SerializableError SerializableError { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Xml.Schema.XmlSchema GetSchema() { throw null; }
         public void ReadXml(System.Xml.XmlReader reader) { }
         public object Unwrap(System.Type declaredType) { throw null; }
@@ -167,8 +167,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     public partial class WrapperProviderContext
     {
         public WrapperProviderContext(System.Type declaredType, bool isSerialization) { }
-        public System.Type DeclaredType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsSerialization { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type DeclaredType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsSerialization { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class WrapperProviderFactoriesExtensions
     {

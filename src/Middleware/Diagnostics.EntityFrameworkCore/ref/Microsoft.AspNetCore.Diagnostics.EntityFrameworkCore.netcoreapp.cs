@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     public partial class DatabaseErrorPageOptions
     {
         public DatabaseErrorPageOptions() { }
-        public virtual Microsoft.AspNetCore.Http.PathString MigrationsEndPointPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.AspNetCore.Http.PathString MigrationsEndPointPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class MigrationsEndPointExtensions
     {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static Microsoft.AspNetCore.Http.PathString DefaultPath;
         public MigrationsEndPointOptions() { }
-        public virtual Microsoft.AspNetCore.Http.PathString Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.AspNetCore.Http.PathString Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore

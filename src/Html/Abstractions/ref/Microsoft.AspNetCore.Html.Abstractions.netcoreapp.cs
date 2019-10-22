@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Html
         public static readonly Microsoft.AspNetCore.Html.HtmlString Empty;
         public static readonly Microsoft.AspNetCore.Html.HtmlString NewLine;
         public HtmlString(string value) { }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string ToString() { throw null; }
         public void WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) { }
     }
