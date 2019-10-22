@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public void Configure(HubOptions<THub> options)
         {
+            // Do a deep copy, otherwise users modifying the HubOptions<THub> list would be changing the global options list
             options.SupportedProtocols = new List<string>(_hubOptions.SupportedProtocols.Count);
             foreach (var protocol in _hubOptions.SupportedProtocols)
             {

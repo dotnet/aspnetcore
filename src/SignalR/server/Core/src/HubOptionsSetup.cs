@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             foreach (var hubProtocol in protocols)
             {
+                if (hubProtocol.GetType().CustomAttributes.Where(a => a.AttributeType.FullName == "Microsoft.AspNetCore.SignalR.Internal.NonDefaultHubProtocolAttribute").Any())
+                {
+                    continue;
+                }
                 _defaultProtocols.Add(hubProtocol.Name);
             }
         }

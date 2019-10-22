@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -148,6 +151,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.SupportedProtocols);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
         }
+
+        [Fact]
+        public void HubProtocolsWithNonDefaultAttributeNotAddedToSupportedProtocols()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+            });
+
+            serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, CustomHubProtocol>());
+            serviceCollection.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, MessagePackHubProtocol>());
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Assert.Collection(serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols,
+                p =>
+                {
+                    Assert.Equal("json", p);
+                },
+                p =>
+                {
+                    Assert.Equal("messagepack", p);
+                });
+        }
     }
 
     public class CustomHub : Hub
@@ -275,5 +302,43 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             throw new System.NotImplementedException();
         }
+    }
+
+    [NonDefaultHubProtocol]
+    internal class CustomHubProtocol : IHubProtocol
+    {
+        public string Name => "custom";
+
+        public int Version => throw new NotImplementedException();
+
+        public TransferFormat TransferFormat => throw new NotImplementedException();
+
+        public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsVersionSupported(int version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+namespace Microsoft.AspNetCore.SignalR.Internal
+{
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    internal class NonDefaultHubProtocolAttribute : Attribute
+    {
     }
 }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.Extensions.Logging;
@@ -36,12 +37,29 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
                                        IOptions<RedisOptions> options,
                                        IHubProtocolResolver hubProtocolResolver)
+            : this(logger, options, hubProtocolResolver, globalHubOptions: null, hubOptions: null)
+        {
+        }
+
+        public RedisHubLifetimeManager(ILogger<RedisHubLifetimeManager<THub>> logger,
+                                       IOptions<RedisOptions> options,
+                                       IHubProtocolResolver hubProtocolResolver,
+                                       IOptions<HubOptions> globalHubOptions,
+                                       IOptions<HubOptions<THub>> hubOptions)
         {
             _logger = logger;
             _options = options.Value;
             _ackHandler = new AckHandler();
             _channels = new RedisChannels(typeof(THub).FullName);
-            _protocol = new RedisProtocol(hubProtocolResolver.AllProtocols);
+            if (globalHubOptions != null && hubOptions != null)
+            {
+                _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, globalHubOptions.Value.SupportedProtocols, hubOptions.Value.SupportedProtocols));
+            }
+            else
+            {
+                var supportedProtocols = hubProtocolResolver.AllProtocols.Select(p => p.Name).ToList();
+                _protocol = new RedisProtocol(new DefaultHubMessageSerializer(hubProtocolResolver, supportedProtocols, null));
+            }
 
             RedisLog.ConnectingToEndpoints(_logger, options.Value.Configuration.EndPoints, _serverName);
             _ = EnsureRedisServerConnection();
