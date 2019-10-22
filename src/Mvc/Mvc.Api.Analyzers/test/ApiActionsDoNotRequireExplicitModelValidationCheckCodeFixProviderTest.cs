@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     {
         private MvcDiagnosticAnalyzerRunner AnalyzerRunner { get; } = new MvcDiagnosticAnalyzerRunner(new ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer());
 
-        private CodeFixRunner CodeFixRunner => CodeFixRunner.Default;
+        private CodeFixRunner CodeFixRunner { get; } = new IgnoreCS1701WarningCodeFixRunner();
 
         [Fact]
         public Task CodeFixRemovesModelStateIsInvalidBlockWithIfNotCheck()
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         private Project GetProject(string testMethod)
         {
             var testSource = Read(testMethod + ".Input");
-            return DiagnosticProject.Create(GetType().Assembly, new[] { testSource });
+            return MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource });
         }
 
         private string Read(string fileName)
@@ -59,4 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 .Replace("_OUTPUT_", "_TEST_");
         }
     }
+}
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
+{
 }

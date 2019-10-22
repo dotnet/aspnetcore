@@ -9,6 +9,7 @@
     <BuildHelixPayload>false</BuildHelixPayload>
     <BaseOutputPath />
     <OutputPath />
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
 
    </PropertyGroup>
 
