@@ -3,6 +3,7 @@
 
 namespace Ignitor
 {
+#nullable enable
     public class ComponentState
     {
         public ComponentState(int componentId)
@@ -11,6 +12,7 @@ namespace Ignitor
         }
 
         public int ComponentId { get; }
-        public IComponent Component { get; }
+        public IComponent? Component { get; }
     }
+#nullable restore
 }

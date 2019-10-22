@@ -13,17 +13,21 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
+#nullable enable
 namespace Ignitor
 {
     public class BlazorClient : IAsyncDisposable
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
+        private HubConnection? _hubConnection;
 
         public BlazorClient()
         {
             CancellationTokenSource = new CancellationTokenSource();
-            TaskCompletionSource = new TaskCompletionSource<object>();
+            CancellationToken = CancellationTokenSource.Token;
+            TaskCompletionSource = new TaskCompletionSource<object?>();
 
             CancellationTokenSource.Token.Register(() =>
             {
@@ -44,104 +48,103 @@ namespace Ignitor
         /// Gets the collections of operation results that are captured when <see cref="CaptureOperations"/>
         /// is true.
         /// </summary>
-        public Operations Operations { get; private set; }
+        public Operations Operations { get; } = new Operations();
 
-        public Func<string, Exception> FormatError { get; set; }
+        public Func<string, Exception>? FormatError { get; set; }
 
         private CancellationTokenSource CancellationTokenSource { get; }
 
-        private CancellationToken CancellationToken => CancellationTokenSource.Token;
+        private CancellationToken CancellationToken { get; }
 
-        private TaskCompletionSource<object> TaskCompletionSource { get; }
+        private TaskCompletionSource<object?> TaskCompletionSource { get; }
 
-        private CancellableOperation<CapturedAttachComponentCall> NextAttachComponentReceived { get; set; }
+        private CancellableOperation<CapturedAttachComponentCall>? NextAttachComponentReceived { get; set; }
 
-        private CancellableOperation<CapturedRenderBatch> NextBatchReceived { get; set; }
+        private CancellableOperation<CapturedRenderBatch?>? NextBatchReceived { get; set; }
 
-        private CancellableOperation<string> NextErrorReceived { get; set; }
+        private CancellableOperation<string?>? NextErrorReceived { get; set; }
 
-        private CancellableOperation<Exception> NextDisconnect { get; set; }
+        private CancellableOperation<Exception?>? NextDisconnect { get; set; }
 
-        private CancellableOperation<CapturedJSInteropCall> NextJSInteropReceived { get; set; }
+        private CancellableOperation<CapturedJSInteropCall?>? NextJSInteropReceived { get; set; }
 
-        private CancellableOperation<string> NextDotNetInteropCompletionReceived { get; set; }
+        private CancellableOperation<string?>? NextDotNetInteropCompletionReceived { get; set; }
 
-        public ILoggerProvider LoggerProvider { get; set; }
+        public ILoggerProvider LoggerProvider { get; set; } = NullLoggerProvider.Instance;
 
         public bool ConfirmRenderBatch { get; set; } = true;
 
-        public event Action<CapturedJSInteropCall> JSInterop;
+        public event Action<CapturedJSInteropCall>? JSInterop;
 
-        public event Action<CapturedRenderBatch> RenderBatchReceived;
+        public event Action<CapturedRenderBatch>? RenderBatchReceived;
 
-        public event Action<string> DotNetInteropCompletion;
+        public event Action<string>? DotNetInteropCompletion;
 
-        public event Action<string> OnCircuitError;
+        public event Action<string>? OnCircuitError;
 
-        public string CircuitId { get; set; }
+        public string? CircuitId { get; private set; }
 
-        public ElementHive Hive { get; set; } = new ElementHive();
+        public ElementHive Hive { get; } = new ElementHive();
 
         public bool ImplicitWait => DefaultOperationTimeout != null;
 
-        public HubConnection HubConnection { get; private set; }
+        public HubConnection HubConnection => _hubConnection ?? throw new InvalidOperationException("HubConnection has not been initialized.");
 
-        public Task<CapturedRenderBatch> PrepareForNextBatch(TimeSpan? timeout)
+        public Task<CapturedRenderBatch?> PrepareForNextBatch(TimeSpan? timeout)
         {
             if (NextBatchReceived != null && !NextBatchReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextBatchReceived = new CancellableOperation<CapturedRenderBatch>(timeout);
-
+            NextBatchReceived = new CancellableOperation<CapturedRenderBatch?>(timeout, CancellationToken);
             return NextBatchReceived.Completion.Task;
         }
 
-        public Task<CapturedJSInteropCall> PrepareForNextJSInterop(TimeSpan? timeout)
+        public Task<CapturedJSInteropCall?> PrepareForNextJSInterop(TimeSpan? timeout)
         {
             if (NextJSInteropReceived != null && !NextJSInteropReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextJSInteropReceived = new CancellableOperation<CapturedJSInteropCall>(timeout);
+            NextJSInteropReceived = new CancellableOperation<CapturedJSInteropCall?>(timeout, CancellationToken);
 
             return NextJSInteropReceived.Completion.Task;
         }
 
-        public Task<string> PrepareForNextDotNetInterop(TimeSpan? timeout)
+        public Task<string?> PrepareForNextDotNetInterop(TimeSpan? timeout)
         {
             if (NextDotNetInteropCompletionReceived != null && !NextDotNetInteropCompletionReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextDotNetInteropCompletionReceived = new CancellableOperation<string>(timeout);
+            NextDotNetInteropCompletionReceived = new CancellableOperation<string?>(timeout, CancellationToken);
 
             return NextDotNetInteropCompletionReceived.Completion.Task;
         }
 
-        public Task<string> PrepareForNextCircuitError(TimeSpan? timeout)
+        public Task<string?> PrepareForNextCircuitError(TimeSpan? timeout)
         {
             if (NextErrorReceived != null && !NextErrorReceived.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextErrorReceived = new CancellableOperation<string>(timeout);
+            NextErrorReceived = new CancellableOperation<string?>(timeout, CancellationToken);
 
             return NextErrorReceived.Completion.Task;
         }
 
-        public Task<Exception> PrepareForNextDisconnect(TimeSpan? timeout)
+        public Task<Exception?> PrepareForNextDisconnect(TimeSpan? timeout)
         {
             if (NextDisconnect != null && !NextDisconnect.Disposed)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextDisconnect = new CancellableOperation<Exception>(timeout);
+            NextDisconnect = new CancellableOperation<Exception?>(timeout, CancellationToken);
 
             return NextDisconnect.Completion.Task;
         }
@@ -172,44 +175,44 @@ namespace Ignitor
             return ExpectRenderBatch(() => elementNode.SelectAsync(HubConnection, value));
         }
 
-        public async Task<CapturedRenderBatch> ExpectRenderBatch(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<CapturedRenderBatch?> ExpectRenderBatch(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForRenderBatch(timeout);
             await action();
             return await task;
         }
 
-        public async Task<CapturedJSInteropCall> ExpectJSInterop(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<CapturedJSInteropCall?> ExpectJSInterop(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForJSInterop(timeout);
             await action();
             return await task;
         }
 
-        public async Task<string> ExpectDotNetInterop(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<string?> ExpectDotNetInterop(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForDotNetInterop(timeout);
             await action();
             return await task;
         }
 
-        public async Task<string> ExpectCircuitError(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<string?> ExpectCircuitError(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForCircuitError(timeout);
             await action();
             return await task;
         }
 
-        public async Task<Exception> ExpectDisconnect(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<Exception?> ExpectDisconnect(Func<Task> action, TimeSpan? timeout = null)
         {
             var task = WaitForDisconnect(timeout);
             await action();
             return await task;
         }
 
-        public async Task<(string error, Exception exception)> ExpectCircuitErrorAndDisconnect(Func<Task> action, TimeSpan? timeout = null)
+        public async Task<(string? error, Exception? exception)> ExpectCircuitErrorAndDisconnect(Func<Task> action, TimeSpan? timeout = null)
         {
-            string error = null;
+            string? error = default;
 
             // NOTE: timeout is used for each operation individually.
             var exception = await ExpectDisconnect(async () =>
@@ -220,7 +223,7 @@ namespace Ignitor
             return (error, exception);
         }
 
-        private async Task<CapturedRenderBatch> WaitForRenderBatch(TimeSpan? timeout = null)
+        private async Task<CapturedRenderBatch?> WaitForRenderBatch(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
@@ -233,7 +236,7 @@ namespace Ignitor
                 {
                     return await PrepareForNextBatch(timeout ?? DefaultOperationTimeout);
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException) when (FormatError != null)
                 {
                     throw FormatError("Timed out while waiting for batch.");
                 }
@@ -242,7 +245,7 @@ namespace Ignitor
             return null;
         }
 
-        private async Task<CapturedJSInteropCall> WaitForJSInterop(TimeSpan? timeout = null)
+        private async Task<CapturedJSInteropCall?> WaitForJSInterop(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
@@ -255,7 +258,7 @@ namespace Ignitor
                 {
                     return await PrepareForNextJSInterop(timeout ?? DefaultOperationTimeout);
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException) when (FormatError != null)
                 {
                     throw FormatError("Timed out while waiting for JS Interop.");
                 }
@@ -264,7 +267,7 @@ namespace Ignitor
             return null;
         }
 
-        private async Task<string> WaitForDotNetInterop(TimeSpan? timeout = null)
+        private async Task<string?> WaitForDotNetInterop(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
@@ -277,7 +280,7 @@ namespace Ignitor
                 {
                     return await PrepareForNextDotNetInterop(timeout ?? DefaultOperationTimeout);
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException) when (FormatError != null)
                 {
                     throw FormatError("Timed out while waiting for .NET interop.");
                 }
@@ -286,7 +289,7 @@ namespace Ignitor
             return null;
         }
 
-        private async Task<string> WaitForCircuitError(TimeSpan? timeout = null)
+        private async Task<string?> WaitForCircuitError(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
@@ -299,7 +302,7 @@ namespace Ignitor
                 {
                     return await PrepareForNextCircuitError(timeout ?? DefaultOperationTimeout);
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException) when (FormatError != null)
                 {
                     throw FormatError("Timed out while waiting for circuit error.");
                 }
@@ -308,7 +311,7 @@ namespace Ignitor
             return null;
         }
 
-        private async Task<Exception> WaitForDisconnect(TimeSpan? timeout = null)
+        private async Task<Exception?> WaitForDisconnect(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
@@ -321,7 +324,7 @@ namespace Ignitor
                 {
                     return await PrepareForNextDisconnect(timeout ?? DefaultOperationTimeout);
                 }
-                catch (OperationCanceledException)
+                catch (TimeoutException) when (FormatError != null)
                 {
                     throw FormatError("Timed out while waiting for disconnect.");
                 }
@@ -344,7 +347,7 @@ namespace Ignitor
                 }
             });
 
-            HubConnection = builder.Build();
+            _hubConnection = builder.Build();
             await HubConnection.StartAsync(CancellationToken);
 
             HubConnection.On<int, string>("JS.AttachComponent", OnAttachComponent);
@@ -354,11 +357,6 @@ namespace Ignitor
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
-            if (CaptureOperations)
-            {
-                Operations = new Operations();
-            }
-
             if (!connectAutomatically)
             {
                 return true;
@@ -366,7 +364,7 @@ namespace Ignitor
 
             var descriptors = await GetPrerenderDescriptors(uri);
             await ExpectRenderBatch(
-                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors),
+                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors, CancellationToken),
                 DefaultConnectionTimeout);
             return CircuitId != null;
         }
@@ -415,9 +413,9 @@ namespace Ignitor
             NextBatchReceived?.Completion?.TrySetResult(null);
         }
 
-        public Task ConfirmBatch(int batchId, string error = null)
+        public Task ConfirmBatch(int batchId, string? error = null)
         {
-            return HubConnection.InvokeAsync("OnRenderCompleted", batchId, error);
+            return HubConnection.InvokeAsync("OnRenderCompleted", batchId, error, CancellationToken);
         }
 
         private void OnError(string error)
@@ -468,7 +466,14 @@ namespace Ignitor
 
         public async Task InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
         {
-            await ExpectDotNetInterop(() => HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson));
+            await ExpectDotNetInterop(() => HubConnection.InvokeAsync(
+                "BeginInvokeDotNetFromJS",
+                callId?.ToString(),
+                assemblyName,
+                methodIdentifier,
+                dotNetObjectId ?? 0,
+                argsJson,
+                CancellationToken));
         }
 
         public async Task<string> GetPrerenderDescriptors(Uri uri)
@@ -485,8 +490,11 @@ namespace Ignitor
 
         public void Cancel()
         {
-            CancellationTokenSource.Cancel();
-            CancellationTokenSource.Dispose();
+            if (!CancellationTokenSource.IsCancellationRequested)
+            {
+                CancellationTokenSource.Cancel();
+                CancellationTokenSource.Dispose();
+            }
         }
 
         public ElementNode FindElementById(string id)
@@ -519,6 +527,7 @@ namespace Ignitor
 
         public async ValueTask DisposeAsync()
         {
+            Cancel();
             if (HubConnection != null)
             {
                 await HubConnection.DisposeAsync();
@@ -526,3 +535,5 @@ namespace Ignitor
         }
     }
 }
+
+#nullable restore
