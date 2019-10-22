@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
+
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
         private readonly ArrayPool<byte> _bytePool;
-
+            
         private readonly long _innerOffset;
         private long _position;
         private long _observedLength;

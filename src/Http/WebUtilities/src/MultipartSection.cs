@@ -45,5 +45,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// This may not be available if the total multipart body is not seekable.
         /// </summary>
         public long? BaseStreamOffset { get; set; }
+        public long Length { get; internal set; }
     }
 }
