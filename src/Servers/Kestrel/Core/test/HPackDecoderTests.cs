@@ -5,9 +5,10 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -98,12 +99,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize, _dynamicTable);
         }
 
-        void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
+        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
         }
 
-        void IHttpHeadersHandler.OnHeadersComplete() { }
+        void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         [Fact]
         public void DecodesIndexedHeaderField_StaticTable()
