@@ -149,6 +149,7 @@ namespace Microsoft.AspNetCore.Authentication
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme>> GetRequestHandlerSchemesAsync();
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme> GetSchemeAsync(string name);
         void RemoveScheme(string name);
+        bool TryAddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme) { throw null; }
     }
     public partial interface IAuthenticationService
     {

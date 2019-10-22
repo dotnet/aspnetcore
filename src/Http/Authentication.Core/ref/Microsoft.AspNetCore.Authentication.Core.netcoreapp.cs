@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationScheme>> GetRequestHandlerSchemesAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationScheme> GetSchemeAsync(string name) { throw null; }
         public virtual void RemoveScheme(string name) { }
+        public virtual bool TryAddScheme(Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme) { throw null; }
     }
     public partial class AuthenticationService : Microsoft.AspNetCore.Authentication.IAuthenticationService
     {
