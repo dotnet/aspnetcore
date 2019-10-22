@@ -1200,7 +1200,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Localization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
@@ -1743,7 +1742,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Metadata" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
@@ -2140,7 +2138,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
@@ -2802,7 +2799,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Blazor.DevServer" KeepDuplicates="false" />
@@ -3461,7 +3457,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Blazor.HttpClient" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
@@ -4145,7 +4140,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -4847,7 +4841,6 @@
 		<IndirectReference Include="Microsoft.Extensions.Localization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
@@ -5040,7 +5033,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.OAuth" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
@@ -5717,7 +5709,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
@@ -6620,7 +6611,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
@@ -7101,7 +7091,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Extensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -8481,7 +8470,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Physical" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Blazor.Build" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
@@ -9287,7 +9275,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization.Policy" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Configuration" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
@@ -9660,7 +9647,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
@@ -10497,7 +10483,6 @@
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Composite" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Primitives" KeepDuplicates="false" />
-		<IndirectReference Include="Microsoft.AspNetCore.Components.Web.JS" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.FileProviders.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
