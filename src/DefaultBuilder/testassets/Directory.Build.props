@@ -6,4 +6,11 @@
     <BaseOutputPath />
     <OutputPath />
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Workaround missing entries in deps files. Still under investigation -->
+    <RuntimeHostConfigurationOption
+      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
+      Value="true" />
+  </ItemGroup>
 </Project>

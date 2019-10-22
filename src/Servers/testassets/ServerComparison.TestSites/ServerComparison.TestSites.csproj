@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Workaround missing entries in deps files. Still under investigation -->
+    <RuntimeHostConfigurationOption
+      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
+      Value="true" />
+
     <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
