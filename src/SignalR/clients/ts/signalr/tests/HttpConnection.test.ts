@@ -1190,7 +1190,7 @@ describe("HttpConnection", () => {
             connection.onreceive = () => null;
             try {
                 await connection.start(TransferFormat.Binary);
-                await connection.send(new Uint8Array([104, 105, 32, 58, 41]));
+                await connection.send(new Uint8Array([0x68, 0x69, 0x20, 0x3a, 0x29]));
             } finally {
                 await connection.stop();
             }
