@@ -60,7 +60,3 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
     }
 }
-
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
-{
-}
