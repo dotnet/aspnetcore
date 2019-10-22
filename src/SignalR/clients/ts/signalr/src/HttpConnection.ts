@@ -547,6 +547,7 @@ function transportMatches(requestedTransport: HttpTransportType | undefined, act
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
 }
 
+/** @private */
 export class TransportSendQueue {
     private buffer: any[] = [];
     private sendBufferedData: PromiseSource;
