@@ -476,7 +476,7 @@ export class HttpConnection implements IConnection {
 
         if (this.connectionState === ConnectionState.Connecting) {
             this.logger.log(LogLevel.Warning, `Call to HttpConnection.stopConnection(${error}) was ignored because the connection is still in the connecting state.`);
-            return;
+            throw new Error(`HttpConnection.stopConnection(${error}) was called while the connection is still in the connecting state.`);
         }
 
         if (this.connectionState === ConnectionState.Disconnecting) {
