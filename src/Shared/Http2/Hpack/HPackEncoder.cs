@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal class HPackEncoder
     {
@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             _enumerator = headers.GetEnumerator();
             _enumerator.MoveNext();
 
-            var statusCodeLength = EncodeStatusCode(statusCode, buffer);
-            var done = Encode(buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out var headersLength);
+            int statusCodeLength = EncodeStatusCode(statusCode, buffer);
+            bool done = Encode(buffer.Slice(statusCodeLength), throwIfNoneEncoded: false, out int headersLength);
             length = statusCodeLength + headersLength;
 
             return done;
@@ -38,21 +38,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private bool Encode(Span<byte> buffer, bool throwIfNoneEncoded, out int length)
         {
-            length = 0;
-
+            int currentLength = 0;
             do
             {
-                if (!EncodeHeader(_enumerator.Current.Key, _enumerator.Current.Value, buffer.Slice(length), out var headerLength))
+                if (!EncodeHeader(_enumerator.Current.Key, _enumerator.Current.Value, buffer.Slice(currentLength), out int headerLength))
                 {
-                    if (length == 0 && throwIfNoneEncoded)
+                    if (currentLength == 0 && throwIfNoneEncoded)
                     {
-                        throw new HPackEncodingException(CoreStrings.HPackErrorNotEnoughBuffer);
+                        throw new HPackEncodingException();
                     }
+
+                    length = currentLength;
                     return false;
                 }
 
-                length += headerLength;
-            } while (_enumerator.MoveNext());
+                currentLength += headerLength;
+            }
+            while (_enumerator.MoveNext());
+
+            length = currentLength;
 
             return true;
         }
@@ -61,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             switch (statusCode)
             {
+                // Status codes which exist in the HTTP/2 StaticTable.
                 case 200:
                 case 204:
                 case 206:
@@ -74,9 +79,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     // Send as Literal Header Field Without Indexing - Indexed Name
                     buffer[0] = 0x08;
 
-                    var statusBytes = StatusCodes.ToStatusBytes(statusCode);
+                    ReadOnlySpan<byte> statusBytes = StatusCodes.ToStatusBytes(statusCode);
                     buffer[1] = (byte)statusBytes.Length;
-                    ((Span<byte>)statusBytes).CopyTo(buffer.Slice(2));
+                    statusBytes.CopyTo(buffer.Slice(2));
 
                     return 2 + statusBytes.Length;
             }
@@ -84,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private bool EncodeHeader(string name, string value, Span<byte> buffer, out int length)
         {
-            var i = 0;
+            int i = 0;
             length = 0;
 
             if (buffer.Length == 0)
@@ -99,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 return false;
             }
 
-            if (!EncodeString(name, buffer.Slice(i), out var nameLength, lowercase: true))
+            if (!EncodeString(name, buffer.Slice(i), out int nameLength, lowercase: true))
             {
                 return false;
             }
@@ -111,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 return false;
             }
 
-            if (!EncodeString(value, buffer.Slice(i), out var valueLength, lowercase: false))
+            if (!EncodeString(value, buffer.Slice(i), out int valueLength, lowercase: false))
             {
                 return false;
             }
@@ -122,40 +127,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             return true;
         }
 
-        private bool EncodeString(string s, Span<byte> buffer, out int length, bool lowercase)
+        private bool EncodeString(string value, Span<byte> destination, out int bytesWritten, bool lowercase)
         {
-            const int toLowerMask = 0x20;
+            // From https://tools.ietf.org/html/rfc7541#section-5.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | H |    String Length (7+)     |
+            // +---+---------------------------+
+            // |  String Data (Length octets)  |
+            // +-------------------------------+
 
-            var i = 0;
-            length = 0;
-
-            if (buffer.Length == 0)
+            if (destination.Length != 0)
             {
-                return false;
-            }
-
-            buffer[0] = 0;
-
-            if (!IntegerEncoder.Encode(s.Length, 7, buffer, out var nameLength))
-            {
-                return false;
-            }
-
-            i += nameLength;
-
-            // TODO: use huffman encoding
-            for (var j = 0; j < s.Length; j++)
-            {
-                if (i >= buffer.Length)
+                destination[0] = 0; // TODO: Use Huffman encoding
+                if (IntegerEncoder.Encode(value.Length, 7, destination, out int integerLength))
                 {
-                    return false;
-                }
+                    Debug.Assert(integerLength >= 1);
 
-                buffer[i++] = (byte)(s[j] | (lowercase && s[j] >= (byte)'A' && s[j] <= (byte)'Z' ? toLowerMask : 0));
+                    destination = destination.Slice(integerLength);
+                    if (value.Length <= destination.Length)
+                    {
+                        for (int i = 0; i < value.Length; i++)
+                        {
+                            char c = value[i];
+                            destination[i] = (byte)((uint)(c - 'A') <= ('Z' - 'A') ? c | 0x20 : c);
+                        }
+
+                        bytesWritten = integerLength + value.Length;
+                        return true;
+                    }
+                }
             }
 
-            length = i;
-            return true;
+            bytesWritten = 0;
+            return false;
         }
 
         // Things we should add:
@@ -256,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         }
 
         /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
-        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, string[] values, string separator, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
         {
             // From https://tools.ietf.org/html/rfc7541#section-6.2.2
             // ------------------------------------------------------
@@ -372,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     char c = value[i];
                     if ((c & 0xFF80) != 0)
                     {
-                        throw new HPackEncodingException();
+                        throw new HttpRequestException(SR.net_http_request_invalid_char_encoding);
                     }
 
                     destination[i] = (byte)c;
@@ -416,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             return false;
         }
 
-        public static bool EncodeStringLiterals(string[] values, string separator, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = 0;
 

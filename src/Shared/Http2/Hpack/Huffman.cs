@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal class Huffman
     {
@@ -345,13 +345,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 if (ch == -1)
                 {
                     // No valid symbol could be decoded with the bits in next
-                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorIncomplete);
+                    throw new HuffmanDecodingException();
                 }
                 else if (ch == 256)
                 {
                     // A Huffman-encoded string literal containing the EOS symbol MUST be treated as a decoding error.
                     // http://httpwg.org/specs/rfc7541.html#rfc.section.5.2
-                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorEOS);
+                    throw new HuffmanDecodingException();
                 }
 
                 if (j == dst.Length)

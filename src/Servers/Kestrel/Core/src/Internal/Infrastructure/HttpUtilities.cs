@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         // The same as GetAsciiStringNonNullCharacters but throws BadRequest
-        public static unsafe string GetHeaderName(this Span<byte> span)
+        public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return asciiString;
         }
 
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {

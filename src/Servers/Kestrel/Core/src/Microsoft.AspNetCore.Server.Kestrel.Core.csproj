@@ -15,6 +15,7 @@
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" Link="Shared\Http2\%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>
 
@@ -32,6 +33,10 @@
 
   <ItemGroup>
     <EmbeddedResource Update="CoreStrings.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SR.resx">
+      <ClassName>System.Net.Http.SR</ClassName>
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>

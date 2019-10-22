@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Diagnostics;
 using System.Text;
 
-
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal readonly struct HeaderField
     {
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         public int Length => GetLength(Name.Length, Value.Length);
 
         public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + RfcOverhead;
-        
+
         public override string ToString()
         {
             if (Name != null)

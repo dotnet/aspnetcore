@@ -1,14 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
-   // TODO: Should this be public?
+    // TODO: Should this be public?
     [Serializable]
-    internal sealed class HPackDecodingException : Exception
+    internal class HPackDecodingException : Exception
     {
         public HPackDecodingException()
         {

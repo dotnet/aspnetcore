@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal static class StaticTable
     {
-
-        private static readonly Dictionary<int, int> _statusIndex = new Dictionary<int, int>
+        // Index of status code into s_staticDecoderTable
+        private static readonly Dictionary<int, int> s_statusIndex = new Dictionary<int, int>
         {
             [200] = 8,
             [204] = 9,
@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             [500] = 14,
         };
 
-        public static int Count => _staticDecoderTable.Length;
+        public static int Count => s_staticDecoderTable.Length;
 
-        public static HeaderField Get(int index) => _staticDecoderTable[index];
+        public static HeaderField Get(int index) => s_staticDecoderTable[index];
 
-        public static IReadOnlyDictionary<int, int> StatusIndex => _statusIndex;
+        public static IReadOnlyDictionary<int, int> StatusIndex => s_statusIndex;
 
-        private static readonly HeaderField[] _staticDecoderTable = new HeaderField[]
+        private static readonly HeaderField[] s_staticDecoderTable = new HeaderField[]
         {
             CreateHeaderField(":authority", ""),
             CreateHeaderField(":method", "GET"),

@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.Append(name, value);
         }
 
-        public void OnTrailer(Span<byte> name, Span<byte> value)
+        public void OnTrailer(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // Trailers still count towards the limit.
             _requestHeadersParsed++;

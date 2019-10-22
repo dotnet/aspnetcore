@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
 using System.Diagnostics;
 using System.Numerics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal class IntegerDecoder
     {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             Debug.Assert(prefixLength >= 1 && prefixLength <= 8);
             Debug.Assert((b & ~((1 << prefixLength) - 1)) == 0, "bits other than prefix data must be set to 0.");
-            
+
             if (b < ((1 << prefixLength) - 1))
             {
                 result = b;
@@ -54,9 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         /// <summary>
         /// Decodes subsequent bytes of an integer.
         /// </summary>
-        /// <param name="b">
-        /// The byte to decode
-        /// </param>
+        /// <param name="b">The next byte.</param>
         /// <param name="result">
         /// If decoded successfully, contains the decoded integer.
         /// </param>
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             //   if (_m + additionalBitsRequired > 31)
             if (BitOperations.LeadingZeroCount((uint)b) <= _m)
             {
-                throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
+                throw new HPackDecodingException(SR.net_http_hpack_bad_integer);
             }
 
             _i = _i + ((b & 0x7f) << _m);
@@ -80,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             // If the addition overflowed, the result will be negative.
             if (_i < 0)
             {
-                throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
+                throw new HPackDecodingException(SR.net_http_hpack_bad_integer);
             }
 
             _m = _m + 7;
@@ -90,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 if (b == 0 && _m / 7 > 1)
                 {
                     // Do not accept overlong encodings.
-                    throw new HPackDecodingException(/*SR.net_http_hpack_bad_integer*/);
+                    throw new HPackDecodingException(SR.net_http_hpack_bad_integer);
                 }
 
                 result = _i;

@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal static class IntegerEncoder
     {
-         /// <summary>
+        /// <summary>
         /// Encodes an integer into one or more bytes.
         /// </summary>
         /// <param name="value">The value to encode. Must not be negative.</param>
@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 }
                 destination[i++] = (byte)value;
 
-            bytesWritten = i;
-            return true;
+                bytesWritten = i;
+                return true;
             }
         }
 
