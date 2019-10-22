@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 var timeout = spaBuilder.Options.StartupTimeout;
                 return targetUriTask.WithTimeout(timeout,
                     $"The Angular CLI process did not start listening for requests " +
-                    $"within the timeout period of {timeout.Seconds} seconds. " +
+                    $"within the timeout period of {timeout.TotalSeconds} seconds. " +
                     $"Check the log output for error information.");
             });
         }
