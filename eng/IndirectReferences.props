@@ -2815,7 +2815,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Web" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Components.Forms" KeepDuplicates="false" />
-		<IndirectReference Include="HostedInAspNet.Client" KeepDuplicates="false" />
 	</ItemGroup>
 	<ItemGroup Condition="@(_RefsToCheck->Count()) != '0' AND @(_RefsToCheck->AnyHaveMetadataValue('Identity', 'Benchmarks'))">
 		<IndirectReference Include="Microsoft.AspNetCore.WebUtilities" KeepDuplicates="false" />
@@ -4192,7 +4191,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Extensions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.ObjectPool" KeepDuplicates="false" />
-		<IndirectReference Include="RazorBuildWebSite.Views" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection" KeepDuplicates="false" />
@@ -4770,7 +4768,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Razor" KeepDuplicates="false" />
-		<IndirectReference Include="ComponentsApp.App" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Hosting.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.IIS" KeepDuplicates="false" />
@@ -5390,7 +5387,6 @@
 		<IndirectReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Abstractions" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration.Binder" KeepDuplicates="false" />
-		<IndirectReference Include="ResourcesClassLibraryNoAttribute" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Http.Features" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Logging.Abstractions" KeepDuplicates="false" />
@@ -7645,7 +7641,6 @@
 		<IndirectReference Include="Microsoft.AspNetCore.Authentication.Core" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Authorization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Cryptography.Internal" KeepDuplicates="false" />
-		<IndirectReference Include="RazorPagesClassLibrary" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Mvc.Localization" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.AspNetCore.Routing" KeepDuplicates="false" />
 		<IndirectReference Include="Microsoft.Extensions.Configuration" KeepDuplicates="false" />
