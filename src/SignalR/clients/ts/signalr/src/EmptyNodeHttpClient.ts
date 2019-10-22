@@ -6,6 +6,7 @@
 import { HttpClient, HttpResponse } from "./HttpClient";
 import { ILogger } from "./ILogger";
 
+/** @private */
 export class NodeHttpClient extends HttpClient {
     // @ts-ignore: Need ILogger to compile, but unused variables generate errors
     public constructor(logger: ILogger) {

@@ -3,8 +3,10 @@
 
 // Not exported from index
 
+/** @private */
 export type EventSourceConstructor = new(url: string, eventSourceInitDict?: EventSourceInit) => EventSource;
 
+/** @private */
 export interface WebSocketConstructor {
     new(url: string, protocols?: string | string[], options?: any): WebSocket;
     readonly CLOSED: number;
