@@ -367,31 +367,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task Server_SetConnectionLimit_Success()
-        {
-            using (Utilities.CreateDynamicHost(out var address, options =>
-            {
-                Assert.Null(options.MaxConnections);
-                options.MaxConnections = 3;
-            }, httpContext => Task.FromResult(0)))
-            {
-                using (var client1 = await SendHungRequestAsync("GET", address))
-                using (var client2 = await SendHungRequestAsync("GET", address))
-                {
-                    using (var client3 = await SendHungRequestAsync("GET", address))
-                    {
-                        // Maxed out, refuses connection and throws
-                        await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                    }
-
-                    // A connection has been closed, try again.
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
-                }
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
         {
             HttpSysOptions options = null;
