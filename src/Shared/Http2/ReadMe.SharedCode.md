@@ -32,4 +32,3 @@ To copy code from AspNetCore to CoreFx set COREFX_REPO to the CoreFx repo root a
 
 TODO:
 - Shared tests
-- Code owners
