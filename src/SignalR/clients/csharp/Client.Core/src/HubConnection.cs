@@ -1626,6 +1626,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             private readonly HubConnection _hubConnection;
             private readonly ILogger _logger;
+            private readonly bool _hasInherentKeepAlive;
 
             private readonly object _lock = new object();
             private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>(StringComparer.Ordinal);
@@ -1637,7 +1638,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private long _nextActivationServerTimeout;
             private long _nextActivationSendPing;
-            private bool _hasInherentKeepAlive;
 
             public ConnectionContext Connection { get; }
             public Task ReceiveTask { get; set; }
