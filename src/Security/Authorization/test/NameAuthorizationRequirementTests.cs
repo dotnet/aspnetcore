@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var formattedValue = requirement.ToString();
 
             // Assert
-            Assert.Equal("NameAuthorizationRequirement:User has `Name` equals Custom", formattedValue);
+            Assert.Equal("NameAuthorizationRequirement:Requires a user identity with Name equal to Custom", formattedValue);
         }
     }
 }
