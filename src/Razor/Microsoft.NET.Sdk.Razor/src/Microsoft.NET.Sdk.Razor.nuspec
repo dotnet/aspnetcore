@@ -2,7 +2,6 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     $CommonMetadataElements$
-    <icon>packageIcon.png</icon>
     <dependencies>
       <group targetFramework=".NETStandard2.0" />
     </dependencies>
