@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
             _boundary = new MultipartBoundary(boundary ?? throw new ArgumentNullException(nameof(boundary)), false);
 
+            // This stream will drain any preamble data and remove the first boundary marker. 
+            // TODO: HeadersLengthLimit can't be modified until after the constructor. 
             _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary);
         }
 
