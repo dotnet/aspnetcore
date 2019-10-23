@@ -61,3 +61,6 @@ area-signalr:
 
 area-websockets:
   - src/Middleware/WebSockets/**/*
+
+api-suggestion:
+  - src/**/ref/**/*

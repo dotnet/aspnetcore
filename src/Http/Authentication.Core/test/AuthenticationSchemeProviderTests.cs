@@ -134,6 +134,23 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void CanSafelyTryAddSchemes()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+            }).BuildServiceProvider();
+
+            var o = services.GetRequiredService<IAuthenticationSchemeProvider>();
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin", "whatever", typeof(Handler))));
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
+            Assert.False(o.TryAddScheme(new AuthenticationScheme("signin", "whatever", typeof(Handler))));
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin3", "whatever", typeof(Handler))));
+            Assert.False(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
+            o.RemoveScheme("signin2");
+            Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
+        }
+
+        [Fact]
         public async Task LookupUsesProvidedStringComparer()
         {
             var services = new ServiceCollection().AddOptions()
