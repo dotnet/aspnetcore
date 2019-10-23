@@ -9,3 +9,4 @@ IF "%ASPNETCORE_REPO%" == "" (
 echo ASPNETCORE_REPO: %ASPNETCORE_REPO%
 
 robocopy . %ASPNETCORE_REPO%\src\Shared\Http2 /MIR
+robocopy .\..\..\..\..\..\tests\Tests\System\Net\Http2\ %ASPNETCORE_REPO%\src\Shared\test\Shared.Tests\Http2 /MIR

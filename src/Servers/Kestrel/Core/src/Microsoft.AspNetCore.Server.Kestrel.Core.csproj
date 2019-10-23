@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Core components of ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -35,8 +35,8 @@
     <EmbeddedResource Update="CoreStrings.resx">
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="SR.resx">
-      <ClassName>System.Net.Http.SR</ClassName>
+    <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
+      <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>

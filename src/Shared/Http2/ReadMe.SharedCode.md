@@ -1,7 +1,11 @@
 The code in this directory is shared between CoreFx and AspNetCore. This contains HTTP/2 protocol infrastructure such as an HPACK implementation. Any changes to this dir need to be checked into both repositories.
 
-Corefx code path: corefx\src\Common\src\System\Net\Http\Http2
-AspNetCore code path: AspNetCore\src\Shared\Http2
+Corefx code paths:
+- corefx\src\Common\src\System\Net\Http\Http2
+- corefx\src\Common\tests\Tests\System\Net\Http2
+AspNetCore code paths:
+- AspNetCore\src\Shared\Http2
+- AspNetCore\src\Shared\test\Shared.Tests\Http2
 
 ## Copying code
 To copy code from CoreFx to AspNetCore set ASPNETCORE_REPO to the AspNetCore repo root and then run CopyToAspNetCore.cmd.
@@ -28,7 +32,5 @@ To copy code from AspNetCore to CoreFx set COREFX_REPO to the CoreFx repo root a
 - `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\src> dotnet msbuild`
 
 ### Running AspNetCore tests:
+- `(AspNetCore) PS D:\github\AspNetCore\src\Shared\test\Shared.Tests> dotnet test`
 - `(AspNetCore) PS D:\github\AspNetCore\src\servers\Kestrel\core\test> dotnet test`
-
-TODO:
-- Shared tests
