@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var formattedValue = requirement.ToString();
 
             // Assert
-            Assert.Equal("DenyAnonymousAuthorizationRequirement:User authenticated", formattedValue);
+            Assert.Equal("DenyAnonymousAuthorizationRequirement:Requires an authenticated user.", formattedValue);
         }
     }
 }
