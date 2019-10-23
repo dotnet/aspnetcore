@@ -83,14 +83,14 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        protected virtual Task DisposeAsync()
+        protected async virtual Task DisposeAsync()
         {
             if (TestSink != null)
             {
                 TestSink.MessageLogged -= TestSink_MessageLogged;
             }
 
-            return Task.CompletedTask;
+            await Client.DisposeAsync();
         }
 
         private void TestSink_MessageLogged(WriteContext context)

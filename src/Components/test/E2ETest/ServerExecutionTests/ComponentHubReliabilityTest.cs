@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using TestServer;
 using Xunit;
@@ -119,6 +120,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [Repeat(1000)]
         public async Task CannotInvokeJSInteropCallbackCompletionsBeforeInitialization()
         {
             // Arrange
