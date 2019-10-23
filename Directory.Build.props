@@ -46,8 +46,6 @@
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
@@ -55,10 +53,6 @@
 
     <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
-  </ItemGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
