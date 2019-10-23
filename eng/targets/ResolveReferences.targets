@@ -161,7 +161,61 @@
 
     <!-- Substitute references to Extensions packages with with ref assemblies -->
     <ItemGroup Condition="'$(ReferenceReferenceAssemblies)' == 'true' AND '$(TargetFramework)' == 'netcoreapp3.0' AND '$(DisableExtensionsRefAssembliesSwap)' != 'true' ">
-      <_ExtensionPackageReferences Include="@(_LatestPackageReferenceWithVersion)" Condition=" Exists('$(MicrosoftInternalExtensionsRefsPath)%(FileName).dll') " />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.Memory" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.SqlServer" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.Binder" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.CommandLine" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.FileExtensions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.Ini" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.Json" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.KeyPerFile" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.NewtonsoftJson" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Configuration.UserSecrets" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.DependencyInjection" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.DiagnosticAdapter" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.FileProviders.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.FileProviders.Composite" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.FileProviders.Embedded" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.FileProviders.Physical" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.FileSystemGlobbing" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Hosting.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Hosting" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Hosting.Systemd" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Hosting.WindowsServices" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Http" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Http.Polly" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Localization.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Localization" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.Abstractions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.AzureAppServices" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.Configuration" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.Console" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.Debug" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.EventLog" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.EventSource" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Logging.TraceSource" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.ObjectPool" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Options.DataAnnotations" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Options" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Primitives" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.WebEncoders" />
+      <_ExtensionInternalRefAssemblies Include="Microsoft.JSInterop" />
+      <_ExtensionInternalRefAssemblies Include="Mono.WebAssembly.Interop" />
+
+      <!-- Compute Extension and Non Extension references -->
+      <_NonExtensionPackageReferences Include="@(_LatestPackageReferenceWithVersion)" Exclude="@(_ExtensionInternalRefAssemblies)" />
+      <_ExtensionPackageReferences Include="@(_LatestPackageReferenceWithVersion)" Exclude="@(_NonExtensionPackageReferences)" />
 
       <!-- Add Extensions packages with but exclude their compile assets -->
       <_LatestPackageReferenceWithVersion Remove="@(_ExtensionPackageReferences)" />
