@@ -17,14 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Type modelType,
             string name = null,
             Type containerType = null,
-            ParameterInfo parameterInfo = null,
-            PropertyInfo propertyInfo = null)
+            object fieldInfo = null)
         {
             ModelType = modelType;
             Name = name;
             ContainerType = containerType;
-            ParameterInfo = parameterInfo;
-            PropertyInfo = propertyInfo;
+            FieldInfo = fieldInfo;
         }
 
         /// <summary>
@@ -100,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentNullException(nameof(containerType));
             }
 
-            return new ModelMetadataIdentity(modelType, propertyInfo.Name, containerType, propertyInfo: propertyInfo);
+            return new ModelMetadataIdentity(modelType, propertyInfo.Name, containerType, fieldInfo: propertyInfo);
         }
 
         /// <summary>
@@ -130,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            return new ModelMetadataIdentity(modelType, parameter.Name, parameterInfo: parameter);
+            return new ModelMetadataIdentity(modelType, parameter.Name, fieldInfo: parameter);
         }
 
         /// <summary>
@@ -172,17 +170,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public string Name { get; }
 
+        private object FieldInfo { get; }
+
         /// <summary>
         /// Gets a descriptor for the parameter, or <c>null</c> if this instance
         /// does not represent a parameter.
         /// </summary>
-        public ParameterInfo ParameterInfo { get; }
+        public ParameterInfo ParameterInfo => FieldInfo as ParameterInfo;
 
         /// <summary>
         /// Gets a descriptor for the property, or <c>null</c> if this instance
         /// does not represent a property.
         /// </summary>
-        public PropertyInfo PropertyInfo { get; }
+        public PropertyInfo PropertyInfo => FieldInfo as PropertyInfo;
 
         /// <inheritdoc />
         public bool Equals(ModelMetadataIdentity other)
