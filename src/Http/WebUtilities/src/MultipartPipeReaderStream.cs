@@ -170,11 +170,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                             _metadataSkipped = true;
                             return consumed;
                         }
-                    }
-                    else if(readResult.IsCompleted)
-                    {
-                        throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-                    }
+                    }                    
+                }
+                else if (readResult.IsCompleted)
+                {
+                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
 
                 readResult = await _pipeReader.ReadAsync(cancellationToken);
