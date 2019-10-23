@@ -171,21 +171,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                             return consumed;
                         }
                     }
-                    else
+                    else if(readResult.IsCompleted)
                     {
-                        return consumed;
+                        throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
                     }
                 }
 
-                readResult = await _pipeReader.ReadAsync();
-                if (readResult.IsCompleted)
-                {
-                    _finished = true;
-                    _metadataSkipped = true;
-                    //handle last result
-                    return consumed;
-                }
-
+                readResult = await _pipeReader.ReadAsync(cancellationToken);
                 sequence = readResult.Buffer;
             }
         }
@@ -205,6 +197,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
             int read = 0;
+
+            if (isFinalBlock && sequence.Length < _boundary.FinalBoundaryLength - _partialMatchIndex)
+            {
+                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+            }
+
             while (!sequenceReader.End)
             {
                 if (sequenceReader.TryReadTo(out ReadOnlySequence<byte> body, _boundary.BoundaryBytes[_partialMatchIndex]))
@@ -283,7 +281,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool TrySkipMetadata(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
-            
+
             while (!sequenceReader.End)
             {
                 if (!sequenceReader.TryReadTo(out var body, CrlfDelimiter))
