@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly TimeSpan _interval;
         private Timer _timer;
         private int _executingOnHeartbeat;
-        private DateTimeOffset _lastHeartbeat;
+        private long _lastHeartbeatTicks;
 
         public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (Interlocked.Exchange(ref _executingOnHeartbeat, 1) == 0)
             {
-                _lastHeartbeat = now;
+                Volatile.Write(ref _lastHeartbeatTicks, now.Ticks);
+
                 try
                 {
                     foreach (var callback in _callbacks)
@@ -68,7 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 if (!_debugger.IsAttached)
                 {
-                    _trace.HeartbeatSlow(now - _lastHeartbeat, _interval, now);
+                    var lastHeartbeatTicks = Volatile.Read(ref _lastHeartbeatTicks);
+                    
+                    _trace.HeartbeatSlow(TimeSpan.FromTicks(now.Ticks - lastHeartbeatTicks), _interval, now);
                 }
             }
         }
