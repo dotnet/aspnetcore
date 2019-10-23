@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         [InlineData("/", "_content")]
         [InlineData("/_content", "RazorClassLib")]
         [InlineData("/_content/RazorClassLib", "Dir")]
-        [InlineData("/_content/RazorClassLib/Dir", "Castle.Core.dll")]
+        [InlineData("/_content/RazorClassLib/Dir", "Microsoft.AspNetCore.Hosting.Tests.dll")]
         [InlineData("/_content/RazorClassLib/Dir/testroot/", "TextFile.txt")]
         [InlineData("/_content/RazorClassLib/Dir/testroot/wwwroot/", "README")]
         public void GetDirectoryContents_WalksUpContentRoot(string searchDir, string expected)
@@ -57,7 +57,8 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             var directory = provider.GetDirectoryContents(searchDir);
 
             // Assert
-            Assert.True(directory.First().Exists);
+            Assert.NotEmpty(directory);
+            Assert.Contains(directory, file => string.Equals(file.Name, expected));
             Assert.Equal(expected, directory.First().Name);
         }
 
