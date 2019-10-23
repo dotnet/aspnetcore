@@ -85,9 +85,13 @@ stages:
         displayName: 'Authenticate to AzDO Feeds'
 
       - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
+      - task: PowerShell@2
         displayName: Publish Assets
-        env:
-          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-universal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet

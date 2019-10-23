@@ -241,11 +241,13 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 default:
                     throw new InvalidOperationException();
             }
+
             if (options.SameSite < Options.MinimumSameSitePolicy)
             {
                 options.SameSite = Options.MinimumSameSitePolicy;
                 _logger.CookieSameSiteUpgraded(key, Options.MinimumSameSitePolicy.ToString());
             }
+
             switch (Options.HttpOnly)
             {
                 case HttpOnlyPolicy.Always:

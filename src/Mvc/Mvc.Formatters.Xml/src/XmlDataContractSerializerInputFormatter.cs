@@ -118,6 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var request = context.HttpContext.Request;
             Stream readStream = new NonDisposableStream(request.Body);
+            var disposeReadStream = false;
 
             if (!request.Body.CanSeek && !_options.SuppressInputFormatterBuffering)
             {
@@ -135,6 +136,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
+
+                disposeReadStream = true;
             }
 
             try
@@ -162,9 +165,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             finally
             {
-                if (readStream is FileBufferingReadStream fileBufferingReadStream)
+                if (disposeReadStream)
                 {
-                    await fileBufferingReadStream.DisposeAsync();
+                    await readStream.DisposeAsync();
                 }
             }
         }

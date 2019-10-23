@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
     }
-    public abstract partial class InputBase<TValue> : Microsoft.AspNetCore.Components.ComponentBase
+    public abstract partial class InputBase<TValue> : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         protected InputBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
@@ -58,8 +58,10 @@ namespace Microsoft.AspNetCore.Components.Forms
         public Microsoft.AspNetCore.Components.EventCallback<TValue> ValueChanged { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<TValue>> ValueExpression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected virtual void Dispose(bool disposing) { }
         protected virtual string FormatValueAsString(TValue value) { throw null; }
         public override System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
+        void System.IDisposable.Dispose() { }
         protected abstract bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage);
     }
     public partial class InputCheckbox : Microsoft.AspNetCore.Components.Forms.InputBase<bool>
@@ -172,9 +174,15 @@ namespace Microsoft.AspNetCore.Components.Web
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange", false, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", "value", "value", "onchange", true, "yyyy-MM-dd")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", null, "value", "onchange", true, "yyyy-MM-dd")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("datetime-local", "value", "value", "onchange", true, "yyyy-MM-ddTHH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("datetime-local", null, "value", "onchange", true, "yyyy-MM-ddTHH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("month", "value", "value", "onchange", true, "yyyy-MM")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("month", null, "value", "onchange", true, "yyyy-MM")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", "value", "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", null, "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("time", "value", "value", "onchange", true, "HH:mm:ss")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("time", null, "value", "onchange", true, "HH:mm:ss")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange", false, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange", false, null)]
     public static partial class BindAttributes

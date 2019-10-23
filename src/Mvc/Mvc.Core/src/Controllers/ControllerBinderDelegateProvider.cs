@@ -59,7 +59,12 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
             async Task Bind(ControllerContext controllerContext, object controller, Dictionary<string, object> arguments)
             {
-                var valueProvider = await CompositeValueProvider.CreateAsync(controllerContext);
+                var (success, valueProvider) = await CompositeValueProvider.TryCreateAsync(controllerContext, controllerContext.ValueProviderFactories);
+                if (!success)
+                {
+                    return;
+                }
+
                 var parameters = actionDescriptor.Parameters;
 
                 for (var i = 0; i < parameters.Count; i++)

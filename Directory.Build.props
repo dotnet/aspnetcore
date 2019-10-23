@@ -46,7 +46,8 @@
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
@@ -54,6 +55,10 @@
 
     <DefaultNetCoreTargetFramework>netcoreapp5.0</DefaultNetCoreTargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
@@ -90,7 +95,7 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(IsServicingBuild)' == 'true' AND '$(DotNetBuildFromSource)' != 'true'">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.

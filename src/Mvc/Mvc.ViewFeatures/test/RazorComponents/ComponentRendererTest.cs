@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,24 +22,26 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    public class HtmlHelperComponentExtensionsTests
+    public class ComponentRendererTest
     {
         private const string PrerenderedServerComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
         private const string ServerComponentPattern = "^<!--Blazor:(.*?)-->$";
 
         private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
 
+        private readonly ComponentRenderer renderer = GetComponentRenderer();
+
         [Fact]
         public async Task CanRender_ParameterlessComponent()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.Static);
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Static, null);
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -51,15 +53,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRender_ParameterlessComponent_ServerMode()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.Server);
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, ServerComponentPattern);
 
             // Assert
@@ -82,15 +82,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanPrerender_ParameterlessComponent_ServerMode()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>(RenderMode.ServerPrerendered);
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
 
             // Assert
@@ -125,21 +123,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRenderMultipleServerComponents()
         {
             // Arrange
-            var helper = CreateHelper();
-            var firstWriter = new StringWriter();
-            var secondWriter = new StringWriter();
+            var viewContext = GetViewContext();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var firstResult = await helper.RenderComponentAsync<TestComponent>(RenderMode.ServerPrerendered);
-            firstResult.WriteTo(firstWriter, HtmlEncoder.Default);
-            var firstComponent = firstWriter.ToString();
+            var firstResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ServerPrerendered, null);
+            var firstComponent = HtmlContentUtilities.HtmlContentToString(firstResult);
             var firstMatch = Regex.Match(firstComponent, PrerenderedServerComponentPattern, RegexOptions.Multiline);
 
-            var secondResult = await helper.RenderComponentAsync<TestComponent>(RenderMode.Server);
-            secondResult.WriteTo(secondWriter, HtmlEncoder.Default);
-            var secondComponent = secondWriter.ToString();
+            var secondResult = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Server, null);
+            var secondComponent = HtmlContentUtilities.HtmlContentToString(secondResult);
             var secondMatch = Regex.Match(secondComponent, ServerComponentPattern);
 
             // Assert
@@ -171,20 +165,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRender_ComponentWithParametersObject()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(
-                RenderMode.Static,
-                new
-                {
-                    Name = "Steve"
-                });
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Static, new { Name = "Steve" });
 
             // Assert
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             Assert.Equal("<p>Hello Steve!</p>", content);
         }
 
@@ -192,20 +179,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRender_ComponentWithParameters_ServerMode()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(
-                RenderMode.Server,
-                new
-                {
-                    Name = "Daniel"
-                });
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = "Daniel" });
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, ServerComponentPattern);
 
             // Assert
@@ -237,20 +217,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRender_ComponentWithNullParameters_ServerMode()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(
-                RenderMode.Server,
-                new
-                {
-                    Name = (string)null
-                });
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.Server, new { Name = (string)null });
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, ServerComponentPattern);
 
             // Assert
@@ -274,28 +248,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Null(parameterDefinition.TypeName);
             Assert.Null(parameterDefinition.Assembly);
 
-            var value = Assert.Single(serverComponent.ParameterValues);;
+            var value = Assert.Single(serverComponent.ParameterValues); ;
             Assert.Null(value);
         }
 
         [Fact]
-        public async Task CanPrerender_ComponentWithParameters_ServerMode()
+        public async Task CanPrerender_ComponentWithParameters_ServerPrerenderedMode()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
             var writer = new StringWriter();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(
-                RenderMode.ServerPrerendered,
-                new
-                {
-                    Name = "Daniel"
-                });
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = "Daniel" });
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
 
             // Assert
@@ -336,23 +304,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         }
 
         [Fact]
-        public async Task CanPrerender_ComponentWithNullParameters_ServerMode()
+        public async Task CanPrerender_ComponentWithNullParameters_ServerPrerenderedMode()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
             var writer = new StringWriter();
             var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
                 .ToTimeLimitedDataProtector();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(
-                RenderMode.ServerPrerendered,
-                new
-                {
-                    Name = (string)null
-                });
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), RenderMode.ServerPrerendered, new { Name = (string)null });
+            var content = HtmlContentUtilities.HtmlContentToString(result);
             var match = Regex.Match(content, PrerenderedServerComponentPattern, RegexOptions.Multiline);
 
             // Assert
@@ -396,39 +358,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task ComponentWithInvalidRenderMode_Throws()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
 
             // Act & Assert
-            var result = await Assert.ThrowsAsync<ArgumentException>(() => helper.RenderComponentAsync<GreetingComponent>(
-                default,
-                new
-                {
-                    Name = "Steve"
-                }));
-            Assert.Equal("renderMode", result.ParamName);
+            var ex = await ExceptionAssert.ThrowsArgumentAsync(
+                () => renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent), default, new { Name = "Daniel" }),
+                "renderMode",
+                $"Unsupported RenderMode '{(RenderMode)default}'");
         }
 
         [Fact]
         public async Task RenderComponent_DoesNotInvokeOnAfterRenderInComponent()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
 
             // Act
             var state = new OnAfterRenderState();
-            var result = await helper.RenderComponentAsync<OnAfterRenderComponent>(
-                RenderMode.Static,
-                new
-                {
-                    State = state
-                });
-
-            result.WriteTo(writer, HtmlEncoder.Default);
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(OnAfterRenderComponent), RenderMode.Static, new { state });
 
             // Assert
-            Assert.Equal("<p>Hello</p>", writer.ToString());
+            var content = HtmlContentUtilities.HtmlContentToString(result);
+            Assert.Equal("<p>Hello</p>", content);
             Assert.False(state.OnAfterRenderRan);
         }
 
@@ -436,10 +387,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanCatch_ComponentWithSynchronousException()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderComponentAsync(
+                viewContext,
+                typeof(ExceptionComponent),
                 RenderMode.Static,
                 new
                 {
@@ -454,10 +407,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanCatch_ComponentWithAsynchronousException()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderComponentAsync(
+                viewContext,
+                typeof(ExceptionComponent),
                 RenderMode.Static,
                 new
                 {
@@ -472,10 +427,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task Rendering_ComponentWithJsInteropThrows()
         {
             // Arrange
-            var helper = CreateHelper();
+            var viewContext = GetViewContext();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderComponentAsync(
+                viewContext,
+                typeof(ExceptionComponent),
                 RenderMode.Static,
                 new
                 {
@@ -503,11 +460,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var responseMock = new Mock<IHttpResponseFeature>();
             responseMock.Setup(r => r.HasStarted).Returns(true);
             ctx.Features.Set(responseMock.Object);
-            var helper = CreateHelper(ctx);
-            var writer = new StringWriter();
+            var viewContext = GetViewContext(ctx);
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderComponentAsync(
+                viewContext,
+                typeof(RedirectComponent),
                 RenderMode.Static,
                 new
                 {
@@ -530,10 +488,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             ctx.Request.PathBase = "/base";
             ctx.Request.Path = "/path";
             ctx.Request.QueryString = new QueryString("?query=value");
-            var helper = CreateHelper(ctx);
+            var viewContext = GetViewContext(ctx);
 
             // Act
-            await helper.RenderComponentAsync<RedirectComponent>(
+            await renderer.RenderComponentAsync(
+                viewContext,
+                typeof(RedirectComponent),
                 RenderMode.Static,
                 new
                 {
@@ -549,8 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         public async Task CanRender_AsyncComponent()
         {
             // Arrange
-            var helper = CreateHelper();
-            var writer = new StringWriter();
+            var viewContext = GetViewContext();
             var expectedContent = @"<table>
 <thead>
 <tr>
@@ -595,29 +554,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 </table>";
 
             // Act
-            var result = await helper.RenderComponentAsync<AsyncComponent>(RenderMode.Static);
-            result.WriteTo(writer, HtmlEncoder.Default);
-            var content = writer.ToString();
+            var result = await renderer.RenderComponentAsync(viewContext,typeof(AsyncComponent), RenderMode.Static, null);
+            var content = HtmlContentUtilities.HtmlContentToString(result);
 
             // Assert
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
+        private static ComponentRenderer GetComponentRenderer() =>
+            new ComponentRenderer(
+                new StaticComponentRenderer(HtmlEncoder.Default),
+                new ServerComponentSerializer(_dataprotectorProvider));
+
+        private static ViewContext GetViewContext(HttpContext context = null, Action<IServiceCollection> configureServices = null)
         {
             var services = new ServiceCollection();
-            services.AddSingleton(HtmlEncoder.Default);
-            services.AddSingleton<ServerComponentSerializer>();
             services.AddSingleton(_dataprotectorProvider);
             services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.AddSingleton<NavigationManager, HttpNavigationManager>();
-            services.AddSingleton<StaticComponentRenderer>();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
 
             configureServices?.Invoke(services);
 
-            var helper = new Mock<IHtmlHelper>();
-            var context = ctx ?? new DefaultHttpContext();
+            context ??= new DefaultHttpContext();
             context.RequestServices = services.BuildServiceProvider();
             context.Request.Scheme = "http";
             context.Request.Host = new HostString("localhost");
@@ -625,12 +584,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             context.Request.Path = "/path";
             context.Request.QueryString = QueryString.FromUriComponent("?query=value");
 
-            helper.Setup(h => h.ViewContext)
-                .Returns(new ViewContext()
-                {
-                    HttpContext = context
-                });
-            return helper.Object;
+            return new ViewContext { HttpContext = context };
         }
 
         private class TestComponent : IComponent

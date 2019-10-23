@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             var problemDetails = new ValidationProblemDetails();
 
-            if (!reader.Read())
+            if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException(Resources.UnexpectedJsonEnd);
             }

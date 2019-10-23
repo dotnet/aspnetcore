@@ -341,9 +341,18 @@ export class BrowserRenderer {
     }
   }
 
-  private tryApplyValueProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null) {
+  private tryApplyValueProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null): boolean {
     // Certain elements have built-in behaviour for their 'value' property
     const frameReader = batch.frameReader;
+
+    if (element.tagName === 'INPUT' && element.getAttribute('type') === 'time' && !element.getAttribute('step')) {
+      const timeValue = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+      if (timeValue) {
+        element['value'] = timeValue.substring(0, 5);
+        return true;
+      }
+    }
+
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':

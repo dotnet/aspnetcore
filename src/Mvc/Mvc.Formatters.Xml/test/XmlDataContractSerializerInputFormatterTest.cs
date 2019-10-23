@@ -12,6 +12,7 @@ using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.WebUtilities;
 using Moq;
 using Xunit;
 
@@ -164,6 +165,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             Assert.Equal(expectedInt, model.SampleInt);
             Assert.Equal(expectedString, model.sampleString);
+        }
+
+        [Fact]
+        public async Task ReadAsync_DoesNotDisposeBufferedStreamIfItDidNotCreateIt()
+        {
+            // Arrange
+            var expectedInt = 10;
+            var expectedString = "TestString";
+
+            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
+                "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
+
+            var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
+
+            var contentBytes = Encoding.UTF8.GetBytes(input);
+            var httpContext = new DefaultHttpContext();
+            var testBufferedReadStream = new Mock<FileBufferingReadStream>(new MemoryStream(contentBytes), 1024) { CallBase = true };
+            httpContext.Request.Body = testBufferedReadStream.Object;
+            var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasError);
+            var model = Assert.IsType<TestLevelOne>(result.Model);
+
+            Assert.Equal(expectedInt, model.SampleInt);
+            Assert.Equal(expectedString, model.sampleString);
+
+            testBufferedReadStream.Verify(v => v.DisposeAsync(), Times.Never());
         }
 
         [Fact]

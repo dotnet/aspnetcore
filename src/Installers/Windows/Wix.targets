@@ -63,7 +63,7 @@
   </Target>
 
   <Target Name="CopyToArtifactsDirectory"
-          Condition=" '$(IsShipping)' == 'true' "
+          Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
           AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>

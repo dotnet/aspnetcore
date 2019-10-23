@@ -49,6 +49,7 @@ export class WebSocketTransport implements ITransport {
             url = url.replace(/^http/, "ws");
             let webSocket: WebSocket | undefined;
             const cookies = this.httpClient.getCookieString(url);
+            let opened = false;
 
             if (Platform.isNode) {
                 const headers = {};
@@ -78,6 +79,7 @@ export class WebSocketTransport implements ITransport {
             webSocket.onopen = (_event: Event) => {
                 this.logger.log(LogLevel.Information, `WebSocket connected to ${url}.`);
                 this.webSocket = webSocket;
+                opened = true;
                 resolve();
             };
 
@@ -106,8 +108,20 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onclose = (event: CloseEvent) => {
-                if (this.webSocket) {
+                // Don't call close handler if connection was never established
+                // We'll reject the connect call instead
+                if (opened) {
                     this.close(event);
+                } else {
+                    let error: any = null;
+                    // ErrorEvent is a browser only type we need to check if the type exists before using it
+                    if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
+                        error = event.error;
+                    } else {
+                        error = new Error("There was an error with the transport.");
+                    }
+
+                    reject(error);
                 }
             };
         });
