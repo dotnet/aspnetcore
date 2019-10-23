@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal("ClaimsAuthorizationRequirement:Claim.Type=Custom and Claim.Value is one of the following values: (CustomValue1|CustomValue2)", formattedValue);
         }
+        
         [Fact]
         public void ToString_ShouldReturnWithoutAllowedDescriptionWhenAllowedValuesIsNull()
         {
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal("ClaimsAuthorizationRequirement:Claim.Type=Custom", formattedValue);
         }
+        
         [Fact]
         public void ToString_ShouldReturnWithoutAllowedDescriptionWhenAllowedValuesIsEmpty()
         {
