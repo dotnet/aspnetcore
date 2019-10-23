@@ -5,7 +5,6 @@
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
     </dependencies>
-    <icon>packageIcon.png</icon>
   </metadata>
   <files>
     <file src="..\..\..\THIRD-PARTY-NOTICES.txt" />
