@@ -1764,7 +1764,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // Old clients never ping, and shouldn't be timed out, so ping to tell the server that we should be timed out if we stop.
                 // The TimerLoop is started from the ReceiveLoop with the connection lock still acquired.
                 _hubConnection._state.AssertInConnectionLock();
-                await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                if (!_hasInherentKeepAlive)
+                {
+                    await _hubConnection.SendHubMessage(this, PingMessage.Instance);
+                }
 
                 // initialize the timers
                 timer.Start();
@@ -1811,7 +1814,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                     try
                     {
-                        if (_hubConnection._state.CurrentConnectionStateUnsynchronized != null)
+                        if (!_hasInherentKeepAlive && _hubConnection._state.CurrentConnectionStateUnsynchronized != null)
                         {
                             SafeAssert(ReferenceEquals(_hubConnection._state.CurrentConnectionStateUnsynchronized, this),
                                 "Something reset the connection state before the timer loop completed!");
