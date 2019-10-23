@@ -19,5 +19,6 @@
 # /src/ProjectTemplates/          @ryanbrandenburg
 /src/Security/                  @tratcher @anurse
 /src/Servers/                   @tratcher @jkotalik @anurse @halter73
-/src/SignalR/                   @BrennanConroy @halter73 @anurse
 /src/Shared/Http2               @aspnet/http2
+/src/Shared/test/Shared.Tests/Http2 @aspnet/http2
+/src/SignalR/                   @BrennanConroy @halter73 @anurse
