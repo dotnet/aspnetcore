@@ -5,7 +5,7 @@
   "tools": {
     "dotnet": "5.0.100-alpha1-014696",
     "runtimes": {
-      "dotnet/x64": [
+      "dotnet": [
         "$(MicrosoftNETCoreAppRuntimeVersion)"
       ],
       "dotnet/x86": [
