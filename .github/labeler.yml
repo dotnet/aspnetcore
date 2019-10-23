@@ -51,3 +51,6 @@ area-signalr:
   - src/SignalR/**/*
 
 #area-websockets:
+
+api-suggestion:
+  - src/**/ref/**/*

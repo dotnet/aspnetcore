@@ -11,19 +11,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieBuilder
     {
-        // True (old): https://tools.ietf.org/html/draft-west-first-party-cookies-07#section-3.1
-        // False (new): https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
-        internal static bool SuppressSameSiteNone;
-
         private string _name;
-
-        static CookieBuilder()
-        {
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.SuppressSameSiteNone", out var enabled))
-            {
-                SuppressSameSiteNone = enabled;
-            }
-        }
 
         /// <summary>
         /// The name of the cookie.
@@ -66,7 +54,7 @@ namespace Microsoft.AspNetCore.Http
         /// <remarks>
         /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SuppressSameSiteNone ? SameSiteMode.None : SameSiteMode.Unspecified;
+        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
         /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.

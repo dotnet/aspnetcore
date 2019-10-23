@@ -85,7 +85,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _query = Request.QueryString;
             _rawTarget = Request.RawUrl;
             _scheme = Request.Scheme;
-            _user = _requestContext.User;
+
+            if (requestContext.Server.Options.Authentication.AutomaticAuthentication)
+            {
+                _user = _requestContext.User;
+            }
 
             _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
             _responseHeaders = Response.Headers;
