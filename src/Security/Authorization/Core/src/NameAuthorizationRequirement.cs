@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public override string ToString()
         {
-            return $"{nameof(NameAuthorizationRequirement)}:User has `Name` equals {RequiredName}";
+            return $"{nameof(NameAuthorizationRequirement)}:Requires a user identity with Name equal to {RequiredName}";
         }
     }
 }
