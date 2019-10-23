@@ -5,11 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
 namespace Ignitor
 {
     internal class CancellableOperation<TResult>
     {
-        public CancellableOperation(TimeSpan? timeout)
+        public CancellableOperation(TimeSpan? timeout, CancellationToken cancellationToken)
         {
             Timeout = timeout;
 
@@ -17,25 +18,37 @@ namespace Ignitor
             Completion.Task.ContinueWith(
                 (task, state) =>
                 {
-                    var operation = (CancellableOperation<TResult>)state;
+                    var operation = (CancellableOperation<TResult>)state!;
                     operation.Dispose();
                 },
                 this,
                 TaskContinuationOptions.ExecuteSynchronously); // We need to execute synchronously to clean-up before anything else continues
 
+
+            Cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             if (Timeout != null && Timeout != System.Threading.Timeout.InfiniteTimeSpan && Timeout != TimeSpan.MaxValue)
             {
-                Cancellation = new CancellationTokenSource(Timeout.Value);
-                CancellationRegistration = Cancellation.Token.Register(
-                    (self) =>
-                    {
-                        var operation = (CancellableOperation<TResult>)self;
-                        operation.Completion.TrySetCanceled(operation.Cancellation.Token);
-                        operation.Cancellation.Dispose();
-                        operation.CancellationRegistration.Dispose();
-                    },
-                    this);
+                Cancellation.CancelAfter(Timeout.Value);
             }
+
+            CancellationRegistration = Cancellation.Token.Register(
+                (self) =>
+                {
+                    var operation = (CancellableOperation<TResult>)self!;
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        // The operation was externally canceled before it timed out.
+                        Dispose();
+                        return;
+                    }
+
+                    operation.Completion.TrySetException(new TimeoutException($"The operation timed out after {Timeout}."));
+                    operation.Cancellation?.Dispose();
+                    operation.CancellationRegistration.Dispose();
+                },
+                this);
         }
 
         public TimeSpan? Timeout { get; }
@@ -62,3 +75,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore
