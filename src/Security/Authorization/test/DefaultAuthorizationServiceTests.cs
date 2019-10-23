@@ -929,7 +929,6 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True((await authorizationService.AuthorizeAsync(user, 2, Operations.Edit)).Succeeded);
         }
 
-
         [Fact]
         public async Task DoesNotCallHandlerWithWrongResourceType()
         {
@@ -1241,8 +1240,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var result = await authorizationService.AuthorizeAsync(user, "Log");
 
             // Assert
-
         }
+        
         [Fact]
         public async Task Authorize_ShouldLogExplicitFailedWhenFailedCall()
         {
@@ -1275,7 +1274,6 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var result = await authorizationService.AuthorizeAsync(user, "Log");
 
             // Assert
-
         }
     }
 }
