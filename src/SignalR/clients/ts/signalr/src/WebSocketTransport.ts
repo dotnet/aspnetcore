@@ -105,7 +105,11 @@ export class WebSocketTransport implements ITransport {
                 }
             };
 
-            webSocket.onclose = (event: CloseEvent) => this.close(event);
+            webSocket.onclose = (event: CloseEvent) => {
+                if (this.webSocket) {
+                    this.close(event);
+                }
+            };
         });
     }
 

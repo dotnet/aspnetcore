@@ -8,6 +8,7 @@ import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport
 import { getUserAgentHeader } from "../src/Utils";
 
 import { HttpError } from "../src/Errors";
+import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
@@ -192,9 +193,9 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unexpected status code returned from negotiate 999");
+                .toThrow("Unexpected status code returned from negotiate '999'");
         },
-        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate '999'");
     });
 
     it("all transport failure errors get aggregated", async () => {
@@ -1151,6 +1152,53 @@ describe("HttpConnection", () => {
         }, "Failed to start the connection: Error: nope");
     });
 
+    it("logMessageContent displays correctly with binary data", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "LongPolling", transferFormats: ["Text", "Binary"] };
+
+            let sentMessage = "";
+            const captureLogger: ILogger = {
+                log: (logLevel: LogLevel, message: string) => {
+                    if (logLevel === LogLevel.Trace && message.search("data of length") > 0) {
+                        sentMessage = message;
+                    }
+
+                    logger.log(logLevel, message);
+                },
+            };
+
+            let httpClientGetCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
+                    .on("GET", () => {
+                        httpClientGetCount++;
+                        if (httpClientGetCount === 1) {
+                            // First long polling request must succeed so start completes
+                            return "";
+                        }
+                        return Promise.resolve();
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+                logMessageContent: true,
+                logger: captureLogger,
+                transport: HttpTransportType.LongPolling,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Binary);
+                await connection.send(new Uint8Array([0x68, 0x69, 0x20, 0x3a, 0x29]));
+            } finally {
+                await connection.stop();
+            }
+
+            expect(sentMessage).toBe("(LongPolling transport) sending data. Binary data of length 5. Content: '0x68 0x69 0x20 0x3a 0x29'.");
+        });
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)
@@ -1413,7 +1461,7 @@ describe("TransportSendQueue", () => {
 
         const queue = new TransportSendQueue(transport);
 
-        const first = queue.send(new Uint8Array([4, 5, 6]));
+        const first = queue.send(new Uint8Array([4, 5, 6]).buffer);
         // This should allow first to enter transport.send
         promiseSource1.resolve();
         // Wait until we're inside transport.send
@@ -1428,8 +1476,8 @@ describe("TransportSendQueue", () => {
         await Promise.all([first, second, third]);
 
         expect(sendMock.mock.calls.length).toBe(2);
-        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
-        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]).buffer);
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]).buffer);
 
         await queue.stop();
     });
