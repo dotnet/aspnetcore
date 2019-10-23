@@ -882,11 +882,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind MetadataKind { get { throw null; } }
         public System.Type ModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Reflection.ParameterInfo ParameterInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.ParameterInfo ParameterInfo { get { throw null; } }
+        public System.Reflection.PropertyInfo PropertyInfo { get { throw null; } }
         public bool Equals(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity other) { throw null; }
         public override bool Equals(object obj) { throw null; }
         public static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity ForParameter(System.Reflection.ParameterInfo parameter) { throw null; }
         public static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity ForParameter(System.Reflection.ParameterInfo parameter, System.Type modelType) { throw null; }
+        public static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity ForProperty(System.Reflection.PropertyInfo propertyInfo, System.Type modelType, System.Type containerType) { throw null; }
+        [System.ObsoleteAttribute("This API is obsolete and may be removed in a future release.")]
         public static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity ForProperty(System.Type modelType, string name, System.Type containerType) { throw null; }
         public static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity ForType(System.Type modelType) { throw null; }
         public override int GetHashCode() { throw null; }

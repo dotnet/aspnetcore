@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
 using Xunit;
@@ -27,7 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var context = new DefaultModelBindingContext();
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
+#pragma warning restore CS0618 // Type or member is obsolete
             context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
             // Act
