@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public override string ToString()
         {
-            return $"{nameof(DenyAnonymousAuthorizationRequirement)}:User authenticated";
+            return $"{nameof(DenyAnonymousAuthorizationRequirement)}:Requires an authenticated user.";
         }
     }
 }
