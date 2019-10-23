@@ -345,10 +345,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
                         }
                     }
-
-                    // A connection has been closed, try again.
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
                 }
             }
         }
