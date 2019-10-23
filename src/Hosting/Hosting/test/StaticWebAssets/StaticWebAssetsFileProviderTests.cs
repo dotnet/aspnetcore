@@ -39,7 +39,10 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         }
 
         [Theory]
+        [InlineData("\\", "_content")]
+        [InlineData("\\_content\\RazorClassLib\\Dir", "Castle.Core.dll")]
         [InlineData("", "_content")]
+        [InlineData("/", "_content")]
         [InlineData("/_content", "RazorClassLib")]
         [InlineData("/_content/RazorClassLib", "Dir")]
         [InlineData("/_content/RazorClassLib/Dir", "Castle.Core.dll")]

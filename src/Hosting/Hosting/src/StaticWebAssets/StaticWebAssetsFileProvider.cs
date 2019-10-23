@@ -50,18 +50,16 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             {
                 return InnerProvider.GetDirectoryContents(physicalPath.Value);
             }
-            else if (string.Equals(subpath, string.Empty))
+            else if (string.Equals(subpath, string.Empty) || string.Equals(modifiedSub, "/"))
             {
                 return new StaticWebAssetsDirectoryRoot(BasePath);
             }
-            else if (BasePath.StartsWithSegments(modifiedSub, FilePathComparison, out PathString remaining))
+            else if (BasePath.StartsWithSegments(modifiedSub, FilePathComparison, out var remaining))
             {
                 return new StaticWebAssetsDirectoryRoot(remaining);
             }
-            else
-            {
-                return NotFoundDirectoryContents.Singleton;
-            }
+
+            return NotFoundDirectoryContents.Singleton;
         }
 
         /// <inheritdoc />
@@ -87,6 +85,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         private static string NormalizePath(string path)
         {
+            path = path.Replace('\\', '/');
             return path != null && path.StartsWith("/") ? path : "/" + path;
         }
 
@@ -101,6 +100,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
             public StaticWebAssetsDirectoryRoot(PathString remainingPath)
             {
+                // We MUST use the Value property here because it is unescaped.
                 _nextSegment = remainingPath.Value.Split("/", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             }
 
