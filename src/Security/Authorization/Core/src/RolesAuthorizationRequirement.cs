@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public override string ToString()
         {
-            var roles = $"Roles in ({string.Join("|", AllowedRoles)})";
+            var roles = $"User.IsInRole must be true for one of the following roles: ({string.Join("|", AllowedRoles)})";
 
             return $"{nameof(RolesAuthorizationRequirement)}:{roles}";
         }
