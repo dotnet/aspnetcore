@@ -1797,7 +1797,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Internal for testing
             internal async Task RunTimerActions()
             {
-                if (!_hasInherentKeepAlive && DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
+                if (_hasInherentKeepAlive)
+                {
+                    return;
+                }
+
+                if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
                 {
                     OnServerTimeout();
                 }
@@ -1814,7 +1819,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                     try
                     {
-                        if (!_hasInherentKeepAlive && _hubConnection._state.CurrentConnectionStateUnsynchronized != null)
+                        if (_hubConnection._state.CurrentConnectionStateUnsynchronized != null)
                         {
                             SafeAssert(ReferenceEquals(_hubConnection._state.CurrentConnectionStateUnsynchronized, this),
                                 "Something reset the connection state before the timer loop completed!");
