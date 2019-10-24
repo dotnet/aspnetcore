@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private MultipartPipeReaderStream _currentStream;
 
-        private static readonly byte[] ColonDelimiter = new byte[] { (byte)':' };
-        private static readonly byte[] CrlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
+        private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
 
         public MultipartPipeReader(string boundary, PipeReader pipeReader)

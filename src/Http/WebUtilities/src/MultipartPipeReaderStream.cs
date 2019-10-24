@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private int _partialMatchIndex = 0;
 
-        private static byte[] CrlfDelimiter = new byte[] { (byte)'\r', (byte)'\n' };
-        private static byte[] EndOfFileDelimiter = new byte[] { (byte)'-', (byte)'-' };
+        private static ReadOnlySpan<byte> CrlfDelimiter =>  new byte[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> EndOfFileDelimiter => new byte[] { (byte)'-', (byte)'-' };
 
 
         public override bool CanRead => true;
