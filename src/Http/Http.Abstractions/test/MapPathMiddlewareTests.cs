@@ -96,6 +96,34 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Theory]
+        [InlineData("/foo", "", "/foo")]
+        [InlineData("/foo", "", "/foo/")]
+        [InlineData("/foo", "/Bar", "/foo")]
+        [InlineData("/foo", "/Bar", "/foo/cho")]
+        [InlineData("/foo", "/Bar", "/foo/cho/")]
+        [InlineData("/foo/cho", "/Bar", "/foo/cho")]
+        [InlineData("/foo/cho", "/Bar", "/foo/cho/do")]
+        [InlineData("/foo", "", "/Foo")]
+        [InlineData("/foo", "", "/Foo/")]
+        [InlineData("/foo", "/Bar", "/Foo")]
+        [InlineData("/foo", "/Bar", "/Foo/Cho")]
+        [InlineData("/foo", "/Bar", "/Foo/Cho/")]
+        [InlineData("/foo/cho", "/Bar", "/Foo/Cho")]
+        [InlineData("/foo/cho", "/Bar", "/Foo/Cho/do")]
+        public void PathMatchAction_BranchTaken_WithoutRemoveMatchedPathSegment(string matchPath, string basePath, string requestPath)
+        {
+            HttpContext context = CreateRequest(basePath, requestPath);
+            var builder = new ApplicationBuilder(serviceProvider: null);
+            builder.Map(matchPath, false, subBuilder => subBuilder.Run(Success));
+            var app = builder.Build();
+            app.Invoke(context).Wait();
+
+            Assert.Equal(200, context.Response.StatusCode);
+            Assert.Equal(basePath, (string)context.Items["test.PathBase"]);
+            Assert.Equal(requestPath, context.Items["test.Path"]);
+        }
+
+        [Theory]
         [InlineData("/")]
         [InlineData("/foo/")]
         [InlineData("/foo/cho/")]

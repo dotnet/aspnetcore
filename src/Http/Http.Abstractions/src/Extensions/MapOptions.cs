@@ -19,5 +19,11 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         /// The branch taken for a positive match.
         /// </summary>
         public RequestDelegate Branch { get; set; }
+
+        /// <summary>
+        /// If true, mathed path would be removed from Request.Path and added to Request.PathBase
+        /// Defaults to true.
+        /// </summary>
+        public bool RemoveMatchedPathSegment { get; set; } = true;
     }
 }
