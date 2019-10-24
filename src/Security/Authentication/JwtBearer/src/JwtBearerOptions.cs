@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
 
         /// <summary>
-        /// 30 seconds is the default, minimum time interval that must pass for <see cref="ConfigurationManager" /> to obtain a new configuration.
+        /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
         /// </summary>
         public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
     }
