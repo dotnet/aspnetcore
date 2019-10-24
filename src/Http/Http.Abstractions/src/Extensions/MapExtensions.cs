@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
-            return Map(app, pathMatch, true, configuration);
+            return Map(app, pathMatch, removeMatchedPathSegment: true, configuration);
         }
 
         /// <summary>
