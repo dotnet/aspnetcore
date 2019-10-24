@@ -380,5 +380,39 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
+
+
+        [Fact]
+        public async Task MultipartPipeReader_ReadThreePartBody_CorrectBaseoffsetAndLength()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes(ThreePartBody));
+            var pipeReader = PipeReader.Create(stream);
+            var reader = new MultipartPipeReader(Boundary, pipeReader);
+
+            var section = await reader.ReadNextSectionAsync();
+            Assert.NotNull(section);
+            await section.Body.DrainAsync(default);
+            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
+            var buffer = new byte[section.Body.Length];
+            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
+            Assert.Equal("text default", Encoding.ASCII.GetString(buffer));
+
+            section = await reader.ReadNextSectionAsync();
+            Assert.NotNull(section);
+            await section.Body.DrainAsync(default);
+            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
+            buffer = new byte[section.Body.Length];
+            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
+            Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer));
+
+            section = await reader.ReadNextSectionAsync();
+            Assert.NotNull(section);
+
+            await section.Body.DrainAsync(default);
+            stream.Position = section.BaseStreamOffset.GetValueOrDefault();
+            buffer = new byte[section.Body.Length];
+            await stream.ReadAsync(buffer, 0, (int)section.Body.Length);
+            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer));
+        }
     }
 }

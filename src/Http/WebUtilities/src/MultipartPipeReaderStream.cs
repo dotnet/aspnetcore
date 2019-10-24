@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private int _partialMatchIndex = 0;
 
-        private static ReadOnlySpan<byte> CrlfDelimiter =>  new byte[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> EndOfFileDelimiter => new byte[] { (byte)'-', (byte)'-' };
 
 
@@ -166,13 +166,14 @@ namespace Microsoft.AspNetCore.WebUtilities
                     }
                     else if (!_metadataSkipped)
                     {
-                        if (TrySkipMetadata(ref sequence, readResult.IsCompleted))
+                        var result = TrySkipMetadata(ref sequence, readResult.IsCompleted);
+                        _pipeReader.AdvanceTo(sequence.Start);
+                        if (result)
                         {
-                            _pipeReader.AdvanceTo(sequence.Start);
                             _metadataSkipped = true;
                             return consumed;
                         }
-                    }                    
+                    }
                 }
                 else if (readResult.IsCompleted)
                 {
@@ -282,7 +283,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                             }
                         }
                     }
-                    sequence = sequence.Slice(_boundary.BoundaryBytes.Length - _partialMatchIndex);
+                    sequence = sequence.Slice(sequenceReader.Position);
                     RawLength += _boundary.BoundaryBytes.Length;
                     return (true, read);
                 }
@@ -302,6 +303,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         sequence = sequence.Slice(sequenceReader.Position);
                         RawLength += sequenceReader.Consumed;
+                        Debug.Assert(sequenceReader.End, "Un-expected data found on the boundary line");
+
                         return true;
                     }
 
@@ -318,13 +321,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                         continue;
                     }
                 }
-
-                var position = sequenceReader.Position;
-                sequenceReader.Rewind(sequenceReader.Consumed);
-                if (sequenceReader.TryReadTo(out var _, EndOfFileDelimiter))
+                else
                 {
-                    //Debug.Assert(sequenceReader.Consumed < consumed, "Un-expected data found on the boundary line: " + body);
-                    sequence = sequence.Slice(position);
+                    sequence = sequence.Slice(sequenceReader.Position);
                     RawLength += sequenceReader.Consumed;
                     return true;
                 }

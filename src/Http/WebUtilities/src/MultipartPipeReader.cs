@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentStream.DrainAsync(cancellationToken);
-            _bytesConsumed += _currentStream.Length;
+            _bytesConsumed += _currentStream.RawLength;
 
 
             var headersAccumulator = new KeyValueAccumulator();
@@ -120,9 +120,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     HeadersLengthLimit - headersLength,
                     out var consumed);
                 headersLength += consumed;
-
                 buffer = buffer.Slice(consumed);
-                _bytesConsumed += consumed;
                 return didFinishParsing;
             }
 
