@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal("RolesAuthorizationRequirement:User.IsInRole must be true for one of the following roles: (Custom1|Custom2)", formattedValue);
         }
+        
         [Fact]
         public void ToString_ShouldReturnUnSplitStringWhenOnlyOneAllowedRoles()
         {
