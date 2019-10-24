@@ -208,6 +208,21 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Items.Clear();
             Assert.Null(props.AllowRefresh);
         }
+        
+        [Fact]
+        public void SetDateTimeOffset()
+        {
+            var props = new MyAuthenticationProperties();
+
+            props.SetDateTimeOffset("foo", new DateTimeOffset(new DateTime(2018, 03, 19, 12, 34, 56, DateTimeKind.Utc)));
+            Assert.Equal("Mon, 19 Mar 2018 12:34:56 GMT", props.Items["foo"]);
+
+            props.SetDateTimeOffset("foo", null);
+            Assert.False(props.Items.ContainsKey("foo"));
+
+            props.SetDateTimeOffset("doesnotexist", null);
+            Assert.False(props.Items.ContainsKey("doesnotexist"));
+        }
 
         [Fact]
         public void GetDateTimeOffset()
