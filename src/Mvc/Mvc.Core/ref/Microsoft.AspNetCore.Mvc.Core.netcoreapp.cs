@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ApiDescriptionActionData
     {
         public ApiDescriptionActionData() { }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class ApiExplorerSettingsAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupNameProvider, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionVisibilityProvider
