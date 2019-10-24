@@ -347,7 +347,7 @@ namespace Ignitor
                 }
             });
 
-            HubConnection = builder.Build();
+            _hubConnection = builder.Build();
 
             HubConnection.On<int, string>("JS.AttachComponent", OnAttachComponent);
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
@@ -357,11 +357,6 @@ namespace Ignitor
             HubConnection.Closed += OnClosedAsync;
 
             await HubConnection.StartAsync(CancellationToken);
-
-            if (CaptureOperations)
-            {
-                Operations = new Operations();
-            }
 
             if (!connectAutomatically)
             {

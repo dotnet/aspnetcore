@@ -120,7 +120,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        [Repeat(1000)]
         public async Task CannotInvokeJSInteropCallbackCompletionsBeforeInitialization()
         {
             // Arrange
