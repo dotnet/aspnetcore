@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -59,7 +58,6 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             // Assert
             Assert.NotEmpty(directory);
             Assert.Contains(directory, file => string.Equals(file.Name, expected));
-            Assert.Equal(expected, directory.First().Name);
         }
 
         [Fact]
@@ -88,6 +86,24 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
             // Assert
             Assert.Empty(directory);
+        }
+
+        [Fact]
+        public void GetDirectoryContents_HandlesWhitespaceInBase()
+        {
+            // Arrange
+            var provider = new StaticWebAssetsFileProvider("/_content/Static Web Assets",
+                Path.Combine(AppContext.BaseDirectory, "testroot", "wwwroot"));
+
+            // Act
+            var directory = provider.GetDirectoryContents("/_content/Static Web Assets/Static Web/");
+
+            // Assert
+            Assert.Collection(directory,
+                file =>
+                {
+                    Assert.Equal("Static Web.txt", file.Name);
+                });
         }
 
         [Fact]
