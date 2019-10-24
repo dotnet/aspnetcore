@@ -334,7 +334,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             Assert.True(result.HasError, "Model should have produced an error!");
             Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
-                kvp => {
+                kvp =>
+                {
                     Assert.Equal(expectedValue, kvp.Key);
                 });
         }

@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 
+#nullable enable
 namespace Ignitor
 {
     public sealed class Operations
@@ -18,3 +19,4 @@ namespace Ignitor
         public ConcurrentQueue<CapturedJSInteropCall> JSInteropCalls { get; } = new ConcurrentQueue<CapturedJSInteropCall>();
     }
 }
+#nullable restore

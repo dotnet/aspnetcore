@@ -52,6 +52,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             messages.Clear();
             foreach (var validationResult in validationResults)
             {
+                if (!validationResult.MemberNames.Any())
+                {
+                    messages.Add(new FieldIdentifier(editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage);
+                    continue;
+                }
+
                 foreach (var memberName in validationResult.MemberNames)
                 {
                     messages.Add(editContext.Field(memberName), validationResult.ErrorMessage);

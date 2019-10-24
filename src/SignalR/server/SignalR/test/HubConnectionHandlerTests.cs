@@ -3835,6 +3835,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task SpecificHubOptionForMaximumReceiveMessageSizeIsUsedOverGlobalHubOption()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(serviceBuilder =>
+            {
+                serviceBuilder.AddSignalR(o =>
+                {
+                    // ConnectAsync would fail if this value was used
+                    o.MaximumReceiveMessageSize = 1;
+                }).AddHubOptions<MethodHub>(o =>
+                {
+                    // null is treated as both no-limit and not set, this test verifies that we track if the user explicitly sets the value
+                    o.MaximumReceiveMessageSize = null;
+                });
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (StartVerifiableLog())
+            {
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                await client.DisposeAsync().OrTimeout();
+
+                await connectionHandlerTask.OrTimeout();
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
