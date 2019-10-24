@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         {
             return new NameAuthorizationRequirement(requiredName);
         }
+        
         [Fact]
         public void ToString_ShouldReturnFormatValue()
         {
