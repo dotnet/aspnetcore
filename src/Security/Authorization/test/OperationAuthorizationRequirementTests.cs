@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 Name = name
             };
         }
+        
         [Fact]
         public void ToString_ShouldReturnFormatValue()
         {
