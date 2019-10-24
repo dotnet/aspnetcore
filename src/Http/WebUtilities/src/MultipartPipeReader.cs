@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             ReadOnlySequence<byte> buffer = default;
             ReadResult readResult = default;
             _boundary.ExpectLeadingCrlf = true;
+            long headersLength = 0;
             while (true)
             {
                 if (buffer.IsEmpty)
@@ -76,8 +77,14 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!buffer.IsEmpty)
                 {
-                    if (TryParseHeaders(ref buffer, ref headersAccumulator, readResult.IsCompleted))
+                    var finishedParsing = TryParseHeaders(ref buffer, ref headersAccumulator, ref headersLength, readResult.IsCompleted);
+                    if (headersLength > DefaultHeadersLengthLimit)
                     {
+                        throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                    }
+                    if (finishedParsing)
+                    {
+                        _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
                         _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary);
                         return new MultipartSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = _bytesConsumed }; ;
@@ -102,6 +109,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         internal bool TryParseHeaders(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
+            ref long headersLength,
             bool isFinalBlock)
         {
             if (buffer.IsSingleSegment)
@@ -109,12 +117,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var didFinishParsing = ParseHeadersFast(buffer.First.Span,
                     ref accumulator,
                     isFinalBlock,
+                    HeadersLengthLimit - headersLength,
                     out var consumed);
-
-                if (HeadersLengthLimit < consumed)
-                {
-                    throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
-                }
+                headersLength += consumed;
 
                 buffer = buffer.Slice(consumed);
                 _bytesConsumed += consumed;
@@ -123,6 +128,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return ParseHeadersSlow(ref buffer,
                 ref accumulator,
+                ref headersLength,
                 isFinalBlock);
         }
 
@@ -130,6 +136,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool ParseHeadersFast(ReadOnlySpan<byte> span,
             ref KeyValueAccumulator accumulator,
             bool isFinalBlock,
+            long lengthLimit,
             out int consumed)
         {
             ReadOnlySpan<byte> key;
@@ -157,9 +164,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                     if (!isFinalBlock)
                     {
                         // Don't buffer indefinately
-                        if (span.Length > DefaultHeadersLengthLimit)
+                        if (span.Length > lengthLimit)
                         {
-                            throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                            throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                         }
                         return false;
                     }
@@ -182,14 +189,15 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    if (line.Length > HeadersLengthLimit)
+                    if (line.Length > lengthLimit)
                     {
-                        throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                        throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                     }
                     key = line.Slice(0, colon);
                     value = line.Slice(colon + ColonDelimiter.Length);
                 }
 
+                lengthLimit -= line.Length;
                 var decodedKey = GetDecodedString(key);
                 var decodedValue = GetDecodedString(value).Trim();
 
@@ -202,10 +210,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool ParseHeadersSlow(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
+            ref long headersLength,
             bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
-
             var position = sequenceReader.Position;
             var consumedBytes = default(long);
 
@@ -216,34 +224,34 @@ namespace Microsoft.AspNetCore.WebUtilities
                     if (!isFinalBlock)
                     {
                         // Don't buffer indefinately
-                        if ((sequenceReader.Consumed - consumedBytes) > DefaultHeadersLengthLimit)
+                        if (headersLength + consumedBytes > HeadersLengthLimit)
                         {
-                            throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                            throw new InvalidDataException($"Line length limit {HeadersLengthLimit - headersLength} exceeded.");
                         }
                         break;
                     }
 
                     // This must be the final key=value pair
                     line = buffer.Slice(sequenceReader.Position);
-                    _bytesConsumed += consumedBytes+sequenceReader.Consumed;
+                    consumedBytes = sequenceReader.Consumed;
                     sequenceReader.Advance(line.Length);
                 }
 
-                if (consumedBytes > DefaultHeadersLengthLimit)
+                if (consumedBytes + headersLength > HeadersLengthLimit)
                 {
                     throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                 }
 
                 if (line.IsSingleSegment)
                 {
-                    var didFinishParsing = ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, out var segmentConsumed);
+                    var didFinishParsing = ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - consumedBytes - headersLength, out var segmentConsumed);
                     Debug.Assert(segmentConsumed == line.FirstSpan.Length);
                     consumedBytes = sequenceReader.Consumed;
                     position = sequenceReader.Position;
                     if (didFinishParsing)
                     {
                         buffer = buffer.Slice(position);
-                        _bytesConsumed += consumedBytes;
+                        headersLength += consumedBytes;
                         return true;
                     }
                     continue;
@@ -255,7 +263,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (lineReader.Length == 0)
                 {
                     buffer = buffer.Slice(position);
-                    _bytesConsumed += consumedBytes;
+                    headersLength += consumedBytes;
                     return true;
                 }
 
@@ -278,7 +286,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             buffer = buffer.Slice(position);
-            _bytesConsumed += consumedBytes;
+            headersLength += consumedBytes;
             return false;
         }
 

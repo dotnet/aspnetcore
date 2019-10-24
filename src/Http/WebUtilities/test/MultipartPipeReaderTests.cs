@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             };
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
-            Assert.Equal($"Multipart headers length limit 60 exceeded.", exception.Message);
+            Assert.Equal("Line length limit 17 exceeded.", exception.Message);
         }
 
         [Fact]
