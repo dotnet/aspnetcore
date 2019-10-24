@@ -137,6 +137,11 @@ namespace Microsoft.AspNetCore.Mvc
         public ApiConventionTypeAttribute(System.Type conventionType) { }
         public System.Type ConventionType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    public partial class ApiDescriptionActionData
+    {
+        public ApiDescriptionActionData() { }
+        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class ApiExplorerSettingsAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupNameProvider, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionVisibilityProvider
     {
@@ -3222,6 +3227,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public partial class ValidationVisitor
     {
         public ValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState) { }
+        [System.ObsoleteAttribute("This property is deprecated and is no longer used by the runtime.")]
         public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected object Container { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }

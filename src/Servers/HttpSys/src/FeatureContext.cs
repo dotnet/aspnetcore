@@ -304,7 +304,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.ClientCertificate))
                 {
-                    _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync;
+                    var method = _requestContext.Server.Options.ClientCertificateMethod;
+                    if (method == ClientCertificateMethod.AllowCertificate)
+                    {
+                        _clientCert = Request.ClientCertificate;
+                    }
+                    else if (method == ClientCertificateMethod.AllowRenegotation)
+                    {
+                        _clientCert = Request.GetClientCertificateAsync().Result; // TODO: Sync over async;
+                    }
+                    // else if (method == ClientCertificateMethod.NoCertificate) // No-op
+
                     SetInitialized(Fields.ClientCertificate);
                 }
                 return _clientCert;

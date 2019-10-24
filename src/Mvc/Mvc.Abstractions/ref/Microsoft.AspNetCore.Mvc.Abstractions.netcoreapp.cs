@@ -831,6 +831,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         public TooManyModelErrorsException(string message) { }
     }
+    public sealed partial class ValueProviderException : System.Exception
+    {
+        public ValueProviderException(string message) { }
+        public ValueProviderException(string message, System.Exception innerException) { }
+    }
     public partial class ValueProviderFactoryContext
     {
         public ValueProviderFactoryContext(Microsoft.AspNetCore.Mvc.ActionContext context) { }

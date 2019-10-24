@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <StartArguments>-s https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</StartArguments>
+    <StartArguments>-s https://api.nuget.org/v3/index.json</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
   </PropertyGroup>
 

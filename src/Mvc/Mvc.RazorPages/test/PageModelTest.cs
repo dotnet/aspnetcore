@@ -1740,6 +1740,35 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         [Fact]
+        public async Task TryUpdateModel_ReturnsFalse_IfValueProviderFactoryThrows()
+        {
+            // Arrange
+            var valueProviderFactory = new Mock<IValueProviderFactory>();
+            valueProviderFactory.Setup(f => f.CreateValueProviderAsync(It.IsAny<ValueProviderFactoryContext>()))
+                .Throws(new ValueProviderException("some error"));
+
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ValueProviderFactories = new[] { valueProviderFactory.Object },
+                }
+            };
+
+            var model = new object();
+
+            // Act
+            var result = await pageModel.TryUpdateModelAsync(model);
+
+            // Assert
+            Assert.False(result);
+            var modelState = Assert.Single(pageModel.ModelState);
+            Assert.Empty(modelState.Key);
+            var error = Assert.Single(modelState.Value.Errors);
+            Assert.Equal("some error", error.ErrorMessage);
+        }
+
+        [Fact]
         public void UrlHelperIsSet()
         {
             // Arrange

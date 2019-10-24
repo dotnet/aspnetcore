@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var prefixLength = prefix.Length;
             if (value.Length > prefixLength)
             {
-                return value.StartsWith(prefix, StringComparison.Ordinal)
+                return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                     && (
                         // Only match when there's a separator character either at the end of the
                         // prefix or right after it.

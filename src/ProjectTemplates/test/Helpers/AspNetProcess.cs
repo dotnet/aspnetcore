@@ -60,7 +60,7 @@ namespace Templates.Test.Helpers
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
             if (hasListeningUri)
             {
-                ListeningUri = GetListeningUri(output);
+                ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
             }
         }
 
@@ -175,16 +175,15 @@ namespace Templates.Test.Helpers
         {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
-            var listeningMessage = Process
-                .OutputLinesAsEnumerable
-                .Where(line => line != null)
-                .FirstOrDefault(line => line.Trim().StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
+            var listeningMessage = GetListeningMessage();
 
             if (!string.IsNullOrEmpty(listeningMessage))
             {
                 listeningMessage = listeningMessage.Trim();
                 // Verify we have a valid URL to make requests to
-                var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
+                var listeningUrlString = listeningMessage.Substring(listeningMessage.IndexOf(
+                    ListeningMessagePrefix, StringComparison.Ordinal) + ListeningMessagePrefix.Length);
+
                 output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
                 listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
                     "://localhost" +
@@ -194,6 +193,25 @@ namespace Templates.Test.Helpers
                 return new Uri(listeningUrlString, UriKind.Absolute);
             }
             else
+            {
+                return null;
+            }
+        }
+
+        private string GetListeningMessage()
+        {
+            try
+            {
+                return Process
+                    // This will timeout at most after 5 minutes.
+                    .OutputLinesAsEnumerable
+                    .Where(line => line != null)
+                    // This used to do StartsWith, but this is less strict and can prevent issues (very rare) where
+                    // console logging interleaves with other console output in a bad way. For example:
+                    // dbugNow listening on: http://127.0.0.1:12857
+                    .FirstOrDefault(line => line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal));
+            }
+            catch (OperationCanceledException)
             {
                 return null;
             }

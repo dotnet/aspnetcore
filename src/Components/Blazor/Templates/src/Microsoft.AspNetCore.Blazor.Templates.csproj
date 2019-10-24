@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <UpToDateCheckInput Include="content\**\.template.config.src\**\*.*" />
   </ItemGroup>
 

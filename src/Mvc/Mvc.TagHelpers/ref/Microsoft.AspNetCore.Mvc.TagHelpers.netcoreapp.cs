@@ -105,6 +105,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public CacheTagHelperOptions() { }
         public long SizeLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("component", Attributes="type", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    public sealed partial class ComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
+    {
+        public ComponentTagHelper() { }
+        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("type")]
+        public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("params", DictionaryAttributePrefix="param-")]
+        public System.Collections.Generic.IDictionary<string, object> Parameters { get { throw null; } set { } }
+        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("render-mode")]
+        public Microsoft.AspNetCore.Mvc.Rendering.RenderMode RenderMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
+        [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute]
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
+    }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("distributed-cache", Attributes="name")]
     public partial class DistributedCacheTagHelper : Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperBase
     {

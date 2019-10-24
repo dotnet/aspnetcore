@@ -1,6 +1,7 @@
 import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
+import { showErrorNotification } from '../../BootErrors';
 
 const assemblyHandleCache: { [assemblyName: string]: number } = {};
 const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
@@ -232,7 +233,11 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
-  module.printErr = line => console.error(`WASM: ${line}`);
+
+  module.printErr = line => {
+    console.error(`WASM: ${line}`);
+    showErrorNotification();
+  };
   module.preRun = [];
   module.postRun = [];
   module.preloadPlugins = [];

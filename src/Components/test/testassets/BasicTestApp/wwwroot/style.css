@@ -6,6 +6,14 @@
     outline: 1px solid red;
 }
 
+#blazor-error-ui {
+    display: none;
+}
+
+    #blazor-error-ui dismiss {
+        cursor: pointer;
+    }
+
 .validation-message {
     color: red;
 }

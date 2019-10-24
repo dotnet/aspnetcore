@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, typeof(THub), hubMethodName, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)

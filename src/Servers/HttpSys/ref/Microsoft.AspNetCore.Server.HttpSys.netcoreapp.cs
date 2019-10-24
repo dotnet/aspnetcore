@@ -27,6 +27,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         Negotiate = 8,
         Kerberos = 16,
     }
+    public enum ClientCertificateMethod
+    {
+        NoCertificate = 0,
+        AllowCertificate = 1,
+        AllowRenegotation = 2,
+    }
     public enum Http503VerbosityLevel : long
     {
         Basic = (long)0,

@@ -12,7 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -462,6 +464,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Single(formatterContext.ModelState["Person.Name"].Errors);
         }
 
+        [Fact]
+        public async Task ReadAsync_DoesNotDisposeBufferedReadStream()
+        {
+            // Arrange
+            var formatter = GetInputFormatter();
+
+            var content = "{\"name\": \"Test\"}";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+            var testBufferedReadStream = new Mock<FileBufferingReadStream>(httpContext.Request.Body, 1024) { CallBase = true };
+            httpContext.Request.Body = testBufferedReadStream.Object;
+
+            var formatterContext = CreateInputFormatterContext(typeof(ComplexModel), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            var userModel = Assert.IsType<ComplexModel>(result.Model);
+            Assert.Equal("Test", userModel.Name);
+
+            testBufferedReadStream.Verify(v => v.DisposeAsync(), Times.Never());
+        }
+
         internal abstract string JsonFormatter_EscapedKeys_Bracket_Expected { get; }
 
         internal abstract string JsonFormatter_EscapedKeys_Expected { get; }
@@ -517,7 +543,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         protected sealed class ComplexPoco
         {
             public int Id { get; set; }
-            public Person Person{ get; set; }
+            public Person Person { get; set; }
         }
 
         protected sealed class Person

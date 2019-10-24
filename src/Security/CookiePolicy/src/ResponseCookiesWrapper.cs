@@ -115,8 +115,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
         private bool CheckPolicyRequired()
         {
             return !CanTrack
-                || (CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.None)
-                || (!CookiePolicyOptions.SuppressSameSiteNone && Options.MinimumSameSitePolicy != SameSiteMode.Unspecified)
+                || Options.MinimumSameSitePolicy != SameSiteMode.Unspecified
                 || Options.HttpOnly != HttpOnlyPolicy.None
                 || Options.Secure != CookieSecurePolicy.None;
         }
@@ -242,11 +241,13 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 default:
                     throw new InvalidOperationException();
             }
+
             if (options.SameSite < Options.MinimumSameSitePolicy)
             {
                 options.SameSite = Options.MinimumSameSitePolicy;
                 _logger.CookieSameSiteUpgraded(key, Options.MinimumSameSitePolicy.ToString());
             }
+
             switch (Options.HttpOnly)
             {
                 case HttpOnlyPolicy.Always:
