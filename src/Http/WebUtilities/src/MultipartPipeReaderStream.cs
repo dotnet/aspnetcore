@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public long RawLength { get; private set; } = 0;
 
         public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public long? LengthLimit { get; private set; }
 
         public MultipartPipeReaderStream(PipeReader pipeReader, MultipartBoundary boundary)
         {
@@ -146,18 +147,19 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         var (didReachEnd, copied) = TryCopyToEnd(ref sequence, buffer, offset, readResult.IsCompleted);
                         _pipeReader.AdvanceTo(sequence.Start);
+                        UpdateLength(copied);
                         consumed += copied;
                         if (didReachEnd)
                         {
                             _finished = true;
-                            _observedLength += copied;
-                            RawLength += copied;
+                        }
+                        else if (!sequence.IsEmpty)
+                        {
+                            return consumed;
                         }
 
                         if (copied > buffer.Length - offset)
                         {
-                            _observedLength += copied;
-                            RawLength += copied;
                             return consumed;
                         }
                         offset += copied;
@@ -179,6 +181,16 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 readResult = await _pipeReader.ReadAsync(cancellationToken);
                 sequence = readResult.Buffer;
+            }
+        }
+
+        private void UpdateLength(int copied)
+        {
+            _observedLength += copied;
+            RawLength += copied;
+            if (LengthLimit.HasValue && _observedLength > LengthLimit.GetValueOrDefault())
+            {
+                throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
             }
         }
 
