@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Authentication
         public AuthenticationProperties(System.Collections.Generic.IDictionary<string, string> items) { }
         public AuthenticationProperties(System.Collections.Generic.IDictionary<string, string> items, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public bool? AllowRefresh { get { throw null; } set { } }
-        public bool? ClaimsTransformed { get { throw null; } set { } }
         public System.DateTimeOffset? ExpiresUtc { get { throw null; } set { } }
         public bool IsPersistent { get { throw null; } set { } }
         public System.DateTimeOffset? IssuedUtc { get { throw null; } set { } }
