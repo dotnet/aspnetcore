@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
         public const string Http2Version = "HTTP/2";
+        public const string Http3Version = "HTTP/3";
 
         public const string HttpUriScheme = "http://";
         public const string HttpsUriScheme = "https://";

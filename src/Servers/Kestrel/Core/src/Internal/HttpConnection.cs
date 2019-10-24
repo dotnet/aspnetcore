@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -66,13 +68,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         requestProcessor = new Http2Connection(_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
+                    case HttpProtocols.Http3:
+                        requestProcessor = new Http3Connection(_context);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
                     case HttpProtocols.None:
                         // An error was already logged in SelectProtocol(), but we should close the connection.
                         break;
+
                     default:
                         // SelectProtocol() only returns Http1, Http2 or None.
-                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
-                }
+                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2, Http3 or None.");
+                }   
 
                 _requestProcessor = requestProcessor;
 
@@ -197,6 +204,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private HttpProtocols SelectProtocol()
         {
+            // TODO make this check more thorough.
+            if (_context.Protocols == HttpProtocols.Http3)
+            {
+                return HttpProtocols.Http3;
+            }
+
             var hasTls = _context.ConnectionFeatures.Get<ITlsConnectionFeature>() != null;
             var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol
                 ?? new ReadOnlyMemory<byte>();

@@ -155,6 +155,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return HttpUtilities.Http2Version;
                 }
+                if (_httpVersion == Http.HttpVersion.Http3)
+                {
+                    return HttpUtilities.Http3Version;
+                }
 
                 return string.Empty;
             }
@@ -175,6 +179,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (ReferenceEquals(value, HttpUtilities.Http2Version))
                 {
                     _httpVersion = Http.HttpVersion.Http2;
+                }
+                else if (ReferenceEquals(value, HttpUtilities.Http3Version))
+                {
+                    _httpVersion = Http.HttpVersion.Http3;
                 }
                 else
                 {
@@ -197,6 +205,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (value == HttpUtilities.Http2Version)
             {
                 _httpVersion = Http.HttpVersion.Http2;
+            }
+            else if (value == HttpUtilities.Http3Version)
+            {
+                _httpVersion = Http.HttpVersion.Http3;
             }
             else
             {
@@ -527,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestTrailersAvailable = true;
         }
 
-        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        public virtual async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
             try
             {
@@ -1044,7 +1056,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteSuffix()
         {
-            if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
+            // TODO confirm we want to have PreventRequestAbortedCancellation for HTTP/3
+            if (_autoChunk || _httpVersion >= Http.HttpVersion.Http2)
             {
                 // For the same reason we call CheckLastWrite() in Content-Length responses.
                 PreventRequestAbortedCancellation();
@@ -1160,7 +1173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             responseHeaders.SetReadOnly();
 
-            if (!hasConnection && _httpVersion != Http.HttpVersion.Http2)
+            if (!hasConnection && _httpVersion < Http.HttpVersion.Http2)
             {
                 if (!_keepAlive)
                 {
@@ -1171,6 +1184,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
                 }
             }
+
+            //if (!ServerOptions.DisableAltSvc && _httpVersion < Http.HttpVersion.Http3) // TODO how to discover endpoints listening on HTTP/3?
+            //{
+            //    foreach (var option in ServerOptions.ListenOptions)
+            //    {
+            //        if (option.Protocols == HttpProtocols.Http3)
+            //        {
+            //            // Get ALPN from a feature?
+            //            // TODO cache altsvc header
+            //            responseHeaders.HeaderAltSvc = $"h3-23=\":{option.IPEndPoint.Port}\"; ma=84600"; 
+            //        }
+            //    }
+
+            //}
 
             if (ServerOptions.AddServerHeader && !responseHeaders.HasServer)
             {

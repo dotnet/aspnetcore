@@ -88,7 +88,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleApp", "samples\Qu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic", "Transport.MsQuic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.csproj", "{62CFF861-807E-43F6-9403-22AA7F06C9A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuicSampleClient", "samples\QuicSampleClient\QuicSampleClient.csproj", "{F39A942B-85A8-4C1B-A5BC-435555E79F20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleClient", "samples\QuicSampleClient\QuicSampleClient.csproj", "{F39A942B-85A8-4C1B-A5BC-435555E79F20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http3SampleApp", "samples\Http3SampleApp\Http3SampleApp.csproj", "{B3CDC83A-A9C5-45DF-9828-6BC419C24308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -508,6 +510,18 @@ Global
 		{F39A942B-85A8-4C1B-A5BC-435555E79F20}.Release|x64.Build.0 = Release|Any CPU
 		{F39A942B-85A8-4C1B-A5BC-435555E79F20}.Release|x86.ActiveCfg = Release|Any CPU
 		{F39A942B-85A8-4C1B-A5BC-435555E79F20}.Release|x86.Build.0 = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|x64.Build.0 = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Debug|x86.Build.0 = Debug|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|x64.Build.0 = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|x86.ActiveCfg = Release|Any CPU
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -548,6 +562,7 @@ Global
 		{53A8634C-DFC5-4A5B-8864-9EF1707E3F18} = {F826BA61-60A9-45B6-AF29-FD1A6E313EF0}
 		{62CFF861-807E-43F6-9403-22AA7F06C9A6} = {2B456D08-F72B-4EB8-B663-B6D78FC04BF8}
 		{F39A942B-85A8-4C1B-A5BC-435555E79F20} = {F826BA61-60A9-45B6-AF29-FD1A6E313EF0}
+		{B3CDC83A-A9C5-45DF-9828-6BC419C24308} = {F826BA61-60A9-45B6-AF29-FD1A6E313EF0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48207B50-7D05-4B10-B585-890FE0F4FCE1}

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -203,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            new KestrelServer(Options.Create<KestrelServerOptions>(null), Mock.Of<IConnectionListenerFactory>(), mockLoggerFactory.Object);
+            new KestrelServer(Options.Create<KestrelServerOptions>(null), Mock.Of<IEnumerable<IConnectionListenerFactory>>(), mockLoggerFactory.Object);
             mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
 
@@ -257,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
             var stopTask1 = server.StopAsync(default);
@@ -315,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
             var stopTask1 = server.StopAsync(default);
@@ -370,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), default);
 
             var stopTask1 = server.StopAsync(default);
@@ -416,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 DebuggerWrapper.Singleton,
                 testContext.Log);
 
-            using (var server = new KestrelServer(new MockTransportFactory(), testContext))
+            using (var server = new KestrelServer(new List<IConnectionListenerFactory>() { new MockTransportFactory() }, testContext))
             {
                 Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
@@ -433,12 +434,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
+            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, bool throwOnCriticalErrors = true)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
+            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
         }
 
         private static void StartDummyApplication(IServer server)
