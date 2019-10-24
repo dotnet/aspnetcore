@@ -89,15 +89,15 @@ namespace Microsoft.AspNetCore.Authentication
                     {
                         doTransform = false;
                     }
-                    else
-                    {
-                        _transformCache.Add(principal);
-                    }
                 }
 
                 if (doTransform)
                 {
                     principal = await Transform.TransformAsync(principal);
+                    if (Options.ApplyClaimsTransformationOnce)
+                    {
+                        _transformCache.Add(principal);
+                    }
                 }
                 return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket.AuthenticationScheme));
             }
