@@ -547,6 +547,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
+                if (methodInfo.IsGenericMethod)
+                {
+                    throw new NotSupportedException($"Method '{methodInfo.Name}' is a generic method which is not supported on a Hub.");
+                }
+
                 var methodName =
                     methodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
                     methodInfo.Name;
