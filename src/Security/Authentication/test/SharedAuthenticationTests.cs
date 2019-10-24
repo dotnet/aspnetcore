@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Authentication
             public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
             {
                 Ran++;
-                return Task.FromResult(principal);
+                return Task.FromResult(new ClaimsPrincipal());
             }
         }
 
