@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         }
 
         [Fact]
-        public async Task void ChainedPredicates_Success()
+        public async Task ChainedPredicates_Success()
         {
             var builder = new ApplicationBuilder(serviceProvider: null);
             builder.MapWhen(TruePredicate, map1 =>
