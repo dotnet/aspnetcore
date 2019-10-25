@@ -25,7 +25,7 @@ namespace System.Net.Http.HPack
 
         public const int DefaultHeaderTableSize = 4096;
         public const int DefaultStringOctetsSize = 4096;
-        public const int DefaultMaxResponseHeadersLength = 64 * 1024; // HttpHandlerDefaults.DefaultMaxResponseHeadersLength * 1024;
+        public const int DefaultMaxHeadersLength = 64 * 1024;
 
         // http://httpwg.org/specs/rfc7541.html#rfc.section.6.1
         //   0   1   2   3   4   5   6   7
@@ -82,7 +82,7 @@ namespace System.Net.Http.HPack
         private const int StringLengthPrefix = 7;
 
         private readonly int _maxDynamicTableSize;
-        private readonly int _maxResponseHeadersLength;
+        private readonly int _maxHeadersLength;
         private readonly DynamicTable _dynamicTable;
         private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
         private byte[] _stringOctets;
@@ -99,16 +99,16 @@ namespace System.Net.Http.HPack
         private bool _huffman;
         private bool _headersObserved;
 
-        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxResponseHeadersLength = DefaultMaxResponseHeadersLength)
-            : this(maxDynamicTableSize, maxResponseHeadersLength, new DynamicTable(maxDynamicTableSize))
+        public HPackDecoder(int maxDynamicTableSize = DefaultHeaderTableSize, int maxHeadersLength = DefaultMaxHeadersLength)
+            : this(maxDynamicTableSize, maxHeadersLength, new DynamicTable(maxDynamicTableSize))
         {
         }
 
         // For testing.
-        internal HPackDecoder(int maxDynamicTableSize, int maxResponseHeadersLength, DynamicTable dynamicTable)
+        internal HPackDecoder(int maxDynamicTableSize, int maxHeadersLength, DynamicTable dynamicTable)
         {
             _maxDynamicTableSize = maxDynamicTableSize;
-            _maxResponseHeadersLength = maxResponseHeadersLength;
+            _maxHeadersLength = maxHeadersLength;
             _dynamicTable = dynamicTable;
 
             _stringOctets = new byte[DefaultStringOctetsSize];
@@ -269,7 +269,7 @@ namespace System.Net.Http.HPack
                         {
                             if (intResult == 0)
                             {
-                                throw new HPackDecodingException(SR.Format(SR.net_http_invalid_response_header_name, ""));
+                                throw new HPackDecodingException(SR.Format(SR.net_http_invalid_header_name, ""));
                             }
 
                             OnStringLength(intResult, nextState: State.HeaderName);
@@ -410,9 +410,9 @@ namespace System.Net.Http.HPack
         {
             if (length > _stringOctets.Length)
             {
-                if (length > _maxResponseHeadersLength)
+                if (length > _maxHeadersLength)
                 {
-                    throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxResponseHeadersLength));
+                    throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
                 }
 
                 _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];
