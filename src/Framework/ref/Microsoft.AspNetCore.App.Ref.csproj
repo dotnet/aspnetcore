@@ -154,7 +154,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
 
     <ItemGroup>
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition=" '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+      <!-- Use package version for non-Extensions references -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(ReferencePath.NuGetPackageId).dll') AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+      <!-- Pin version for extensions references -->
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|3.0.0')" Condition="Exists('$(MicrosoftInternalExtensionsRefsPath)%(ReferencePath.NuGetPackageId).dll') AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(ReferencePath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
 
