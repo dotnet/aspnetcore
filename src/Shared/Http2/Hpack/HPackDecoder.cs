@@ -412,7 +412,7 @@ namespace System.Net.Http.HPack
             {
                 if (length > _maxResponseHeadersLength)
                 {
-                    throw new HPackDecodingException(SR.Format(SR.net_http_response_headers_exceeded_length, _maxResponseHeadersLength));
+                    throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxResponseHeadersLength));
                 }
 
                 _stringOctets = new byte[Math.Max(length, _stringOctets.Length * 2)];

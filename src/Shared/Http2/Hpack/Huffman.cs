@@ -345,13 +345,13 @@ namespace System.Net.Http.HPack
                 if (ch == -1)
                 {
                     // No valid symbol could be decoded with the bits in next
-                    throw new HuffmanDecodingException();
+                    throw new HuffmanDecodingException(SR.net_http_hpack_huffman_decode_failed);
                 }
                 else if (ch == 256)
                 {
                     // A Huffman-encoded string literal containing the EOS symbol MUST be treated as a decoding error.
                     // http://httpwg.org/specs/rfc7541.html#rfc.section.5.2
-                    throw new HuffmanDecodingException();
+                    throw new HuffmanDecodingException(SR.net_http_hpack_huffman_decode_failed);
                 }
 
                 if (j == dst.Length)

@@ -117,11 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="net_http_headers_exceeded_length" xml:space="preserve">
+    <value>The HTTP headers length exceeded the set limit of {0} bytes.</value>
+  </data>
   <data name="net_http_headers_invalid_header_name" xml:space="preserve">
     <value>The header name format is invalid.</value>
   </data>
   <data name="net_http_hpack_bad_integer" xml:space="preserve">
     <value>HPACK integer exceeds limits or has an overlong encoding.</value>
+  </data>
+  <data name="net_http_hpack_encode_failure" xml:space="preserve">
+    <value>Failed to HPACK encode the headers.</value>
   </data>
   <data name="net_http_hpack_huffman_decode_failed" xml:space="preserve">
     <value>Huffman-coded literal string failed to decode.</value>
@@ -133,7 +139,7 @@
     <value>Invalid header index: {0} is outside of static table and no dynamic table entry found.</value>
   </data>
   <data name="net_http_hpack_large_table_size_update" xml:space="preserve">
-    <value>Dynamic table size update to {0} bytes exceeds limit of {1} bytes.</value>
+    <value>A dynamic table size update of {0} octets is greater than the configured maximum size of {1} octets.</value>
   </data>
   <data name="net_http_hpack_late_dynamic_table_size_update" xml:space="preserve">
     <value>Dynamic table size update received after beginning of header block.</value>
@@ -146,8 +152,5 @@
   </data>
   <data name="net_http_request_invalid_char_encoding" xml:space="preserve">
     <value>Request headers must contain only ASCII characters.</value>
-  </data>
-  <data name="net_http_response_headers_exceeded_length" xml:space="preserve">
-    <value>The HTTP response headers length exceeded the set limit of {0} bytes.</value>
   </data>
 </root>

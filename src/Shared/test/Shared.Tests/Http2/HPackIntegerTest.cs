@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
-using Xunit;
+using System.Linq;
 using System.Net.Http.HPack;
+using Xunit;
 
 namespace System.Net.Http.Unit.Tests.HPack
 {
@@ -34,26 +33,30 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.False(success);
         }
 
-        [Theory]
-        [MemberData(nameof(IntegerCodecRoundTripSamples))]
-        public void HPack_IntegerRoundTrip(int value, int bits)
+        [Fact]
+        public void IntegerEncoderDecoderRoundtrips()
         {
             var decoder = new IntegerDecoder();
 
-            Span<byte> encoded = stackalloc byte[5];
-            Assert.True(IntegerEncoder.Encode(value, bits, encoded, out int bytesWritten));
-
-            bool finished = decoder.BeginTryDecode(encoded[0], bits, out int intResult);
-
-            int i = 1;
-            for (; !finished && i < encoded.Length; ++i)
+            for (int i = 0; i < 2048; ++i)
             {
-                finished = decoder.TryDecode(encoded[i], out intResult);
-            }
+                for (int prefixLength = 1; prefixLength <= 8; ++prefixLength)
+                {
+                    Span<byte> integerBytes = stackalloc byte[5];
+                    Assert.True(IntegerEncoder.Encode(i, prefixLength, integerBytes, out var length));
 
-            Assert.True(finished);
-            Assert.Equal(bytesWritten, i);
-            Assert.Equal(value, intResult);
+                    var decodeResult = decoder.BeginTryDecode(integerBytes[0], prefixLength, out var intResult);
+
+                    for (int j = 1; j < length; j++)
+                    {
+                        Assert.False(decodeResult);
+                        decodeResult = decoder.TryDecode(integerBytes[j], out intResult);
+                    }
+
+                    Assert.True(decodeResult);
+                    Assert.Equal(i, intResult);
+                }
+            }
         }
 
         public static IEnumerable<object[]> IntegerCodecExactSamples()
@@ -61,17 +64,6 @@ namespace System.Net.Http.Unit.Tests.HPack
             yield return new object[] { 10, 5, new byte[] { 0x0A } };
             yield return new object[] { 1337, 5, new byte[] { 0x1F, 0x9A, 0x0A } };
             yield return new object[] { 42, 8, new byte[] { 0x2A } };
-        }
-
-        public static IEnumerable<object[]> IntegerCodecRoundTripSamples()
-        {
-            for (int i = 0; i < 2048; ++i)
-            {
-                for (int prefixLength = 1; prefixLength <= 8; ++prefixLength)
-                {
-                    yield return new object[] { i, prefixLength };
-                }
-            }
         }
 
         [Theory]

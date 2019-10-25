@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -2041,7 +2042,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _connectionTask;
 
             var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is HPackEncodingException);
-            Assert.Contains(CoreStrings.HPackErrorNotEnoughBuffer, message.Exception.Message);
+            Assert.Contains(SR.net_http_hpack_encode_failure, message.Exception.Message);
         }
 
         [Fact]
@@ -2614,7 +2615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var message = await appFinished.Task.DefaultTimeout();
-            Assert.Equal(CoreStrings.HPackErrorNotEnoughBuffer, message);
+            Assert.Equal(SR.net_http_hpack_encode_failure, message);
 
             // Just the StatusCode gets written before aborting in the continuation frame
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -2625,7 +2626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair.Application.Output.Complete();
 
             await WaitForConnectionErrorAsync<HPackEncodingException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: int.MaxValue, Http2ErrorCode.INTERNAL_ERROR,
-                CoreStrings.HPackErrorNotEnoughBuffer);
+                SR.net_http_hpack_encode_failure);
         }
 
         [Fact]

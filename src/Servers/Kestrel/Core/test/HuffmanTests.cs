@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Text;
 using Xunit;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var dst = new byte[encoded.Length * 2];
             var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         public static readonly TheoryData<byte[]> _eosData = new TheoryData<byte[]>
@@ -107,17 +108,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var dst = new byte[encoded.Length * 2];
             var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorEOS, exception.Message);
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         [Fact]
-        public void ThrowsOnDestinationBufferTooSmall()
+        public void ResizesOnDestinationBufferTooSmall()
         {
             //                           h      e         l          l      o         *
             var encoded = new byte[] { 0b100111_00, 0b101_10100, 0b0_101000_0, 0b0111_1111 };
-            var dst = new byte[encoded.Length * 2];
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorDestinationTooSmall, exception.Message);
+            var originalDestination = new byte[encoded.Length];
+            var actualDestination = originalDestination;
+            var decodedCount = Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref actualDestination);
+            Assert.Equal(5, decodedCount);
+            Assert.NotSame(originalDestination, actualDestination);
         }
 
         public static readonly TheoryData<byte[]> _incompleteSymbolData = new TheoryData<byte[]>
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var dst = new byte[encoded.Length * 2];
             var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         [Fact]

@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var exception = Assert.Throws<HPackDecodingException>(() =>
                 _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderDynamic), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x7e }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x0f, 0x2f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x1f, 0x2f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var data = new ReadOnlySequence<byte>(_indexedHeaderStatic.Concat(new byte[] { 0x3e }).ToArray());
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock, exception.Message);
+            Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
         [Fact]
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 11110 (30 encoded with 5-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             var data = new ReadOnlySequence<byte>(new byte[] { 0x3e });
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock, exception.Message);
+            Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
         [Fact]
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var exception = Assert.Throws<HPackDecodingException>(() =>
                 _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x3f, 0xe2, 0x1f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(4097, DynamicTableInitialMaxSize), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_hpack_large_table_size_update, 4097, DynamicTableInitialMaxSize), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .ToArray();
 
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackStringLengthTooLarge(MaxRequestHeaderFieldSize + 1, MaxRequestHeaderFieldSize), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxRequestHeaderFieldSize), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void DecodesIncompleteHeaderBlock_Error(byte[] encoded)
         {
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorIncompleteHeaderBlock, exception.Message);
+            Assert.Equal(SR.net_http_hpack_incomplete_header_block, exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void WrapsHuffmanDecodingExceptionInHPackDecodingException(byte[] encoded)
         {
             var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackHuffmanError, exception.Message);
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
             Assert.IsType<HuffmanDecodingException>(exception.InnerException);
             Assert.Empty(_decodedHeaders);
         }

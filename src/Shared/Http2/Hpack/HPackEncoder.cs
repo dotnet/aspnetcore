@@ -45,7 +45,7 @@ namespace System.Net.Http.HPack
                 {
                     if (currentLength == 0 && throwIfNoneEncoded)
                     {
-                        throw new HPackEncodingException();
+                        throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
                     }
 
                     length = currentLength;
@@ -137,6 +137,7 @@ namespace System.Net.Http.HPack
             // +---+---------------------------+
             // |  String Data (Length octets)  |
             // +-------------------------------+
+            const int toLowerMask = 0x20;
 
             if (destination.Length != 0)
             {
@@ -151,7 +152,7 @@ namespace System.Net.Http.HPack
                         for (int i = 0; i < value.Length; i++)
                         {
                             char c = value[i];
-                            destination[i] = (byte)((uint)(c - 'A') <= ('Z' - 'A') ? c | 0x20 : c);
+                            destination[i] = (byte)(lowercase && (uint)(c - 'A') <= ('Z' - 'A') ? c | toLowerMask : c);
                         }
 
                         bytesWritten = integerLength + value.Length;
