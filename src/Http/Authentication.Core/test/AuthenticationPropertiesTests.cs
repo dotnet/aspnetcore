@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             props.Items.Clear();
             Assert.Null(props.AllowRefresh);
         }
-        
+
         [Fact]
         public void SetDateTimeOffset()
         {
