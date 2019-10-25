@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         await _next(httpContext);
 
                         // If there was no response body, check the response headers now. We can cache things like redirects.
-                        await StartResponseAsync(context);
+                        StartResponse(context);
 
                         // Finalize the cache entry
-                        await FinalizeCacheBodyAsync(context);
+                        FinalizeCacheBody(context);
                     }
                     finally
                     {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         internal async Task<bool> TryServeFromCacheAsync(ResponseCachingContext context)
         {
             context.BaseKey = _keyProvider.CreateBaseKey(context);
-            var cacheEntry = await _cache.GetAsync(context.BaseKey);
+            var cacheEntry = _cache.Get(context.BaseKey);
 
             if (cacheEntry is CachedVaryByRules cachedVaryByRules)
             {
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    if (await TryServeCachedResponseAsync(context, await _cache.GetAsync(varyKey)))
+                    if (await TryServeCachedResponseAsync(context, _cache.Get(varyKey)))
                     {
                         return true;
                     }
@@ -339,16 +339,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Task FinalizeCacheHeadersAsync(ResponseCachingContext context)
-        {
-            if (OnFinalizeCacheHeaders(context))
-            {
-                return _cache.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
-            }
-            return Task.CompletedTask;
-        }
-
-        internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
+        internal void FinalizeCacheBody(ResponseCachingContext context)
         {
             if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
             {
@@ -365,7 +356,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     context.CachedResponse.Body = bufferStream;
                     _logger.ResponseCached();
-                    await _cache.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
+                    _cache.Set(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
                 }
                 else
                 {
@@ -403,15 +394,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Task StartResponseAsync(ResponseCachingContext context)
-        {
-            if (OnStartResponse(context))
-            {
-                return FinalizeCacheHeadersAsync(context);
-            }
-            return Task.CompletedTask;
-        }
-
         internal static void AddResponseCachingFeature(HttpContext context)
         {
             if (context.Features.Get<IResponseCachingFeature>() != null)
@@ -429,8 +411,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 context.OriginalResponseStream,
                 _options.MaximumBodySize,
                 StreamUtilities.BodySegmentSize,
-                () => StartResponse(context),
-                () => StartResponseAsync(context));
+                () => StartResponse(context));
             context.HttpContext.Response.Body = context.ResponseCachingStream;
 
             // Add IResponseCachingFeature
