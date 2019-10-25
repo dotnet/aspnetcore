@@ -16,13 +16,13 @@ To copy code from AspNetCore to CoreFx set COREFX_REPO to the CoreFx repo root a
 - https://github.com/dotnet/corefx/blob/master/Documentation/project-docs/developer-guide.md
 - Run build.cmd from the root once: `PS D:\github\corefx> .\build.cmd`
 - Build the individual projects:
-- `PS D:\github\corefx\src\System.Net.Http\src> ..\..\..\eng\common\msbuild.ps1`
-- `PS D:\github\corefx\src\Common\tests> ..\..\..\eng\common\msbuild.ps1 /t:rebuild`
-- `PS D:\github\corefx\src\system.net.http\tests\FunctionalTests> ..\..\..\..\eng\common\build.ps1`
+- `PS D:\github\corefx\src\System.Net.Http\src> dotnet msbuild /t:rebuild`
+- `PS D:\github\corefx\src\Common\tests> dotnet msbuild /t:rebuild`
+- `PS D:\github\corefx\src\system.net.http\tests\FunctionalTests> dotnet msbuild`
 
 ### Running CoreFx tests:
-- `PS D:\github\corefx\src\System.Net.Http\tests\UnitTests> ..\..\..\..\eng\common\msbuild.ps1 /t:rebuildandtest`
-- `PS D:\github\corefx\src\Common\tests> ..\..\..\eng\common\msbuild.ps1 /t:rebuildandtest`
+- `PS D:\github\corefx\src\System.Net.Http\tests\UnitTests> dotnet msbuild /t:rebuildandtest`
+- `PS D:\github\corefx\src\Common\tests> dotnet msbuild /t:rebuildandtest`
 
 ## Building AspNetCore code:
 - https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md

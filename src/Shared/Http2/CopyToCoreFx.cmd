@@ -9,3 +9,4 @@ IF "%COREFX_REPO%" == "" (
 echo COREFX_REPO: %COREFX_REPO%
 
 robocopy . %COREFX_REPO%\src\Common\src\System\Net\Http\Http2 /MIR
+robocopy .\..\test\Shared.Tests\Http2 %COREFX_REPO%\src\Common\tests\Tests\System\Net\Http2
