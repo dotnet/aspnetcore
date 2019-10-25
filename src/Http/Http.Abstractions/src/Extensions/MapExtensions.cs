@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="pathMatch">The request path to match.</param>
-        /// <param name="removeMatchedPathSegment">if true, mathed path would be removed from Request.Path and added to Request.PathBase.</param>
+        /// <param name="removeMatchedPathSegment">if true, matched path would be removed from Request.Path and added to Request.PathBase.</param>
         /// <param name="configuration">The branch to take for positive path matches.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool removeMatchedPathSegment, Action<IApplicationBuilder> configuration)
