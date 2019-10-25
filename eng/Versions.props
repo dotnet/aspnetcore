@@ -22,6 +22,8 @@
     <BlazorClientPreReleasePreviewNumber>9</BlazorClientPreReleasePreviewNumber>
     <BlazorClientPreReleaseVersionLabel>preview$(BlazorClientPreReleasePreviewNumber)</BlazorClientPreReleaseVersionLabel>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
+    <!-- The following property may need to be updated if ingesting new versions of Extensions.Refs package. The package override version is used to create PackageOverrides.txt in the targeting pack. -->
+    <MicrosoftInternalExtensionsRefsPackageOverrideVersion>3.0.0</MicrosoftInternalExtensionsRefsPackageOverrideVersion>
     <!-- Additional assembly attributes are already configured to include the source revision ID. -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <!--
