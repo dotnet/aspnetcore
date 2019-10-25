@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         }
 
         [Fact]
-        public async Task AuthenticateRunsClaimsTransformationOnceByDefault()
+        public async Task CustomHandlersAuthenticateRunsClaimsTransformationEveryTime()
         {
             var transform = new RunOnce();
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -40,9 +40,15 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             var context = new DefaultHttpContext();
             context.RequestServices = services;
 
-            // Base handler returns a result that already has applied claims transform
+            // Because base handler returns a different principal per call, its run multiple times
             await context.AuthenticateAsync("base");
-            Assert.Equal(0, transform.Ran);
+            Assert.Equal(1, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(2, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(3, transform.Ran);
         }
 
         [Fact]
@@ -275,7 +281,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
                 return Task.FromResult(AuthenticateResult.Success(
                     new AuthenticationTicket(
                         new ClaimsPrincipal(new ClaimsIdentity("whatever")),
-                        new AuthenticationProperties() { ClaimsTransformed = true },
+                        new AuthenticationProperties(),
                         "whatever")));
             }
 
