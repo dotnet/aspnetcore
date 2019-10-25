@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication
         public bool RequireAuthenticatedSignIn { get; set; } = true;
 
         /// <summary>
-        /// If true, CLaims transformation should only be applied once per ClaimsPrincipal per request.
+        /// If true, claims transformation should only be applied once per ClaimsPrincipal per request.
         /// </summary>
         public bool ApplyClaimsTransformationOnce { get; set; } = true;
     }
