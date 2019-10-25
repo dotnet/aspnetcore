@@ -6,12 +6,12 @@ param(
 
 try {
   $Content = Get-Content $ReleaseConfigsPath
-  
+
   $BarId = $Content | Select -Index 0
-  
+
   $Channels = ""            
   $Content | Select -Index 1 | ForEach-Object { $Channels += "$_ ," }
-  
+
   $IsStableBuild = $Content | Select -Index 2
 
   Write-PipelineSetVariable -Name 'BARBuildId' -Value $BarId
