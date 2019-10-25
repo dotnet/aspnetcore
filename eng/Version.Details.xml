@@ -29,33 +29,33 @@
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>9dd83077aa7dda45acea084a0dde6265393a12d6</Sha>
     </Dependency>
-    <Dependency Name="dotnet-ef" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="dotnet-ef" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-alpha1.19523.9">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="5.0.0-alpha1.19524.4">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>2ffa060ee62a9d13b86b5c5208123f56888376e0</Sha>
+      <Sha>7da04892c34d33f7dc148e1082e8cd2cd7758e48</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="5.0.0-alpha1.19521.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
@@ -329,7 +329,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>03453d9aae8e5d18e571699c5d2229b1ab5f4b9d</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="1.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Reflection.Metadata" Version="5.0.0-alpha1.19520.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>03453d9aae8e5d18e571699c5d2229b1ab5f4b9d</Sha>
     </Dependency>
@@ -404,7 +404,7 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-alpha1.19520.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>03453d9aae8e5d18e571699c5d2229b1ab5f4b9d</Sha>
     </Dependency>
