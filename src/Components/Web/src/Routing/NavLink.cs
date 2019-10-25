@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
         {
-            if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.Ordinal))
+            if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 // for http://host/vdir as they do for host://host/vdir/ as it's no
                 // good to display a blank page in that case.
                 if (_hrefAbsolute[_hrefAbsolute.Length - 1] == '/'
-                    && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.Ordinal))
+                    && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
