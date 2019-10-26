@@ -152,7 +152,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslStream = sslDuplexPipe.Stream;
 
             using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
-            using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
             {
                 try
                 {
@@ -197,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
-                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
