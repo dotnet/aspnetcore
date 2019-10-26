@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// cookie gets added to the response.
         /// </summary>
         /// <remarks>
-        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <seealso cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
         /// </remarks>
         public CookieBuilder NonceCookie
         {
