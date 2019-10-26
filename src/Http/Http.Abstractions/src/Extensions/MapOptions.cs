@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public RequestDelegate Branch { get; set; }
 
         /// <summary>
-        /// If true, matched path would be removed from Request.Path and added to Request.PathBase
-        /// Defaults to true.
+        /// If false, matched path would be removed from Request.Path and added to Request.PathBase
+        /// Defaults to false.
         /// </summary>
-        public bool RemoveMatchedPathSegment { get; set; } = true;
+        public bool PreserveMatchedPathSegment { get; set; }
     }
 }

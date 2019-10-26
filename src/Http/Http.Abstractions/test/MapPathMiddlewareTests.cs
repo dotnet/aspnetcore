@@ -110,11 +110,11 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         [InlineData("/foo", "/Bar", "/Foo/Cho/")]
         [InlineData("/foo/cho", "/Bar", "/Foo/Cho")]
         [InlineData("/foo/cho", "/Bar", "/Foo/Cho/do")]
-        public async Task PathMatchAction_BranchTaken_WithoutRemoveMatchedPathSegment(string matchPath, string basePath, string requestPath)
+        public async Task PathMatchAction_BranchTaken_WithPreserveMatchedPathSegment(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
             var builder = new ApplicationBuilder(serviceProvider: null);
-            builder.Map(matchPath, false, subBuilder => subBuilder.Run(Success));
+            builder.Map(matchPath, true, subBuilder => subBuilder.Run(Success));
             var app = builder.Build();
             await app.Invoke(context);
 

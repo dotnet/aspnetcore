@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 var path = context.Request.Path;
                 var pathBase = context.Request.PathBase;
 
-                if (_options.RemoveMatchedPathSegment)
+                if (!_options.PreserveMatchedPathSegment)
                 {
                     // Update the path
                     context.Request.PathBase = pathBase.Add(matchedPath);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 }
                 finally
                 {
-                    if (_options.RemoveMatchedPathSegment)
+                    if (!_options.PreserveMatchedPathSegment)
                     {
                         context.Request.PathBase = pathBase;
                         context.Request.Path = path;

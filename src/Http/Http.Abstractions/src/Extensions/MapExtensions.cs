@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, Action<IApplicationBuilder> configuration)
         {
-            return Map(app, pathMatch, removeMatchedPathSegment: true, configuration);
+            return Map(app, pathMatch, preserveMatchedPathSegment: false, configuration);
         }
 
         /// <summary>
@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance.</param>
         /// <param name="pathMatch">The request path to match.</param>
-        /// <param name="removeMatchedPathSegment">if true, matched path would be removed from Request.Path and added to Request.PathBase.</param>
+        /// <param name="preserveMatchedPathSegment">if false, matched path would be removed from Request.Path and added to Request.PathBase.</param>
         /// <param name="configuration">The branch to take for positive path matches.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
-        public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool removeMatchedPathSegment, Action<IApplicationBuilder> configuration)
+        public static IApplicationBuilder Map(this IApplicationBuilder app, PathString pathMatch, bool preserveMatchedPathSegment, Action<IApplicationBuilder> configuration)
         {
             if (app == null)
             {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 Branch = branch,
                 PathMatch = pathMatch,
-                RemoveMatchedPathSegment = removeMatchedPathSegment
+                PreserveMatchedPathSegment = preserveMatchedPathSegment
             };
             return app.Use(next => new MapMiddleware(next, options).Invoke);
         }
