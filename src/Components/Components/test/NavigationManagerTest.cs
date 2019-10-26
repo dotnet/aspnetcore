@@ -92,10 +92,36 @@ namespace Microsoft.AspNetCore.Components
                 ex.Message);
         }
 
+        [Theory]
+        [InlineData("scheme://host/allowed", true)]
+        [InlineData("scheme://host/prevented", false)]
+        public void OnLocationChanging_CanPreventNavigation(string uri, bool allowNavigation)
+        {
+            bool hasNavigated = false;
+            var navigationManager = new TestNavigationManager(() => hasNavigated = true);
+            navigationManager.Initialize(uri, uri);
+            navigationManager.LocationChanging += (sender, args) =>
+            {
+                if (!allowNavigation)
+                    args.PreventNavigation();
+            };
+            navigationManager.NavigateTo(uri);
+
+            Assert.Equal(allowNavigation, hasNavigated);
+        }
+
         private class TestNavigationManager : NavigationManager
         {
+            private Action NavigateAction;
+
             public TestNavigationManager()
             {
+                NavigateAction = () => throw new NotImplementedException();
+            }
+
+            public TestNavigationManager(Action navigateAction)
+            {
+                NavigateAction = navigateAction;
             }
 
             public TestNavigationManager(string baseUri = null, string uri = null)
@@ -110,7 +136,7 @@ namespace Microsoft.AspNetCore.Components
 
             protected override void NavigateToCore(string uri, bool forceLoad)
             {
-                throw new System.NotImplementedException();
+                NavigateAction();
             }
         }
     }

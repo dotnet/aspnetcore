@@ -12,6 +12,25 @@ namespace Microsoft.AspNetCore.Components
     public abstract class NavigationManager
     {
         /// <summary>
+        /// An event that fires when the navigation location is about to change.
+        /// </summary>
+        public event EventHandler<LocationChangingEventArgs> LocationChanging
+        {
+            add
+            {
+                AssertInitialized();
+                _locationChanging += value;
+            }
+            remove
+            {
+                AssertInitialized();
+                _locationChanging -= value;
+            }
+        }
+
+        private EventHandler<LocationChangingEventArgs> _locationChanging;
+
+        /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
         public event EventHandler<LocationChangedEventArgs> LocationChanged
@@ -93,7 +112,10 @@ namespace Microsoft.AspNetCore.Components
         public void NavigateTo(string uri, bool forceLoad = false)
         {
             AssertInitialized();
-            NavigateToCore(uri, forceLoad);
+            if (CanNavigateTo(uri, forceLoad))
+            {
+                NavigateToCore(uri, forceLoad);
+            }
         }
 
         /// <summary>
@@ -221,6 +243,20 @@ namespace Microsoft.AspNetCore.Components
             if (!_isInitialized)
             {
                 throw new InvalidOperationException($"'{GetType().Name}' has not been initialized.");
+            }
+        }
+
+        private bool CanNavigateTo(string uri, bool forceLoad)
+        {
+            try
+            {
+                var args = new LocationChangingEventArgs(uri, forceLoad);
+                _locationChanging?.Invoke(this, args);
+                return !args.IsNavigationPrevented;
+            }
+            catch (Exception ex)
+            {
+                throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
             }
         }
 
