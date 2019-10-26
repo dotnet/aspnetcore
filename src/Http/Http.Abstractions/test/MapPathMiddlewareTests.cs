@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             var app = builder.Build();
 
             HttpContext context = CreateRequest(string.Empty, "/route1");
-            await Assert.ThrowsAsync<AggregateException>(() => app.Invoke(context));
+            await Assert.ThrowsAsync<NotImplementedException>(() => app.Invoke(context));
 
             context = CreateRequest(string.Empty, "/route1/subroute1");
             await app.Invoke(context);
