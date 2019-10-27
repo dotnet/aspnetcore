@@ -128,7 +128,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
-      Properties="IndirectReferences=$(RepoRoot)eng\IndirectReferences.props"
+      Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

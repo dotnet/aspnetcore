@@ -63,7 +63,7 @@
     <PropertyGroup>
       <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
       <_GenAPICmd>$(_GenAPICommand)</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)" $(AdditionalGenApiCmdOptions)</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --lib-path "@(_ReferencePathDirectories)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --out "$(_RefSourceFileOutputPath)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepoRoot)/eng/LicenseHeader.txt"</_GenAPICmd>

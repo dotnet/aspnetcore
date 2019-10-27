@@ -160,7 +160,7 @@
     </ItemGroup>
 
     <!-- Substitute references to Extensions packages with with ref assemblies -->
-    <ItemGroup Condition="'$(ReferenceReferenceAssemblies)' == 'true' AND '$(TargetFramework)' == 'netcoreapp3.0' AND '$(DisableExtensionsRefAssembliesSwap)' != 'true' ">
+    <ItemGroup Condition="'$(ReferenceReferenceAssemblies)' == 'true' AND '$(TargetFramework)' == 'netcoreapp3.0' ">
       <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.Abstractions" />
       <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.Memory" />
       <_ExtensionInternalRefAssemblies Include="Microsoft.Extensions.Caching.SqlServer" />
