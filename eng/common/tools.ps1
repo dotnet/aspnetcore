@@ -49,6 +49,8 @@
 # An array of names of processes to stop on script exit if prepareMachine is true.
 $processesToStopOnExit = if (Test-Path variable:processesToStopOnExit) { $processesToStopOnExit } else { @("msbuild", "dotnet", "vbcscompiler") }
 
+$disableConfigureToolsetImport = if (Test-Path variable:disableConfigureToolsetImport) { $disableConfigureToolsetImport } else { $null }
+
 set-strictmode -version 2.0
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -175,7 +177,14 @@ function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $arc
   InstallDotNet $dotnetRoot $version $architecture
 }
 
-function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtime = "", [bool] $skipNonVersionedFiles = $false) {
+function InstallDotNet([string] $dotnetRoot, 
+  [string] $version, 
+  [string] $architecture = "", 
+  [string] $runtime = "", 
+  [bool] $skipNonVersionedFiles = $false, 
+  [string] $runtimeSourceFeed = "", 
+  [string] $runtimeSourceFeedKey = "") {
+
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
@@ -186,10 +195,29 @@ function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $archit
   if ($runtime) { $installParameters.Runtime = $runtime }
   if ($skipNonVersionedFiles) { $installParameters.SkipNonVersionedFiles = $skipNonVersionedFiles }
 
-  & $installScript @installParameters
-  if ($lastExitCode -ne 0) {
-    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet cli (exit code '$lastExitCode')."
-    ExitWithExitCode $lastExitCode
+  try {
+    & $installScript @installParameters
+  }
+  catch {
+    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' from public location."
+
+    # Only the runtime can be installed from a custom [private] location.
+    if ($runtime -and ($runtimeSourceFeed -or $runtimeSourceFeedKey)) {
+      if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
+
+      if ($runtimeSourceFeedKey) {
+        $decodedBytes = [System.Convert]::FromBase64String($runtimeSourceFeedKey)
+        $decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
+        $installParameters.FeedCredential = $decodedString
+      }
+
+      try {
+        & $installScript @installParameters
+      }
+      catch {
+        Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' from custom location '$runtimeSourceFeed'."
+      }
+    }
   }
 }
 
@@ -418,6 +446,9 @@ function GetSdkTaskProject([string]$taskName) {
 }
 
 function InitializeNativeTools() {
+  if ($env:DisableNativeToolsetInstalls) {
+    return
+  }
   if (Get-Member -InputObject $GlobalJson -Name "native-tools") {
     $nativeArgs= @{}
     if ($ci) {
@@ -602,7 +633,9 @@ Write-PipelineSetVariable -Name 'TMP' -Value $TempDir
 
 # Import custom tools configuration, if present in the repo.
 # Note: Import in global scope so that the script set top-level variables without qualification.
-$configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
-if (Test-Path $configureToolsetScript) {
-    . $configureToolsetScript
+if (!$disableConfigureToolsetImport) {
+  $configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
+  if (Test-Path $configureToolsetScript) {
+      . $configureToolsetScript
+  }
 }

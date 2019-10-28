@@ -1,7 +1,8 @@
 param (
     $darcVersion = $null,
     $versionEndpoint = "https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16",
-    $verbosity = "m"
+    $verbosity = "m",
+    $toolpath = $null
 )
 
 . $PSScriptRoot\tools.ps1
@@ -27,7 +28,11 @@ function InstallDarcCli ($darcVersion) {
 
   Write-Host "Installing Darc CLI version $darcVersion..."
   Write-Host "You may need to restart your command window if this is the first dotnet tool you have installed."
-  & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g
+  if (-not $toolpath) {
+    & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g
+  }else {
+    & "$dotnet" tool install $darcCliPackageName --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity --tool-path "$toolpath"    
+  }
 }
 
 InstallDarcCli $darcVersion

@@ -209,7 +209,7 @@ if [[ "$clean" == true ]]; then
   exit 0
 fi
 
-if [[ "$restore" == true && -z ${DisableNativeToolsetInstalls:-} ]]; then
+if [[ "$restore" == true ]]; then
   InitializeNativeTools
 fi
 
