@@ -517,13 +517,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 {
                     httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                 }
-                if (_httpConnectionOptions.Cookies != null)
+
+                // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
+                // if the user has configured client certs
+                // Some skews of Mono do not support client certs or cookies and will throw NotImplementedException
+                if (_httpConnectionOptions?.Cookies.Count > 0)
                 {
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
-
-                // Only access HttpClientHandler.ClientCertificates if the user has configured client certs
-                // Mono does not support client certs and will throw NotImplementedException
                 // https://github.com/aspnet/SignalR/issues/2232
                 var clientCertificates = _httpConnectionOptions.ClientCertificates;
                 if (clientCertificates?.Count > 0)
