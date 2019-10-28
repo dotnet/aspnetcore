@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <!-- This ref is needed explicitly for the tests running in Selenium -->
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
