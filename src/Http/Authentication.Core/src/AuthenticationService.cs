@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication
                 var doTransform = true;
                 if (Options.ApplyClaimsTransformationOnce)
                 {
-                    _transformCache = _transformCache ?? new HashSet<ClaimsPrincipal>();
+                    _transformCache ?= new HashSet<ClaimsPrincipal>();
                     if (_transformCache.Contains(principal))
                     {
                         doTransform = false;
