@@ -359,6 +359,8 @@ namespace Ignitor
                 Operations = new Operations();
             }
 
+            await HubConnection.StartAsync(CancellationToken);
+
             if (!connectAutomatically)
             {
                 return true;

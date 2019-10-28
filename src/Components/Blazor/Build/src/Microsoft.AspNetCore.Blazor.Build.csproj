@@ -23,7 +23,6 @@
     <NuspecProperty Include="componentsversion=$(ComponentsPackageVersion)" />
     <NuspecProperty Include="razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <NuspecProperty Include="blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
-    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                     if (TransportType == HttpTransportType.WebSockets)
                     {
-                        // The websocket transport will close the application output automatically when reading is cancelled
+                        // The websocket transport will close the application output automatically when reading is canceled
                         Cancellation?.Cancel();
                     }
                     else
@@ -440,6 +440,45 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Connection was disposed
                 nonClonedContext.Response.StatusCode = StatusCodes.Status404NotFound;
                 nonClonedContext.Response.ContentType = "text/plain";
+            }
+        }
+
+        internal async Task<bool> CancelPreviousPoll(HttpContext context)
+        {
+            CancellationTokenSource cts;
+            lock (_stateLock)
+            {
+                // Need to sync cts access with DisposeAsync as that will dispose the cts
+                if (Status == HttpConnectionStatus.Disposed)
+                {
+                    cts = null;
+                }
+                else
+                {
+                    cts = Cancellation;
+                    Cancellation = null;
+                }
+            }
+
+            using (cts)
+            {
+                // Cancel the previous request
+                cts?.Cancel();
+
+                try
+                {
+                    // Wait for the previous request to drain
+                    await PreviousPollTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Previous poll canceled due to connection closing, close this poll too
+                    context.Response.ContentType = "text/plain";
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return false;
+                }
+
+                return true;
             }
         }
 

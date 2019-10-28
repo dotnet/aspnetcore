@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
                 var logs = string.Join(Environment.NewLine, Logs);
                 return new Exception(error + Environment.NewLine + logs);
             };
-            
+
             _ = ServerFixture.RootUri; // This is needed for the side-effects of starting the server.
 
             if (ServerFixture is WebHostServerFixture hostFixture)
@@ -88,9 +88,14 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        protected virtual Task DisposeAsync()
+        protected async virtual Task DisposeAsync()
         {
-            return Task.CompletedTask;
+            if (TestSink != null)
+            {
+                TestSink.MessageLogged -= TestSink_MessageLogged;
+            }
+
+            await Client.DisposeAsync();
         }
 
         private void TestSink_MessageLogged(WriteContext context)
