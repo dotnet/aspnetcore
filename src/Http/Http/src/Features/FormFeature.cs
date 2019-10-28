@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     var formAccumulator = new KeyValueAccumulator();
 
                     var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
-                    var multipartReader = new MultipartReader(boundary, _request.Body)
+                    var multipartReader = new MultipartPipeReader(boundary, _request.BodyReader)
                     {
                         HeadersCountLimit = _options.MultipartHeadersCountLimit,
                         HeadersLengthLimit = _options.MultipartHeadersLengthLimit,
