@@ -20,7 +20,6 @@
     <ProjectReference Include="$(RepoRoot)src\Hosting\test\testassets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj" ReferenceOutputAssemblies="false" />
 
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>

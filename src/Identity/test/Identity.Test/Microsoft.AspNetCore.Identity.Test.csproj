@@ -17,7 +17,6 @@
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Identity.Core" />
     <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
