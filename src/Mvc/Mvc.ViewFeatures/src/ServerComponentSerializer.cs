@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 values,
                 invocationId.Value);
 
-            var serializedServerComponent = JsonSerializer.Serialize(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
             var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
             var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, ServerComponentSerializationSettings.DataExpiration);
             return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
