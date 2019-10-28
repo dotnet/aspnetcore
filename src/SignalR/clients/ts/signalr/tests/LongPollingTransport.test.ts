@@ -40,7 +40,7 @@ describe("LongPollingTransport", () => {
                     }
                 })
                 .on("DELETE", () => new HttpResponse(202));
-            const transport = new LongPollingTransport(client, undefined, logger, false);
+            const transport = new LongPollingTransport(client, undefined, logger, false, true);
 
             await transport.connect("http://example.com", TransferFormat.Text);
             const stopPromise = transport.stop();
@@ -64,7 +64,7 @@ describe("LongPollingTransport", () => {
                         return new HttpResponse(204);
                     }
                 });
-            const transport = new LongPollingTransport(client, undefined, logger, false);
+            const transport = new LongPollingTransport(client, undefined, logger, false, true);
 
             const stopPromise = makeClosedPromise(transport);
 
@@ -97,7 +97,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false);
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true);
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
@@ -146,7 +146,7 @@ describe("LongPollingTransport", () => {
                     return new HttpResponse(202);
                 });
 
-            const transport = new LongPollingTransport(httpClient, undefined, logger, false);
+            const transport = new LongPollingTransport(httpClient, undefined, logger, false, true);
 
             await transport.connect("http://tempuri.org", TransferFormat.Text);
 
