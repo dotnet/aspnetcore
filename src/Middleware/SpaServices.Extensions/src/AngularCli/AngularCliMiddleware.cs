@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         {
             var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
+            var devServerPort = spaBuilder.Options.DevServerPort;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             // Start Angular CLI and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, logger);
+            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -63,9 +64,12 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
-            string sourcePath, string scriptName, string pkgManagerCommand, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger)
         {
-            var portNumber = TcpPortFinder.FindAvailablePort();
+            if (portNumber == default(int))
+            {
+                portNumber = TcpPortFinder.FindAvailablePort();
+            }
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
 
             var scriptRunner = new NodeScriptRunner(
