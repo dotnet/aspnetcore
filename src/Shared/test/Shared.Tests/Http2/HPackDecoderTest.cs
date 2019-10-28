@@ -14,7 +14,7 @@ namespace System.Net.Http.Unit.Tests.HPack
     public class HPackDecoderTests : IHttpHeadersHandler
     {
         private const int DynamicTableInitialMaxSize = 4096;
-        private const int MaxRequestHeaderFieldSize = 8192;
+        private const int MaxHeaderFieldSize = 8192;
 
         // Indexed Header Field Representation - Static Table - Index 2 (:method: GET)
         private static readonly byte[] _indexedHeaderStatic = new byte[] { 0x82 };
@@ -92,7 +92,7 @@ namespace System.Net.Http.Unit.Tests.HPack
         public HPackDecoderTests()
         {
             _dynamicTable = new DynamicTable(DynamicTableInitialMaxSize);
-            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize, _dynamicTable);
+            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize, _dynamicTable);
         }
 
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
@@ -445,15 +445,15 @@ namespace System.Net.Http.Unit.Tests.HPack
                 .ToArray();
 
             HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: this));
-            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxRequestHeaderFieldSize), exception.Message);
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxHeaderFieldSize), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesStringLength_LimitConfigurable()
         {
-            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize + 1);
-            string string8193 = new string('a', MaxRequestHeaderFieldSize + 1);
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
+            string string8193 = new string('a', MaxHeaderFieldSize + 1);
 
             byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
