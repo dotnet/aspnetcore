@@ -3,78 +3,11 @@
 
 package com.microsoft.signalr;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Single;
 
-class HttpRequest {
-    private String method;
-    private String url;
-    private final Map<String, String> headers = new HashMap<>();
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public void addHeader(String key, String value) {
-        this.headers.put(key, value);
-    }
-
-    public void addHeaders(Map<String, String> headers) {
-        this.headers.putAll(headers);
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-}
-
-class HttpResponse {
-    private final int statusCode;
-    private final String statusText;
-    private final String content;
-
-    public HttpResponse(int statusCode) {
-        this(statusCode, "");
-    }
-
-    public HttpResponse(int statusCode, String statusText) {
-        this(statusCode, statusText, "");
-    }
-
-    public HttpResponse(int statusCode, String statusText, String content) {
-        this.statusCode = statusCode;
-        this.statusText = statusText;
-        this.content = content;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public String getStatusText() {
-        return statusText;
-    }
-}
-
-abstract class HttpClient {
+public abstract class HttpClient {
     public Single<HttpResponse> get(String url) {
         HttpRequest request = new HttpRequest();
         request.setUrl(url);

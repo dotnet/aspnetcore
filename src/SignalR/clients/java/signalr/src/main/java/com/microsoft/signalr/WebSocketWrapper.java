@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import io.reactivex.Completable;
 
-abstract class WebSocketWrapper {
+public abstract class WebSocketWrapper {
     public abstract Completable start();
 
     public abstract Completable stop();

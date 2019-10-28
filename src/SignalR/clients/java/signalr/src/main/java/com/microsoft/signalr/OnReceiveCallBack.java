@@ -3,6 +3,6 @@
 
 package com.microsoft.signalr;
 
-interface OnReceiveCallBack {
+public interface OnReceiveCallBack {
     void invoke(String message);
 }

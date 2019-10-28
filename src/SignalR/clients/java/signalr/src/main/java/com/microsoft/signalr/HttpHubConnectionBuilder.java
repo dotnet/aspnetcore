@@ -48,7 +48,7 @@ public class HttpHubConnectionBuilder {
      * @param httpClient The {@link HttpClient} to be used by the {@link HubConnection}.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
+    public HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
         return this;
     }
