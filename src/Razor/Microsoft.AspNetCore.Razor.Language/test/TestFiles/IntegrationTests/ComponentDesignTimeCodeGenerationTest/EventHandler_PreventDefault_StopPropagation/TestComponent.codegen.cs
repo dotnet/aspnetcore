@@ -27,10 +27,10 @@ using Microsoft.AspNetCore.Components.Web;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                true
+                  () => Foo = false
 
 #line default
 #line hidden
@@ -39,7 +39,7 @@ using Microsoft.AspNetCore.Components.Web;
             __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                Foo
+                                                              true
 
 #line default
 #line hidden
@@ -48,7 +48,16 @@ using Microsoft.AspNetCore.Components.Web;
             __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                                               false
+                                                                                              Foo
+
+#line default
+#line hidden
+#nullable disable
+            );
+            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                                                                                             false
 
 #line default
 #line hidden

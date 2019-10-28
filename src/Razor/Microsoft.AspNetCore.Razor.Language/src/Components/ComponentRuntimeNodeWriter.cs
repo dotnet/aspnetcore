@@ -191,6 +191,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     context.RenderNode(attribute);
                 }
+                else if (child is ComponentAttributeIntermediateNode componentAttribute)
+                {
+                    context.RenderNode(componentAttribute);
+                }
                 else if (child is SplatIntermediateNode splat)
                 {
                     context.RenderNode(splat);

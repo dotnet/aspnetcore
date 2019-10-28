@@ -20,9 +20,10 @@ using Microsoft.AspNetCore.Components.Web;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.OpenElement(0, "input");
+            __builder.OpenElement(0, "button");
             __builder.AddEventPreventDefaultAttribute(1, "onclick", true);
             __builder.AddEventStopPropagationAttribute(2, "onclick", true);
+            __builder.AddContent(3, "Click Me");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

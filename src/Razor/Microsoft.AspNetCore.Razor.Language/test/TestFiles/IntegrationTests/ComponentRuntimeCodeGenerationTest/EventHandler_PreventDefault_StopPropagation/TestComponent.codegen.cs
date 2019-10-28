@@ -20,34 +20,44 @@ using Microsoft.AspNetCore.Components.Web;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.OpenElement(0, "input");
-            __builder.AddEventPreventDefaultAttribute(1, "onfocus", 
+            __builder.OpenElement(0, "button");
+            __builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                true
+                  () => Foo = false
+
+#line default
+#line hidden
+#nullable disable
+            ));
+            __builder.AddEventPreventDefaultAttribute(2, "onfocus", 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                              true
 
 #line default
 #line hidden
 #nullable disable
             );
-            __builder.AddEventStopPropagationAttribute(2, "onclick", 
+            __builder.AddEventStopPropagationAttribute(3, "onclick", 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                Foo
+                                                                                              Foo
 
 #line default
 #line hidden
 #nullable disable
             );
-            __builder.AddEventStopPropagationAttribute(3, "onfocus", 
+            __builder.AddEventStopPropagationAttribute(4, "onfocus", 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                                               false
+                                                                                                                             false
 
 #line default
 #line hidden
 #nullable disable
             );
+            __builder.AddContent(5, "Click Me");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

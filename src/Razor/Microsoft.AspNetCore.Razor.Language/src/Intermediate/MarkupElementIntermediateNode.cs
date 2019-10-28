@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public IEnumerable<IntermediateNode> Body => Children.Where(c =>
         {
             return
+                c as ComponentAttributeIntermediateNode == null &&
                 c as HtmlAttributeIntermediateNode == null &&
                 c as SplatIntermediateNode == null &&
                 c as SetKeyIntermediateNode == null &&

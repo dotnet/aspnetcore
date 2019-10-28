@@ -2905,7 +2905,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
-<input @onclick:preventDefault @onclick:stopPropagation />");
+<button @onclick:preventDefault @onclick:stopPropagation>Click Me</button>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2921,7 +2921,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Web
-<input @onfocus:preventDefault=""true"" @onclick:stopPropagation=""Foo"" @onfocus:stopPropagation=""false"" />
+<button @onclick=""() => Foo = false"" @onfocus:preventDefault=""true"" @onclick:stopPropagation=""Foo"" @onfocus:stopPropagation=""false"">Click Me</button>
 @code {
     bool Foo { get; set; }
 }");
