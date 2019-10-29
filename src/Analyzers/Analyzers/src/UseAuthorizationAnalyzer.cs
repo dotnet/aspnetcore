@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Analyzers
                             // This analyzer expects MiddlewareItem instances to appear in the order in which they appear in source
                             // which unfortunately isn't true for chained calls (the operations appear in reverse order).
                             // We'll avoid doing any analysis in this event and rely on the runtime guardrails.
+                            // We'll use https://github.com/aspnet/AspNetCore/issues/16648 to track addressing this in a future milestone
                             return;
                         }
 
