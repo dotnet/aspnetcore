@@ -52,27 +52,6 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
         }
 
         [Fact]
-        public async Task AuthenticateCanRunClaimsTransformationMoreThanOnce()
-        {
-            var transform = new RunOnce();
-            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
-            {
-                o.AddScheme<BaseHandler>("base", "whatever");
-                o.ApplyClaimsTransformationOnce = false;
-            })
-                .AddSingleton<IClaimsTransformation>(transform)
-                .BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = services;
-
-            await context.AuthenticateAsync("base");
-            Assert.Equal(1, transform.Ran);
-
-            await context.AuthenticateAsync("base");
-            Assert.Equal(2, transform.Ran);
-        }
-
-        [Fact]
         public async Task ChallengeThrowsForSchemeMismatch()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
