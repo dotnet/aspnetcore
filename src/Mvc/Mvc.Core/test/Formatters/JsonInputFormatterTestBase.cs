@@ -513,6 +513,31 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(content, new StreamReader(requestBody).ReadToEnd());
         }
 
+        [Fact]
+        public async Task ReadAsync_WithEnableBufferingWorks_WithInputStreamAtOffset()
+        {
+            // Arrange
+            var formatter = GetInputFormatter();
+
+            var content = "abc{\"name\": \"Test\"}";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+            httpContext.Request.EnableBuffering();
+            var requestBody = httpContext.Request.Body;
+            requestBody.Position = 3;
+
+            var formatterContext = CreateInputFormatterContext(typeof(ComplexModel), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            var userModel = Assert.IsType<ComplexModel>(result.Model);
+            Assert.Equal("Test", userModel.Name);
+            requestBody.Position = 0;
+            Assert.Equal(content, new StreamReader(requestBody).ReadToEnd());
+        }
+
         internal abstract string JsonFormatter_EscapedKeys_Bracket_Expected { get; }
 
         internal abstract string JsonFormatter_EscapedKeys_Expected { get; }
