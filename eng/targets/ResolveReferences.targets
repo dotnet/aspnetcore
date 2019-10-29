@@ -145,7 +145,7 @@
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true' OR '$(IsTargetingPackBuilding)' == 'true' "/>
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
