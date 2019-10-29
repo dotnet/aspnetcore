@@ -48,7 +48,7 @@ describe("ServerSentEventsTransport", () => {
 
     it("connect failure does not call onclose handler", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource);
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true);
             let closeCalled = false;
             sse.onclose = () => closeCalled = true;
 
