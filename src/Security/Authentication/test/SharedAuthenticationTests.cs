@@ -203,38 +203,6 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(0, forwardDefault.SignOutCount);
         }
 
-        [Fact]
-        public async Task ForwardAuthenticateCanRunsTransformOnce()
-        {
-            var services = new ServiceCollection().AddLogging();
-            var transform = new RunOnce();
-            var builder = services.AddSingleton<IClaimsTransformation>(transform).AddAuthentication(o =>
-            {
-                o.DefaultScheme = DefaultScheme;
-                o.ApplyClaimsTransformationOnce = false;
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-
-            });
-            RegisterAuth(builder, o =>
-            {
-                o.ForwardDefault = "auth1";
-                o.ForwardAuthenticate = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(2, transform.Ran);
-        }
-
         private class RunOnce : IClaimsTransformation
         {
             public int Ran = 0;
