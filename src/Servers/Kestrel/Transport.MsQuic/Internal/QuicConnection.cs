@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private static GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        public QuicRegistration Registration { get; set; }
+        public QuicApi Registration { get; set; }
 
         public delegate QUIC_STATUS ConnectionCallback(
             QuicConnection connection,
             ref ConnectionEvent connectionEvent);
 
-        public QuicConnection(QuicRegistration registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        public QuicConnection(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
         {
             Registration = registration;
             _shouldOwnNativeObj = shouldOwnNativeObj;

@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     /// <summary>
-    /// Flags to pass for creating a <see cref="QuicRegistration"/>
+    /// Flags to pass for creating a <see cref="QuicApi"/>
     /// </summary>
     public enum QUIC_PARAM_REGISTRATION : uint
     {
@@ -178,16 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         RECEIVE_ENABLED = 1,
         ZERORTT_LENGTH = 2,
         IDEAL_SEND_BUFFER = 3
-    }
-
-    /// <summary>
-    /// Range of values for stream priority
-    /// </summary>
-    public enum QUIC_STREAM_PRIORITY : uint
-    {
-        DEFAULT = 0,
-        MIN = 0x80000000,
-        MAX = 0x7fffffff,
     }
 
     /// <summary>

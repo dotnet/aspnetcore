@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private readonly bool _shouldOwnNativeObj;
         private IntPtr _nativeObjPtr;
-        private QuicRegistration _registration;
+        private QuicApi _registration;
         public ListenerCallback _callback;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
         private GCHandle _handle;
 
-        public QuicListener(QuicRegistration registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        public QuicListener(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
         {
             _registration = registration;
             _shouldOwnNativeObj = shouldOwnNativeObj;

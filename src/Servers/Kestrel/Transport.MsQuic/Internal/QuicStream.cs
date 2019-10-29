@@ -95,10 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return Task.CompletedTask;
         }
 
-        // TODO: Should not be public
         public void ReceiveComplete(int bufferLength)
         {
-            Debug.Assert(bufferLength > 0);
             var status = (QUIC_STATUS)Registration.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
             QuicStatusException.ThrowIfFailed(status);
         }
@@ -128,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             GC.SuppressFinalize(this);
         }
 
-        internal QuicStream(QuicRegistration registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        internal QuicStream(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
         {
             Registration = registration;
             _shouldOwnNativeObj = shouldOwnNativeObj;
@@ -159,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 buf));
         }
 
-        public QuicRegistration Registration { get; set; }
+        public QuicApi Registration { get; set; }
 
         ~QuicStream()
         {

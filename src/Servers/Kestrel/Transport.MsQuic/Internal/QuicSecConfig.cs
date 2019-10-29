@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     internal class QuicSecConfig : IDisposable
     {
         private bool _disposed;
-        private QuicRegistration _registration;
+        private QuicApi _registration;
 
-        public QuicSecConfig(QuicRegistration registration, IntPtr nativeObjPtr)
+        public QuicSecConfig(QuicApi registration, IntPtr nativeObjPtr)
         {
             _registration = registration;
             NativeObjPtr = nativeObjPtr;

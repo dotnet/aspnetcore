@@ -14,10 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal const string dllName = "msquic.dll";
         internal const CallingConvention Api = CallingConvention.Winapi;
 
-#pragma warning disable BCL0015 // Invalid Pinvoke call
         [DllImport(dllName)]
         internal static extern int MsQuicOpen(int version, out NativeRegistration* registration);
-#pragma warning restore BCL0015 // Invalid Pinvoke call
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct NativeRegistration
@@ -85,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             IntPtr BufferLength,
             IntPtr Buffer);
 
-        internal delegate void RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
+        internal delegate QUIC_STATUS RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
 
         internal delegate void RegistrationCloseDelegate(IntPtr RegistrationContext);
 
@@ -165,7 +163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         [StructLayout(LayoutKind.Sequential)]
         internal struct ListenerEventDataNewConnection
         {
-            // TODO be able to parse the connection info?
             internal IntPtr Info;
             internal IntPtr Connection;
             internal IntPtr SecurityConfig;
@@ -317,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             public ulong NumBytes => Data.IdealSendBuffer.NumBytes;
             public IPEndPoint LocalAddress => null; // TODO
             public IPEndPoint PeerAddress => null; // TODO
-            public QuicStream CreateNewStream(QuicRegistration registration)
+            public QuicStream CreateNewStream(QuicApi registration)
             {
                 return new QuicStream(registration, Data.NewStream.Stream, shouldOwnNativeObj: false);
             }
@@ -377,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             internal bool IsCanceled()
             {
-                return !(0 == (1 & Canceled));
+                return Canceled != 0;
             }
         }
 

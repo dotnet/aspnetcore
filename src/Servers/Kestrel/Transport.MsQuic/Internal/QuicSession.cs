@@ -12,13 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         private bool _disposed = false;
         private IntPtr _nativeObjPtr;
-        private byte[] _alpn;
-        private QuicRegistration _registration;
+        private QuicApi _registration;
 
-        internal QuicSession(QuicRegistration registration, IntPtr nativeObjPtr, byte[] alpn)
+        internal QuicSession(QuicApi registration, IntPtr nativeObjPtr)
         {
             _registration = registration;
-            _alpn = alpn;
             _nativeObjPtr = nativeObjPtr;
         }
 
@@ -141,7 +139,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             _registration.SessionCloseDelegate?.Invoke(_nativeObjPtr);
             _nativeObjPtr = IntPtr.Zero;
-            _alpn = null;
             _registration = null;
 
             _disposed = true;

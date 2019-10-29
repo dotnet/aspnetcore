@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     /// </summary>
     internal class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable
     {
-        private QuicRegistration _registration;
+        private QuicApi _registration;
         private QuicSecConfig _secConfig;
         private QuicSession _session;
         private QuicListener _listener;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public MsQuicConnectionListener(MsQuicTransportContext transportContext, EndPoint endpoint)
         {
-            _registration = new QuicRegistration();
+            _registration = new QuicApi();
             TransportContext = transportContext;
             EndPoint = endpoint;
         }

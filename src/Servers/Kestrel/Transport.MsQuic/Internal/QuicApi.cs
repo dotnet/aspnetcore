@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class QuicRegistration : IDisposable
+    internal class QuicApi : IDisposable
     {
         private bool _disposed = false;
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         [DllImport("kernel32.dll")]
         public static extern IntPtr FreeLibrary(string dllName);
 
-        public unsafe QuicRegistration()
+        public unsafe QuicApi()
         {
             var status = (QUIC_STATUS)NativeMethods.MsQuicOpen(version: 1, out var registration);
             QuicStatusException.ThrowIfFailed(status);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void RegistrationOpen(byte[] name)
         {
-            RegistrationOpenDelegate(name, out var ctx);
+            QuicStatusException.ThrowIfFailed(RegistrationOpenDelegate(name, out var ctx));
             RegistrationContext = ctx;
         }
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 throw;
             }
-            var session = new QuicSession(this, sessionPtr, buffer);
+            var session = new QuicSession(this, sessionPtr);
             return session;
         }
 
@@ -243,11 +243,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(QuicRegistration));
+                throw new ObjectDisposedException(nameof(QuicApi));
             }
         }
 
-        ~QuicRegistration()
+        ~QuicApi()
         {
             Dispose(false);
         }
