@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public LocationChangingEventArgs(string location, bool forceLoad)
         {
             Location = location;
+            ForceLoad = forceLoad;
         }
 
         /// <summary>
