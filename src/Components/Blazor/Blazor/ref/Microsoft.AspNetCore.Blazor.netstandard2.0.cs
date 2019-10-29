@@ -54,13 +54,9 @@ namespace Microsoft.AspNetCore.Blazor.Http
         SameOrigin = 1,
         Include = 2,
     }
-    public partial class WebAssemblyHttpMessageHandler : System.Net.Http.HttpMessageHandler
+    public static partial class WebAssemblyHttpMessageHandlerOptions
     {
-        public const string FetchArgs = "WebAssemblyHttpMessageHandler.FetchArgs";
-        public WebAssemblyHttpMessageHandler() { }
-        public static Microsoft.AspNetCore.Blazor.Http.FetchCredentialsOption DefaultCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public static Microsoft.AspNetCore.Blazor.Http.FetchCredentialsOption DefaultCredentials { get { throw null; } set { } }
     }
 }
 namespace Microsoft.AspNetCore.Blazor.Rendering
