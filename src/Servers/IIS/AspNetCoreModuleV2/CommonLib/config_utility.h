@@ -14,7 +14,7 @@ class ConfigUtility
     #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
     #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
     #define CS_ASPNETCORE_DEBUG_FILE                         L"debugFile"
-    #define CS_ASPNETCORE_ENABLE_CONNECTION_CLOSE            L"enableConnectionClose"
+    #define CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER L"forwardResponseConnectionHeader"
     #define CS_ASPNETCORE_DEBUG_LEVEL                        L"debugLevel"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_NAME              L"name"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_VALUE             L"value"
@@ -43,9 +43,9 @@ public:
 
     static
     HRESULT
-    FindEnableConnectionClose(IAppHostElement* pElement, STRU& strConnectionClose)
+    FindForwardResponseConnectionHeader(IAppHostElement* pElement, STRU& strConnectionClose)
     {
-        return FindKeyValuePair(pElement, CS_ASPNETCORE_ENABLE_CONNECTION_CLOSE, strConnectionClose);
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER, strConnectionClose);
     }
 
 private:

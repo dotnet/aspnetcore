@@ -150,11 +150,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
-            deploymentParameters.HandlerSettings["enableConnectionClose"] = "true";
+            deploymentParameters.HandlerSettings["forwardResponseConnectionHeader"] = "true";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
             Assert.Equal(true, response.Headers.ConnectionClose);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task ConnectionCloseIsNotPropagated()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Null(response.Headers.ConnectionClose);
         }
 
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)
