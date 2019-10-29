@@ -82,22 +82,16 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 var principal = result.Principal;
                 var doTransform = true;
-                if (Options.ApplyClaimsTransformationOnce)
+                _transformCache ??= new HashSet<ClaimsPrincipal>();
+                if (_transformCache.Contains(principal))
                 {
-                    _transformCache ??= new HashSet<ClaimsPrincipal>();
-                    if (_transformCache.Contains(principal))
-                    {
-                        doTransform = false;
-                    }
+                    doTransform = false;
                 }
 
                 if (doTransform)
                 {
                     principal = await Transform.TransformAsync(principal);
-                    if (Options.ApplyClaimsTransformationOnce)
-                    {
-                        _transformCache.Add(principal);
-                    }
+                    _transformCache.Add(principal);
                 }
                 return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket.AuthenticationScheme));
             }
