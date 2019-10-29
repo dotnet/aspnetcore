@@ -30,10 +30,10 @@ trap "{
     mv "$reporoot/global.bak.json" "$reporoot/global.json"
 }" EXIT
 
-export DotNetBuildFromSource='true'
-
  # Build repo tasks
 "$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj
+
+export DotNetBuildFromSource='true'
 
  # Build projects
 "$reporoot/eng/common/build.sh" --restore --build --pack "$@"

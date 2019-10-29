@@ -2,6 +2,10 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS0169</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="Microsoft.AspNetCore.Mvc.RazorPages.netcoreapp3.0.Manual.cs" />
   </ItemGroup>

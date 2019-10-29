@@ -105,9 +105,8 @@
     <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Language)' == 'C#'">
+  <PropertyGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
     <!-- Reference assemblies should always use Major.Minor.0.0 for assembly versions even during servicing. Only the package version should be updated. -->
-    <!-- Pinning the implementation assemblies at Major.Minor.0.0 as we figure out compiling against ref assemblies. -->
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
@@ -155,6 +154,7 @@
   </Target>
 
   <Import Project="eng\Workarounds.targets" />
+  <Import Project="eng\IndirectReferences.props" Condition="'$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true'" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />

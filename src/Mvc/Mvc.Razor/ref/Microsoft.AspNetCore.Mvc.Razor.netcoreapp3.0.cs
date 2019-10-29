@@ -290,14 +290,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> ViewDescriptors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
-namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
-{
-    public sealed partial class TagHelperMemoryCacheProvider
-    {
-        public TagHelperMemoryCacheProvider() { }
-        public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-}
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]

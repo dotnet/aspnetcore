@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.Core.netcoreapp3.0.cs" />
@@ -18,6 +20,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources"  />
     <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources"  />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources"  />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources"  />

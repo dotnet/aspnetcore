@@ -22,6 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Workaround missing entries in deps files. Still under investigation -->
+    <RuntimeHostConfigurationOption
+      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
+      Value="true" />
+
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
@@ -70,7 +75,7 @@
     <Copy
       SourceFiles="@(_staticFiles)"
       DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
-    
+
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"

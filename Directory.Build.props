@@ -93,6 +93,9 @@
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
     <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
+    <!-- We need to build the targeting pack in 3.0.1. We can remove this line from any branch other than release/3.0 -->
+    <IsTargetingPackBuilding Condition="'$(VersionPrefix)' == '3.0.1' AND '$(DotNetBuildFromSource)' != 'true'">true</IsTargetingPackBuilding>
+
     <!--
       Archives and installers using this prefix are intended for internal-use only.
       For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks

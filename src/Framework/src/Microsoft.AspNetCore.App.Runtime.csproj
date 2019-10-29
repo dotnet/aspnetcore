@@ -21,6 +21,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
 
+    <!-- We need to reference the implementation assemblies when composing the shared framework -->
+    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
     <!-- This file is used by the dotnet/core-sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFileOutputPath>$(InstallersOutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
@@ -293,11 +297,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   -->
   <PropertyGroup>
     <CrossgenToolDir>$(IntermediateOutputPath)crossgen\</CrossgenToolDir>
+    <CrossgenPlatformAssembliesDir>$(IntermediateOutputPath)platformAssemblies\</CrossgenPlatformAssembliesDir>
     <CoreCLRJitPath>$(CrossgenToolDir)$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
   </PropertyGroup>
 
   <ItemGroup>
     <CreateDirectory Include="$(CrossgenToolDir)" />
+    <CreateDirectory Include="$(CrossgenPlatformAssembliesDir)" />
     <CreateDirectory Include="$(SharedFxLayoutTargetDir)" />
     <CreateDirectory Include="$(RedistLayoutTargetDir)" />
     <CreateDirectory Include="$(LocalInstallationOutputPath)" />
@@ -306,13 +312,19 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="Crossgen" DependsOnTargets="$(CrossgenDependsOn)" />
 
   <Target Name="PrepareForCrossGen" Condition="'$(CrossgenOutput)' == 'true'">
+    <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Copy impl assemblies to a separate directory. -->
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" DestinationFolder="$(CrossgenPlatformAssembliesDir)" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' != ''"/>
+
     <!-- Resolve list of assemblies to crossgen -->
     <ItemGroup>
       <IntermediateCrossgenAssembly Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb'" />
 
       <!-- These are the paths used by crossgen to find assemblies that are expected to exist at runtime in the shared frameworks. -->
       <_PlatformAssemblyPaths Include="$(CrossgenToolDir)" />
-      <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" />
+      <!-- Include the directories of the assemblies not built in this repo. These contain only implementation assemblies. -->
+      <_PlatformAssemblyPaths Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)')" Condition="'%(ReferenceCopyLocalPaths.ProjectPath)' == ''"/>
+      <!-- The output directories of assemblies built in this repo contain a mix of ref and impl assemblies. Use the directory with only impl assemblies. -->
+      <_PlatformAssemblyPaths Include="$(CrossgenPlatformAssembliesDir)"/>
 
       <ReferenceCopyLocalPaths Remove="@(IntermediateCrossgenAssembly)" />
       <ReferenceCopyLocalPaths Include="@(IntermediateCrossgenAssembly->'$(TargetDir)%(FileName)%(Extension)')" />
