@@ -35,6 +35,7 @@
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
     -->
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsTargetingPackBuilding)' == 'true'  ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
