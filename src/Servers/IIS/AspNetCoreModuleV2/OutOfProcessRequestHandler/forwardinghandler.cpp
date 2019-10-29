@@ -2220,7 +2220,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
                 {
                     continue;
                 }
-                continue;
+                break;
             case HttpHeaderServer:
                 fServerHeaderPresent = TRUE;
                 break;
