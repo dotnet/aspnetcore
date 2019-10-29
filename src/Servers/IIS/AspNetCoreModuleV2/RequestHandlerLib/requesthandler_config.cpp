@@ -379,6 +379,12 @@ REQUESTHANDLER_CONFIG::Populate(
         goto Finished;
     }
 
+    hr = ConfigUtility::FindEnableConnectionClose(pAspNetCoreElement, m_struEnableConnectionClose);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
 Finished:
 
     if (pAspNetCoreElement != NULL)

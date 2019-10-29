@@ -179,6 +179,7 @@ private:
     HINTERNET                           m_hRequest;
     FORWARDING_REQUEST_STATUS           m_RequestStatus;
 
+    BOOL                                m_fSendConnectionCloseHeader;
     BOOL                                m_fWebSocketEnabled;
     BOOL                                m_fWebSocketSupported;
     BOOL                                m_fResponseHeadersReceivedAndSet;

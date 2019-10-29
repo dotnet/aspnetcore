@@ -55,6 +55,7 @@ FORWARDING_HANDLER::FORWARDING_HANDLER(
     LOG_TRACE(L"FORWARDING_HANDLER::FORWARDING_HANDLER");
 
     m_fWebSocketSupported = m_pApplication->QueryWebsocketStatus();
+    m_fSendConnectionCloseHeader = m_pApplication->QueryConfig()->QueryEnableConnectionClose()->Equals(L"true", 1);
     InitializeSRWLock(&m_RequestLock);
 }
 
@@ -2212,10 +2213,14 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
                     break;
                 }
                 __fallthrough;
-            case HttpHeaderConnection:
             case HttpHeaderDate:
                 continue;
-
+            case HttpHeaderConnection:
+                if (!m_fSendConnectionCloseHeader)
+                {
+                    continue;
+                }
+                continue;
             case HttpHeaderServer:
                 fServerHeaderPresent = TRUE;
                 break;

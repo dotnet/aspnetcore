@@ -143,6 +143,20 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
         }
 
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task SetsConnectionCloseHeader()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            deploymentParameters.HandlerSettings["enableConnectionClose"] = "true";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Equal(true, response.Headers.ConnectionClose);
+        }
+
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)
         {
             var handler = new HttpClientHandler

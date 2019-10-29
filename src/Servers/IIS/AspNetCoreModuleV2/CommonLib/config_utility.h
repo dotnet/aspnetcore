@@ -14,6 +14,7 @@ class ConfigUtility
     #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
     #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
     #define CS_ASPNETCORE_DEBUG_FILE                         L"debugFile"
+    #define CS_ASPNETCORE_ENABLE_CONNECTION_CLOSE            L"enableConnectionClose"
     #define CS_ASPNETCORE_DEBUG_LEVEL                        L"debugLevel"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_NAME              L"name"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_VALUE             L"value"
@@ -38,6 +39,13 @@ public:
     FindDebugLevel(IAppHostElement* pElement, STRU& strDebugFile)
     {
         return FindKeyValuePair(pElement, CS_ASPNETCORE_DEBUG_LEVEL, strDebugFile);
+    }
+
+    static
+    HRESULT
+    FindEnableConnectionClose(IAppHostElement* pElement, STRU& strConnectionClose)
+    {
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_ENABLE_CONNECTION_CLOSE, strConnectionClose);
     }
 
 private:

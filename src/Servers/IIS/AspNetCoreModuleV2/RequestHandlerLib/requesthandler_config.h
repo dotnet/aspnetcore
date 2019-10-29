@@ -218,6 +218,12 @@ public:
         return &m_struConfigPath;
     }
 
+    STRU*
+    QueryEnableConnectionClose()
+    {
+        return &m_struEnableConnectionClose;
+    }
+
 protected:
 
     //
@@ -249,6 +255,7 @@ protected:
     STRU                   m_struApplicationPhysicalPath;
     STRU                   m_struApplicationVirtualPath;
     STRU                   m_struConfigPath;
+    STRU                   m_struEnableConnectionClose;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
     BOOL                   m_fDisableStartUpErrorPage;
