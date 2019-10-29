@@ -314,10 +314,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             public ulong NumBytes => Data.IdealSendBuffer.NumBytes;
             public IPEndPoint LocalAddress => null; // TODO
             public IPEndPoint PeerAddress => null; // TODO
-            public QuicStream CreateNewStream(QuicApi registration)
-            {
-                return new QuicStream(registration, Data.NewStream.Stream, shouldOwnNativeObj: false);
-            }
+            // public QuicStream CreateNewStream(QuicApi registration)
+            // {
+            //     return new QuicStream(registration, Data.NewStream.Stream, shouldOwnNativeObj: false);
+            // }
 
             public QUIC_STATUS ShutdownBeginStatus => Data.ShutdownBegin.Status;
             public ushort ShutdownBeginPeerStatus => Data.ShutdownBeginPeer.ErrorCode;

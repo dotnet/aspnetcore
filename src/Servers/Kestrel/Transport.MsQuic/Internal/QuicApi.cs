@@ -156,67 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             RegistrationContext = ctx;
         }
 
-        public async ValueTask<QuicSecConfig> CreateSecurityConfig(X509Certificate2 certificate)
-        {
-            QuicSecConfig secConfig = null;
-            var tcs = new TaskCompletionSource<object>();
-            var secConfigCreateStatus = QUIC_STATUS.INTERNAL_ERROR;
-
-
-            var status = SecConfigCreateDelegate(
-                RegistrationContext,
-                (uint)QUIC_SEC_CONFIG_FLAG.CERT_CONTEXT,
-                certificate.Handle,
-                null,
-                IntPtr.Zero,
-                SecCfgCreateCallbackHandler);
-
-            QuicStatusException.ThrowIfFailed(status);
-
-            void SecCfgCreateCallbackHandler(
-                IntPtr context,
-                QUIC_STATUS status,
-                IntPtr securityConfig)
-            {
-                if (status.HasSucceeded())
-                {
-                    // TODO should we check if outer is disposed here?
-                    secConfig = new QuicSecConfig(this, securityConfig);
-                }
-
-                secConfigCreateStatus = status;
-                tcs.SetResult(null);
-            }
-
-            await tcs.Task;
-
-            QuicStatusException.ThrowIfFailed(secConfigCreateStatus);
-
-            return secConfig;
-        }
-
-        public QuicSession SessionOpen(
-           string alpn)
-        {
-            var buffer = Encoding.UTF8.GetBytes(alpn);
-            var sessionPtr = IntPtr.Zero;
-            try
-            {
-                var status = (QUIC_STATUS)SessionOpenDelegate(
-                    RegistrationContext,
-                    buffer,
-                    IntPtr.Zero,
-                    ref sessionPtr);
-                QuicStatusException.ThrowIfFailed(status);
-            }
-            catch
-            {
-                throw;
-            }
-            var session = new QuicSession(this, sessionPtr);
-            return session;
-        }
-
         public long Handle { get => (long)RegistrationContext; }
 
         public void Dispose()

@@ -136,12 +136,6 @@ namespace Microsoft.AspNetCore.Connections
         public override string ToString() { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Connections.Abstractions.Features
-{
-    public partial interface IUnidirectionalStreamFeature
-    {
-    }
-}
 namespace Microsoft.AspNetCore.Connections.Features
 {
     public partial interface IConnectionCompleteFeature
@@ -190,11 +184,6 @@ namespace Microsoft.AspNetCore.Connections.Features
     public partial interface IMemoryPoolFeature
     {
         System.Buffers.MemoryPool<byte> MemoryPool { get; }
-    }
-    public partial interface IStreamListener
-    {
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync();
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext> StartUnidirectionalStreamAsync();
     }
     public partial interface ITlsHandshakeFeature
     {

@@ -1,34 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Hosting
-{
-    public static partial class WebHostBuilderMsQuicExtensions
-    {
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseMsQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) { throw null; }
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseMsQuic(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicTransportOptions> configureOptions) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
-{
-    public partial class MsQuicTransportOptions
-    {
-        public MsQuicTransportOptions() { }
-        public string Alpn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Security.Cryptography.X509Certificates.X509Certificate2 Certificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.TimeSpan IdleTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public ushort MaxBidirectionalStreamCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public ushort MaxUnidirectionalStreamCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RegistrationName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-}
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    public partial class MsQuicConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
-    {
-        public MsQuicConnectionFactory() { }
-        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-    }
     public static partial class NativeMethods
     {
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -203,12 +177,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         SHUTDOWN_COMPLETE = (byte)7,
         IDEAL_SEND_BUFFER_SIZE = (byte)8,
     }
-    public enum QUIC_STREAM_PRIORITY : uint
-    {
-        DEFAULT = (uint)0,
-        MAX = (uint)2147483647,
-        MIN = (uint)2147483648,
-    }
     [System.FlagsAttribute]
     public enum QUIC_STREAM_SHUTDOWN : uint
     {
@@ -225,10 +193,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         NONE = (uint)0,
         FAIL_BLOCKED = (uint)1,
         IMMEDIATE = (uint)2,
-    }
-    public sealed partial class SendContext
-    {
-        internal SendContext() { }
     }
     public static partial class StatusEx
     {

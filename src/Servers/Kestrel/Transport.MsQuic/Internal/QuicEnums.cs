@@ -63,17 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         CERT_NULL = 0xF0000000,
     }
 
-    /// <summary>
-    /// Event types that are returned from the <see cref="QuicListener"/>
-    /// </summary>
     public enum QUIC_LISTENER_EVENT : byte
     {
         NEW_CONNECTION = 0
     }
 
-    /// <summary>
-    /// Event types that are returned from the <see cref="QuicConnection"/>
-    /// </summary>
     public enum QUIC_CONNECTION_EVENT : byte
     {
         CONNECTED = 0,
@@ -88,9 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         IDEAL_SEND_BUFFER = 9,
     }
 
-    /// <summary>
-    /// Flags to pass to <see cref="QuicConnection.Shutdown(QUIC_CONNECTION_SHUTDOWN, ushort)"/>
-    /// </summary>
     [Flags]
     public enum QUIC_CONNECTION_SHUTDOWN : uint
     {
@@ -98,18 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         SILENT = 0x1
     }
 
-    /// <summary>
-    /// Flags to pass for creating a <see cref="QuicApi"/>
-    /// </summary>
     public enum QUIC_PARAM_REGISTRATION : uint
     {
         RETRY_MEMORY_PERCENT = 0,
         CID_PREFIX = 1
     }
 
-    /// <summary>
-    /// Flags to pass to specify which type a parameter is specified for.
-    /// </summary>
     public enum QUIC_PARAM_LEVEL : uint
     {
         REGISTRATION = 0,
@@ -120,17 +105,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         STREAM = 5,
     }
 
-    /// <summary>
-    /// Flags to pass for creating a <see cref="QuicListener"/>
-    /// </summary>
     public enum QUIC_PARAM_LISTENER : uint
     {
         LOCAL_ADDRESS = 0
     }
 
-    /// <summary>
-    /// Flags to pass for creating a <see cref="QuicSession"/>
-    /// </summary>
     public enum QUIC_PARAM_SESSION : uint
     {
         TLS_TICKET_KEY = 0,
@@ -141,9 +120,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         MAX_BYTES_PER_KEY = 5
     }
 
-    /// <summary>
-    /// Flags to pass for creating a <see cref="QuicConnection"/>
-    /// </summary>
     public enum QUIC_PARAM_CONN : uint
     {
         QUIC_VERSION = 0,
@@ -169,9 +145,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         MAX_STREAM_IDS = 20
     }
 
-    /// <summary>
-    /// Flags to pass for creating a <see cref="QuicStream"/>
-    /// </summary>
     public enum QUIC_PARAM_STREAM : uint
     {
         ID = 0,
@@ -180,9 +153,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         IDEAL_SEND_BUFFER = 3
     }
 
-    /// <summary>
-    /// Flags obtained from a receive event on a <see cref="QuicStream"/>
-    /// </summary>
     [Flags]
     public enum QUIC_RECV_FLAG : byte
     {
@@ -190,9 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         ZERO_RTT = 0x00000001
     }
 
-    /// <summary>
-    /// Event types that are returned from the <see cref="QuicStream"/>
-    /// </summary>
     public enum QUIC_STREAM_EVENT : byte
     {
         START_COMPLETE = 0,
@@ -206,9 +173,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         IDEAL_SEND_BUFFER_SIZE = 8,
     }
 
-    /// <summary>
-    /// Flags to pass when creating a new <see cref="QuicStream"/>
-    /// </summary>
     [Flags]
     public enum QUIC_NEW_STREAM_FLAG : uint
     {
@@ -217,9 +181,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         FAIL_BLOCKED = 0x2,
     }
 
-    /// <summary>
-    /// Flags to pass when starting a <see cref="QuicStream"/>
-    /// </summary>
     [Flags]
     public enum QUIC_STREAM_START : uint
     {
@@ -228,9 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         IMMEDIATE = 0x2
     }
 
-    /// <summary>
-    /// Flags to pass when shuting down a <see cref="QuicStream"/>
-    /// </summary>
     [Flags]
     public enum QUIC_STREAM_SHUTDOWN : uint
     {
@@ -242,9 +200,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         IMMEDIATE = 0x8
     }
 
-    /// <summary>
-    /// Flags to pass when sending data on a <see cref="QuicStream"/>
-    /// </summary>
     [Flags]
     public enum QUIC_SEND_FLAG : uint
     {
