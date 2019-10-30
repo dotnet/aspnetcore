@@ -63,6 +63,11 @@ namespace TestSite
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
         }
 
+        private async Task CheckProtocol(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(ctx.Request.Protocol);
+        }
+
         private async Task ConsoleWrite(HttpContext ctx)
         {
             Console.WriteLine("TEST MESSAGE");
