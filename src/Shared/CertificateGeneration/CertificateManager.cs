@@ -259,7 +259,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 // with the certificate at some point.
                 var value = new byte[32];
                 RandomNumberGenerator.Fill(value);
-                rsa.Encrypt(value, RSAEncryptionPadding.Pkcs1);
+                rsa.Decrypt(rsa.Encrypt(value, RSAEncryptionPadding.Pkcs1), RSAEncryptionPadding.Pkcs1);
+
+                // Being able to encrypt and decrypt a payload is the strongest guarantee that the key is valid.
                 return true;
             }
             catch (Exception)
