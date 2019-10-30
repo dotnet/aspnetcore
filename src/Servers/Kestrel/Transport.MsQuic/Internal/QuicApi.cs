@@ -2,11 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -14,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         private bool _disposed = false;
 
-        internal IntPtr RegistrationContext { get; set; }
+        private IntPtr _registrationContext;
 
         internal unsafe QuicApi()
         {
@@ -147,15 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal void RegistrationOpen(byte[] name)
         {
             QuicStatusException.ThrowIfFailed(RegistrationOpenDelegate(name, out var ctx));
-            RegistrationContext = ctx;
-        }
-
-        internal long Handle { get => (long)RegistrationContext; }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _registrationContext = ctx;
         }
 
         internal unsafe QUIC_STATUS UnsafeSetParam(
@@ -172,17 +160,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 Buffer.Buffer);
         }
 
-        private void ThrowIfDisposed()
+        public void Dispose()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(QuicApi));
-            }
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
 
         ~QuicApi()
         {
-            Dispose(false);
+            Dispose(disposing: false);
         }
 
         private void Dispose(bool disposing)
@@ -192,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 return;
             }
 
-            RegistrationCloseDelegate?.Invoke(RegistrationContext);
+            RegistrationCloseDelegate?.Invoke(_registrationContext);
 
             _disposed = true;
         }

@@ -310,11 +310,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal ulong NumBytes => Data.IdealSendBuffer.NumBytes;
             internal IPEndPoint LocalAddress => null; // TODO
             internal IPEndPoint PeerAddress => null; // TODO
-            // internal QuicStream CreateNewStream(QuicApi registration)
-            // {
-            //     return new QuicStream(registration, Data.NewStream.Stream, shouldOwnNativeObj: false);
-            // }
-
             internal QUIC_STATUS ShutdownBeginStatus => Data.ShutdownBegin.Status;
             internal ushort ShutdownBeginPeerStatus => Data.ShutdownBeginPeer.ErrorCode;
             internal bool ShutdownTimedOut => Data.ShutdownComplete.TimedOut;
