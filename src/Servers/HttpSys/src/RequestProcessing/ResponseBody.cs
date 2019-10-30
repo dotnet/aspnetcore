@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -187,26 +188,34 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private List<GCHandle> PinDataBuffers(bool endOfRequest, ArraySegment<byte> data, out HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks)
         {
             var pins = new List<GCHandle>();
+            var hasData = data.Count > 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
+            var addTrailers = endOfRequest && _requestContext.Response.HasTrailers;
+            Debug.Assert(!(addTrailers && chunked), "Trailers aren't currently supported for HTTP/1.1 chunking.");
 
             var currentChunk = 0;
             // Figure out how many data chunks
-            if (chunked && data.Count == 0 && endOfRequest)
+            if (chunked && !hasData && endOfRequest)
             {
                 dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[1];
                 SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
                 return pins;
             }
-            else if (data.Count == 0)
+            else if (!hasData && !addTrailers)
             {
                 // No data
                 dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[0];
                 return pins;
             }
 
-            var chunkCount = 1;
-            if (chunked)
+            var chunkCount = hasData ? 1 : 0;
+            if (addTrailers)
             {
+                chunkCount++;
+            }
+            else if (chunked) // HTTP/1.1 chunking, not currently supported with trailers
+            {
+                Debug.Assert(hasData);
                 // Chunk framing
                 chunkCount += 2;
 
@@ -216,6 +225,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     chunkCount += 1;
                 }
             }
+
             dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
 
             if (chunked)
@@ -224,7 +234,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 SetDataChunk(dataChunks, ref currentChunk, pins, chunkHeaderBuffer);
             }
 
-            SetDataChunk(dataChunks, ref currentChunk, pins, data);
+            if (hasData)
+            {
+                SetDataChunk(dataChunks, ref currentChunk, pins, data);
+            }
 
             if (chunked)
             {
@@ -234,6 +247,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
                 }
+            }
+
+            if (addTrailers)
+            {
+                _requestContext.Response.SerializeTrailers(dataChunks, currentChunk, pins);
             }
 
             return pins;
@@ -433,7 +451,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
-            else if (!endOfRequest && _leftToWrite != writeCount)
+            else if (!endOfRequest
+                && (_leftToWrite != writeCount || _requestContext.Response.TrailersExpected))
             {
                 flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             }
@@ -444,7 +463,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // keep track of the data transferred
                 _leftToWrite -= writeCount;
             }
-            if (_leftToWrite == 0)
+            if (_leftToWrite == 0 && !_requestContext.Response.TrailersExpected)
             {
                 // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
                 _disposed = true;
