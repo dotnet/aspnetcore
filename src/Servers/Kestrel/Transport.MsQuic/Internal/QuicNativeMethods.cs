@@ -67,21 +67,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             IntPtr Handler,
             IntPtr Context);
 
-        internal delegate QUIC_STATUS SetParamDelegate(
+        internal delegate uint SetParamDelegate(
             IntPtr Handle,
             uint Level,
             uint Param,
             uint BufferLength,
             byte* Buffer);
 
-        internal delegate QUIC_STATUS GetParamDelegate(
+        internal delegate uint GetParamDelegate(
             IntPtr Handle,
             uint Level,
             uint Param,
             IntPtr BufferLength,
             IntPtr Buffer);
 
-        internal delegate QUIC_STATUS RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
+        internal delegate uint RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
 
         internal delegate void RegistrationCloseDelegate(IntPtr RegistrationContext);
 
@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal byte[] StoreNameUtf8;
         }
 
-        internal delegate void SecConfigCreateCompleteDelegate(IntPtr Context, QUIC_STATUS Status, IntPtr SecurityConfig);
+        internal delegate void SecConfigCreateCompleteDelegate(IntPtr Context, uint Status, IntPtr SecurityConfig);
 
-        internal delegate QUIC_STATUS SecConfigCreateDelegate(
+        internal delegate uint SecConfigCreateDelegate(
             IntPtr RegistrationContext,
             uint Flags,
             IntPtr Certificate,
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal IntPtr ServerName;
         }
 
-        internal delegate QUIC_STATUS ListenerCallbackDelegate(
+        internal delegate uint ListenerCallbackDelegate(
             IntPtr listener,
             IntPtr context,
             ref ListenerEvent evt);
@@ -206,9 +206,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal delegate uint ListenerCloseDelegate(
             IntPtr listener);
 
-        internal delegate QUIC_STATUS ListenerStartDelegate(
+        internal delegate uint ListenerStartDelegate(
             IntPtr listener,
-            ref WinSockNativeMethods.SOCKADDR_INET localAddress);
+            ref SocketNativeMethods.SOCKADDR_INET localAddress);
 
         internal delegate uint ListenerStopDelegate(
             IntPtr listener);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         [StructLayout(LayoutKind.Sequential)]
         internal struct ConnectionEventDataShutdownBegin
         {
-            internal QUIC_STATUS Status;
+            internal uint Status;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal ulong NumBytes => Data.IdealSendBuffer.NumBytes;
             internal IPEndPoint LocalAddress => null; // TODO
             internal IPEndPoint PeerAddress => null; // TODO
-            internal QUIC_STATUS ShutdownBeginStatus => Data.ShutdownBegin.Status;
+            internal uint ShutdownBeginStatus => Data.ShutdownBegin.Status;
             internal ushort ShutdownBeginPeerStatus => Data.ShutdownBeginPeer.ErrorCode;
             internal bool ShutdownTimedOut => Data.ShutdownComplete.TimedOut;
             internal ushort BiDirectionalCount => Data.StreamsAvailable.BiDirectionalCount;
@@ -318,28 +318,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal QUIC_NEW_STREAM_FLAG StreamFlags => Data.NewStream.Flags;
         }
 
-        internal delegate QUIC_STATUS ConnectionCallbackDelegate(
+        internal delegate uint ConnectionCallbackDelegate(
          IntPtr Connection,
          IntPtr Context,
          ref ConnectionEvent Event);
 
-        internal delegate QUIC_STATUS ConnectionOpenDelegate(
+        internal delegate uint ConnectionOpenDelegate(
             IntPtr Session,
             ConnectionCallbackDelegate Handler,
             IntPtr Context,
             out IntPtr Connection);
 
-        internal delegate QUIC_STATUS ConnectionCloseDelegate(
+        internal delegate uint ConnectionCloseDelegate(
             IntPtr Connection);
 
-        internal delegate QUIC_STATUS ConnectionStartDelegate(
+        internal delegate uint ConnectionStartDelegate(
             IntPtr Connection,
             ushort Family,
             [MarshalAs(UnmanagedType.LPStr)]
             string ServerName,
             ushort ServerPort);
 
-        internal delegate QUIC_STATUS ConnectionShutdownDelegate(
+        internal delegate uint ConnectionShutdownDelegate(
             IntPtr Connection,
             uint Flags,
             ushort ErrorCode);
@@ -424,12 +424,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal bool GracefulShutdown => Data.SendShutdownComplete.Graceful;
         }
 
-        internal delegate QUIC_STATUS StreamCallbackDelegate(
+        internal delegate uint StreamCallbackDelegate(
             IntPtr Stream,
             IntPtr Context,
             ref StreamEvent Event);
 
-        internal delegate QUIC_STATUS StreamOpenDelegate(
+        internal delegate uint StreamOpenDelegate(
             IntPtr Connection,
             uint Flags,
             StreamCallbackDelegate Handler,
@@ -466,5 +466,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal uint Length;
             internal byte* Buffer;
         }
+
+            internal static bool Succeeded(this uint status)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return status >= 0x80000000;
+                }
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return (int)status <= 0;
+                }
+
+                return false;
+            }
     }
 }

@@ -3,40 +3,42 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal class QuicStatusException : Exception
     {
-        internal static void ThrowIfFailed(QUIC_STATUS status, string message = null, Exception innerException = null)
+        internal QuicStatusException(uint status)
+            : this(status, null)
+        {
+        }
+
+        internal QuicStatusException(uint status, string message)
+            : this(status, message, null)
+        {
+        }
+
+        internal QuicStatusException(uint status, string message, Exception innerException)
+            : base(GetMessage(status, message), innerException)
+        {
+            Status = status;
+        }
+
+        internal uint Status { get; }
+
+        private static string GetMessage(uint status, string message)
+        {
+            var errorCode = MsQuicConstants.ErrorTypeFromErrorCode(status);
+            return $"Quic Error: {errorCode}. " + message;
+        }
+
+        internal static void ThrowIfFailed(uint status, string message = null, Exception innerException = null)
         {
             if (!status.Succeeded())
             {
                 throw new QuicStatusException(status, message, innerException);
             }
         }
-
-        internal QuicStatusException(QUIC_STATUS status)
-            : base()
-        {
-            Status = status;
-        }
-
-        internal QuicStatusException(QUIC_STATUS status, string message)
-            : base(message)
-        {
-            Status = status;
-        }
-
-        internal QuicStatusException(QUIC_STATUS status, string message, Exception innerException)
-            : base(message, innerException)
-        {
-            Status = status;
-        }
-
-        internal QUIC_STATUS Status { get; }
-
-        public override string Message => string.Format(CultureInfo.InvariantCulture,
-            "Status=[{0}].", Status);
     }
 }

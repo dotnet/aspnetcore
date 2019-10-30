@@ -6,15 +6,15 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class QuicApi : IDisposable
+    internal class MsQuicApi : IDisposable
     {
         private bool _disposed = false;
 
         private IntPtr _registrationContext;
 
-        internal unsafe QuicApi()
+        internal unsafe MsQuicApi()
         {
-            var status = (QUIC_STATUS)NativeMethods.MsQuicOpen(version: 1, out var registration);
+            var status = (uint)NativeMethods.MsQuicOpen(version: 1, out var registration);
             QuicStatusException.ThrowIfFailed(status);
 
             NativeRegistration = *registration;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _registrationContext = ctx;
         }
 
-        internal unsafe QUIC_STATUS UnsafeSetParam(
+        internal unsafe uint UnsafeSetParam(
             IntPtr Handle,
             uint Level,
             uint Param,
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             GC.SuppressFinalize(this);
         }
 
-        ~QuicApi()
+        ~MsQuicApi()
         {
             Dispose(disposing: false);
         }

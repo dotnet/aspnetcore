@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class WinSockNativeMethods
+    internal class SocketNativeMethods
     {
         internal const ushort AF_INET = 2;
         internal const ushort AF_INET6 = 23;
