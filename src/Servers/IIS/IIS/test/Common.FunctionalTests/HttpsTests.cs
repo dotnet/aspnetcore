@@ -148,6 +148,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [RequiresNewShim]
         public async Task SetsConnectionCloseHeader()
         {
+            // Only tests OutOfProcess as the Connection header is removed for out of process and not inprocess. 
+            // This test checks a quirk to allow setting the Connection header.
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             deploymentParameters.HandlerSettings["forwardResponseConnectionHeader"] = "true";
