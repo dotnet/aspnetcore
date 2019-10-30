@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
             else
             {
-                await _requestPipe.Writer.CompleteAsync();
+                // Writer was already completed in send request callback.
                 await _requestPipe.Reader.CompleteAsync();
             }
 
