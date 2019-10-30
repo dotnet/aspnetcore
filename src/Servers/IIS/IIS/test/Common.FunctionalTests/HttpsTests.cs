@@ -94,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win81)]
         public async Task CheckProtocolIsHttp2()
         {
             var port = TestPortHelper.GetNextSSLPort();
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var client = CreateNonValidatingClient(deploymentResult);
             client.DefaultRequestVersion = HttpVersion.Version20;
 
-            Assert.Equal("HTTP/2", await client.GetStringAsync($"/CheckIsHttp2"));
+            Assert.Equal("HTTP/2", await client.GetStringAsync($"/CheckProtocol"));
         }
 
         [ConditionalFact]

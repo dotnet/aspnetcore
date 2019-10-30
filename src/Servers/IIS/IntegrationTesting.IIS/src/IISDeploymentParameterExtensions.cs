@@ -41,6 +41,21 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 });
         }
 
+        public static void AddHttpsWithClientCertToServerConfig(this IISDeploymentParameters parameters)
+        {
+            parameters.AddServerConfigAction(
+                element =>
+                {
+                    element.Descendants("binding")
+                        .Single()
+                        .SetAttributeValue("protocol", "https");
+
+                    element.Descendants("access")
+                        .Single()
+                        .SetAttributeValue("sslFlags", "Ssl, SslNegotiateCert");
+                });
+        }
+
         public static void SetWindowsAuth(this IISDeploymentParameters parameters, bool enabled = true)
         {
             parameters.EnsureSection("windowsAuthentication", "system.webServer", "security", "windowsAuthentication");

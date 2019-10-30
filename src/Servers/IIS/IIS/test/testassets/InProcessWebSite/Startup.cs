@@ -63,7 +63,7 @@ namespace TestSite
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
         }
 
-        private async Task CheckIsHttp2(HttpContext ctx)
+        private async Task CheckProtocol(HttpContext ctx)
         {
             await ctx.Response.WriteAsync(ctx.Request.Protocol);
         }
