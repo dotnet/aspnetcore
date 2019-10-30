@@ -219,7 +219,7 @@ public:
     }
 
     STRU*
-    QueryEnableConnectionClose()
+    QueryForwardResponseConnectionHeader()
     {
         return &m_struForwardResponseConnectionHeader;
     }
