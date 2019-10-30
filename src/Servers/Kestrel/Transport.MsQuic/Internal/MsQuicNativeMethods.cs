@@ -8,7 +8,10 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal unsafe static class NativeMethods
+    /// <summary>
+    /// Contains all native delegates and structs that are used with MsQuic.
+    /// </summary>
+    internal unsafe static class MsQuicNativeMethods
     {
         internal const string dllName = "msquic.dll";
 
@@ -208,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         internal delegate uint ListenerStartDelegate(
             IntPtr listener,
-            ref SocketNativeMethods.SOCKADDR_INET localAddress);
+            ref SOCKADDR_INET localAddress);
 
         internal delegate uint ListenerStopDelegate(
             IntPtr listener);
@@ -467,6 +470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal byte* Buffer;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         internal struct SOCKADDR_IN
         {
             internal ushort sin_family;
@@ -485,6 +489,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         internal struct SOCKADDR_IN6
         {
             internal ushort sin6_family;

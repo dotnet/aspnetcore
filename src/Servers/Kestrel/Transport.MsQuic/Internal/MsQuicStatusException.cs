@@ -5,19 +5,19 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class QuicStatusException : Exception
+    internal class MsQuicStatusException : Exception
     {
-        internal QuicStatusException(uint status)
+        internal MsQuicStatusException(uint status)
             : this(status, null)
         {
         }
 
-        internal QuicStatusException(uint status, string message)
+        internal MsQuicStatusException(uint status, string message)
             : this(status, message, null)
         {
         }
 
-        internal QuicStatusException(uint status, string message, Exception innerException)
+        internal MsQuicStatusException(uint status, string message, Exception innerException)
             : base(GetMessage(status, message), innerException)
         {
             Status = status;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             if (!status.Succeeded())
             {
-                throw new QuicStatusException(status, message, innerException);
+                throw new MsQuicStatusException(status, message, innerException);
             }
         }
     }
