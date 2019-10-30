@@ -114,7 +114,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public async Task Match_HostWithWildcard()
+        public async Task Match_HostWithWildcard_NoSubdomain()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+            var matcher = CreateMatcher(endpoint);
+            var httpContext = CreateContext("/hello", "contoso.com:8080");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertNotMatch(httpContext);
+        }
+
+        [Fact]
+        public async Task Match_HostWithWildcard_Subdomain()
         {
             // Arrange
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
@@ -130,7 +146,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public async Task Match_HostWithWildcard_MultipleSubDomains()
+        public async Task Match_HostWithWildcard_MultipleSubdomains()
         {
             // Arrange
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
@@ -143,6 +159,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             MatcherAssert.AssertMatch(httpContext, endpoint);
+        }
+
+        [Fact]
+        public async Task Match_HostWithWildcard_PrefixNotInSubdomain()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+            var matcher = CreateMatcher(endpoint);
+            var httpContext = CreateContext("/hello", "mycontoso.com:8080");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact]
