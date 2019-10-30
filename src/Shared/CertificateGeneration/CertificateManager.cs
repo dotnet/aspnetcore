@@ -237,18 +237,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // Tries to use the certificate key to validate it can't access it
             try
             {
-                // Search for the 'active' developer certificate, being very conservative about the possibility that there
-                // might be multiple repeated certificates and multiple HTTPS certificates that have been rolled over.
-                var devCert = ListCertificates(CertificatePurpose.HTTPS, StoreName.My,StoreLocation.CurrentUser, isValid:false)
-                    .OrderByDescending(c => c.NotAfter)
-                    .FirstOrDefault(c => candidate.Thumbprint == c.Thumbprint && c.HasPrivateKey);
-
-                if (devCert == null)
-                {
-                    return false;
-                }
-
-                var rsa = devCert.GetRSAPrivateKey();
+                var rsa = candidate.GetRSAPrivateKey();
                 if (rsa == null)
                 {
                     return false;
