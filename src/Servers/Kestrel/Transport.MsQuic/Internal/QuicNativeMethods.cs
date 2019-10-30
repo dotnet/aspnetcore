@@ -466,5 +466,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal uint Length;
             internal byte* Buffer;
         }
+
+        internal struct SOCKADDR_IN
+        {
+            internal ushort sin_family;
+            internal ushort sin_port;
+            internal byte sin_addr0;
+            internal byte sin_addr1;
+            internal byte sin_addr2;
+            internal byte sin_addr3;
+
+            internal byte[] Address
+            {
+                get
+                {
+                    return new byte[] { sin_addr0, sin_addr1, sin_addr2, sin_addr3 };
+                }
+            }
+        }
+
+        internal struct SOCKADDR_IN6
+        {
+            internal ushort sin6_family;
+            internal ushort sin6_port;
+            internal uint sin6_flowinfo;
+            internal byte sin6_addr0;
+            internal byte sin6_addr1;
+            internal byte sin6_addr2;
+            internal byte sin6_addr3;
+            internal byte sin6_addr4;
+            internal byte sin6_addr5;
+            internal byte sin6_addr6;
+            internal byte sin6_addr7;
+            internal byte sin6_addr8;
+            internal byte sin6_addr9;
+            internal byte sin6_addr10;
+            internal byte sin6_addr11;
+            internal byte sin6_addr12;
+            internal byte sin6_addr13;
+            internal byte sin6_addr14;
+            internal byte sin6_addr15;
+            internal uint sin6_scope_id;
+
+            internal byte[] Address
+            {
+                get
+                {
+                    return new byte[] {
+                    sin6_addr0, sin6_addr1, sin6_addr2, sin6_addr3 ,
+                    sin6_addr4, sin6_addr5, sin6_addr6, sin6_addr7 ,
+                    sin6_addr8, sin6_addr9, sin6_addr10, sin6_addr11 ,
+                    sin6_addr12, sin6_addr13, sin6_addr14, sin6_addr15 };
+                }
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi)]
+        internal struct SOCKADDR_INET
+        {
+            [FieldOffset(0)]
+            internal SOCKADDR_IN Ipv4;
+            [FieldOffset(0)]
+            internal SOCKADDR_IN6 Ipv6;
+            [FieldOffset(0)]
+            internal ushort si_family;
+        }
     }
 }
