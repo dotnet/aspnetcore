@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    public class QuicStatusException : Exception
+    internal class QuicStatusException : Exception
     {
         internal static void ThrowIfFailed(QUIC_STATUS status, string message = null, Exception innerException = null)
         {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             Status = status;
         }
 
-        public QUIC_STATUS Status { get; }
+        internal QUIC_STATUS Status { get; }
 
         public override string Message => string.Format(CultureInfo.InvariantCulture,
             "Status=[{0}].", Status);

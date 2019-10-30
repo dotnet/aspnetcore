@@ -14,15 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         private bool _disposed = false;
 
-        public IntPtr RegistrationContext { get; set; }
+        internal IntPtr RegistrationContext { get; set; }
 
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr LoadLibrary(string dllName);
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr FreeLibrary(string dllName);
-
-        public unsafe QuicApi()
+        internal unsafe QuicApi()
         {
             var status = (QUIC_STATUS)NativeMethods.MsQuicOpen(version: 1, out var registration);
             QuicStatusException.ThrowIfFailed(status);
@@ -113,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     NativeRegistration.GetParam);
         }
 
-        internal NativeMethods.NativeRegistration NativeRegistration { get; private set; }
+        internal NativeMethods.NativeApi NativeRegistration { get; private set; }
 
         internal NativeMethods.RegistrationOpenDelegate RegistrationOpenDelegate { get; private set; }
         internal NativeMethods.RegistrationCloseDelegate RegistrationCloseDelegate { get; private set; }
@@ -150,13 +144,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal NativeMethods.SetParamDelegate SetParamDelegate { get; private set; }
         internal NativeMethods.GetParamDelegate GetParamDelegate { get; private set; }
 
-        public void RegistrationOpen(byte[] name)
+        internal void RegistrationOpen(byte[] name)
         {
             QuicStatusException.ThrowIfFailed(RegistrationOpenDelegate(name, out var ctx));
             RegistrationContext = ctx;
         }
 
-        public long Handle { get => (long)RegistrationContext; }
+        internal long Handle { get => (long)RegistrationContext; }
 
         public void Dispose()
         {

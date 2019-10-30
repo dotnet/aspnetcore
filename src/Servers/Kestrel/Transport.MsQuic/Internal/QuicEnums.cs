@@ -7,8 +7,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     /// <summary>
     /// Represents the status of an operation by MSQuic
+    /// This isn't an exhaustive list of HRESULT that can be returned.
     /// </summary>
-    public enum QUIC_STATUS : uint
+    internal enum QUIC_STATUS : uint
     {
         SUCCESS = 0,
         PENDING = 459749,
@@ -30,19 +31,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         VER_NEG_ERROR = 0x80410001
     }
 
-    public static class StatusEx
+    internal static class StatusEx
     {
-        public static bool HasSucceeded(this QUIC_STATUS status)
+        internal static bool HasSucceeded(this QUIC_STATUS status)
         {
             return status == QUIC_STATUS.SUCCESS || status == QUIC_STATUS.PENDING;
         }
     }
 
     /// <summary>
-    /// Flags to pass when creating a certificate hash store. 
+    /// Flags to pass when creating a certificate hash store.
     /// </summary>
     [Flags]
-    public enum QUIC_CERT_HASH_STORE_FLAG : uint
+    internal enum QUIC_CERT_HASH_STORE_FLAG : uint
     {
         NONE = 0,
         MACHINE_CERT = 0x0001,
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     /// Flags to pass when creating a security config.
     /// </summary>
     [Flags]
-    public enum QUIC_SEC_CONFIG_FLAG : uint
+    internal enum QUIC_SEC_CONFIG_FLAG : uint
     {
         NONE = 0,
         CERT_HASH = 0x00000001,
@@ -63,12 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         CERT_NULL = 0xF0000000,
     }
 
-    public enum QUIC_LISTENER_EVENT : byte
+    internal enum QUIC_LISTENER_EVENT : byte
     {
         NEW_CONNECTION = 0
     }
 
-    public enum QUIC_CONNECTION_EVENT : byte
+    internal enum QUIC_CONNECTION_EVENT : byte
     {
         CONNECTED = 0,
         SHUTDOWN_BEGIN = 1,
@@ -83,19 +84,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_CONNECTION_SHUTDOWN : uint
+    internal enum QUIC_CONNECTION_SHUTDOWN : uint
     {
         NONE = 0x0,
         SILENT = 0x1
     }
 
-    public enum QUIC_PARAM_REGISTRATION : uint
+    internal enum QUIC_PARAM_REGISTRATION : uint
     {
         RETRY_MEMORY_PERCENT = 0,
         CID_PREFIX = 1
     }
 
-    public enum QUIC_PARAM_LEVEL : uint
+    internal enum QUIC_PARAM_LEVEL : uint
     {
         REGISTRATION = 0,
         SESSION = 1,
@@ -105,12 +106,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         STREAM = 5,
     }
 
-    public enum QUIC_PARAM_LISTENER : uint
+    internal enum QUIC_PARAM_LISTENER : uint
     {
         LOCAL_ADDRESS = 0
     }
 
-    public enum QUIC_PARAM_SESSION : uint
+    internal enum QUIC_PARAM_SESSION : uint
     {
         TLS_TICKET_KEY = 0,
         PEER_BIDI_STREAM_COUNT = 1,
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         MAX_BYTES_PER_KEY = 5
     }
 
-    public enum QUIC_PARAM_CONN : uint
+    internal enum QUIC_PARAM_CONN : uint
     {
         QUIC_VERSION = 0,
         LOCAL_ADDRESS = 1,
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         MAX_STREAM_IDS = 20
     }
 
-    public enum QUIC_PARAM_STREAM : uint
+    internal enum QUIC_PARAM_STREAM : uint
     {
         ID = 0,
         RECEIVE_ENABLED = 1,
@@ -154,13 +155,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_RECV_FLAG : byte
+    internal enum QUIC_RECV_FLAG : byte
     {
         NONE = 0,
         ZERO_RTT = 0x00000001
     }
 
-    public enum QUIC_STREAM_EVENT : byte
+    internal enum QUIC_STREAM_EVENT : byte
     {
         START_COMPLETE = 0,
         RECV = 1,
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_NEW_STREAM_FLAG : uint
+    internal enum QUIC_NEW_STREAM_FLAG : uint
     {
         NONE = 0,
         UNIDIRECTIONAL = 0x1,
@@ -182,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_STREAM_START : uint
+    internal enum QUIC_STREAM_START : uint
     {
         NONE = 0,
         FAIL_BLOCKED = 0x1,
@@ -190,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_STREAM_SHUTDOWN : uint
+    internal enum QUIC_STREAM_SHUTDOWN : uint
     {
         NONE = 0,
         GRACEFUL = 0x1,
@@ -201,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     }
 
     [Flags]
-    public enum QUIC_SEND_FLAG : uint
+    internal enum QUIC_SEND_FLAG : uint
     {
         NONE = 0,
         ALLOW_0_RTT = 0x00000001,

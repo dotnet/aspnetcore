@@ -8,17 +8,15 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-
-    public unsafe static class NativeMethods
+    internal unsafe static class NativeMethods
     {
         internal const string dllName = "msquic.dll";
-        internal const CallingConvention Api = CallingConvention.Winapi;
 
         [DllImport(dllName)]
-        internal static extern int MsQuicOpen(int version, out NativeRegistration* registration);
+        internal static extern int MsQuicOpen(int version, out NativeApi* registration);
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct NativeRegistration
+        internal struct NativeApi
         {
             internal uint Version;
 
@@ -118,7 +116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal byte[] StoreNameUtf8;
         }
 
-        [UnmanagedFunctionPointer(Api)]
         internal delegate void SecConfigCreateCompleteDelegate(IntPtr Context, QUIC_STATUS Status, IntPtr SecurityConfig);
 
         internal delegate QUIC_STATUS SecConfigCreateDelegate(
@@ -195,7 +192,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal IntPtr ServerName;
         }
 
-        [UnmanagedFunctionPointer(Api)]
         internal delegate QUIC_STATUS ListenerCallbackDelegate(
             IntPtr listener,
             IntPtr context,
@@ -307,27 +303,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         [StructLayout(LayoutKind.Sequential)]
         internal struct ConnectionEvent
         {
-            public QUIC_CONNECTION_EVENT Type;
+            internal QUIC_CONNECTION_EVENT Type;
             internal ConnectionEventDataUnion Data;
 
-            public bool EarlyDataAccepted => Data.Connected.EarlyDataAccepted;
-            public ulong NumBytes => Data.IdealSendBuffer.NumBytes;
-            public IPEndPoint LocalAddress => null; // TODO
-            public IPEndPoint PeerAddress => null; // TODO
-            // public QuicStream CreateNewStream(QuicApi registration)
+            internal bool EarlyDataAccepted => Data.Connected.EarlyDataAccepted;
+            internal ulong NumBytes => Data.IdealSendBuffer.NumBytes;
+            internal IPEndPoint LocalAddress => null; // TODO
+            internal IPEndPoint PeerAddress => null; // TODO
+            // internal QuicStream CreateNewStream(QuicApi registration)
             // {
             //     return new QuicStream(registration, Data.NewStream.Stream, shouldOwnNativeObj: false);
             // }
 
-            public QUIC_STATUS ShutdownBeginStatus => Data.ShutdownBegin.Status;
-            public ushort ShutdownBeginPeerStatus => Data.ShutdownBeginPeer.ErrorCode;
-            public bool ShutdownTimedOut => Data.ShutdownComplete.TimedOut;
-            public ushort BiDirectionalCount => Data.StreamsAvailable.BiDirectionalCount;
-            public ushort UniDirectionalCount => Data.StreamsAvailable.UniDirectionalCount;
-            public QUIC_NEW_STREAM_FLAG StreamFlags => Data.NewStream.Flags;
+            internal QUIC_STATUS ShutdownBeginStatus => Data.ShutdownBegin.Status;
+            internal ushort ShutdownBeginPeerStatus => Data.ShutdownBeginPeer.ErrorCode;
+            internal bool ShutdownTimedOut => Data.ShutdownComplete.TimedOut;
+            internal ushort BiDirectionalCount => Data.StreamsAvailable.BiDirectionalCount;
+            internal ushort UniDirectionalCount => Data.StreamsAvailable.UniDirectionalCount;
+            internal QUIC_NEW_STREAM_FLAG StreamFlags => Data.NewStream.Flags;
         }
 
-        [UnmanagedFunctionPointer(Api)]
         internal delegate QUIC_STATUS ConnectionCallbackDelegate(
          IntPtr Connection,
          IntPtr Context,
@@ -416,25 +411,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct StreamEvent
+        internal struct StreamEvent
         {
-            public QUIC_STREAM_EVENT Type;
+            internal QUIC_STREAM_EVENT Type;
             internal StreamEventDataUnion Data;
-            public uint ReceiveAbortError => Data.PeerRecvAbort.ErrorCode;
-            public uint SendAbortError => Data.PeerSendAbort.ErrorCode;
-            public ulong AbsoluteOffset => Data.Recv.AbsoluteOffset;
-            public ulong TotalBufferLength => Data.Recv.TotalBufferLength;
-            public void CopyToBuffer(Span<byte> buffer)
+            internal uint ReceiveAbortError => Data.PeerRecvAbort.ErrorCode;
+            internal uint SendAbortError => Data.PeerSendAbort.ErrorCode;
+            internal ulong AbsoluteOffset => Data.Recv.AbsoluteOffset;
+            internal ulong TotalBufferLength => Data.Recv.TotalBufferLength;
+            internal void CopyToBuffer(Span<byte> buffer)
             {
                 var length = (int)Data.Recv.Buffers[0].Length;
                 new Span<byte>(Data.Recv.Buffers[0].Buffer, length).CopyTo(buffer);
             }
-            public bool Canceled => Data.SendComplete.IsCanceled();
-            public IntPtr ClientContext => Data.SendComplete.ClientContext;
-            public bool GracefulShutdown => Data.SendShutdownComplete.Graceful;
+            internal bool Canceled => Data.SendComplete.IsCanceled();
+            internal IntPtr ClientContext => Data.SendComplete.ClientContext;
+            internal bool GracefulShutdown => Data.SendShutdownComplete.Graceful;
         }
 
-        [UnmanagedFunctionPointer(Api)]
         internal delegate QUIC_STATUS StreamCallbackDelegate(
             IntPtr Stream,
             IntPtr Context,

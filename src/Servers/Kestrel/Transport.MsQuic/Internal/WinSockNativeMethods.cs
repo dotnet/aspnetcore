@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal class WinSockNativeMethods
     {
-        public const ushort AF_INET = 2;
-        public const ushort AF_INET6 = 23;
-        public const ushort AF_UNSPEC = 0;
+        internal const ushort AF_INET = 2;
+        internal const ushort AF_INET6 = 23;
+        internal const ushort AF_UNSPEC = 0;
 
-        public static SOCKADDR_INET Convert(IPEndPoint endpoint)
+        internal static SOCKADDR_INET Convert(IPEndPoint endpoint)
         {
             var lResult = ConvertToSocketAddrInet(endpoint.Address);
             SetPort(endpoint.Address.AddressFamily, ref lResult, endpoint.Port);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
         }
 
-        public static SOCKADDR_INET ConvertToSocketAddrInet(IPAddress ipAddress)
+        internal static SOCKADDR_INET ConvertToSocketAddrInet(IPAddress ipAddress)
         {
             var lResult = new SOCKADDR_INET();
             switch (ipAddress.AddressFamily)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return lResult;
         }
 
-        public static IPAddress ConvertToIPAddress(SOCKADDR_INET addr)
+        internal static IPAddress ConvertToIPAddress(SOCKADDR_INET addr)
         {
             switch (addr.si_family)
             {
@@ -175,14 +175,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         }
 
         [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Ansi)]
-        public struct SOCKADDR_INET
+        internal struct SOCKADDR_INET
         {
             [FieldOffset(0)]
-            public SOCKADDR_IN Ipv4;
+            internal SOCKADDR_IN Ipv4;
             [FieldOffset(0)]
-            public SOCKADDR_IN6 Ipv6;
+            internal SOCKADDR_IN6 Ipv6;
             [FieldOffset(0)]
-            public ushort si_family;
+            internal ushort si_family;
         }
     }
 }
