@@ -60,8 +60,9 @@
 
   <PropertyGroup
       Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
-    <!-- Remove RID suffixes to ensure PackagesInPatch only needs to specify the RID-less package name  -->
-    <PackageIdWithoutRID>$(PackageId.Replace('.$(RuntimeIdentifier)',''))</PackageIdWithoutRID>
+    <!-- Remove RID to ensure PackagesInPatch only needs to specify the RID-less package name  -->
+    <PackageIdWithoutRID>$(PackageId)</PackageIdWithoutRID>
+    <PackageIdWithoutRID Condition="'$(RuntimeIdentifier)' != ''">$(PackageId.Replace('.$(RuntimeIdentifier)',''))</PackageIdWithoutRID>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageIdWithoutRID);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
