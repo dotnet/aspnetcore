@@ -202,9 +202,6 @@ namespace Microsoft.AspNetCore.TestHost
             httpRequest.Version = new Version(2, 0);
             httpRequest.Content = new PushContent(async stream =>
             {
-                // Initial flush to ensure headers are sent
-                await stream.FlushAsync();
-
                 requestStream = stream;
                 await requestStreamSyncPoint.WaitToContinue();
             });
@@ -291,9 +288,6 @@ namespace Microsoft.AspNetCore.TestHost
             httpRequest.Version = new Version(2, 0);
             httpRequest.Content = new PushContent(async stream =>
             {
-                // Initial flush to ensure headers are sent
-                await stream.FlushAsync();
-
                 requestStream = stream;
                 await requestStreamSyncPoint.WaitToContinue();
             });
@@ -332,11 +326,13 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientStreaming_ResponseCompletesWithoutReadingRequest()
         {
             // Arrange
-            var requestStreamSyncPoint = new SyncPoint();
+            var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseEndingSyncPoint = new SyncPoint();
 
             RequestDelegate appDelegate = async ctx =>
             {
                 await ctx.Response.WriteAsync("POST Response");
+                await responseEndingSyncPoint.WaitToContinue();
             };
 
             Stream requestStream = null;
@@ -349,11 +345,8 @@ namespace Microsoft.AspNetCore.TestHost
             httpRequest.Version = new Version(2, 0);
             httpRequest.Content = new PushContent(async stream =>
             {
-                // Initial flush to ensure headers are sent
-                await stream.FlushAsync();
-
                 requestStream = stream;
-                await requestStreamSyncPoint.WaitToContinue();
+                await requestStreamTcs.Task;
             });
 
             // Act
@@ -368,17 +361,27 @@ namespace Microsoft.AspNetCore.TestHost
             var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
             Assert.Equal("POST Response", Encoding.UTF8.GetString(buffer, 0, length));
 
-            // Ensure request stream has started
-            await requestStreamSyncPoint.WaitForSyncPoint();
+            // Send large content and block on back pressure
+            var writeTask = Task.Run(async () =>
+            {
+                try
+                {
+                    await requestStream.WriteAsync(Encoding.UTF8.GetBytes(new string('!', 1024 * 1024 * 50))).AsTask().WithTimeout();
+                    requestStreamTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    requestStreamTcs.SetException(ex);
+                }
+            });
 
-            // Send content and finish request body
-            await requestStream.WriteAsync(Encoding.UTF8.GetBytes("Hello world")).AsTask().WithTimeout();
-            await requestStream.FlushAsync().WithTimeout();
-            requestStreamSyncPoint.Continue();
+            responseEndingSyncPoint.Continue();
 
             // No more response content
             length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
             Assert.Equal(0, length);
+
+            await writeTask;
         }
 
         [Fact]
@@ -407,9 +410,6 @@ namespace Microsoft.AspNetCore.TestHost
             httpRequest.Version = new Version(2, 0);
             httpRequest.Content = new PushContent(async stream =>
             {
-                // Initial flush to ensure headers are sent
-                await stream.FlushAsync();
-
                 requestStream = stream;
                 await requestStreamSyncPoint.WaitToContinue();
             });

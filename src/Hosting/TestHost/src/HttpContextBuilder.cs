@@ -160,13 +160,29 @@ namespace Microsoft.AspNetCore.TestHost
 
         private async Task CompleteRequestAsync()
         {
-            if (_sendRequestStreamTask != null)
+            if (!_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted)
             {
-                await _sendRequestStreamTask;
+                // If request is still in progress then abort it.
+                AbortRequest();
+            }
+            else
+            {
+                await _requestPipe.Writer.CompleteAsync();
+                await _requestPipe.Reader.CompleteAsync();
             }
 
-            await _requestPipe.Writer.CompleteAsync();
-            await _requestPipe.Reader.CompleteAsync();
+            if (_sendRequestStreamTask != null)
+            {
+                try
+                {
+                    // Ensure duplex request is either completely read or has been aborted.
+                    await _sendRequestStreamTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Request was canceled, likely because it wasn't read before the request ended.
+                }
+            }
         }
 
         internal async Task CompleteResponseAsync()
