@@ -44,13 +44,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         // Setting to 0 means we don't append the version byte,
         // which is what all machines currently have.
-        public int AspNetHttpsCertificateVersion { get; set; } = 1;
+        public static int AspNetHttpsCertificateVersion { get; set; } = 1;
 
         public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
             certificate.Extensions.OfType<X509Extension>()
             .Any(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal));
 
-        public IList<X509Certificate2> ListCertificates(
+        public static IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
             StoreName storeName,
             StoreLocation location,
@@ -230,6 +230,42 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             return certificate;
+        }
+
+        internal static bool CheckDeveloperCertificateKey(X509Certificate2 candidate)
+        {
+            // Tries to use the certificate key to validate it can't access it
+            try
+            {
+                // Search for the 'active' developer certificate, being very conservative about the possibility that there
+                // might be multiple repeated certificates and multiple HTTPS certificates that have been rolled over.
+                var devCert = ListCertificates(CertificatePurpose.HTTPS, StoreName.My,StoreLocation.CurrentUser, isValid:false)
+                    .OrderByDescending(c => c.NotAfter)
+                    .FirstOrDefault(c => candidate.Thumbprint == c.Thumbprint && c.HasPrivateKey);
+
+                if (devCert == null)
+                {
+                    return false;
+                }
+
+                var rsa = devCert.GetRSAPrivateKey();
+                if (rsa == null)
+                {
+                    return false;
+                }
+
+                // Encrypting a random value is the ultimate test for a key validity.
+                // Windows and Mac OS both return HasPrivateKey = true if there is (or there has been) a private key associated
+                // with the certificate at some point.
+                var value = new byte[32];
+                RandomNumberGenerator.Fill(value);
+                rsa.Encrypt(value, RSAEncryptionPadding.Pkcs1);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public X509Certificate2 CreateSelfSignedCertificate(

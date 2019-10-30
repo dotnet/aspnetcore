@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -218,7 +219,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 catch (AuthenticationException ex)
                 {
                     _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                    if(_serverCertificate != null && CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate))
+                    if (_serverCertificate != null &&
+                        CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
+                        !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
                     {
                         _logger?.LogError(2, CoreStrings.BadDeveloperCertificateState);
                     }
