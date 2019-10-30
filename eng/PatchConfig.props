@@ -25,6 +25,10 @@ Directory.Build.props checks this property using the following condition:
       Microsoft.AspNetCore.CookiePolicy;
       Microsoft.AspNetCore.App.Ref;
       Microsoft.AspNetCore.App.Runtime;
+      Microsoft.DotNet.Web.Client.ItemTemplates;
+      Microsoft.DotNet.Web.ItemTemplates;
+      Microsoft.DotNet.Web.ProjectTemplates;
+      Microsoft.DotNet.Web.Spa.ProjectTemplates;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
