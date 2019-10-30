@@ -65,6 +65,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task GivesCorrectCallstackForSyncronousCalls()
+        {
+            // Arrange, Act and Assert
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
+
+            // Assert
+            Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
+        }
+
+        [Fact]
         public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
         {
             // Arrange

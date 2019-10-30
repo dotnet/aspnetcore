@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 // This means we're writing to a 'real' writer, probably to the actual output stream.
                 // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
-                using (var writer = _bufferScope.CreateWriter(context.Writer))
+                await using (var writer = _bufferScope.CreateWriter(context.Writer))
                 {
                     await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
                     await writer.FlushAsync();
