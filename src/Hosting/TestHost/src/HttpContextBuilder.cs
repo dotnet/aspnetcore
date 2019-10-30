@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Cancel any pending request async activity when the client aborts a duplex
             // streaming scenario by disposing the HttpResponseMessage.
-            AbortRequest();
+            CancelRequestBody();
         }
 
         private async Task CompleteRequestAsync()
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.TestHost
             if (!_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted)
             {
                 // If request is still in progress then abort it.
-                AbortRequest();
+                CancelRequestBody();
             }
             else
             {
@@ -239,10 +239,10 @@ namespace Microsoft.AspNetCore.TestHost
             _responseReaderStream.Abort(exception);
             _requestLifetimeFeature.Cancel();
             _responseTcs.TrySetException(exception);
-            AbortRequest();
+            CancelRequestBody();
         }
 
-        private void AbortRequest()
+        private void CancelRequestBody()
         {
             _requestPipe.Writer.CancelPendingFlush();
             _requestPipe.Reader.CancelPendingRead();
