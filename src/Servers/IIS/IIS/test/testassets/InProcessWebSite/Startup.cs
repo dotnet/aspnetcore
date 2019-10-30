@@ -144,6 +144,12 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public Task ConnectionClose(HttpContext context)
+        {
+            context.Response.Headers["connection"] = "close";
+            return Task.CompletedTask;
+        }
+
         public Task OverrideServer(HttpContext context)
         {
             context.Response.Headers["Server"] = "MyServer/7.8";

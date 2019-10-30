@@ -379,6 +379,12 @@ REQUESTHANDLER_CONFIG::Populate(
         goto Finished;
     }
 
+    hr = ConfigUtility::FindForwardResponseConnectionHeader(pAspNetCoreElement, m_struForwardResponseConnectionHeader);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
 Finished:
 
     if (pAspNetCoreElement != NULL)

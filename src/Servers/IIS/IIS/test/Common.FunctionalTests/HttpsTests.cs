@@ -162,6 +162,35 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
         }
 
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task SetsConnectionCloseHeader()
+        {
+            // Only tests OutOfProcess as the Connection header is removed for out of process and not inprocess. 
+            // This test checks a quirk to allow setting the Connection header.
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            deploymentParameters.HandlerSettings["forwardResponseConnectionHeader"] = "true";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Equal(true, response.Headers.ConnectionClose);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task ConnectionCloseIsNotPropagated()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Null(response.Headers.ConnectionClose);
+        }
+
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)
         {
             var handler = new HttpClientHandler
