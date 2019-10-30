@@ -245,6 +245,22 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredAsAChain_ReportsNoDiagnostics()
+        {
+            // Regression test for https://github.com/aspnet/AspNetCore/issues/15203
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthConfiguredCorrectlyChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
+        }
+
+        [Fact]
         public async Task StartupAnalyzer_UseAuthorizationInvokedMultipleTimesInEndpointRoutingBlock_ReportsNoDiagnostics()
         {
             // Arrange
@@ -277,6 +293,23 @@ namespace Microsoft.AspNetCore.Analyzers
                     Assert.Same(StartupAnalyzer.Diagnostics.IncorrectlyConfiguredAuthorizationMiddleware, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
                 });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_UseAuthorizationConfiguredBeforeUseRoutingChained_ReportsDiagnostics()
+        {
+            // This one asserts a false negative for https://github.com/aspnet/AspNetCore/issues/15203.
+            // We don't correctly identify chained calls, this test verifies the behavior.
+            // Arrange
+            var source = Read(nameof(TestFiles.StartupAnalyzerTest.UseAuthBeforeUseRoutingChained));
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            Assert.NotEmpty(middlewareAnalysis.Middleware);
+            Assert.Empty(diagnostics);
         }
 
         [Fact]
