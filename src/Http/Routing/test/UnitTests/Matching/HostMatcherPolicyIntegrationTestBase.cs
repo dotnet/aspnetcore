@@ -178,6 +178,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public async Task Match_HostAndHostWithWildcard_NoSubdomain()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:8080", "*.contoso.com:8080", });
+
+            var matcher = CreateMatcher(endpoint);
+            var httpContext = CreateContext("/hello", "contoso.com:8080");
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, endpoint);
+        }
+
+        [Fact]
         public async Task Match_Host_CaseInsensitive()
         {
             // Arrange
