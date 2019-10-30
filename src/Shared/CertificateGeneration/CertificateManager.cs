@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         // which is what all machines currently have.
         public int AspNetHttpsCertificateVersion { get; set; } = 1;
 
+        public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
+            certificate.Extensions.OfType<X509Extension>()
+            .Any(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal));
+
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
             StoreName storeName,
