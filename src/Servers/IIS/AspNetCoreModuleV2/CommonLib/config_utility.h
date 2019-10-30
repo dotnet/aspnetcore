@@ -43,9 +43,9 @@ public:
 
     static
     HRESULT
-    FindForwardResponseConnectionHeader(IAppHostElement* pElement, STRU& strConnectionClose)
+    FindForwardResponseConnectionHeader(IAppHostElement* pElement, STRU& strForwardResponseConnectionHeader)
     {
-        return FindKeyValuePair(pElement, CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER, strConnectionClose);
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_FORWARD_RESPONSE_CONNECTION_HEADER, strForwardResponseConnectionHeader);
     }
 
 private:
