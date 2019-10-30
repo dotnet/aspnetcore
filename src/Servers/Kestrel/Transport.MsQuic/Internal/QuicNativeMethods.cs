@@ -466,20 +466,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal uint Length;
             internal byte* Buffer;
         }
-
-            internal static bool Succeeded(this uint status)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return status >= 0x80000000;
-                }
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return (int)status <= 0;
-                }
-
-                return false;
-            }
     }
 }
