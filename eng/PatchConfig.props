@@ -23,6 +23,8 @@ Directory.Build.props checks this property using the following condition:
       Microsoft.AspNetCore.Http.Abstractions;
       Microsoft.AspNetCore.Http.Features;
       Microsoft.AspNetCore.CookiePolicy;
+      Microsoft.AspNetCore.App.Ref;
+      Microsoft.AspNetCore.App.Runtime;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
