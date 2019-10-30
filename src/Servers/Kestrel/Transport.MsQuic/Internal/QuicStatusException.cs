@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         internal static void ThrowIfFailed(QUIC_STATUS status, string message = null, Exception innerException = null)
         {
-            if (!status.HasSucceeded())
+            if (!status.Succeeded())
             {
                 throw new QuicStatusException(status, message, innerException);
             }
