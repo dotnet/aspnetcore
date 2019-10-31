@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     public sealed partial class HealthCheckContext
     {
         public HealthCheckContext() { }
-        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration Registration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration Registration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public sealed partial class HealthCheckRegistration
     {
@@ -15,9 +15,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public HealthCheckRegistration(string name, System.Func<System.IServiceProvider, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck> factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string> tags) { }
         public HealthCheckRegistration(string name, System.Func<System.IServiceProvider, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck> factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string> tags, System.TimeSpan? timeout) { }
         public System.Func<System.IServiceProvider, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck> Factory { get { throw null; } set { } }
-        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus FailureStatus { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus FailureStatus { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string Name { get { throw null; } set { } }
-        public System.Collections.Generic.ISet<string> Tags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.ISet<string> Tags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.TimeSpan Timeout { get { throw null; } set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -26,10 +26,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private object _dummy;
         private int _dummyPrimitive;
         public HealthCheckResult(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string description = null, System.Exception exception = null, System.Collections.Generic.IReadOnlyDictionary<string, object> data = null) { throw null; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult Degraded(string description = null, System.Exception exception = null, System.Collections.Generic.IReadOnlyDictionary<string, object> data = null) { throw null; }
         public static Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult Healthy(string description = null, System.Collections.Generic.IReadOnlyDictionary<string, object> data = null) { throw null; }
         public static Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult Unhealthy(string description = null, System.Exception exception = null, System.Collections.Generic.IReadOnlyDictionary<string, object> data = null) { throw null; }
@@ -37,9 +37,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     public sealed partial class HealthReport
     {
         public HealthReport(System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> entries, System.TimeSpan totalDuration) { }
-        public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> Entries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.TimeSpan TotalDuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry> Entries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.TimeSpan TotalDuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct HealthReportEntry
@@ -48,12 +48,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private int _dummyPrimitive;
         public HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string description, System.TimeSpan duration, System.Exception exception, System.Collections.Generic.IReadOnlyDictionary<string, object> data) { throw null; }
         public HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string description, System.TimeSpan duration, System.Exception exception, System.Collections.Generic.IReadOnlyDictionary<string, object> data, System.Collections.Generic.IEnumerable<string> tags = null) { throw null; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.TimeSpan Duration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IEnumerable<string> Tags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.TimeSpan Duration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> Tags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public enum HealthStatus
     {
