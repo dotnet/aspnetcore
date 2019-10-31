@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
                 // if the user has configured those options
                 // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
-                if (_httpConnectionOptions.Cookies?.Count > 0)
+                if (_httpConnectionOptions.Cookies.Count > 0)
                 {
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
