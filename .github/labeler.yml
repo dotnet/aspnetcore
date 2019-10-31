@@ -1,0 +1,66 @@
+# "AzureAD" is an area-security area.
+area-azure:
+  - src/Azure/AzureAppServices.HostingStartup/**/*
+  - src/Azure/AzureAppServicesIntegration/**/*
+
+area-blazor:
+  - src/Components/**/*
+
+area-commandlinetools:
+  - src/Tools/**/*
+
+area-dataprotection:
+  - src/DataProtection/**/*
+
+#area-grpc:
+
+#area-healthchecks:
+
+area-hosting:
+  - src/Hosting/**/*
+  - src/SiteExtensions/**/*
+  - src/DefaultBuilder/**/*
+
+#area-httpclientfactory:
+
+area-identity:
+  - src/Identity/**/*
+
+area-infrastructure:
+  - global.json
+  - .azure/**/*
+  - .config/**/*
+  - eng/**/*
+
+area-installers:
+  - src/Installers/**/*
+
+area-middleware:
+  - src/Middleware/**/*
+
+area-mvc:
+  - src/ProjectTemplates/**/*
+  - src/Razor/**/*
+  - src/Mvc/**/*
+  - src/MusicStore/**/*
+  
+area-platform:
+  - src/Framework/**/*
+
+area-security:
+  - src/Security/**/*
+  - src/Azure/AzureAD/**/*
+
+# For now, "Http" is under servers. We might adjust that later.
+area-servers:
+  - src/Servers/**/*
+  - src/Http/**/*
+
+area-signalr:
+  - src/SignalR/**/*
+
+area-websockets:
+  - src/Middleware/WebSockets/**/*
+
+api-suggestion:
+  - src/**/ref/**/*

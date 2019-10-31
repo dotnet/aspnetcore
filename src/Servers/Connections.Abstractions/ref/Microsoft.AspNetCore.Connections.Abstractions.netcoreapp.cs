@@ -133,6 +133,7 @@ namespace Microsoft.AspNetCore.Connections
     {
         public UriEndPoint(System.Uri uri) { }
         public System.Uri Uri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override string ToString() { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Connections.Features

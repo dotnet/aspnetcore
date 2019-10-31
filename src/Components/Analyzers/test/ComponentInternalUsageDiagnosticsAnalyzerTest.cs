@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
-    public class ComponentInternalUsageDiagnoticsAnalyzerTest : AnalyzerTestBase
+    public class ComponentInternalUsageDiagnosticsAnalyzerTest : AnalyzerTestBase
     {
-        public ComponentInternalUsageDiagnoticsAnalyzerTest()
+        public ComponentInternalUsageDiagnosticsAnalyzerTest()
         {
             Analyzer = new ComponentInternalUsageDiagnosticAnalyzer();
             Runner = new ComponentAnalyzerDiagnosticAnalyzerRunner(Analyzer);

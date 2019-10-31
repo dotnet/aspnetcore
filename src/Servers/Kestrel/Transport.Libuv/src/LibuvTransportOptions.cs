@@ -27,6 +27,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// </remarks>
         public bool NoDelay { get; set; } = true;
 
+        /// <summary>
+        /// The maximum length of the pending connection queue.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 128.
+        /// </remarks>
+        public int Backlog { get; set; } = 128;
+
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;

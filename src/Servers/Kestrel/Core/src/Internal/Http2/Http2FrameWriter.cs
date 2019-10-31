@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream)
+        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool forceFlush)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -261,7 +261,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 flowControl.Advance((int)dataLength);
                 WriteDataUnsynchronized(streamId, data, dataLength, endStream);
-                return TimeFlushUnsynchronizedAsync();
+
+                if (forceFlush)
+                {
+                    return TimeFlushUnsynchronizedAsync();
+                }
+
+                return default;
             }
         }
 

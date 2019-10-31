@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Builder
     public static partial class MapExtensions
     {
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Http.PathString pathMatch, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> configuration) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder Map(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Http.PathString pathMatch, bool preserveMatchedPathSegment, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> configuration) { throw null; }
     }
     public static partial class MapWhenExtensions
     {
@@ -67,6 +68,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public MapOptions() { }
         public Microsoft.AspNetCore.Http.RequestDelegate Branch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.PathString PathMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool PreserveMatchedPathSegment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class MapWhenMiddleware
     {

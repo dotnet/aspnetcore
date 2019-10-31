@@ -204,27 +204,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 while (_isClosed == 0)
                 {
                     var result = await Input.ReadAsync();
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.Start;
+                    var buffer = result.Buffer;
 
                     // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceded their drain timeouts.
                     UpdateCompletedStreams();
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty)
+                        while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
-                            if (Http2FrameReader.ReadFrame(readableBuffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
-                            {
-                                Log.Http2FrameReceived(ConnectionId, _incomingFrame);
-                                consumed = examined = framePayload.End;
-                                await ProcessFrameAsync(application, framePayload);
-                            }
-                            else
-                            {
-                                examined = readableBuffer.End;
-                            }
+                            Log.Http2FrameReceived(ConnectionId, _incomingFrame);
+                            await ProcessFrameAsync(application, framePayload);
                         }
 
                         if (result.IsCompleted)
@@ -242,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     finally
                     {
-                        Input.AdvanceTo(consumed, examined);
+                        Input.AdvanceTo(buffer.Start, buffer.End);
 
                         UpdateConnectionState();
                     }

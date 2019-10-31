@@ -201,6 +201,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         bool TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage);
         bool TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage);
     }
+    public partial class JObjectAdapter : Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
+    {
+        public JObjectAdapter() { }
+        public virtual bool TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) { throw null; }
+        public virtual bool TryRemove(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out string errorMessage) { throw null; }
+        public virtual bool TryReplace(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage) { throw null; }
+    }
     public partial class ListAdapter : Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
     {
         public ListAdapter() { }

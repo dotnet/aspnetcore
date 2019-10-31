@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(https);
         }
 
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/14382", Queues = "Windows.10.Amd64.Open")]
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
         public void ParseAddressUnixPipe()
