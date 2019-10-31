@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".crt", "application/x-x509-ca-cert" },
                 { ".csh", "application/x-csh" },
                 { ".css", "text/css" },
-                { ".csv", "application/octet-stream" },
+                { ".csv", "text/csv" },
                 { ".cur", "application/octet-stream" },
                 { ".dcr", "application/x-director" },
                 { ".deploy", "application/octet-stream" },
