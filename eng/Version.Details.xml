@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+f<?xml version="1.0" encoding="utf-8"?>
 <!--
 
   This file is used by automation to update Versions.props and may be used for other purposes, such as
@@ -404,7 +404,6 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-<<<<<<< HEAD
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-alpha1.19516.16" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>b9186cfa3566ee24e5f16e45c542a3078e128dc6</Sha>
@@ -412,15 +411,6 @@
     <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-alpha1.19517.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>f15f3278c73c72a6546d7cb2c1bd54a541ffc83e</Sha>
-=======
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.0-preview3.19530.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>d29d1bf34dea385124d076405ccb66ccfd173a86</Sha>
-    </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.0-preview3.19531.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>e43eaf0709fab3d8305449e3ae933420a8b913bc</Sha>
->>>>>>> release/3.1
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19517.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
@@ -434,7 +424,6 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>a42a124635ce1a218309ecb31ec59d559cacb886</Sha>
     </Dependency>
-<<<<<<< HEAD
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="5.0.0-alpha1.19517.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>f15f3278c73c72a6546d7cb2c1bd54a541ffc83e</Sha>
@@ -442,15 +431,6 @@
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta1-19456-03" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3c865821f2864393a0ff7fe22c92ded6d51a546c</Sha>
-=======
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.0-preview3.19531.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>e43eaf0709fab3d8305449e3ae933420a8b913bc</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.5.0-beta1-19531-01" CoherentParentDependency="Microsoft.Extensions.Logging">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d54455f982927b219209b63ba09c21b3f059be1d</Sha>
->>>>>>> release/3.1
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
