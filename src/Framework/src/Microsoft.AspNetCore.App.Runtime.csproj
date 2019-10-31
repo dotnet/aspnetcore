@@ -56,6 +56,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Always generated, even though output type == Library -->
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <ProjectRuntimeConfigFileName>$(SharedFxName).runtimeconfig.json</ProjectRuntimeConfigFileName>
+    <!-- Target the latest runtime patch so the latest version is specified in runtimeconfig.json -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
 
     <!-- Suppress .deps generation (we have to customize its layout. -->
     <GenerateDependencyFile>false</GenerateDependencyFile>
