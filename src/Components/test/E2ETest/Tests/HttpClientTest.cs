@@ -89,11 +89,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanSendRequestHeaders()
         {
-            AddRequestHeader("TestHeader", "Value from test");
+            AddRequestHeader("testheader", "Value from test");
             AddRequestHeader("another-header", "Another value");
             IssueRequest("DELETE", "/subdir/api/person");
             Assert.Equal("OK", _responseStatus.Text);
-            Assert.Contains("TestHeader: Value from test", _responseBody.Text);
+            Assert.Contains("testheader: Value from test", _responseBody.Text);
             Assert.Contains("another-header: Another value", _responseBody.Text);
         }
 
@@ -105,15 +105,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("OK", _responseStatus.Text);
             Assert.Contains("Content-Type: application/json", _responseHeaders.Text, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
-        }
-
-        [Fact]
-        public void CanSetRequestReferer()
-        {
-            SetValue("request-referrer", "/test-referrer");
-            IssueRequest("GET", "/subdir/api/person/referrer");
-            Assert.Equal("OK", _responseStatus.Text);
-            Assert.EndsWith("/test-referrer", _responseBody.Text);
         }
 
         [Fact]
