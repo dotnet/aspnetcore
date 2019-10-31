@@ -617,4 +617,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2TellClientToCalmDown" xml:space="preserve">
     <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
+  <data name="BadDeveloperCertificateState" xml:space="preserve">
+    <value>The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.</value>
+  </data>
 </root>
