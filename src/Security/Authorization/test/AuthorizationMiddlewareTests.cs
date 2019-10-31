@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -382,6 +383,97 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.False(next.Called);
             Assert.False(authenticationService.ChallengeCalled);
             Assert.True(authenticationService.ForbidCalled);
+        }
+
+        [Fact]
+        public async Task Invoke_DefaultOptions_UsesEndpointAsResource()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireClaim("Permission", "CanViewComment")
+                .Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+            var authenticationService = new TestAuthenticationService();
+
+            var policyEvaluation = new Mock<IPolicyEvaluator>();
+            var authenticateResult = AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "Basic"));
+            policyEvaluation.Setup(p => p.AuthenticateAsync(It.IsAny<AuthorizationPolicy>(), It.IsAny<HttpContext>()))
+                .ReturnsAsync(authenticateResult);
+
+            object resource = null;
+            policyEvaluation.Setup(p => p.AuthorizeAsync(It.IsAny<AuthorizationPolicy>(), It.IsAny<AuthenticateResult>(), It.IsAny<HttpContext>(), It.IsAny<object>()))
+                .Callback((AuthorizationPolicy _, AuthenticateResult __, HttpContext ___, object o) =>
+                {
+                    resource = o;
+                })
+                .ReturnsAsync(PolicyAuthorizationResult.Success())
+                .Verifiable();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(endpoint:
+                CreateEndpoint(new AuthorizeAttribute()),
+                registerServices: service =>
+                {
+                    service.AddSingleton<IPolicyEvaluator>(policyEvaluation.Object);
+                },
+                authenticationService: authenticationService);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            policyEvaluation.Verify();
+            Assert.NotNull(resource);
+            Assert.IsType<Endpoint>(resource);
+        }
+
+        [Fact]
+        public async Task Invoke_WithAllowRequestContextInHandlerContextSet_UsesMiddlewareContext()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireClaim("Permission", "CanViewComment")
+                .Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+            var authenticationService = new TestAuthenticationService();
+
+            var policyEvaluation = new Mock<IPolicyEvaluator>();
+            var authenticateResult = AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), "Basic"));
+            policyEvaluation.Setup(p => p.AuthenticateAsync(It.IsAny<AuthorizationPolicy>(), It.IsAny<HttpContext>()))
+                .ReturnsAsync(authenticateResult);
+
+            object resource = null;
+            policyEvaluation.Setup(p => p.AuthorizeAsync(It.IsAny<AuthorizationPolicy>(), It.IsAny<AuthenticateResult>(), It.IsAny<HttpContext>(), It.IsAny<object>()))
+                .Callback((AuthorizationPolicy _, AuthenticateResult __, HttpContext ___, object o) =>
+                {
+                    resource = o;
+                })
+                .ReturnsAsync(PolicyAuthorizationResult.Success())
+                .Verifiable();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(endpoint:
+                CreateEndpoint(new AuthorizeAttribute()),
+                registerServices: service =>
+                {
+                    service.AddSingleton<IPolicyEvaluator>(policyEvaluation.Object);
+                    service.Configure<AuthorizationMiddlewareOptions>(o => o.AllowRequestContextInHandlerContext = true);
+                },
+                authenticationService: authenticationService);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            policyEvaluation.Verify();
+            Assert.NotNull(resource);
+            var middlewareContext = Assert.IsType<AuthorizationMiddlewareContext>(resource);
+            Assert.Same(context, middlewareContext.HttpContext);
+            Assert.NotNull(middlewareContext.Endpoint);
         }
 
         private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)

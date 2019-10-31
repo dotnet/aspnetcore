@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization
 {
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Authorization
 
         private readonly RequestDelegate _next;
         private readonly IAuthorizationPolicyProvider _policyProvider;
+        private AuthorizationMiddlewareOptions _authorizationMiddlewareOptions;
 
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
         {
@@ -63,8 +65,13 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
+            _authorizationMiddlewareOptions ??= context.RequestServices.GetRequiredService<IOptions<AuthorizationMiddlewareOptions>>().Value;
+
             // Note that the resource will be null if there is no matched endpoint
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: endpoint);
+            var resource = _authorizationMiddlewareOptions.AllowRequestContextInHandlerContext ?
+                (object)new AuthorizationMiddlewareContext(context, endpoint) :
+                endpoint;
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource);
 
             if (authorizeResult.Challenged)
             {

@@ -5,12 +5,13 @@ using Microsoft.Extensions.Options;
 
 namespace CustomPolicyProvider
 {
-    internal class MinimumAgePolicyProvider : IAuthorizationPolicyProvider
+    internal class MinimumPolicyProvider : IAuthorizationPolicyProvider
     {
-        const string POLICY_PREFIX = "MinimumAge";
+        internal const string MINIMUMAGE_POLICY_PREFIX = "MinimumAge";
+        internal const string MINIMUMVALUE_POLICY_PREFIX = "MinimumValue";
         public DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
 
-        public MinimumAgePolicyProvider(IOptions<AuthorizationOptions> options)
+        public MinimumPolicyProvider(IOptions<AuthorizationOptions> options)
         {
             // ASP.NET Core only uses one authorization policy provider, so if the custom implementation
             // doesn't handle all policies (including default policies, etc.) it should fall back to an
@@ -35,11 +36,19 @@ namespace CustomPolicyProvider
         // (like [MinimumAgeAuthorize] in this sample)
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
-            if (policyName.StartsWith(POLICY_PREFIX, StringComparison.OrdinalIgnoreCase) &&
-                int.TryParse(policyName.Substring(POLICY_PREFIX.Length), out var age))
+            if (policyName.StartsWith(MINIMUMAGE_POLICY_PREFIX, StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(policyName.Substring(MINIMUMAGE_POLICY_PREFIX.Length), out var age))
             {
                 var policy = new AuthorizationPolicyBuilder();
                 policy.AddRequirements(new MinimumAgeRequirement(age));
+                return Task.FromResult(policy.Build());
+            }
+
+            if (policyName.StartsWith(MINIMUMVALUE_POLICY_PREFIX, StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(policyName.Substring(MINIMUMVALUE_POLICY_PREFIX.Length), out var value))
+            {
+                var policy = new AuthorizationPolicyBuilder();
+                policy.AddRequirements(new MinimumValueAuthorizationRequirement(value));
                 return Task.FromResult(policy.Build());
             }
 

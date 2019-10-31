@@ -9,6 +9,17 @@ namespace Microsoft.AspNetCore.Authorization
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
+    public sealed partial class AuthorizationMiddlewareContext
+    {
+        public AuthorizationMiddlewareContext(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
+        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public partial class AuthorizationMiddlewareOptions
+    {
+        public AuthorizationMiddlewareOptions() { }
+        public bool AllowRequestContextInHandlerContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
 }
 namespace Microsoft.AspNetCore.Authorization.Policy
 {

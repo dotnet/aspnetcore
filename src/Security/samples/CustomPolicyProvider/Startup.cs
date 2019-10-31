@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace CustomPolicyProvider
 {
@@ -14,12 +14,15 @@ namespace CustomPolicyProvider
             // Replace the default authorization policy provider with our own
             // custom provider which can return authorization policies for given
             // policy names (instead of using the default policy provider)
-            services.AddSingleton<IAuthorizationPolicyProvider, MinimumAgePolicyProvider>();
+            services.AddSingleton<IAuthorizationPolicyProvider, MinimumPolicyProvider>();
 
             // As always, handlers must be provided for the requirements of the authorization policies
             services.AddSingleton<IAuthorizationHandler, MinimumAgeAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, MinimumValueAuthorizationHandler>();
 
             services.AddMvc();
+
+            services.Configure<AuthorizationMiddlewareOptions>(options => options.AllowRequestContextInHandlerContext = true);
 
             // Add cookie authentication so that it's possible to sign-in to test the
             // custom authorization policy behavior of the sample
@@ -40,6 +43,11 @@ namespace CustomPolicyProvider
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGet("/authorized-value/{value:int}", async context =>
+                {
+                    await context.Response.WriteAsync("Total is acceptable.");
+                }).RequireAuthorization(MinimumPolicyProvider.MINIMUMVALUE_POLICY_PREFIX + "27");
+
                 endpoints.MapDefaultControllerRoute();
             });
         }
