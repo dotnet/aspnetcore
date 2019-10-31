@@ -70,29 +70,29 @@
     <NETStandardLibraryRefPackageVersion>2.1.0-alpha1.19521.2</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftCSharpPackageVersion>5.0.0-alpha1.19520.7</MicrosoftCSharpPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19520.7</MicrosoftWin32RegistryPackageVersion>
-    <MicrosoftWin32SystemEventsPackageVersion>5.0.0-alpha1.19520.7</MicrosoftWin32SystemEventsPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19520.7</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha1.19520.7</SystemDiagnosticsEventLogPackageVersion>
-    <SystemDrawingCommonPackageVersion>5.0.0-alpha1.19520.7</SystemDrawingCommonPackageVersion>
-    <SystemIOPipelinesPackageVersion>5.0.0-alpha1.19520.7</SystemIOPipelinesPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0-alpha1.19520.7</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>5.0.0-alpha1.19520.7</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-alpha1.19520.7</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha1.19520.7</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha1.19520.7</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>5.0.0-alpha1.19520.7</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha1.19520.7</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>5.0.0-alpha1.19520.7</SystemSecurityPermissionsPackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>5.0.0-alpha1.19520.7</SystemSecurityPrincipalWindowsPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha1.19520.7</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha1.19520.7</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>5.0.0-alpha1.19520.7</SystemTextJsonPackageVersion>
-    <SystemThreadingChannelsPackageVersion>5.0.0-alpha1.19520.7</SystemThreadingChannelsPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>5.0.0-alpha1.19520.7</SystemWindowsExtensionsPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.6.0</MicrosoftCSharpPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>4.6.0</MicrosoftWin32SystemEventsPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDrawingCommonPackageVersion>4.6.0</SystemDrawingCommonPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0</SystemIOPipelinesPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>4.6.0</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>4.6.0</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.6.0</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.6.0</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>4.6.0</SystemTextJsonPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.6.0</SystemThreadingChannelsPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>4.6.0</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha1.19520.7</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>5.0.0-alpha1.19528.2</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from aspnet/Extensions -->
