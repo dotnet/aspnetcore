@@ -981,9 +981,16 @@ namespace TestSite
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
 
+        public async Task ANCM_HTTPS_PORT(HttpContext context)
+        {
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
+
         public async Task HTTPS_PORT(HttpContext context)
         {
-            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
