@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal static class UIntExtensions
+    internal static class MsQuicStatusHelper
     {
-        internal static bool Succeeded(this uint status)
+        internal static bool Succeeded(uint status)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return status >= 0x80000000;
+                return status <= 0x80000000;
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         internal static void ThrowIfFailed(uint status, string message = null, Exception innerException = null)
         {
-            if (!status.Succeeded())
+            if (!MsQuicStatusHelper.Succeeded(status))
             {
                 throw new MsQuicStatusException(status, message, innerException);
             }
