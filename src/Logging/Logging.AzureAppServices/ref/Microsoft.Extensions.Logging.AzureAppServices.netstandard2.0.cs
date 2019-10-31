@@ -28,13 +28,13 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         public int? BackgroundQueueSize { get { throw null; } set { } }
         public int? BatchSize { get { throw null; } set { } }
         public System.TimeSpan FlushPeriod { get { throw null; } set { } }
-        public bool IncludeScopes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool IncludeScopes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class BatchingLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider, Microsoft.Extensions.Logging.ISupportExternalScope, System.IDisposable
     {
         internal BatchingLoggerProvider() { }
-        public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) { throw null; }
         public void Dispose() { }
         protected virtual System.Threading.Tasks.Task IntervalAsync(System.TimeSpan interval, System.Threading.CancellationToken cancellationToken) { throw null; }
