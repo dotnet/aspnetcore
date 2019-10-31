@@ -1,6 +1,5 @@
 @using System.Net
 @using System.Net.Http
-@using Microsoft.AspNetCore.Blazor.Http
 @inject HttpClient Http
 
 <h1>HTTP request tester</h1>
@@ -38,11 +37,6 @@
     <button id="add-header" @onclick="AddHeader">Add</button>
 </p>
 
-<p>
-    <div>Request referrer:</div>
-    <input id="request-referrer" type="text" @bind=requestReferrer />
-</p>
-
 <button id="send-request" @onclick="DoRequest">Request</button>
 
 @if (responseStatusCode.HasValue)
@@ -65,7 +59,6 @@
     string method = "GET";
     string requestBody = "";
     List<RequestHeader> requestHeaders = new List<RequestHeader>();
-    string requestReferrer = "";
 
     HttpStatusCode? responseStatusCode;
     string responseBody;
@@ -101,14 +94,6 @@
                 {
                     requestMessage.Content?.Headers.TryAddWithoutValidation(header.Name, header.Value);
                 }
-            }
-
-            if (!string.IsNullOrEmpty(requestReferrer))
-            {
-                requestMessage.Properties[WebAssemblyHttpMessageHandler.FetchArgs] = new
-                {
-                    referrer = requestReferrer
-                };
             }
 
             var response = await Http.SendAsync(requestMessage);
