@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Runtime.InteropServices;
-using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.NativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -13,12 +12,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private readonly bool _shouldOwnNativeObj;
         private IntPtr _nativeObjPtr;
-        private QuicApi _registration;
+        private MsQuicApi _registration;
         public ListenerCallback _callback;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
         private GCHandle _handle;
 
-        public QuicListener(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        public QuicListener(MsQuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
         {
             _registration = registration;
             _shouldOwnNativeObj = shouldOwnNativeObj;
@@ -27,18 +26,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _nativeObjPtr = nativeObjPtr;
         }
 
-        public delegate QUIC_STATUS ListenerCallback(
+        public delegate uint ListenerCallback(
             ref ListenerEvent evt);
 
         public void Start(IPEndPoint localIpEndpoint)
         {
             var localAddress = WinSockNativeMethods.Convert(localIpEndpoint);
-            QuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
+            MsQuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
                 _nativeObjPtr,
                 ref localAddress));
         }
 
-        internal static QUIC_STATUS NativeCallbackHandler(
+        internal static uint NativeCallbackHandler(
             IntPtr listener,
             IntPtr context,
             ref ListenerEvent connectionEventStruct)
@@ -49,10 +48,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return quicListener.ExecuteCallback(ref connectionEventStruct);
         }
 
-        private QUIC_STATUS ExecuteCallback(
+        private uint ExecuteCallback(
            ref ListenerEvent connectionEvent)
         {
-            var status = QUIC_STATUS.INTERNAL_ERROR;
+            var status = MsQuicConstants.InternalError;
             try
             {
                 status = _callback(ref connectionEvent);

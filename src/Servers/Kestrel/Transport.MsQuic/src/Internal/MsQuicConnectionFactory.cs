@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return new ValueTask<ConnectionContext>();
         }
 
-        internal QUIC_STATUS HandleEvent(
+        internal uint HandleEvent(
            QuicConnection connection,
-           ref NativeMethods.ConnectionEvent connectionEvent)
+           ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            var status = QUIC_STATUS.SUCCESS;
+            var status = MsQuicConstants.Success;
             switch (connectionEvent.Type)
             {
                 case QUIC_CONNECTION_EVENT.CONNECTED:

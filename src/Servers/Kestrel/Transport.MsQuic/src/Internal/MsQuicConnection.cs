@@ -46,20 +46,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
         }
 
-        public QUIC_STATUS HandleEvent(
+        public uint HandleEvent(
             QuicConnection connection,
-            ref NativeMethods.ConnectionEvent evt)
+            ref MsQuicNativeMethods.ConnectionEvent evt)
         {
             var status = HandleEventCore(connection, ref evt);
 
             return status;
         }
 
-        private QUIC_STATUS HandleEventCore(
+        private uint HandleEventCore(
           QuicConnection connection,
-          ref NativeMethods.ConnectionEvent connectionEvent)
+          ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            var status = QUIC_STATUS.SUCCESS;
+            var status = MsQuicConstants.Success;
             switch (connectionEvent.Type)
             {
                 case QUIC_CONNECTION_EVENT.CONNECTED:
@@ -146,51 +146,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return status;
         }
 
-        protected virtual QUIC_STATUS HandleEventConnected(
+        protected virtual uint HandleEventConnected(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventShutdownBegin(
+        protected virtual uint HandleEventShutdownBegin(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventShutdownBeginPeer(
+        protected virtual uint HandleEventShutdownBeginPeer(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventShutdownComplete(
+        protected virtual uint HandleEventShutdownComplete(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventLocalAddrChanged(
+        protected virtual uint HandleEventLocalAddrChanged(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventPeerAddrChanged(
+        protected virtual uint HandleEventPeerAddrChanged(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventNewStream(
+        protected virtual uint HandleEventNewStream(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
             var stream = connectionEvent.CreateNewStream(connection.Registration);
             var streamWrapper = new MsQuicStream(this, connectionEvent.StreamFlags);
@@ -198,29 +198,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             streamWrapper.Start(stream);
             _acceptQueue.Writer.TryWrite(streamWrapper);
 
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventStreamsAvailable(
+        protected virtual uint HandleEventStreamsAvailable(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected virtual QUIC_STATUS HandleEventIdealSendBuffer(
+        protected virtual uint HandleEventIdealSendBuffer(
             QuicConnection connection,
-            NativeMethods.ConnectionEvent connectionEvent)
+            MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
         public async Task<ConnectionContext> StartUnidirectionalStreamAsync()
         {
-            var flags = QUIC_NEW_STREAM_FLAG.UNIDIRECTIONAL;
+            var flags = QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL;
             var msquicStream = new MsQuicStream(this, flags);
             var stream = _connection.StreamOpen(flags, msquicStream.HandleStreamEvent);
-            await stream.StartAsync(QUIC_STREAM_START.NONE);
+            await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);
             msquicStream.Start(stream);
             return msquicStream;
         }

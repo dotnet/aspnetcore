@@ -3,7 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.NativeMethods;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicStream;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private static GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        public QuicApi Registration { get; set; }
+        public MsQuicApi Registration { get; set; }
 
-        public delegate QUIC_STATUS ConnectionCallback(
+        public delegate uint ConnectionCallback(
             QuicConnection connection,
             ref ConnectionEvent connectionEvent);
 
-        public QuicConnection(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        public QuicConnection(MsQuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
         {
             Registration = registration;
             _shouldOwnNativeObj = shouldOwnNativeObj;
@@ -107,11 +107,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 family,
                 null,
                 serverPort);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
         }
 
         public QuicStream StreamOpen(
-            QUIC_NEW_STREAM_FLAG flags,
+            QUIC_STREAM_OPEN_FLAG flags,
             StreamCallback callback)
         {
             var streamPtr = IntPtr.Zero;
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 QuicStream.NativeCallbackHandler,
                 IntPtr.Zero,
                 out streamPtr);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
 
             var stream = new QuicStream(Registration, streamPtr, true);
             stream.SetCallbackHandler(callback);
@@ -140,17 +140,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         }
 
         public void Shutdown(
-            QUIC_CONNECTION_SHUTDOWN Flags,
+            QUIC_CONNECTION_SHUTDOWN_FLAG Flags,
             ushort ErrorCode)
         {
             var status = Registration.ConnectionShutdownDelegate(
                 _nativeObjPtr,
                 (uint)Flags,
                 ErrorCode);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
         }
 
-        internal static QUIC_STATUS NativeCallbackHandler(
+        internal static uint NativeCallbackHandler(
             IntPtr connection,
             IntPtr context,
             ref ConnectionEvent connectionEventStruct)
@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return quicConnection.ExecuteCallback(ref connectionEventStruct);
         }
 
-        private QUIC_STATUS ExecuteCallback(
+        private uint ExecuteCallback(
             ref ConnectionEvent connectionEvent)
         {
-            var status = QUIC_STATUS.INTERNAL_ERROR;
+            var status = MsQuicConstants.InternalError;
             try
             {
                 status = _callback(
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             QUIC_PARAM_CONN param,
             QuicBuffer buf)
         {
-            QuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
+            MsQuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
                 _nativeObjPtr,
                 (uint)QUIC_PARAM_LEVEL.CONNECTION,
                 (uint)param,

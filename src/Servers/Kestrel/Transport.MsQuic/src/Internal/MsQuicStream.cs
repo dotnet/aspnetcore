@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private MsQuicConnection _connection;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
 
-        public MsQuicStream(MsQuicConnection connection, QUIC_NEW_STREAM_FLAG flags)
+        public MsQuicStream(MsQuicConnection connection, QUIC_STREAM_OPEN_FLAG flags)
         {
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, 1024 * 1024, 1024 * 1024 / 2, useSynchronizationContext: false);
             var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, 1024 * 64, 1024 * 64 / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-            if (flags.HasFlag(QUIC_NEW_STREAM_FLAG.UNIDIRECTIONAL))
+            if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
             {
                 Features.Set<IUnidirectionalStreamFeature>(new UnidirectionalStreamFeature());
             }
@@ -91,14 +91,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     if (isCompleted)
                     {
                         // Once the stream pipe is closed, shutdown the stream.
-                        _stream.ShutDown(QUIC_STREAM_SHUTDOWN.GRACEFUL, 0);
+                        _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.GRACEFUL, 0);
                         break;
                     }
                 }
             }
             catch (Exception)
             {
-                _stream.ShutDown(QUIC_STREAM_SHUTDOWN.ABORT, 0);
+                _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
                 // TODO log
             }
         }
@@ -107,11 +107,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public PipeReader Output => Application.Input;
 
-        public QUIC_STATUS HandleStreamEvent(
+        public uint HandleStreamEvent(
             QuicStream stream,
-            ref NativeMethods.StreamEvent evt)
+            ref MsQuicNativeMethods.StreamEvent evt)
         {
-            var status = QUIC_STATUS.SUCCESS;
+            var status = MsQuicConstants.Success;
 
             switch (evt.Type)
             {
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 case QUIC_STREAM_EVENT.SHUTDOWN_COMPLETE:
                     {
                         _stream.Close();
-                        return QUIC_STATUS.SUCCESS;
+                        return MsQuicConstants.Success;
                     }
 
                 default:
@@ -165,40 +165,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return status;
         }
 
-        private QUIC_STATUS HandleEventPeerRecvAbort()
+        private uint HandleEventPeerRecvAbort()
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        private QUIC_STATUS HandleEventPeerSendAbort()
+        private uint HandleEventPeerSendAbort()
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        private QUIC_STATUS HandleStartComplete(QuicStream stream)
+        private uint HandleStartComplete(QuicStream stream)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        private QUIC_STATUS HandleEventSendShutdownComplete(ref NativeMethods.StreamEvent evt)
+        private uint HandleEventSendShutdownComplete(ref MsQuicNativeMethods.StreamEvent evt)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        private QUIC_STATUS HandleEventPeerSendClose()
+        private uint HandleEventPeerSendClose()
         {
             // TODO complete async
             // Close as fast as possible here.
             Input.Complete();
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        public QUIC_STATUS HandleEventSendComplete(ref NativeMethods.StreamEvent evt)
+        public uint HandleEventSendComplete(ref MsQuicNativeMethods.StreamEvent evt)
         {
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
-        protected QUIC_STATUS HandleEventRecv(QuicStream stream, ref NativeMethods.StreamEvent evt)
+        protected uint HandleEventRecv(QuicStream stream, ref MsQuicNativeMethods.StreamEvent evt)
         {
             var input = Input;
             var length = (int)evt.TotalBufferLength;
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 _ = AwaitFlush(flushTask);
 
-                return QUIC_STATUS.PENDING;
+                return MsQuicConstants.Pending;
             }
 
             async Task AwaitFlush(ValueTask<FlushResult> ft)
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 stream.EnableReceive();
             }
 
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
     }
 

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     /// </summary>
     internal class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable
     {
-        private QuicApi _registration;
+        private MsQuicApi _registration;
         private QuicSecConfig _secConfig;
         private QuicSession _session;
         private QuicListener _listener;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public MsQuicConnectionListener(MsQuicTransportContext transportContext, EndPoint endpoint)
         {
-            _registration = new QuicApi();
+            _registration = new MsQuicApi();
             TransportContext = transportContext;
             EndPoint = endpoint;
         }
@@ -130,8 +130,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _listener.Start(EndPoint as IPEndPoint);
         }
 
-        private QUIC_STATUS ListenerCallbackHandler(
-            ref NativeMethods.ListenerEvent evt)
+        private uint ListenerCallbackHandler(
+            ref MsQuicNativeMethods.ListenerEvent evt)
         {
             switch (evt.Type)
             {
@@ -145,11 +145,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     }
                     break;
                 default:
-                    return QUIC_STATUS.INTERNAL_ERROR;
+                    return MsQuicConstants.InternalError;
             }
             Console.WriteLine("Woah?");
 
-            return QUIC_STATUS.SUCCESS;
+            return MsQuicConstants.Success;
         }
 
         protected void StopAcceptingConnections()

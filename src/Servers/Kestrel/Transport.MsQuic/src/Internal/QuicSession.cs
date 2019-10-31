@@ -7,14 +7,13 @@ using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicL
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    // TODO I still need to finish a small refactor here to remove allocations per connection.
     internal sealed class QuicSession : IDisposable
     {
         private bool _disposed = false;
         private IntPtr _nativeObjPtr;
-        private QuicApi _registration;
+        private MsQuicApi _registration;
 
-        internal QuicSession(QuicApi registration, IntPtr nativeObjPtr)
+        internal QuicSession(MsQuicApi registration, IntPtr nativeObjPtr)
         {
             _registration = registration;
             _nativeObjPtr = nativeObjPtr;
@@ -23,14 +22,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public QuicListener ListenerOpen(ListenerCallback callback)
         {
             var listenerPtr = IntPtr.Zero;
-            var status = (QUIC_STATUS)_registration.ListenerOpenDelegate(
+            var status = _registration.ListenerOpenDelegate(
                 _nativeObjPtr,
                 NativeCallbackHandler,
                 IntPtr.Zero,
                 out listenerPtr
                 );
 
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
             var listener = new QuicListener(
                 _registration,
                 listenerPtr,
@@ -49,14 +48,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 IntPtr.Zero,
                 out var connectionPtr);
 
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
             var connection = new QuicConnection(_registration, connectionPtr, true);
             connection.SetCallbackHandler(callback);
             return new ValueTask<QuicConnection>(connection);
         }
 
         public void ShutDown(
-            QUIC_CONNECTION_SHUTDOWN Flags,
+            QUIC_CONNECTION_SHUTDOWN_FLAG Flags,
             ushort ErrorCode)
         {
             _registration.SessionShutdownDelegate(
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private unsafe void SetUshortParamter(QUIC_PARAM_SESSION param, ushort count)
         {
-            var buffer = new NativeMethods.QuicBuffer()
+            var buffer = new MsQuicNativeMethods.QuicBuffer()
             {
                 Length = sizeof(ushort),
                 Buffer = (byte*)&count
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         }
         private unsafe void SetULongParamter(QUIC_PARAM_SESSION param, ulong count)
         {
-            var buffer = new NativeMethods.QuicBuffer()
+            var buffer = new MsQuicNativeMethods.QuicBuffer()
             {
                 Length = sizeof(ulong),
                 Buffer = (byte*)&count
@@ -116,9 +115,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private void SetParam(
           QUIC_PARAM_SESSION param,
-          NativeMethods.QuicBuffer buf)
+          MsQuicNativeMethods.QuicBuffer buf)
         {
-            QuicStatusException.ThrowIfFailed(_registration.UnsafeSetParam(
+            MsQuicStatusException.ThrowIfFailed(_registration.UnsafeSetParam(
                 _nativeObjPtr,
                 (uint)QUIC_PARAM_LEVEL.SESSION,
                 (uint)param,

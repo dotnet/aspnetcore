@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.NativeMethods;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -19,13 +19,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private StreamCallback _callback;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        public delegate QUIC_STATUS StreamCallback(
+        public delegate uint StreamCallback(
             QuicStream stream,
             ref StreamEvent evt);
 
+        internal QuicStream(MsQuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
+        {
+            Registration = registration;
+            _shouldOwnNativeObj = shouldOwnNativeObj;
+            _nativeObjPtr = nativeObjPtr;
+            StreamCallbackDelegate nativeCallback = NativeCallbackHandler;
+            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
+        }
+
+        public MsQuicApi Registration { get; set; }
+
         internal StreamCallbackDelegate NativeCallback { get; private set; }
 
-        internal static QUIC_STATUS NativeCallbackHandler(
+        internal static uint NativeCallbackHandler(
            IntPtr stream,
            IntPtr context,
            ref StreamEvent connectionEventStruct)
@@ -36,10 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return quicStream.ExecuteCallback(ref connectionEventStruct);
         }
 
-        private QUIC_STATUS ExecuteCallback(
+        private uint ExecuteCallback(
             ref StreamEvent evt)
         {
-            var status = QUIC_STATUS.INTERNAL_ERROR;
+            var status = MsQuicConstants.InternalError;
             if (evt.Type == QUIC_STREAM_EVENT.SEND_COMPLETE)
             {
                 SendContext.HandleNativeCallback(evt.ClientContext);
@@ -74,48 +85,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
            object clientSendContext)
         {
             var sendContext = new SendContext(buffers, clientSendContext);
-            var status = (QUIC_STATUS)Registration.StreamSendDelegate(
+            var status = (uint)Registration.StreamSendDelegate(
                 _nativeObjPtr,
                 sendContext.Buffers,
                 sendContext.BufferCount,
-                (uint)flags,
+                flags,
                 sendContext.NativeClientSendContext);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
 
             // TODO for some reason the first call to SendAsync triggers the callback.
             return sendContext.TcsTask; // TODO make QuicStream implement IValueTaskSource?
         }
 
-        public Task StartAsync(QUIC_STREAM_START flags)
+        public Task StartAsync(QUIC_STREAM_START_FLAG flags)
         {
-            var status = (QUIC_STATUS)Registration.StreamStartDelegate(
+            var status = (uint)Registration.StreamStartDelegate(
               _nativeObjPtr,
               (uint)flags);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
             return Task.CompletedTask;
         }
 
         public void ReceiveComplete(int bufferLength)
         {
-            var status = (QUIC_STATUS)Registration.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
-            QuicStatusException.ThrowIfFailed(status);
+            var status = (uint)Registration.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
+            MsQuicStatusException.ThrowIfFailed(status);
         }
 
         public void ShutDown(
-            QUIC_STREAM_SHUTDOWN flags,
+            QUIC_STREAM_SHUTDOWN_FLAG flags,
             ushort errorCode)
         {
-            var status = (QUIC_STATUS)Registration.StreamShutdownDelegate(
+            var status = (uint)Registration.StreamShutdownDelegate(
                 _nativeObjPtr,
                 (uint)flags,
                 errorCode);
-            QuicStatusException.ThrowIfFailed(status);
+            MsQuicStatusException.ThrowIfFailed(status);
         }
 
         public void Close()
         {
-            var status = (QUIC_STATUS)Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
-            QuicStatusException.ThrowIfFailed(status);
+            var status = (uint)Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
+            MsQuicStatusException.ThrowIfFailed(status);
         }
 
         public long Handle { get => (long)_nativeObjPtr; }
@@ -126,14 +137,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             GC.SuppressFinalize(this);
         }
 
-        internal QuicStream(QuicApi registration, IntPtr nativeObjPtr, bool shouldOwnNativeObj)
-        {
-            Registration = registration;
-            _shouldOwnNativeObj = shouldOwnNativeObj;
-            _nativeObjPtr = nativeObjPtr;
-            StreamCallbackDelegate nativeCallback = NativeCallbackHandler;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
-        }
 
         public unsafe void EnableReceive()
         {
@@ -150,14 +153,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
               QUIC_PARAM_STREAM param,
               QuicBuffer buf)
         {
-            QuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
+            MsQuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
                 _nativeObjPtr,
                 (uint)QUIC_PARAM_LEVEL.SESSION,
                 (uint)param,
                 buf));
         }
 
-        public QuicApi Registration { get; set; }
 
         ~QuicStream()
         {
