@@ -3,7 +3,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -14,49 +13,36 @@ namespace Microsoft.AspNetCore.Testing
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
     public class MinimumOSVersionAttribute : Attribute, ITestCondition
     {
-        private readonly OperatingSystems _excludedOperatingSystem;
+        private readonly OperatingSystems _targetOS;
         private readonly Version _minVersion;
-        private readonly OperatingSystems _osPlatform;
-        private readonly Version _osVersion;
+        private readonly OperatingSystems _currentOS;
+        private readonly Version _currentVersion;
+        private readonly bool _skip;
 
         public MinimumOSVersionAttribute(OperatingSystems operatingSystem, string minVersion) :
-            this(
-                operatingSystem,
-                GetCurrentOS(),
-                GetCurrentOSVersion(),
-                Version.Parse(minVersion))
+            this(operatingSystem, Version.Parse(minVersion), GetCurrentOS(), GetCurrentOSVersion())
         {
         }
 
         // to enable unit testing
-        internal MinimumOSVersionAttribute(
-            OperatingSystems operatingSystem, OperatingSystems osPlatform, Version osVersion, Version minVersion)
+        internal MinimumOSVersionAttribute(OperatingSystems targetOS, Version minVersion, OperatingSystems currentOS, Version currentVersion)
         {
-            if (operatingSystem != OperatingSystems.Windows)
+            if (targetOS != OperatingSystems.Windows)
             {
                 throw new NotImplementedException("Min version support is only implemented for Windows.");
             }
-            _excludedOperatingSystem = operatingSystem;
+            _targetOS = targetOS;
             _minVersion = minVersion;
-            _osPlatform = osPlatform;
-            _osVersion = osVersion;
+            _currentOS = currentOS;
+            _currentVersion = currentVersion;
 
-            SkipReason = $"This test requires {_excludedOperatingSystem} {_minVersion} or later.";
+            // Do not skip other OS's, Use OSSkipConditionAttribute or a separate MinimumOSVersionAttribute for that.
+            _skip = _targetOS == _currentOS && _minVersion > _currentVersion;
+            SkipReason = $"This test requires {_targetOS} {_minVersion} or later.";
         }
 
-        public bool IsMet
-        {
-            get
-            {
-                // Do not skip other OS's, Use OSSkipConditionAttribute or a separate MinimumOSVersionAttribute for that.
-                if (_osPlatform != _excludedOperatingSystem)
-                {
-                    return true;
-                }
-
-                return _osVersion >= _minVersion;
-            }
-        }
+        // Since a test would be executed only if 'IsMet' is true, return false if we want to skip
+        public bool IsMet => !_skip;
 
         public string SkipReason { get; set; }
 
@@ -77,34 +63,16 @@ namespace Microsoft.AspNetCore.Testing
             throw new PlatformNotSupportedException();
         }
 
-        private static Version GetCurrentOSVersion()
+        static private Version GetCurrentOSVersion()
         {
-            // currently not used on other OS's
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Win10+
-                var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-                var major = key.GetValue("CurrentMajorVersionNumber") as int?;
-                var minor = key.GetValue("CurrentMinorVersionNumber") as int?;
-
-                if (major.HasValue && minor.HasValue)
-                {
-                    return new Version(major.Value, minor.Value);
-                }
-
-                // CurrentVersion doesn't work past Win8.1
-                var current = key.GetValue("CurrentVersion") as string;
-                if (!string.IsNullOrEmpty(current) && Version.TryParse(current, out var currentVersion))
-                {
-                    return currentVersion;
-                }
-
-                // Environment.OSVersion doesn't work past Win8.
                 return Environment.OSVersion.Version;
             }
             else
             {
-                return new Version();
+                // Not implemented, but this will still be called before the OS check happens so don't throw.
+                return new Version(0, 0);
             }
         }
     }

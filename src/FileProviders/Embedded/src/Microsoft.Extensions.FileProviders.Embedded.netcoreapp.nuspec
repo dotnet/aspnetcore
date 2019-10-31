@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".NETCoreApp3.0">
+      <group targetFramework=".NETCoreApp3.1">
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
@@ -11,9 +11,9 @@
   </metadata>
 
   <files>
-    <file src="$OutputBinary$" target="lib\" />
-    <file src="$OutputSymbol$" target="lib\" />
-    <file src="$OutputDocumentation$" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.dll" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.pdb" target="lib\" />
+    <file src="$OutputPath$**\$AssemblyName$.xml" target="lib\" />
     <file src="build\**\*" target="build\" />
     <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
     <file src="$PackageIcon$" target="" />
