@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal struct ConnectionEventDataNewStream
         {
             internal IntPtr Stream;
-            internal QUIC_NEW_STREAM_FLAG Flags;
+            internal QUIC_STREAM_OPEN_FLAG Flags;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal bool ShutdownTimedOut => Data.ShutdownComplete.TimedOut;
             internal ushort BiDirectionalCount => Data.StreamsAvailable.BiDirectionalCount;
             internal ushort UniDirectionalCount => Data.StreamsAvailable.UniDirectionalCount;
-            internal QUIC_NEW_STREAM_FLAG StreamFlags => Data.NewStream.Flags;
+            internal QUIC_STREAM_OPEN_FLAG StreamFlags => Data.NewStream.Flags;
         }
 
         internal delegate uint ConnectionCallbackDelegate(
