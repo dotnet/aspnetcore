@@ -398,7 +398,7 @@
       <Sha>903ca49e3ffddc551e12d2f94d7cca95f9a340bf</Sha>
     </Dependency>
     <!-- Keep this dependency at the bottom of ProductDependencies, else it will be picked as the parent for CoherentParentDependencies -->
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.1" Pinned="true">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>903ca49e3ffddc551e12d2f94d7cca95f9a340bf</Sha>
     </Dependency>
