@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                         return "VER_NEG_ERROR";
                 }
 
-                return status.ToString();       
+                return status.ToString();
             }
         }
     }
