@@ -1,12 +1,14 @@
 @ECHO OFF
 SETLOCAL
 
-IF "%COREFX_REPO%" == "" (
-  echo The 'COREFX_REPO' environment variable is not set, aborting.
+if not [%1] == [] (set remote_repo=%1) else (set remote_repo=%COREFX_REPO%)
+
+IF [%remote_repo%] == [] (
+  echo The 'COREFX_REPO' environment variable or command line paramter is not set, aborting.
   exit /b 1
 )
 
-echo COREFX_REPO: %COREFX_REPO%
+echo COREFX_REPO: %remote_repo%
 
-robocopy . %COREFX_REPO%\src\Common\src\System\Net\Http\Http2 /MIR
-robocopy .\..\test\Shared.Tests\Http2 %COREFX_REPO%\src\Common\tests\Tests\System\Net\Http2
+robocopy . %remote_repo%\src\Common\src\System\Net\Http\Http2 /MIR
+robocopy .\..\test\Shared.Tests\Http2 %remote_repo%\src\Common\tests\Tests\System\Net\Http2 /MIR
