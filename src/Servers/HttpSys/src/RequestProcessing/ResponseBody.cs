@@ -127,8 +127,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (endOfRequest && _leftToWrite > 0)
             {
                 _requestContext.Abort();
-                // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                LogHelper.LogError(Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
+                if(!RequestContext.DisconnectToken.IsCancellationRequested)
+                {
+                    // This is logged rather than thrown because it is too late for an exception to be visible in user code.
+                    LogHelper.LogError(Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
+                }
                 return;
             }
 
