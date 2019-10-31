@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return status <= 0x80000000;
+                return status < 0x80000000;
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
