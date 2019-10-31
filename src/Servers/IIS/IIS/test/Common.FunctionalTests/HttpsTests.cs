@@ -56,14 +56,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             if (DeployerSelector.HasNewHandler &&
                 DeployerSelector.HasNewShim)
             {
-                // We expect ServerAddress to be set for InProcess and HTTPS_PORT for OutOfProcess
+                // We expect ServerAddress to be set for InProcess and ANCM_HTTPS_PORT for OutOfProcess
                 if (variant.HostingModel == HostingModel.InProcess)
                 {
                     Assert.Equal(deploymentParameters.ApplicationBaseUriHint, await client.GetStringAsync("/ServerAddresses"));
                 }
                 else
                 {
-                    Assert.Equal(port.ToString(), await client.GetStringAsync("/HTTPS_PORT"));
+                    Assert.Equal(port.ToString(), await client.GetStringAsync("/ANCM_HTTPS_PORT"));
                 }
             }
         }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalFact]
         [RequiresNewHandler]
         [RequiresNewShim]
-        public async Task HttpsPortCanBeOverriden()
+        public async Task AncmHttpsPortCanBeOverriden()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
@@ -106,12 +106,32 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         .SetAttributeValue("bindingInformation", $":{TestPortHelper.GetNextSSLPort()}:localhost");
                 });
 
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HTTPS_PORT"] = "123";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_ANCM_HTTPS_PORT"] = "123";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var client = CreateNonValidatingClient(deploymentResult);
 
-            Assert.Equal("123", await client.GetStringAsync("/HTTPS_PORT"));
+            Assert.Equal("123", await client.GetStringAsync("/ANCM_HTTPS_PORT"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task HttpsPortOldValueDoesNotRedirect()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            deploymentParameters.AddServerConfigAction(
+                element => {
+                    element.Descendants("bindings")
+                        .Single()
+                        .GetOrAdd("binding", "protocol", "https")
+                        .SetAttributeValue("bindingInformation", $":{TestPortHelper.GetNextSSLPort()}:localhost");
+                });
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var client = CreateNonValidatingClient(deploymentResult);
+
+            Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
         }
 
         [ConditionalFact]
@@ -140,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
             var client = CreateNonValidatingClient(deploymentResult);
 
-            Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
+            Assert.Equal("NOVALUE", await client.GetStringAsync("/ANCM_HTTPS_PORT"));
         }
 
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)
