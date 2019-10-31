@@ -69,7 +69,7 @@
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.0-preview3.19530.5</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0-preview3.19530.5</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.0-preview3.19530.5</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0-preview3.19530.5</NETStandardLibraryRefPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.1.0-preview3.19530.2</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.7.0-preview3.19530.2</MicrosoftCSharpPackageVersion>
