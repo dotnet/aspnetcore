@@ -21,6 +21,8 @@ const nonBubblingEvents = toLookup([
   'DOMNodeRemovedFromDocument',
 ]);
 
+const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
+
 export interface OnEventCallback {
   (event: Event, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>, eventFieldInfo: EventFieldInfo | null): void;
 }
@@ -107,7 +109,7 @@ export class EventDelegator {
       const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
       if (handlerInfos) {
         const handlerInfo = handlerInfos.getHandler(evt.type);
-        if (handlerInfo) {
+        if (handlerInfo && !eventIsDisabledOnElement(candidateElement, evt.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgs) {
             eventArgs = EventForDotNet.fromDOMEvent(evt);
@@ -268,4 +270,12 @@ function toLookup(items: string[]): { [key: string]: boolean } {
     result[value] = true;
   });
   return result;
+}
+
+function eventIsDisabledOnElement(element: Element, eventName: string): boolean {
+  // We want to replicate the normal DOM event behavior that, for 'interactive' elements
+  // with a 'disabled' attribute, certain mouse events are suppressed
+  return (element instanceof HTMLButtonElement || element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)
+    && disableableEventNames.hasOwnProperty(eventName)
+    && element.disabled;
 }

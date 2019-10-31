@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO.Pipes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelper = new ComponentTagHelper
             {
                 ViewContext = GetViewContext(),
+                RenderMode = RenderMode.Static,
             };
             var context = GetTagHelperContext();
             var output = GetTagHelperOutput();
@@ -36,6 +37,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var content = HtmlContentUtilities.HtmlContentToString(output.Content);
             Assert.Equal("Hello world", content);
             Assert.Null(output.TagName);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_WithoutSpecifyingRenderMode_ThrowsError()
+        {
+            // Arrange
+            var tagHelper = new ComponentTagHelper
+            {
+                ViewContext = GetViewContext(),
+            };
+            var context = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act & Assert
+            await ExceptionAssert.ThrowsArgumentAsync(
+                () => tagHelper.ProcessAsync(context, output),
+                nameof(RenderMode),
+                "A value for the 'render-mode' attribute must be supplied to the 'component' tag helper.");
         }
 
         private static TagHelperContext GetTagHelperContext()

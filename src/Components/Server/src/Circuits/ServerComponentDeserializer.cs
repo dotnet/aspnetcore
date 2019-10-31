@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
@@ -153,7 +154,9 @@ namespace Microsoft.AspNetCore.Components.Server
             string unprotected;
             try
             {
-                unprotected = _dataProtector.Unprotect(record.Descriptor);
+                var payload = Convert.FromBase64String(record.Descriptor);
+                var unprotectedBytes = _dataProtector.Unprotect(payload);
+                unprotected = Encoding.UTF8.GetString(unprotectedBytes);
             }
             catch (Exception e)
             {

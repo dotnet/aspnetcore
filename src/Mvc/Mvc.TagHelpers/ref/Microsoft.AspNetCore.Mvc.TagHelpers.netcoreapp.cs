@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("params", DictionaryAttributePrefix="param-")]
         public System.Collections.Generic.IDictionary<string, object> Parameters { get { throw null; } set { } }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("render-mode")]
-        public Microsoft.AspNetCore.Mvc.Rendering.RenderMode RenderMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.Rendering.RenderMode RenderMode { get { throw null; } set { } }
         [Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute]
         public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

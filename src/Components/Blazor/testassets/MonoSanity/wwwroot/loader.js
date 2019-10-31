@@ -20,7 +20,9 @@
           'mscorlib.dll',
           'System.dll',
           'System.Core.dll',
-          'System.Net.Http.dll'
+          'System.Net.Http.dll',
+          'WebAssembly.Bindings.dll',
+          'WebAssembly.Net.Http.dll'
         ]);
 
         // For these tests we're using Mono's built-in mono_load_runtime_and_bcl util.
