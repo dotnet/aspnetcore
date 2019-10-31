@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Builder
         public ApplicationBuilder(System.IServiceProvider serviceProvider) { }
         public ApplicationBuilder(System.IServiceProvider serviceProvider, object server) { }
         public System.IServiceProvider ApplicationServices { get { throw null; } set { } }
-        public System.Collections.Generic.IDictionary<string, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection ServerFeatures { get { throw null; } }
         public Microsoft.AspNetCore.Http.RequestDelegate Build() { throw null; }
         public Microsoft.AspNetCore.Builder.IApplicationBuilder New() { throw null; }
@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.Http
     public partial class BindingAddress
     {
         public BindingAddress() { }
-        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsUnixPipe { get { throw null; } }
-        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string UnixPipePath { get { throw null; } }
         public override bool Equals(object obj) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
         public DefaultHttpContext(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
         public override Microsoft.AspNetCore.Http.ConnectionInfo Connection { get { throw null; } }
         public override Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
-        public Microsoft.AspNetCore.Http.Features.FormOptions FormOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.Features.FormOptions FormOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         public override System.Threading.CancellationToken RequestAborted { get { throw null; } set { } }
         public override System.IServiceProvider RequestServices { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.HttpResponse Response { get { throw null; } }
-        public Microsoft.Extensions.DependencyInjection.IServiceScopeFactory ServiceScopeFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.DependencyInjection.IServiceScopeFactory ServiceScopeFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override Microsoft.AspNetCore.Http.ISession Session { get { throw null; } set { } }
         public override string TraceIdentifier { get { throw null; } set { } }
         public override System.Security.Claims.ClaimsPrincipal User { get { throw null; } set { } }
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Http
         public FormFile(System.IO.Stream baseStream, long baseStreamOffset, long length, string name, string fileName) { }
         public string ContentDisposition { get { throw null; } set { } }
         public string ContentType { get { throw null; } set { } }
-        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public long Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void CopyTo(System.IO.Stream target) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task CopyToAsync(System.IO.Stream target, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http
         public HeaderDictionary(int capacity) { }
         public long? ContentLength { get { throw null; } set { } }
         public int Count { get { throw null; } }
-        public bool IsReadOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool IsReadOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.Extensions.Primitives.StringValues this[string key] { get { throw null; } set { } }
         public System.Collections.Generic.ICollection<string> Keys { get { throw null; } }
         Microsoft.Extensions.Primitives.StringValues System.Collections.Generic.IDictionary<System.String,Microsoft.Extensions.Primitives.StringValues>.this[string key] { get { throw null; } set { } }
@@ -204,8 +204,8 @@ namespace Microsoft.AspNetCore.Http
     {
         public StreamResponseBodyFeature(System.IO.Stream stream) { }
         public StreamResponseBodyFeature(System.IO.Stream stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature priorFeature) { }
-        public Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature PriorFeature { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.IO.Stream Stream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature PriorFeature { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IO.Stream Stream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IO.Pipelines.PipeWriter Writer { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task CompleteAsync() { throw null; }
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class DefaultSessionFeature : Microsoft.AspNetCore.Http.Features.ISessionFeature
     {
         public DefaultSessionFeature() { }
-        public Microsoft.AspNetCore.Http.ISession Session { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.ISession Session { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class FormFeature : Microsoft.AspNetCore.Http.Features.IFormFeature
     {
@@ -241,38 +241,38 @@ namespace Microsoft.AspNetCore.Http.Features
         public const long DefaultMultipartBodyLengthLimit = (long)134217728;
         public const int DefaultMultipartBoundaryLengthLimit = 128;
         public FormOptions() { }
-        public bool BufferBody { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long BufferBodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MemoryBufferThreshold { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long MultipartBodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MultipartBoundaryLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MultipartHeadersCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MultipartHeadersLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool BufferBody { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public long BufferBodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MemoryBufferThreshold { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public long MultipartBodyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MultipartBoundaryLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MultipartHeadersCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MultipartHeadersLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class HttpConnectionFeature : Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature
     {
         public HttpConnectionFeature() { }
-        public string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Net.IPAddress LocalIpAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int LocalPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Net.IPAddress RemoteIpAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int RemotePort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Net.IPAddress LocalIpAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int LocalPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Net.IPAddress RemoteIpAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int RemotePort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class HttpRequestFeature : Microsoft.AspNetCore.Http.Features.IHttpRequestFeature
     {
         public HttpRequestFeature() { }
-        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Method { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string QueryString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RawTarget { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Method { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string QueryString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RawTarget { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class HttpRequestIdentifierFeature : Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature
     {
@@ -282,24 +282,24 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class HttpRequestLifetimeFeature : Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature
     {
         public HttpRequestLifetimeFeature() { }
-        public System.Threading.CancellationToken RequestAborted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Threading.CancellationToken RequestAborted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Abort() { }
     }
     public partial class HttpResponseFeature : Microsoft.AspNetCore.Http.Features.IHttpResponseFeature
     {
         public HttpResponseFeature() { }
-        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual bool HasStarted { get { throw null; } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ReasonPhrase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ReasonPhrase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
         public virtual void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
     }
     public partial class ItemsFeature : Microsoft.AspNetCore.Http.Features.IItemsFeature
     {
         public ItemsFeature() { }
-        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class QueryFeature : Microsoft.AspNetCore.Http.Features.IQueryFeature
     {
@@ -339,12 +339,12 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class ServiceProvidersFeature : Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature
     {
         public ServiceProvidersFeature() { }
-        public System.IServiceProvider RequestServices { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.IServiceProvider RequestServices { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class TlsConnectionFeature : Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature
     {
         public TlsConnectionFeature() { }
-        public System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
     }
 }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
     public partial class HttpAuthenticationFeature : Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature
     {
         public HttpAuthenticationFeature() { }
-        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

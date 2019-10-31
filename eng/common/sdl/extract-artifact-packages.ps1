@@ -10,6 +10,7 @@ Set-StrictMode -Version 2.0
 # scripts don't necessarily execute in the same agent that run the
 # build.ps1/sh script this variable isn't automatically set.
 $ci = $true
+$disableConfigureToolsetImport = "true"
 . $PSScriptRoot\..\tools.ps1
 
 $ExtractPackage = {

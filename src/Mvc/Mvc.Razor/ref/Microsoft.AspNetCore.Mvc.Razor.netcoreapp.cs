@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     public partial class CompiledRazorAssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IRazorCompiledItemProvider
     {
         public CompiledRazorAssemblyPart(System.Reflection.Assembly assembly) { }
-        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem> Microsoft.AspNetCore.Mvc.ApplicationParts.IRazorCompiledItemProvider.CompiledItems { get { throw null; } }
         public override string Name { get { throw null; } }
     }
@@ -27,23 +27,23 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.AfterViewPage";
         public AfterViewPageEventData(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
-        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class BeforeViewPageEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage";
         public BeforeViewPageEventData(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
-        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -134,21 +134,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public abstract partial class RazorPageBase : Microsoft.AspNetCore.Mvc.Razor.IRazorPage
     {
         protected RazorPageBase() { }
-        public Microsoft.AspNetCore.Html.IHtmlContent BodyContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Html.IHtmlContent BodyContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public System.Diagnostics.DiagnosticSource DiagnosticSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Diagnostics.DiagnosticSource DiagnosticSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public System.Text.Encodings.Web.HtmlEncoder HtmlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool IsLayoutBeingRendered { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Layout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Text.Encodings.Web.HtmlEncoder HtmlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool IsLayoutBeingRendered { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Layout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.IO.TextWriter Output { get { throw null; } }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate> PreviousSectionWriters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate> SectionWriters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate> PreviousSectionWriters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Mvc.Razor.RenderAsyncDelegate> SectionWriters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary TempData { get { throw null; } }
         public virtual System.Security.Claims.ClaimsPrincipal User { get { throw null; } }
         public dynamic ViewBag { get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void AddHtmlAttributeValue(string prefix, int prefixOffset, object value, int valueOffset, int valueLength, bool isLiteral) { }
         public void BeginAddHtmlAttributeValues(Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext executionContext, string attributeName, int attributeValuesCount, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle attributeValueStyle) { }
         public abstract void BeginContext(int position, int length, bool isLiteral);
@@ -184,34 +184,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public readonly partial struct RazorPageFactoryResult
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public RazorPageFactoryResult(Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor viewDescriptor, System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> razorPageFactory) { throw null; }
-        public System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> RazorPageFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> RazorPageFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Success { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor ViewDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor ViewDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RazorPageResult
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public RazorPageResult(string name, Microsoft.AspNetCore.Mvc.Razor.IRazorPage page) { throw null; }
         public RazorPageResult(string name, System.Collections.Generic.IEnumerable<string> searchedLocations) { throw null; }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IEnumerable<string> SearchedLocations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> SearchedLocations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class RazorPage<TModel> : Microsoft.AspNetCore.Mvc.Razor.RazorPage
     {
         protected RazorPage() { }
         public TModel Model { get { throw null; } }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel> ViewData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel> ViewData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RazorView : Microsoft.AspNetCore.Mvc.ViewEngines.IView
     {
         public RazorView(Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine viewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> viewStartPages, Microsoft.AspNetCore.Mvc.Razor.IRazorPage razorPage, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Diagnostics.DiagnosticListener diagnosticListener) { }
         public string Path { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage RazorPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> ViewStartPages { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Razor.IRazorPage RazorPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> ViewStartPages { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task RenderAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) { throw null; }
     }
@@ -219,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         public static readonly string ViewExtension;
         public RazorViewEngine(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions> optionsAccessor, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Diagnostics.DiagnosticListener diagnosticListener) { }
-        protected Microsoft.Extensions.Caching.Memory.IMemoryCache ViewLookupCache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected Microsoft.Extensions.Caching.Memory.IMemoryCache ViewLookupCache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Razor.RazorPageResult FindPage(Microsoft.AspNetCore.Mvc.ActionContext context, string pageName) { throw null; }
         public Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult FindView(Microsoft.AspNetCore.Mvc.ActionContext context, string viewName, bool isMainPage) { throw null; }
         public string GetAbsolutePath(string executingFilePath, string pagePath) { throw null; }
@@ -230,11 +232,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public partial class RazorViewEngineOptions
     {
         public RazorViewEngineOptions() { }
-        public System.Collections.Generic.IList<string> AreaPageViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<string> AreaViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<string> PageViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.IViewLocationExpander> ViewLocationExpanders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<string> ViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<string> AreaPageViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<string> AreaViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<string> PageViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.IViewLocationExpander> ViewLocationExpanders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<string> ViewLocationFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public delegate System.Threading.Tasks.Task RenderAsyncDelegate();
     public partial class TagHelperInitializer<TTagHelper> : Microsoft.AspNetCore.Mvc.Razor.ITagHelperInitializer<TTagHelper> where TTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper
@@ -245,13 +247,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public partial class ViewLocationExpanderContext
     {
         public ViewLocationExpanderContext(Microsoft.AspNetCore.Mvc.ActionContext actionContext, string viewName, string controllerName, string areaName, string pageName, bool isMainPage) { }
-        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsMainPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string PageName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<string, string> Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ViewName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsMainPage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string PageName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, string> Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ViewName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -261,12 +263,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         public CompiledViewDescriptor() { }
         public CompiledViewDescriptor(Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem item) { }
         public CompiledViewDescriptor(Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem item, Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute attribute) { }
-        public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem Item { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem Item { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Type Type { get { throw null; } }
         [System.ObsoleteAttribute("Use Item instead. RazorViewAttribute has been superseded by RazorCompiledItem and will not be used by the runtime.")]
-        public Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute ViewAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute ViewAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface IViewCompiler
     {
@@ -281,13 +283,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     public partial class RazorViewAttribute : System.Attribute
     {
         public RazorViewAttribute(string path, System.Type viewType) { }
-        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Type ViewType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type ViewType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class ViewsFeature
     {
         public ViewsFeature() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> ViewDescriptors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> ViewDescriptors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
@@ -295,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
     public sealed partial class TagHelperMemoryCacheProvider
     {
         public TagHelperMemoryCacheProvider() { }
-        public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
@@ -332,10 +334,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     {
         public TagHelperComponentTagHelper(Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentManager manager, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute]
-        public Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator PropertyActivator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator PropertyActivator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute]
-        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
@@ -343,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     public partial class TagHelperFeature
     {
         public TagHelperFeature() { }
-        public System.Collections.Generic.IList<System.Reflection.TypeInfo> TagHelpers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<System.Reflection.TypeInfo> TagHelpers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class TagHelperFeatureProvider : Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider<Microsoft.AspNetCore.Mvc.Razor.TagHelpers.TagHelperFeature>
     {
@@ -384,12 +386,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     public partial class UrlResolutionTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public UrlResolutionTagHelper(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder) { }
-        protected System.Text.Encodings.Web.HtmlEncoder HtmlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.Text.Encodings.Web.HtmlEncoder HtmlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override int Order { get { throw null; } }
-        protected Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory UrlHelperFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory UrlHelperFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute]
-        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { }
         protected void ProcessUrlAttribute(string attributeName, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { }
         protected bool TryResolveUrl(string url, out Microsoft.AspNetCore.Html.IHtmlContent resolvedUrl) { throw null; }
