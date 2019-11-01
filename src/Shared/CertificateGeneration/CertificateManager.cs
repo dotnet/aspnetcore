@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         // Setting to 0 means we don't append the version byte,
         // which is what all machines currently have.
-        public static int AspNetHttpsCertificateVersion { get; set; } = 1;
+        public static int AspNetHttpsCertificateVersion { get; set; } = 2;
 
         public static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
             certificate.Extensions.OfType<X509Extension>()

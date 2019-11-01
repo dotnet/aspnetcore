@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
             _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
 
-            CertificateManager.AspNetHttpsCertificateVersion = 2;
+            CertificateManager.AspNetHttpsCertificateVersion = 3;
 
             var httpsCertificateList = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
             Assert.Empty(httpsCertificateList);
