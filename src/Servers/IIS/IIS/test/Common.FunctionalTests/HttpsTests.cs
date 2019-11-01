@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
-            deploymentParameters.EnvironmentVariables["ENABLE_HTTPS_REDIRECTION"] = "true";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ENABLE_HTTPS_REDIRECTION"] = "true";
             deploymentParameters.ApplicationBaseUriHint = $"http://localhost:{TestPortHelper.GetNextPort()}/";
 
             deploymentParameters.AddServerConfigAction(
