@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             }
             else
             {
-                return "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
+                return "The framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
             }
         }
 

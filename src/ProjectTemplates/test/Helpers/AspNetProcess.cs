@@ -104,11 +104,13 @@ namespace Templates.Test.Helpers
 
         public async Task ContainsLinks(Page page)
         {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri(ListeningUri, page.Url));
-
-            var response = await RequestWithRetries(client => client.SendAsync(request), _httpClient);
+            var response = await RequestWithRetries(client =>
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    new Uri(ListeningUri, page.Url));
+                return client.SendAsync(request);
+            }, _httpClient);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -235,16 +237,18 @@ namespace Templates.Test.Helpers
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri(ListeningUri, requestUrl));
+            var response = await RequestWithRetries(client => {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    new Uri(ListeningUri, requestUrl));
 
-            if (!string.IsNullOrEmpty(acceptContentType))
-            {
-                request.Headers.Add("Accept", acceptContentType);
-            }
+                if (!string.IsNullOrEmpty(acceptContentType))
+                {
+                    request.Headers.Add("Accept", acceptContentType);
+                }
 
-            var response = await RequestWithRetries(client => client.SendAsync(request), _httpClient);
+                return client.SendAsync(request);
+            }, _httpClient);
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
