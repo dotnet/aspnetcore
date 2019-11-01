@@ -11,6 +11,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -204,9 +205,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     await sslStream.DisposeAsync();
                     return;
                 }
-                catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
+                catch (IOException ex)
                 {
                     _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    await sslStream.DisposeAsync();
+                    return;
+                }
+                catch (AuthenticationException ex)
+                {
+                    if (_serverCertificate == null ||
+                        !CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
+                        CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
+                    {
+                        _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    }
+                    else
+                    {
+                        _logger?.LogError(2, ex, CoreStrings.BadDeveloperCertificateState);
+                    }
+
                     await sslStream.DisposeAsync();
                     return;
                 }

@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     // Report errors asynchronously. InitializeAsync is designed not to throw.
                     Log.InitializationFailed(_logger, ex);
                     UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                    await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
                 }
             });
         }

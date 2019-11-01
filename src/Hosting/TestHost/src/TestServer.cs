@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
-            builder.Configure(context =>
+            builder.Configure((context, reader) =>
             {
                 var request = context.Request;
                 request.Scheme = BaseAddress.Scheme;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 request.PathBase = pathBase;
             });
-            builder.Configure(configureContext);
+            builder.Configure((context, reader) => configureContext(context));
             // TODO: Wrap the request body if any?
             return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
