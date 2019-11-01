@@ -70,44 +70,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 catch (ConnectionAbortedException ex)
                 {
+                    _isReading = false;
                     throw new TaskCanceledException("The request was aborted", ex);
+                }
+
+                void ResetReadingState()
+                {
+                    _isReading = false;
+                    // Reset the timing read here for the next call to read.
+                    StopTimingRead(0);
+                    _context.Input.AdvanceTo(_readResult.Buffer.Start);
                 }
 
                 if (_context.RequestTimedOut)
                 {
+                    ResetReadingState();
                     BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
-                // Make sure to handle when this is canceled here.
-                if (_readResult.IsCanceled)
+                if (_readResult.IsCompleted)
                 {
-                    if (Interlocked.Exchange(ref _userCanceled, 0) == 1)
-                    {
-                        // Ignore the readResult if it wasn't by the user.
-                        CreateReadResultFromConnectionReadResult();
-
-                        break;
-                    }
-                    else
-                    {
-                        // Reset the timing read here for the next call to read.
-                        StopTimingRead(0);
-                        continue;
-                    }
+                    ResetReadingState();
+                    ThrowUnexpectedEndOfRequestContent();
                 }
 
-                var readableBuffer = _readResult.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
-
-                CheckCompletedReadResult(_readResult);
-
-                if (readableBufferLength > 0)
+                // Ignore the canceled readResult if it wasn't canceled by the user.
+                if ((!_readResult.IsCanceled && _readResult.Buffer.Length > 0) ||
+                    (_readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1))
                 {
                     CreateReadResultFromConnectionReadResult();
+                    StopTimingRead(_readResult.Buffer.Length);
+
+                    if (_readResult.IsCompleted)
+                    {
+                        TryStop();
+                    }
 
                     break;
                 }
+
+                ResetReadingState();
             }
 
             return _readResult;
@@ -135,23 +137,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             TryStart();
 
-            if (!_context.Input.TryRead(out _readResult))
+            // The while(true) loop is required because the Http1 connection calls CancelPendingRead to unblock
+            // the call to StartTimingReadAsync to check if the request timed out.
+            while (true)
             {
-                readResult = default;
-                return false;
-            }
-
-            if (_readResult.IsCanceled)
-            {
-                if (Interlocked.Exchange(ref _userCanceled, 0) == 0)
+                if (!_context.Input.TryRead(out _readResult))
                 {
-                    // Cancellation wasn't by the user, return default ReadResult
                     readResult = default;
                     return false;
                 }
+
+                if (!_readResult.IsCanceled || Interlocked.Exchange(ref _userCanceled, 0) == 1)
+                {
+                    break;
+                }
+
+                _context.Input.AdvanceTo(_readResult.Buffer.Start);
             }
 
-            // Only set _isReading if we are returing true.
+            if (_readResult.IsCompleted)
+            {
+                _context.Input.AdvanceTo(_readResult.Buffer.Start);
+                ThrowUnexpectedEndOfRequestContent();
+            }
+
+            // Only set _isReading if we are returning true.
             _isReading = true;
 
             CreateReadResultFromConnectionReadResult();
@@ -159,36 +169,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             readResult = _readResult;
             CountBytesRead(readResult.Buffer.Length);
 
-            return true;
-        }
-
-        public override Task ConsumeAsync()
-        {
-            TryStart();
-
-            if (!_readResult.Buffer.IsEmpty && _inputLength == 0)
+            if (readResult.IsCompleted)
             {
-                _context.Input.AdvanceTo(_readResult.Buffer.End);
+                TryStop();
             }
 
-            return OnConsumeAsync();
+            return true;
         }
 
         private void CreateReadResultFromConnectionReadResult()
         {
-            if (_readResult.Buffer.Length >= _inputLength + _examinedUnconsumedBytes)
+            if (_readResult.Buffer.Length < _inputLength + _examinedUnconsumedBytes)
             {
-                _readCompleted = true;
-                _readResult = new ReadResult(
-                    _readResult.Buffer.Slice(0, _inputLength + _examinedUnconsumedBytes),
-                    _readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1,
-                    _readCompleted);
+                return;
             }
 
-            if (_readResult.IsCompleted)
-            {
-                TryStop();
-            }
+            _readCompleted = true;
+            _readResult = new ReadResult(
+                _readResult.Buffer.Slice(0, _inputLength + _examinedUnconsumedBytes),
+                _readResult.IsCanceled,
+                isCompleted: true);
         }
 
         public override void AdvanceTo(SequencePosition consumed)
