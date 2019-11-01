@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void Start(IPEndPoint localIpEndpoint)
         {
-            var localAddress = PhysicalAddress.Parse(localIpEndpoint.Address.ToString());
+            var address = MsQuicNativeMethods.ConvertToSocketAddrInet(localIpEndpoint.Address);
             MsQuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
                 _nativeObjPtr,
-                ref localAddress.GetAddressBytes()));
+                ref address));
         }
 
         internal static uint NativeCallbackHandler(

@@ -10,42 +10,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     public class MsQuicConnectionFactory : IConnectionFactory
     {
-        // For client side, TODO clean this all up.
         public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
         {
-
             return new ValueTask<ConnectionContext>();
-        }
-
-        internal uint HandleEvent(
-           QuicConnection connection,
-           ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
-        {
-            var status = MsQuicConstants.Success;
-            switch (connectionEvent.Type)
-            {
-                case QUIC_CONNECTION_EVENT.CONNECTED:
-                    {
-                        // NOOP
-                    }
-                    break;
-                    //case QUIC_CONNECTION_EVENT.NEW_STREAM:
-                    //    {
-                    //        status = HandleEventNewStream(
-                    //            connection,
-                    //            (QuicSession.ConnectionEventNewStream)connectionEvent);
-                    //    }
-                    //    break;
-                    //case QUIC_CONNECTION_EVENT.IDEAL_SEND_BUFFER:
-                    //    {
-                    //        status = HandleEventIdealSendBuffer(
-                    //            connection,
-                    //            (QuicSession.ConnectionEventIdealSendBuffer)connectionEvent);
-                    //    }
-                    //    break;
-
-            }
-            return status;
         }
     }
 }

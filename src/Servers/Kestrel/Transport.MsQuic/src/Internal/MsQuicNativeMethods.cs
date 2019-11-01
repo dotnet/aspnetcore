@@ -499,9 +499,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
         }
 
-        public const ushort AF_INET = 2;
-        public const ushort AF_INET6 = 23;
-        public const ushort AF_UNSPEC = 0;
+        private const ushort AF_INET = 2;
+        private const ushort AF_INET6 = 23;
+        private const ushort AF_UNSPEC = 0;
 
         public static SOCKADDR_INET ConvertToSocketAddrInet(IPAddress ipAddress)
         {

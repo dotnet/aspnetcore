@@ -92,7 +92,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         internal async Task BindAsync()
         {
-            // TODO make this configurable
             await StartAsync();
 
             _acceptEnumerator = AcceptConnectionsAsync();

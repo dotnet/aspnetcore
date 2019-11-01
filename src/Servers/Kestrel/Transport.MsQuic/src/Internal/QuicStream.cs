@@ -89,11 +89,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 _nativeObjPtr,
                 sendContext.Buffers,
                 sendContext.BufferCount,
-                flags,
+                (uint)flags,
                 sendContext.NativeClientSendContext);
             MsQuicStatusException.ThrowIfFailed(status);
 
-            // TODO for some reason the first call to SendAsync triggers the callback.
             return sendContext.TcsTask; // TODO make QuicStream implement IValueTaskSource?
         }
 
