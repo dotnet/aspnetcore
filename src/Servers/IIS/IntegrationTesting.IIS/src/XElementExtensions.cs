@@ -43,5 +43,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             return existing;
         }
+
+        public static XElement AddAndGetInnerElement(this XElement element, string name, string attribute, string attributeValue)
+        {
+            var innerElement = new XElement(name, new XAttribute(attribute, attributeValue));
+            element.Add(innerElement);
+
+            return innerElement;
+        }
     }
 }
