@@ -17,7 +17,7 @@ namespace QuicSampleClient
             var transportOptions = new MsQuicTransportOptions()
             {
                 Alpn = "QuicTest",
-                RegistrationName = "Quic AspNetCore client",
+                RegistrationName = "Quic-AspNetCore-client",
                 Certificate = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true),
                 IdleTimeout = TimeSpan.FromHours(1),
             };

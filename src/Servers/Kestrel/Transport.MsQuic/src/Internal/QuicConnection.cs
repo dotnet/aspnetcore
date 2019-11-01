@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicStream;
@@ -110,7 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var status = Registration.ConnectionStartDelegate(
                 _nativeObjPtr,
                 family,
-                serverName,
+                Encoding.ASCII.GetString(
+                    Encoding.UTF8.GetBytes("localhost")),
                 serverPort);
 
             MsQuicStatusException.ThrowIfFailed(status);

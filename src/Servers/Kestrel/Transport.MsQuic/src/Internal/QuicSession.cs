@@ -51,7 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             MsQuicStatusException.ThrowIfFailed(status);
             var connection = new QuicConnection(_registration, connectionPtr, true);
             var msQuicConnection = new MsQuicConnection(connection);
-            await connection.StartAsync((ushort)endpoint.AddressFamily, endpoint.Address.ToString(),(ushort)endpoint.Port);
+
+            await connection.StartAsync((ushort)endpoint.AddressFamily, endpoint.Address.ToString(), (ushort)endpoint.Port);
+
             return msQuicConnection;
         }
 

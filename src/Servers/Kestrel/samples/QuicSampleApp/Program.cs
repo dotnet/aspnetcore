@@ -34,7 +34,7 @@ namespace QuicSampleApp
                  .UseMsQuic(options =>
                  {
                      options.Certificate = cert;
-                     options.RegistrationName = "AspNetCore MsQuic";
+                     options.RegistrationName = "AspNetCore-MsQuic";
                      options.Alpn = "QuicTest";
                      options.IdleTimeout = TimeSpan.FromHours(1);
                  })
