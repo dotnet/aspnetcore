@@ -398,9 +398,9 @@
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
     <!-- Keep this dependency at the bottom of ProductDependencies, else it will be picked as the parent for CoherentParentDependencies -->
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.1" Pinned="true">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>903ca49e3ffddc551e12d2f94d7cca95f9a340bf</Sha>
+      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-rc2.19463.5" Pinned="true">
       <Uri>https://github.com/aspnet/Extensions</Uri>
