@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -92,7 +93,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresNewHandler]
         [RequiresNewShim]
         public async Task AncmHttpsPortCanBeOverriden()
         {
@@ -112,26 +112,51 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var client = CreateNonValidatingClient(deploymentResult);
 
             Assert.Equal("123", await client.GetStringAsync("/ANCM_HTTPS_PORT"));
+            Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
         }
 
         [ConditionalFact]
         [RequiresNewShim]
-        public async Task HttpsPortOldValueDoesNotRedirect()
+        public async Task HttpsRedirectionWorksIn30AndNot22()
         {
+            var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.EnvironmentVariables["ENABLE_HTTPS_REDIRECTION"] = "true";
+            deploymentParameters.ApplicationBaseUriHint = $"http://localhost:{TestPortHelper.GetNextPort()}/";
 
             deploymentParameters.AddServerConfigAction(
                 element => {
                     element.Descendants("bindings")
                         .Single()
-                        .GetOrAdd("binding", "protocol", "https")
-                        .SetAttributeValue("bindingInformation", $":{TestPortHelper.GetNextSSLPort()}:localhost");
+                        .AddAndGetInnerElement("binding", "protocol", "https")
+                        .SetAttributeValue("bindingInformation", $":{port}:localhost");
+
+                    element.Descendants("access")
+                        .Single()
+                        .SetAttributeValue("sslFlags", "None");
                 });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            var client = CreateNonValidatingClient(deploymentResult);
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
+                AllowAutoRedirect = false
+            };
+            var client = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint)
+            };
 
-            Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
+            if (DeployerSelector.HasNewHandler)
+            {
+                var response = await client.GetAsync("/ANCM_HTTPS_PORT");
+                Assert.Equal(307, (int)response.StatusCode);
+            }
+            else
+            {
+                var response = await client.GetAsync("/ANCM_HTTPS_PORT");
+                Assert.Equal(200, (int)response.StatusCode);
+            }
         }
 
         [ConditionalFact]
