@@ -65,6 +65,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task GivesCorrectCallstackForSyncronousCalls()
+        {
+            // Regression test for https://github.com/aspnet/AspNetCore/issues/15367
+            // Arrange
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
+
+            // Assert
+            Assert.Equal("Should be visible", exception.InnerException.InnerException.Message);
+        }
+
+        [Fact]
         public async Task CanRenderViewsWithTagHelpersAndUnboundDynamicAttributes_Encoded()
         {
             // Arrange
