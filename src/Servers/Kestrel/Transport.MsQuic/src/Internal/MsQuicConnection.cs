@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             QuicConnection connection,
             MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
-            var stream = connectionEvent.CreateNewStream(connection.Registration);
+            var stream = new QuicStream(connection.Registration, connectionEvent.Data.NewStream.Stream, shouldOwnNativeObj: false);
             var streamWrapper = new MsQuicStream(this, connectionEvent.StreamFlags);
 
             streamWrapper.Start(stream);

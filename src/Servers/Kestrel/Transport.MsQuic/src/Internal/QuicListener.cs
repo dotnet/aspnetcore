@@ -3,7 +3,9 @@
 
 using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -31,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void Start(IPEndPoint localIpEndpoint)
         {
-            var localAddress = WinSockNativeMethods.Convert(localIpEndpoint);
+            var localAddress = PhysicalAddress.Parse(localIpEndpoint.Address.ToString());
             MsQuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
                 _nativeObjPtr,
-                ref localAddress));
+                ref localAddress.GetAddressBytes()));
         }
 
         internal static uint NativeCallbackHandler(
