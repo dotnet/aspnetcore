@@ -28,6 +28,8 @@ Directory.Build.props checks this property using the following condition:
       Microsoft.AspNetCore.Http.Abstractions;
       Microsoft.AspNetCore.Http.Features;
       Microsoft.AspNetCore.CookiePolicy;
+      Microsoft.AspNetCore.HttpsPolicy;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
       Microsoft.AspNetCore.App.Ref;
       Microsoft.AspNetCore.App.Runtime;
       Microsoft.DotNet.Web.Client.ItemTemplates;
