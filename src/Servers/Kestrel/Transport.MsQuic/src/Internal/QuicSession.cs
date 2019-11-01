@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicListener;
 
@@ -39,8 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return listener;
         }
 
-        public ValueTask<QuicConnection> ConnectionOpenAsync(
-            QuicConnection.ConnectionCallback callback)
+        public async ValueTask<MsQuicConnection> ConnectionOpenAsync(IPEndPoint endpoint)
         {
             var status = _registration.ConnectionOpenDelegate(
                 _nativeObjPtr,
@@ -50,8 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             MsQuicStatusException.ThrowIfFailed(status);
             var connection = new QuicConnection(_registration, connectionPtr, true);
-            connection.SetCallbackHandler(callback);
-            return new ValueTask<QuicConnection>(connection);
+            var msQuicConnection = new MsQuicConnection(connection);
+            await connection.StartAsync((ushort)endpoint.AddressFamily, endpoint.Address.ToString(),(ushort)endpoint.Port);
+            return msQuicConnection;
         }
 
         public void ShutDown(

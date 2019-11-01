@@ -3,9 +3,9 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
-    internal interface IMsQuicTrace : ILogger
+    public interface IMsQuicTrace : ILogger
     {
         // TODO add some logging!
     }

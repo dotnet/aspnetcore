@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Connections.Features
     public interface IStreamListener
     {
         ValueTask<ConnectionContext> StartUnidirectionalStreamAsync();
+        ValueTask<ConnectionContext> StartBidirectionalStreamAsync();
         ValueTask<ConnectionContext> AcceptAsync();
     }
 }

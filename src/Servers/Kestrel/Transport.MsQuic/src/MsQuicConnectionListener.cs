@@ -9,14 +9,15 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
     /// <summary>
     /// Listens for new Quic Connections
     /// </summary>
-    internal class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable
+    public class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable
     {
         private MsQuicApi _registration;
         private QuicSecConfig _secConfig;

@@ -8,5 +8,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
 </Project>

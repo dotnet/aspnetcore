@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicStream;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private ConnectionCallback _callback;
         private static GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
+        private TaskCompletionSource<object> _tcsConnection;
 
         public MsQuicApi Registration { get; set; }
 
@@ -98,16 +100,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetParam(QUIC_PARAM_CONN.USE_SEND_BUFFER, buffer);
         }
 
-        public void Start(
+        public Task StartAsync(
             ushort family,
+            string serverName,
             ushort serverPort)
         {
+            _tcsConnection = new TaskCompletionSource<object>();
+
             var status = Registration.ConnectionStartDelegate(
                 _nativeObjPtr,
                 family,
-                null,
+                serverName,
                 serverPort);
+
             MsQuicStatusException.ThrowIfFailed(status);
+
+            return _tcsConnection.Task;
         }
 
         public QuicStream StreamOpen(
@@ -157,7 +165,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             var handle = GCHandle.FromIntPtr(context);
             var quicConnection = (QuicConnection)handle.Target;
-
             return quicConnection.ExecuteCallback(ref connectionEventStruct);
         }
 
@@ -165,6 +172,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             ref ConnectionEvent connectionEvent)
         {
             var status = MsQuicConstants.InternalError;
+            if (connectionEvent.Type == QUIC_CONNECTION_EVENT.CONNECTED)
+            {
+                _tcsConnection.TrySetResult(null);
+            }
+            else if (connectionEvent.Type == QUIC_CONNECTION_EVENT.SHUTDOWN_BEGIN)
+            {
+                _tcsConnection?.TrySetResult(new Exception("RIP"));
+            }
+
             try
             {
                 status = _callback(

@@ -234,5 +234,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             return null;
         }
+
+        public async ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
+        {
+            var flags = QUIC_STREAM_OPEN_FLAG.NONE;
+            var msquicStream = new MsQuicStream(this, flags);
+            var stream = _connection.StreamOpen(flags, msquicStream.HandleStreamEvent);
+            await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);
+            msquicStream.Start(stream);
+            return msquicStream;
+        }
     }
 }
