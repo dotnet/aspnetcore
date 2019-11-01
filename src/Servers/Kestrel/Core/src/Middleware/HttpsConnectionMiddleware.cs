@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger<HttpsConnectionMiddleware>();
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
         public async Task OnConnectionAsync(ConnectionContext context)
         {
@@ -201,13 +201,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                 {
-                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     await sslStream.DisposeAsync();
                     return;
                 }
