@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_readCompleted)
             {
                 _isReading = true;
-                return _readResult;
+                return new ReadResult(_readResult.Buffer, Interlocked.Exchange(ref _userCanceled, 0) == 1, _readResult.IsCompleted);
             }
 
             TryStart();
@@ -95,11 +95,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // Ignore the canceled readResult if it wasn't canceled by the user.
-                if ((!_readResult.IsCanceled && _readResult.Buffer.Length > 0) ||
-                    (_readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1))
+                if (!_readResult.IsCanceled || Interlocked.Exchange(ref _userCanceled, 0) == 1)
                 {
-                    CreateReadResultFromConnectionReadResult();
-                    StopTimingRead(_readResult.Buffer.Length);
+                    var returnedReadResultLength = CreateReadResultFromConnectionReadResult();
+
+                    // Don't count bytes belonging to the next request, since read rate timeouts are done on a per-request basis.
+                    StopTimingRead(returnedReadResultLength);
 
                     if (_readResult.IsCompleted)
                     {
@@ -131,14 +132,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_readCompleted)
             {
                 _isReading = true;
-                readResult = _readResult;
+                readResult = new ReadResult(_readResult.Buffer, Interlocked.Exchange(ref _userCanceled, 0) == 1, _readResult.IsCompleted);
                 return true;
             }
 
             TryStart();
 
-            // The while(true) loop is required because the Http1 connection calls CancelPendingRead to unblock
-            // the call to StartTimingReadAsync to check if the request timed out.
+            // The while(true) because we don't want to return a canceled ReadResult if the user themselves didn't cancel it.
             while (true)
             {
                 if (!_context.Input.TryRead(out _readResult))
@@ -161,13 +161,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ThrowUnexpectedEndOfRequestContent();
             }
 
+            var returnedReadResultLength = CreateReadResultFromConnectionReadResult();
+
+            // Don't count bytes belonging to the next request, since read rate timeouts are done on a per-request basis.
+            CountBytesRead(returnedReadResultLength);
+
             // Only set _isReading if we are returning true.
             _isReading = true;
-
-            CreateReadResultFromConnectionReadResult();
-
             readResult = _readResult;
-            CountBytesRead(readResult.Buffer.Length);
 
             if (readResult.IsCompleted)
             {
@@ -177,18 +178,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        private void CreateReadResultFromConnectionReadResult()
+        private long CreateReadResultFromConnectionReadResult()
         {
-            if (_readResult.Buffer.Length < _inputLength + _examinedUnconsumedBytes)
+            var initialLength = _readResult.Buffer.Length;
+            var maxLength = _inputLength + _examinedUnconsumedBytes;
+
+            if (initialLength < maxLength)
             {
-                return;
+                return initialLength;
             }
 
             _readCompleted = true;
             _readResult = new ReadResult(
-                _readResult.Buffer.Slice(0, _inputLength + _examinedUnconsumedBytes),
+                _readResult.Buffer.Slice(0, maxLength),
                 _readResult.IsCanceled,
                 isCompleted: true);
+
+            return maxLength;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -207,9 +213,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_readCompleted)
             {
-                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), Interlocked.Exchange(ref _userCanceled, 0) == 1, _readCompleted);
+                // If the old stored _readResult was canceled, it's already been observed. Do not store a canceled read result permanently.
+                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), isCanceled: false, _readCompleted);
 
-                if (_readResult.Buffer.Length == 0 && !_finalAdvanceCalled)
+                if (!_finalAdvanceCalled && _readResult.Buffer.Length == 0)
                 {
                     _context.Input.AdvanceTo(consumed);
                     _finalAdvanceCalled = true;
