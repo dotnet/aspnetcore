@@ -78,8 +78,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- If this project won't produce a package, don't bother building anything. -->
     <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
-      GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
+      GeneratePackageConflictManifest;
       IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
@@ -156,15 +156,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="GeneratePackageConflictManifest"
-          DependsOnTargets="ResolveReferences"
+          DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
 
+    <JoinItems Left="@(ReferencePath)" Right="@(_SelectedExtensionsRefs)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsPackageOverrides" />
+    </JoinItems>
+
     <ItemGroup>
       <!-- Use package version for non-Extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(ReferencePath.NuGetPackageId).dll') AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition="!Exists('$(MicrosoftInternalExtensionsRefsPath)%(ReferencePath.NuGetPackageId).dll') AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.Internal.Extensions.Refs' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+
       <!-- Pin version for extensions references -->
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" Condition="Exists('$(MicrosoftInternalExtensionsRefsPath)%(ReferencePath.NuGetPackageId).dll') AND '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+      <_AspNetCoreAppPackageOverrides Include="@(_SelectedExtensionsPackageOverrides->'%(FileName)|$(MicrosoftInternalExtensionsRefsPackageOverrideVersion)')" />
+
       <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(ReferencePackSharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND '%(ReferencePath.IsReferenceAssembly)' == 'true' " />
     </ItemGroup>
 
