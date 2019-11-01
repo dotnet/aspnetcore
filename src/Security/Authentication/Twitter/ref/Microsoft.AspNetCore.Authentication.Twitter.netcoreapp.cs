@@ -6,16 +6,16 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public partial class AccessToken : Microsoft.AspNetCore.Authentication.Twitter.RequestToken
     {
         public AccessToken() { }
-        public string ScreenName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string UserId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ScreenName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string UserId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RequestToken
     {
         public RequestToken() { }
-        public bool CallbackConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Token { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string TokenSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool CallbackConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Token { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string TokenSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RequestTokenSerializer : Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.Twitter.RequestToken>
     {
@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public partial class TwitterCreatingTicketContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>
     {
         public TwitterCreatingTicketContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions options, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string userId, string screenName, string accessToken, string accessTokenSecret, System.Text.Json.JsonElement user) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions)) { }
-        public string AccessToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string AccessTokenSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ScreenName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Text.Json.JsonElement User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string UserId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string AccessToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string AccessTokenSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ScreenName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Text.Json.JsonElement User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string UserId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class TwitterDefaults
     {
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public partial class TwitterEvents : Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents
     {
         public TwitterEvents() { }
-        public System.Func<Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext, System.Threading.Tasks.Task> OnCreatingTicket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>, System.Threading.Tasks.Task> OnRedirectToAuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext, System.Threading.Tasks.Task> OnCreatingTicket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>, System.Threading.Tasks.Task> OnRedirectToAuthorizationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Threading.Tasks.Task CreatingTicket(Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext context) { throw null; }
         public virtual System.Threading.Tasks.Task RedirectToAuthorizationEndpoint(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions> context) { throw null; }
     }
@@ -62,13 +62,13 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public partial class TwitterOptions : Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions
     {
         public TwitterOptions() { }
-        public Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection ClaimActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ConsumerKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ConsumerSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimActionCollection ClaimActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ConsumerKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ConsumerSecret { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public new Microsoft.AspNetCore.Authentication.Twitter.TwitterEvents Events { get { throw null; } set { } }
-        public bool RetrieveUserDetails { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RetrieveUserDetails { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.CookieBuilder StateCookie { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.Twitter.RequestToken> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.Twitter.RequestToken> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Validate() { }
     }
     public partial class TwitterPostConfigureOptions : Microsoft.Extensions.Options.IPostConfigureOptions<Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions>

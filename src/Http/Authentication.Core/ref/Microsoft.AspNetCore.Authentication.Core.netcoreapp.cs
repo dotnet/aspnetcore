@@ -6,13 +6,13 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationFeature : Microsoft.AspNetCore.Authentication.IAuthenticationFeature
     {
         public AuthenticationFeature() { }
-        public Microsoft.AspNetCore.Http.PathString OriginalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.PathString OriginalPathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.PathString OriginalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.PathString OriginalPathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class AuthenticationHandlerProvider : Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider
     {
         public AuthenticationHandlerProvider(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes) { }
-        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.IAuthenticationHandler> GetHandlerAsync(Microsoft.AspNetCore.Http.HttpContext context, string authenticationScheme) { throw null; }
     }
@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationService : Microsoft.AspNetCore.Authentication.IAuthenticationService
     {
         public AuthenticationService(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes, Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider handlers, Microsoft.AspNetCore.Authentication.IClaimsTransformation transform, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions> options) { }
-        public Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider Handlers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Authentication.IClaimsTransformation Transform { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider Handlers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.IClaimsTransformation Transform { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(Microsoft.AspNetCore.Http.HttpContext context, string scheme) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
