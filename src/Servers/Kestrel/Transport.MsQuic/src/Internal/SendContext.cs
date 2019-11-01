@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.NativeMethods;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {

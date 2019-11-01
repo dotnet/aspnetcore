@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return MsQuicConstants.Success;
         }
 
-        public async Task<ConnectionContext> StartUnidirectionalStreamAsync()
+        public async ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
         {
             var flags = QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL;
             var msquicStream = new MsQuicStream(this, flags);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return msquicStream;
         }
 
-        public async Task<ConnectionContext> AcceptAsync()
+        public async ValueTask<ConnectionContext> AcceptAsync()
         {
             if (await _acceptEnumerator.MoveNextAsync())
             {
