@@ -90,6 +90,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public void HttpOptionsCannotSetNullCookieContainer()
+        {
+            var httpOptions = new HttpConnectionOptions();
+            Assert.NotNull(httpOptions.Cookies);
+            Assert.Throws<ArgumentNullException>(() => httpOptions.Cookies = null);
+        }
+
+        [Fact]
         public async Task HttpRequestAndErrorResponseLogged()
         {
             var testHttpHandler = new TestHttpMessageHandler(false);
