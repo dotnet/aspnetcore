@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -193,8 +194,11 @@ namespace Templates.Test.SpaTemplateTest
 
         private static async Task WarmUpServer(AspNetProcess aspNetProcess)
         {
+            var intervalInSeconds = 5;
             var attempt = 0;
-            var maxAttempts = 3;
+            var maxAttempts = 5;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             do
             {
                 try
@@ -203,7 +207,7 @@ namespace Templates.Test.SpaTemplateTest
                     var response = await aspNetProcess.SendRequest("/");
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        break;
+                        return;
                     }
                 }
                 catch (OperationCanceledException)
@@ -212,8 +216,11 @@ namespace Templates.Test.SpaTemplateTest
                 catch (HttpRequestException ex) when (ex.Message.StartsWith("The SSL connection could not be established"))
                 {
                 }
-                await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
+                var currentDelay = intervalInSeconds * attempt;
+                await Task.Delay(TimeSpan.FromSeconds(currentDelay));
             } while (attempt < maxAttempts);
+            stopwatch.Stop();
+            throw new TimeoutException($"Could not contact the server within {stopwatch.Elapsed.TotalSeconds} seconds");
         }
 
         private void UpdatePublishedSettings()
