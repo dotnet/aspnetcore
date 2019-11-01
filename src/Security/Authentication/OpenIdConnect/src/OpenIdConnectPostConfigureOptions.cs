@@ -93,7 +93,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     }
 
                     options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(options.MetadataAddress, new OpenIdConnectConfigurationRetriever(),
-                        new HttpDocumentRetriever(options.Backchannel) { RequireHttps = options.RequireHttpsMetadata });
+                        new HttpDocumentRetriever(options.Backchannel) { RequireHttps = options.RequireHttpsMetadata })
+                    {
+                        RefreshInterval = options.RefreshInterval,
+                        AutomaticRefreshInterval = options.AutomaticRefreshInterval,
+                    };
                 }
             }
         }

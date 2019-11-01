@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    // We use a middlware so that we can use DI.
+    // We use a middleware so that we can use DI.
     internal class CircuitDisconnectMiddleware
     {
         private const string CircuitIdKey = "circuitId";

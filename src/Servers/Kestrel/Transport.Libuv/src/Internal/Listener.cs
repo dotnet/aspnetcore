@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return Thread.PostAsync(listener =>
             {
                 listener.ListenSocket = listener.CreateListenSocket();
-                listener.ListenSocket.Listen(LibuvConstants.ListenBacklog, ConnectionCallback, listener);
+                listener.ListenSocket.Listen(TransportContext.Options.Backlog, ConnectionCallback, listener);
             }, this);
         }
 

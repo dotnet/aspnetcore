@@ -721,8 +721,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 isChecked,
                 htmlAttributes);
 
+            if (checkbox == null)
+            {
+                return HtmlString.Empty;
+            }
+
+            if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.None)
+            {
+                return checkbox;
+            }
+
             var hiddenForCheckbox = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
-            if (checkbox == null || hiddenForCheckbox == null)
+            if (hiddenForCheckbox == null)
             {
                 return HtmlString.Empty;
             }
@@ -736,7 +746,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 hiddenForCheckbox.MergeAttribute("name", name);
             }
 
-            if (ViewContext.FormContext.CanRenderAtEndOfForm)
+            if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.EndOfForm && ViewContext.FormContext.CanRenderAtEndOfForm)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckbox);
                 return checkbox;

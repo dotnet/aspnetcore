@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
     public partial class RedisOptions
     {
         public RedisOptions() { }
-        public StackExchange.Redis.ConfigurationOptions Configuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<System.IO.TextWriter, System.Threading.Tasks.Task<StackExchange.Redis.IConnectionMultiplexer>> ConnectionFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public StackExchange.Redis.ConfigurationOptions Configuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Func<System.IO.TextWriter, System.Threading.Tasks.Task<StackExchange.Redis.IConnectionMultiplexer>> ConnectionFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

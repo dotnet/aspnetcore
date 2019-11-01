@@ -13,5 +13,9 @@
     <ProjectReference Include="..\signalr\signalr.npmproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\browser\signalr-protocol-msgpack.js" />
+  </ItemGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>
