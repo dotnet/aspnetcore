@@ -122,8 +122,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             // 1. Set in the HttpsRedirectionOptions
             // 2. HTTPS_PORT environment variable
             // 3. IServerAddressesFeature
-            // 4. Fail if not set
-            var nullablePort = _config.GetValue<int?>("HTTPS_PORT");
+            // 4. Fail if not sets
+
+            var nullablePort = _config.GetValue<int?>("HTTPS_PORT") ?? _config.GetValue<int?>("ANCM_HTTPS_PORT");
             if (nullablePort.HasValue)
             {
                 var port = nullablePort.Value;
