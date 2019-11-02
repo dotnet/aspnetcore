@@ -9,13 +9,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
@@ -119,12 +120,12 @@ namespace http2cat
             _pair = new DuplexPipe.DuplexPipePair(transport: null, application: clientConnectionContext.Transport);
         }
 
-        void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
+        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
-        void IHttpHeadersHandler.OnHeadersComplete() { }
+        void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         public async Task InitializeConnectionAsync(int expectedSettingsCount = 3)
         {

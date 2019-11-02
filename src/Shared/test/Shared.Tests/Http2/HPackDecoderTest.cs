@@ -1,23 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.Net.Http.Headers;
+using System.Net.Http.HPack;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace System.Net.Http.Unit.Tests.HPack
 {
     public class HPackDecoderTests : IHttpHeadersHandler
     {
         private const int DynamicTableInitialMaxSize = 4096;
-        private const int MaxRequestHeaderFieldSize = 8192;
+        private const int MaxHeaderFieldSize = 8192;
 
         // Indexed Header Field Representation - Static Table - Index 2 (:method: GET)
         private static readonly byte[] _indexedHeaderStatic = new byte[] { 0x82 };
@@ -61,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         // v      a     l      u      e    *
         // 11101110 00111010 00101101 00101111
-        private static readonly byte[] _headerValueHuffmanBytes = new byte [] { 0xee, 0x3a, 0x2d, 0x2f };
+        private static readonly byte[] _headerValueHuffmanBytes = new byte[] { 0xee, 0x3a, 0x2d, 0x2f };
 
         private static readonly byte[] _headerName = new byte[] { (byte)_headerNameBytes.Length }
             .Concat(_headerNameBytes)
@@ -95,21 +92,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public HPackDecoderTests()
         {
             _dynamicTable = new DynamicTable(DynamicTableInitialMaxSize);
-            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize, _dynamicTable);
+            _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize, _dynamicTable);
         }
 
-        void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
+        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
+            string headerName = Encoding.ASCII.GetString(name);
+            string headerValue = Encoding.ASCII.GetString(value);
+
+            _decodedHeaders[headerName] = headerValue;
         }
 
-        void IHttpHeadersHandler.OnHeadersComplete() { }
+        void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         [Fact]
         public void DecodesIndexedHeaderField_StaticTable()
         {
-            _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderStatic), endHeaders: true, handler: this);
-            Assert.Equal("GET", _decodedHeaders[HeaderNames.Method]);
+            _decoder.Decode(_indexedHeaderStatic, endHeaders: true, handler: this);
+            Assert.Equal("GET", _decodedHeaders[":method"]);
         }
 
         [Fact]
@@ -119,23 +119,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
 
             // Index it
-            _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderDynamic), endHeaders: true, handler: this);
+            _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: this);
             Assert.Equal(_headerValueString, _decodedHeaders[_headerNameString]);
         }
 
         [Fact]
         public void DecodesIndexedHeaderField_OutOfRange_Error()
         {
-            var exception = Assert.Throws<HPackDecodingException>(() =>
-                _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderDynamic), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
+                _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName()
         {
-            var encoded = _literalHeaderFieldWithIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithIndexingNewName
                 .Concat(_headerName)
                 .Concat(_headerValue)
                 .ToArray();
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedName()
         {
-            var encoded = _literalHeaderFieldWithIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithIndexingNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValue)
                 .ToArray();
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedValue()
         {
-            var encoded = _literalHeaderFieldWithIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithIndexingNewName
                 .Concat(_headerName)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_NewName_HuffmanEncodedNameAndValue()
         {
-            var encoded = _literalHeaderFieldWithIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithIndexingNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_IndexedName()
         {
-            var encoded = _literalHeaderFieldWithIndexingIndexedName
+            byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
                 .Concat(_headerValue)
                 .ToArray();
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithIncrementalIndexing_IndexedName_HuffmanEncodedValue()
         {
-            var encoded = _literalHeaderFieldWithIndexingIndexedName
+            byte[] encoded = _literalHeaderFieldWithIndexingIndexedName
                 .Concat(_headerValueHuffman)
                 .ToArray();
 
@@ -203,15 +203,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 11 1110 (Indexed Name - Index 62 encoded with 6-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x7e }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new byte[] { 0x7e }, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(_headerName)
                 .Concat(_headerValue)
                 .ToArray();
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedName()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValue)
                 .ToArray();
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedValue()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(_headerName)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_NewName_HuffmanEncodedNameAndValue()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_IndexedName()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingIndexedName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingIndexedName
                 .Concat(_headerValue)
                 .ToArray();
 
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldWithoutIndexing_IndexedName_HuffmanEncodedValue()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingIndexedName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingIndexedName
                 .Concat(_headerValueHuffman)
                 .ToArray();
 
@@ -279,15 +279,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 1111 0010 1111 (Indexed Name - Index 62 encoded with 4-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x0f, 0x2f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new byte[] { 0x0f, 0x2f }, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName()
         {
-            var encoded = _literalHeaderFieldNeverIndexedNewName
+            byte[] encoded = _literalHeaderFieldNeverIndexedNewName
                 .Concat(_headerName)
                 .Concat(_headerValue)
                 .ToArray();
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedName()
         {
-            var encoded = _literalHeaderFieldNeverIndexedNewName
+            byte[] encoded = _literalHeaderFieldNeverIndexedNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValue)
                 .ToArray();
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedValue()
         {
-            var encoded = _literalHeaderFieldNeverIndexedNewName
+            byte[] encoded = _literalHeaderFieldNeverIndexedNewName
                 .Concat(_headerName)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_HuffmanEncodedNameAndValue()
         {
-            var encoded = _literalHeaderFieldNeverIndexedNewName
+            byte[] encoded = _literalHeaderFieldNeverIndexedNewName
                 .Concat(_headerNameHuffman)
                 .Concat(_headerValueHuffman)
                 .ToArray();
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 0001           (Literal Header Field Never Indexed Representation)
             // 1111 0010 1011 (Indexed Name - Index 58 encoded with 4-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             // Concatenated with value bytes
-            var encoded = _literalHeaderFieldNeverIndexedIndexedName
+            byte[] encoded = _literalHeaderFieldNeverIndexedIndexedName
                 .Concat(_headerValue)
                 .ToArray();
 
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 0001           (Literal Header Field Never Indexed Representation)
             // 1111 0010 1011 (Indexed Name - Index 58 encoded with 4-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             // Concatenated with Huffman encoded value bytes
-            var encoded = _literalHeaderFieldNeverIndexedIndexedName
+            byte[] encoded = _literalHeaderFieldNeverIndexedIndexedName
                 .Concat(_headerValueHuffman)
                 .ToArray();
 
@@ -361,8 +361,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 1111 0010 1111 (Indexed Name - Index 62 encoded with 4-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
             // Index 62 is the first entry in the dynamic table. If there's nothing there, the decoder should throw.
 
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x1f, 0x2f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorIndexOutOfRange(62), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new byte[] { 0x1f, 0x2f }, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_hpack_invalid_index, 62), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
 
-            _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x3e }), endHeaders: true, handler: this);
+            _decoder.Decode(new byte[] { 0x3e }, endHeaders: true, handler: this);
 
             Assert.Equal(30, _dynamicTable.MaxSize);
             Assert.Empty(_decodedHeaders);
@@ -388,9 +388,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
 
-            var data = new ReadOnlySequence<byte>(_indexedHeaderStatic.Concat(new byte[] { 0x3e }).ToArray());
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock, exception.Message);
+            byte[] data = _indexedHeaderStatic.Concat(new byte[] { 0x3e }).ToArray();
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
+            Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
         [Fact]
@@ -398,14 +398,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
 
-            _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderStatic), endHeaders: false, handler: this);
-            Assert.Equal("GET", _decodedHeaders[HeaderNames.Method]);
+            _decoder.Decode(_indexedHeaderStatic, endHeaders: false, handler: this);
+            Assert.Equal("GET", _decodedHeaders[":method"]);
 
             // 001   (Dynamic Table Size Update)
             // 11110 (30 encoded with 5-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
-            var data = new ReadOnlySequence<byte>(new byte[] { 0x3e });
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock, exception.Message);
+            byte[] data = new byte[] { 0x3e };
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(data, endHeaders: true, handler: this));
+            Assert.Equal(SR.net_http_hpack_late_dynamic_table_size_update, exception.Message);
         }
 
         [Fact]
@@ -413,12 +413,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
 
-            _decoder.Decode(new ReadOnlySequence<byte>(_indexedHeaderStatic), endHeaders: true, handler: this);
-            Assert.Equal("GET", _decodedHeaders[HeaderNames.Method]);
+            _decoder.Decode(_indexedHeaderStatic, endHeaders: true, handler: this);
+            Assert.Equal("GET", _decodedHeaders[":method"]);
 
             // 001   (Dynamic Table Size Update)
             // 11110 (30 encoded with 5-bit prefix - see http://httpwg.org/specs/rfc7541.html#integer.representation)
-            _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x3e }), endHeaders: true, handler: this);
+            _decoder.Decode(new byte[] { 0x3e }, endHeaders: true, handler: this);
 
             Assert.Equal(30, _dynamicTable.MaxSize);
         }
@@ -431,38 +431,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(DynamicTableInitialMaxSize, _dynamicTable.MaxSize);
 
-            var exception = Assert.Throws<HPackDecodingException>(() =>
-                _decoder.Decode(new ReadOnlySequence<byte>(new byte[] { 0x3f, 0xe2, 0x1f }), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackErrorDynamicTableSizeUpdateTooLarge(4097, DynamicTableInitialMaxSize), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() =>
+                _decoder.Decode(new byte[] { 0x3f, 0xe2, 0x1f }, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_hpack_large_table_size_update, 4097, DynamicTableInitialMaxSize), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesStringLength_GreaterThanLimit_Error()
         {
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(new byte[] { 0xff, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix
                 .ToArray();
 
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.FormatHPackStringLengthTooLarge(MaxRequestHeaderFieldSize + 1, MaxRequestHeaderFieldSize), exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: this));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, MaxHeaderFieldSize), exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
         [Fact]
         public void DecodesStringLength_LimitConfigurable()
         {
-            var decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize + 1);
-            var string8193 = new string('a', MaxRequestHeaderFieldSize + 1);
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
+            string string8193 = new string('a', MaxHeaderFieldSize + 1);
 
-            var encoded = _literalHeaderFieldWithoutIndexingNewName
+            byte[] encoded = _literalHeaderFieldWithoutIndexingNewName
                 .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
                 .Concat(Encoding.ASCII.GetBytes(string8193))
                 .Concat(new byte[] { 0x7f, 0x82, 0x3f }) // 8193 encoded with 7-bit prefix, no Huffman encoding
                 .Concat(Encoding.ASCII.GetBytes(string8193))
                 .ToArray();
 
-            decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this);
+            decoder.Decode(encoded, endHeaders: true, handler: this);
 
             Assert.Equal(string8193, _decodedHeaders[string8193]);
         }
@@ -552,8 +552,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_incompleteHeaderBlockData))]
         public void DecodesIncompleteHeaderBlock_Error(byte[] encoded)
         {
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackErrorIncompleteHeaderBlock, exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: this));
+            Assert.Equal(SR.net_http_hpack_incomplete_header_block, exception.Message);
             Assert.Empty(_decodedHeaders);
         }
 
@@ -586,8 +586,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_huffmanDecodingErrorData))]
         public void WrapsHuffmanDecodingExceptionInHPackDecodingException(byte[] encoded)
         {
-            var exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this));
-            Assert.Equal(CoreStrings.HPackHuffmanError, exception.Message);
+            HPackDecodingException exception = Assert.Throws<HPackDecodingException>(() => _decoder.Decode(encoded, endHeaders: true, handler: this));
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
             Assert.IsType<HuffmanDecodingException>(exception.InnerException);
             Assert.Empty(_decodedHeaders);
         }
@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(0, _dynamicTable.Count);
             Assert.Equal(0, _dynamicTable.Size);
 
-            _decoder.Decode(new ReadOnlySequence<byte>(encoded), endHeaders: true, handler: this);
+            _decoder.Decode(encoded, endHeaders: true, handler: this);
 
             Assert.Equal(expectedHeaderValue, _decodedHeaders[expectedHeaderName]);
 

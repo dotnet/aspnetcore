@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
+using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
     internal class Huffman
     {
@@ -303,25 +304,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         /// Decodes a Huffman encoded string from a byte array.
         /// </summary>
         /// <param name="src">The source byte array containing the encoded data.</param>
-        /// <param name="dst">The destination byte array to store the decoded data.</param>
+        /// <param name="dstArray">The destination byte array to store the decoded data.  This may grow if its size is insufficient.</param>
         /// <returns>The number of decoded symbols.</returns>
-        public static int Decode(ReadOnlySpan<byte> src, Span<byte> dst)
+        public static int Decode(ReadOnlySpan<byte> src, ref byte[] dstArray)
         {
-            var i = 0;
-            var j = 0;
-            var lastDecodedBits = 0;
+            Span<byte> dst = dstArray;
+            Debug.Assert(dst != null && dst.Length > 0);
+
+            int i = 0;
+            int j = 0;
+            int lastDecodedBits = 0;
             while (i < src.Length)
             {
                 // Note that if lastDecodeBits is 3 or more, then we will only get 5 bits (or less)
                 // from src[i]. Thus we need to read 5 bytes here to ensure that we always have
                 // at least 30 bits available for decoding.
-                var next = (uint)(src[i] << 24 + lastDecodedBits);
+                // TODO ISSUE 31751: Rework this as part of Huffman perf improvements
+                uint next = (uint)(src[i] << 24 + lastDecodedBits);
                 next |= (i + 1 < src.Length ? (uint)(src[i + 1] << 16 + lastDecodedBits) : 0);
                 next |= (i + 2 < src.Length ? (uint)(src[i + 2] << 8 + lastDecodedBits) : 0);
                 next |= (i + 3 < src.Length ? (uint)(src[i + 3] << lastDecodedBits) : 0);
                 next |= (i + 4 < src.Length ? (uint)(src[i + 4] >> (8 - lastDecodedBits)) : 0);
 
-                var ones = (uint)(int.MinValue >> (8 - lastDecodedBits - 1));
+                uint ones = (uint)(int.MinValue >> (8 - lastDecodedBits - 1));
                 if (i == src.Length - 1 && lastDecodedBits > 0 && (next & ones) == ones)
                 {
                     // The remaining 7 or less bits are all 1, which is padding.
@@ -334,24 +339,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 // The longest possible symbol size is 30 bits. If we're at the last 4 bytes
                 // of the input, we need to make sure we pass the correct number of valid bits
                 // left, otherwise the trailing 0s in next may form a valid symbol.
-                var validBits = Math.Min(30, (8 - lastDecodedBits) + (src.Length - i - 1) * 8);
-                var ch = DecodeValue(next, validBits, out var decodedBits);
+                int validBits = Math.Min(30, (8 - lastDecodedBits) + (src.Length - i - 1) * 8);
+                int ch = DecodeValue(next, validBits, out int decodedBits);
 
                 if (ch == -1)
                 {
                     // No valid symbol could be decoded with the bits in next
-                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorIncomplete);
+                    throw new HuffmanDecodingException(SR.net_http_hpack_huffman_decode_failed);
                 }
                 else if (ch == 256)
                 {
                     // A Huffman-encoded string literal containing the EOS symbol MUST be treated as a decoding error.
                     // http://httpwg.org/specs/rfc7541.html#rfc.section.5.2
-                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorEOS);
+                    throw new HuffmanDecodingException(SR.net_http_hpack_huffman_decode_failed);
                 }
 
                 if (j == dst.Length)
                 {
-                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorDestinationTooSmall);
+                    Array.Resize(ref dstArray, dst.Length * 2);
+                    dst = dstArray;
                 }
 
                 dst[j++] = (byte)ch;
@@ -398,11 +404,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             // symbol in the list of values associated with bit length b in the decoding table by indexing it
             // with codeMax - v.
 
-            var codeMax = 0;
+            int codeMax = 0;
 
-            for (var i = 0; i < _decodingTable.Length && _decodingTable[i].codeLength <= validBits; i++)
+            for (int i = 0; i < _decodingTable.Length && _decodingTable[i].codeLength <= validBits; i++)
             {
-                var (codeLength, codes) = _decodingTable[i];
+                (int codeLength, int[] codes) = _decodingTable[i];
 
                 if (i > 0)
                 {
@@ -411,8 +417,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                 codeMax += codes.Length;
 
-                var mask = int.MinValue >> (codeLength - 1);
-                var masked = (data & mask) >> (32 - codeLength);
+                int mask = int.MinValue >> (codeLength - 1);
+                long masked = (data & mask) >> (32 - codeLength);
 
                 if (masked < codeMax)
                 {

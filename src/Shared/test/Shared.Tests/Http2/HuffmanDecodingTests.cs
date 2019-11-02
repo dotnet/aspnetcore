@@ -1,15 +1,193 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
-using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.HPack;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
+namespace System.Net.Http.Unit.Tests.HPack
 {
-    public class HuffmanTests
+    public class HuffmanDecodingTests
     {
+        // Encoded values are 30 bits at most, so are stored in the table in a uint.
+        // Convert to ulong here and put the encoded value in the most significant bits.
+        // This makes the encoding logic below simpler.
+        private static (ulong code, int bitLength) GetEncodedValue(byte b)
+        {
+            (uint code, int bitLength) = Huffman.Encode(b);
+            return (((ulong)code) << 32, bitLength);
+        }
+
+        private static int Encode(byte[] source, byte[] destination, bool injectEOS)
+        {
+            ulong currentBits = 0;  // We can have 7 bits of rollover plus 30 bits for the next encoded value, so use a ulong
+            int currentBitCount = 0;
+            int dstOffset = 0;
+
+            for (int i = 0; i < source.Length; i++)
+            {
+                (ulong code, int bitLength) = GetEncodedValue(source[i]);
+
+                // inject EOS if instructed to
+                if (injectEOS)
+                {
+                    code |= (ulong)0b11111111_11111111_11111111_11111100 << (32 - bitLength);
+                    bitLength += 30;
+                    injectEOS = false;
+                }
+
+                currentBits |= code >> currentBitCount;
+                currentBitCount += bitLength;
+
+                while (currentBitCount >= 8)
+                {
+                    destination[dstOffset++] = (byte)(currentBits >> 56);
+                    currentBits = currentBits << 8;
+                    currentBitCount -= 8;
+                }
+            }
+
+            // Fill any trailing bits with ones, per RFC
+            if (currentBitCount > 0)
+            {
+                currentBits |= 0xFFFFFFFFFFFFFFFF >> currentBitCount;
+                destination[dstOffset++] = (byte)(currentBits >> 56);
+            }
+
+            return dstOffset;
+        }
+
+        [Fact]
+        public void HuffmanDecoding_ValidEncoding_Succeeds()
+        {
+            foreach (byte[] input in TestData())
+            {
+                // Worst case encoding is 30 bits per input byte, so make the encoded buffer 4 times as big
+                byte[] encoded = new byte[input.Length * 4];
+                int encodedByteCount = Encode(input, encoded, false);
+
+                // Worst case decoding is an output byte per 5 input bits, so make the decoded buffer 2 times as big
+                byte[] decoded = new byte[encoded.Length * 2];
+
+                int decodedByteCount = Huffman.Decode(new ReadOnlySpan<byte>(encoded, 0, encodedByteCount), ref decoded);
+
+                Assert.Equal(input.Length, decodedByteCount);
+                Assert.Equal(input, decoded.Take(decodedByteCount));
+            }
+        }
+
+        [Fact]
+        public void HuffmanDecoding_InvalidEncoding_Throws()
+        {
+            foreach (byte[] encoded in InvalidEncodingData())
+            {
+                // Worst case decoding is an output byte per 5 input bits, so make the decoded buffer 2 times as big
+                byte[] decoded = new byte[encoded.Length * 2];
+
+                Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(encoded, ref decoded));
+            }
+        }
+
+        // This input sequence will encode to 17 bits, thus offsetting the next character to encode
+        // by exactly one bit. We use this below to generate a prefix that encodes all of the possible starting
+        // bit offsets for a character, from 0 to 7.
+        private static readonly byte[] s_offsetByOneBit = new byte[] { (byte)'c', (byte)'l', (byte)'r' };
+
+        public static IEnumerable<byte[]> TestData()
+        {
+            // Single byte data
+            for (int i = 0; i < 256; i++)
+            {
+                yield return new byte[] { (byte)i };
+            }
+
+            // Ensure that decoding every possible value leaves the decoder in a correct state so that
+            // a subsequent value can be decoded (here, 'a')
+            for (int i = 0; i < 256; i++)
+            {
+                yield return new byte[] { (byte)i, (byte)'a' };
+            }
+
+            // Ensure that every possible bit starting position for every value is encoded properly
+            // s_offsetByOneBit encodes to exactly 17 bits, leaving 1 bit for the next byte
+            // So by repeating this sequence, we can generate any starting bit position we want.
+            byte[] currentPrefix = new byte[0];
+            for (int prefixBits = 1; prefixBits <= 8; prefixBits++)
+            {
+                currentPrefix = currentPrefix.Concat(s_offsetByOneBit).ToArray();
+
+                // Make sure we're actually getting the correct number of prefix bits
+                int encodedBits = currentPrefix.Select(b => Huffman.Encode(b).bitLength).Sum();
+                Assert.Equal(prefixBits % 8, encodedBits % 8);
+
+                for (int i = 0; i < 256; i++)
+                {
+                    yield return currentPrefix.Concat(new byte[] { (byte)i }.Concat(currentPrefix)).ToArray();
+                }
+            }
+
+            // Finally, one really big chunk of randomly generated data.
+            byte[] data = new byte[1024 * 1024];
+            new Random(42).NextBytes(data);
+            yield return data;
+        }
+
+        private static IEnumerable<byte[]> InvalidEncodingData()
+        {
+            // For encodings greater than 8 bits, truncate one or more bytes to generate an invalid encoding
+            byte[] source = new byte[1];
+            byte[] destination = new byte[10];
+            for (int i = 0; i < 256; i++)
+            {
+                source[0] = (byte)i;
+                int encodedByteCount = Encode(source, destination, false);
+                if (encodedByteCount > 1)
+                {
+                    yield return destination.Take(encodedByteCount - 1).ToArray();
+                    if (encodedByteCount > 2)
+                    {
+                        yield return destination.Take(encodedByteCount - 2).ToArray();
+                        if (encodedByteCount > 3)
+                        {
+                            yield return destination.Take(encodedByteCount - 3).ToArray();
+                        }
+                    }
+                }
+            }
+
+            // Pad encodings with invalid trailing one bits. This is disallowed.
+            byte[] pad1 = new byte[] { 0xFF };
+            byte[] pad2 = new byte[] { 0xFF, 0xFF, };
+            byte[] pad3 = new byte[] { 0xFF, 0xFF, 0xFF };
+            byte[] pad4 = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
+
+            for (int i = 0; i < 256; i++)
+            {
+                source[0] = (byte)i;
+                int encodedByteCount = Encode(source, destination, false);
+                yield return destination.Take(encodedByteCount).Concat(pad1).ToArray();
+                yield return destination.Take(encodedByteCount).Concat(pad2).ToArray();
+                yield return destination.Take(encodedByteCount).Concat(pad3).ToArray();
+                yield return destination.Take(encodedByteCount).Concat(pad4).ToArray();
+            }
+
+            // send single EOS
+            yield return new byte[] { 0b11111111, 0b11111111, 0b11111111, 0b11111100 };
+
+            // send combinations with EOS in the middle
+            source = new byte[2];
+            destination = new byte[24];
+            for (int i = 0; i < 256; i++)
+            {
+                source[0] = source[1] = (byte)i;
+                int encodedByteCount = Encode(source, destination, true);
+                yield return destination.Take(encodedByteCount).ToArray();
+            }
+        }
+
         public static readonly TheoryData<byte[], byte[]> _validData = new TheoryData<byte[], byte[]>
         {
             // Single 5-bit symbol
@@ -67,8 +245,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_validData))]
         public void HuffmanDecodeArray(byte[] encoded, byte[] expected)
         {
-            var dst = new byte[expected.Length];
-            Assert.Equal(expected.Length, Huffman.Decode(new ReadOnlySpan<byte>(encoded), dst));
+            byte[] dst = new byte[expected.Length];
+            Assert.Equal(expected.Length, Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
             Assert.Equal(expected, dst);
         }
 
@@ -88,8 +266,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_longPaddingData))]
         public void ThrowsOnPaddingLongerThanSevenBits(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
+            byte[] dst = new byte[encoded.Length * 2];
+            Exception exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         public static readonly TheoryData<byte[]> _eosData = new TheoryData<byte[]>
@@ -104,17 +283,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_eosData))]
         public void ThrowsOnEOS(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorEOS, exception.Message);
+            byte[] dst = new byte[encoded.Length * 2];
+            Exception exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         [Fact]
-        public void ThrowsOnDestinationBufferTooSmall()
+        public void ResizesOnDestinationBufferTooSmall()
         {
             //                           h      e         l          l      o         *
-            var encoded = new byte[] { 0b100111_00, 0b101_10100, 0b0_101000_0, 0b0111_1111 };
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length]));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorDestinationTooSmall, exception.Message);
+            byte[] encoded = new byte[] { 0b100111_00, 0b101_10100, 0b0_101000_0, 0b0111_1111 };
+            byte[] originalDestination = new byte[encoded.Length];
+            byte[] actualDestination = originalDestination;
+            int decodedCount = Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref actualDestination);
+            Assert.Equal(5, decodedCount);
+            Assert.NotSame(originalDestination, actualDestination);
         }
 
         public static readonly TheoryData<byte[]> _incompleteSymbolData = new TheoryData<byte[]>
@@ -145,28 +328,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(_incompleteSymbolData))]
         public void ThrowsOnIncompleteSymbol(byte[] encoded)
         {
-            var exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), new byte[encoded.Length * 2]));
-            Assert.Equal(CoreStrings.HPackHuffmanErrorIncomplete, exception.Message);
+            byte[] dst = new byte[encoded.Length * 2];
+            Exception exception = Assert.Throws<HuffmanDecodingException>(() => Huffman.Decode(new ReadOnlySpan<byte>(encoded), ref dst));
+            Assert.Equal(SR.net_http_hpack_huffman_decode_failed, exception.Message);
         }
 
         [Fact]
         public void DecodeCharactersThatSpans5Octets()
         {
-            var expectedLength = 2;
-            var decodedBytes = new byte[expectedLength];
+            int expectedLength = 2;
+            byte[] decodedBytes = new byte[expectedLength];
             //                           B       LF                                             EOS
-            var encoded = new byte[] { 0b1011101_1, 0b11111111, 0b11111111, 0b11111111, 0b11100_111 };
-            var decodedLength = Huffman.Decode(new ReadOnlySpan<byte>(encoded, 0, encoded.Length), decodedBytes);
+            byte[] encoded = new byte[] { 0b1011101_1, 0b11111111, 0b11111111, 0b11111111, 0b11100_111 };
+            int decodedLength = Huffman.Decode(new ReadOnlySpan<byte>(encoded, 0, encoded.Length), ref decodedBytes);
 
             Assert.Equal(expectedLength, decodedLength);
-            Assert.Equal(new byte [] { (byte)'B', (byte)'\n' }, decodedBytes);
+            Assert.Equal(new byte[] { (byte)'B', (byte)'\n' }, decodedBytes);
         }
 
         [Theory]
         [MemberData(nameof(HuffmanData))]
         public void HuffmanEncode(int code, uint expectedEncoded, int expectedBitLength)
         {
-            var (encoded, bitLength) = Huffman.Encode(code);
+            (uint encoded, int bitLength) = Huffman.Encode(code);
             Assert.Equal(expectedEncoded, encoded);
             Assert.Equal(expectedBitLength, bitLength);
         }
@@ -175,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HuffmanData))]
         public void HuffmanDecode(int code, uint encoded, int bitLength)
         {
-            Assert.Equal(code, Huffman.DecodeValue(encoded, bitLength, out var decodedBits));
+            Assert.Equal(code, Huffman.DecodeValue(encoded, bitLength, out int decodedBits));
             Assert.Equal(bitLength, decodedBits);
         }
 
@@ -183,14 +367,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(HuffmanData))]
         public void HuffmanEncodeDecode(
             int code,
-// Suppresses the warning about an unused theory parameter because
-// this test shares data with other methods
+            // Suppresses the warning about an unused theory parameter because
+            // this test shares data with other methods
 #pragma warning disable xUnit1026
             uint encoded,
 #pragma warning restore xUnit1026
             int bitLength)
         {
-            Assert.Equal(code, Huffman.DecodeValue(Huffman.Encode(code).encoded, bitLength, out var decodedBits));
+            Assert.Equal(code, Huffman.DecodeValue(Huffman.Encode(code).encoded, bitLength, out int decodedBits));
             Assert.Equal(bitLength, decodedBits);
         }
 
@@ -198,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             get
             {
-                var data = new TheoryData<int, uint, int>();
+                TheoryData<int, uint, int> data = new TheoryData<int, uint, int>();
 
                 data.Add(0, 0b11111111_11000000_00000000_00000000, 13);
                 data.Add(1, 0b11111111_11111111_10110000_00000000, 23);

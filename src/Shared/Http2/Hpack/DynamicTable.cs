@@ -1,12 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0.
+// See THIRD-PARTY-NOTICES.TXT in the project root for license information.
 
-using System;
-
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace System.Net.Http.HPack
 {
-    // The dynamic table is defined as a queue where items are inserted at the front and removed from the back.
-    // It's implemented as a circular buffer that appends to the end and trims from the front. Thus index are reversed.
     internal class DynamicTable
     {
         private HeaderField[] _buffer;
@@ -37,19 +34,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     throw new IndexOutOfRangeException();
                 }
 
-                var modIndex = _insertIndex - index - 1;
-                if (modIndex < 0)
+                index = _insertIndex - index - 1;
+
+                if (index < 0)
                 {
-                    modIndex += _buffer.Length;
+                    // _buffer is circular; wrap the index back around.
+                    index += _buffer.Length;
                 }
 
-                return _buffer[modIndex];
+                return _buffer[index];
             }
         }
 
-        public void Insert(Span<byte> name, Span<byte> value)
+        public void Insert(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            var entryLength = HeaderField.GetLength(name.Length, value.Length);
+            int entryLength = HeaderField.GetLength(name.Length, value.Length);
             EnsureAvailable(entryLength);
 
             if (entryLength > _maxSize)
@@ -74,12 +73,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             {
                 var newBuffer = new HeaderField[maxSize / HeaderField.RfcOverhead];
 
-                for (var i = 0; i < Count; i++)
-                {
-                    newBuffer[i] = _buffer[i];
-                }
+                int headCount = Math.Min(_buffer.Length - _removeIndex, _count);
+                int tailCount = _count - headCount;
+
+                Array.Copy(_buffer, _removeIndex, newBuffer, 0, headCount);
+                Array.Copy(_buffer, 0, newBuffer, headCount, tailCount);
 
                 _buffer = newBuffer;
+                _removeIndex = 0;
+                _insertIndex = _count;
                 _maxSize = maxSize;
             }
             else
@@ -93,7 +95,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         {
             while (_count > 0 && _maxSize - _size < available)
             {
-                _size -= _buffer[_removeIndex].Length;
+                ref HeaderField field = ref _buffer[_removeIndex];
+                _size -= field.Length;
+                field = default;
+
                 _count--;
                 _removeIndex = (_removeIndex + 1) % _buffer.Length;
             }

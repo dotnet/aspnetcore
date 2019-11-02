@@ -951,7 +951,7 @@ $@"        private void Clear(long bitsToClear)
             }} while (tempBits != 0);
         }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(Span<byte> name, Span<byte> value)
+        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
