@@ -33,8 +33,10 @@
         * preparing a new major or minor release (i.e. a non-servicing builds)
         * when a project is a test or sample project
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+        * the targeting pack is being patched
     -->
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsTargetingPackPatching)' == 'true'  ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(IsPackable)' == 'true' ">true</UseLatestPackageReferences>
@@ -44,9 +46,11 @@
       Projects should only use the project references instead of baseline package references when:
         * preparing a new major or minor release (i.e. a non-servicing builds)
         * when a project is a test or sample project
+        * the targeting pack is being patched
       We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
     -->
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsTargetingPackPatching)' == 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
 
@@ -142,8 +146,8 @@
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
-      <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+      <!-- Only allow suppressing baseline changes in non-servicing builds, or if the targeting pack is being patched. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true' OR '$(IsTargetingPackPatching)' == 'true' "/>
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,

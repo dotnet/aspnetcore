@@ -60,7 +60,10 @@
 
   <PropertyGroup
       Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+    <!-- Remove RID to ensure PackagesInPatch only needs to specify the RID-less package name  -->
+    <PackageIdWithoutRID>$(PackageId)</PackageIdWithoutRID>
+    <PackageIdWithoutRID Condition="'$(RuntimeIdentifier)' != ''">$(PackageId.Replace('.$(RuntimeIdentifier)',''))</PackageIdWithoutRID>
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageIdWithoutRID);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
@@ -68,6 +71,10 @@
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
     <!-- Suppress creation of .nupkg for servicing builds. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
@@ -83,6 +90,9 @@
     -->
     <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
     <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
+
+    <!-- For servicing builds, we want to resolve basline versions of project packages that aren't building, always -->
+    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
