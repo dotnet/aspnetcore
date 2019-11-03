@@ -2,13 +2,12 @@
 
   <PropertyGroup>
     <Description>Libuv transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <IsShippingPackage>true</IsShippingPackage>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
