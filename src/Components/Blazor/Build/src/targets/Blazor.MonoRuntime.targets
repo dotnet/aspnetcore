@@ -424,19 +424,20 @@
     <ItemGroup>
       <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)">
         <RelativeDirNoTrailingSlash>$([System.String]::Copy('%(RelativeDir)').TrimEnd('\'))</RelativeDirNoTrailingSlash>
-        <IsSystemAssembly>$([System.String]::Copy('%(FileName)').StartsWith('System.'))</IsSystemAssembly>
+        <IsLinkable Condition="$([System.String]::Copy('%(FileName)').StartsWith('System.'))">true</IsLinkable>
+        <IsLinkable Condition="$([System.String]::Copy('%(FileName)').StartsWith('Microsoft.Extensions.'))">true</IsLinkable>
       </_BlazorDependencyAssembly>
     </ItemGroup>
     <ItemGroup>
       <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath);$(MonoWasmFrameworkPath)" />
-      <_BlazorAssembliesToLink Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
+      <_BlazorAssembliesToCopy Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
       <_BlazorFolderLookupPaths Include="@(_MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
 
-      <!-- For System.* dependencies, add their directories as lookup paths. This means we will link them. -->
-      <_BlazorFolderLookupPaths Condition="'%(_BlazorDependencyAssembly.IsSystemAssembly)' == 'true'" Include="@(_BlazorDependencyAssembly->'-d &quot;%(RelativeDirNoTrailingSlash)&quot;')" />
+      <!-- For linkable assemblies, add their directories as lookup paths -->
+      <_BlazorFolderLookupPaths Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" Include="@(_BlazorDependencyAssembly->'-d &quot;%(RelativeDirNoTrailingSlash)&quot;')" />
 
-      <!-- For other dependencies (not System.*), reference the .dll directly. This means we will *not* link them. -->
-      <_BlazorAssembliesToLink Condition="'%(_BlazorDependencyAssembly.IsSystemAssembly)' != 'true'" Include="@(_BlazorDependencyAssembly->'-a &quot;%(FullPath)&quot;')" />
+      <!-- For non-linkable assemblies, reference the .dll directly -->
+      <_BlazorAssembliesToCopy Condition="'%(_BlazorDependencyAssembly.IsLinkable)' != 'true'" Include="@(_BlazorDependencyAssembly->'-a &quot;%(FullPath)&quot;')" />
 
       <_BlazorAssemblyDescriptorFiles
         Include="@(BlazorLinkerDescriptor->'-x &quot;%(FullPath)&quot;')" Condition="'@(BlazorLinkerDescriptor)' != ''" />
@@ -450,7 +451,7 @@
     <Delete Files="$(BlazorIntermediateLinkerOutputPath)*.dll" />
 
     <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
-    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
+    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToCopy, ' ')"  />
 
     <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
     <ItemGroup>
