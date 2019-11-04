@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #else
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
 #endif
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/14382", Queues = "Windows.10.Amd64.Open")]
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocket()
