@@ -126,12 +126,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var flags = ComputeLeftToWrite(data.Count, endOfRequest);
             if (endOfRequest && _leftToWrite > 0)
             {
-                _requestContext.Abort();
                 if (!RequestContext.DisconnectToken.IsCancellationRequested)
                 {
                     // This is logged rather than thrown because it is too late for an exception to be visible in user code.
                     LogHelper.LogError(Logger, "ResponseStream::Dispose", "Fewer bytes were written than were specified in the Content-Length.");
                 }
+                _requestContext.Abort();
                 return;
             }
 
@@ -669,8 +669,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    _disposed = true;
                     FlushInternal(endOfRequest: true);
+                    _disposed = true;
                 }
             }
             finally
