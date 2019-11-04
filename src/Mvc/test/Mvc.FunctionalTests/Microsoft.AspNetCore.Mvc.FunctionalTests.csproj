@@ -16,6 +16,7 @@
   <ItemGroup>
     <Compile Include="..\..\Mvc.Formatters.Xml\test\XmlAssert.cs" />
     <EmbeddedResource Include="compiler\resources\**\*" />
+    <None Remove="compiler\resources\TagHelpersWebSite.Home.GlobbingTagHelpers.html" />
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

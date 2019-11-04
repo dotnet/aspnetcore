@@ -287,7 +287,7 @@ namespace Templates.Test.Helpers
             try
             {
                 output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                var result = await ProcessEx.RunViaShellAsync(output, workingDirectory, "npm install");
+                var result = ProcessEx.RunViaShell(output, workingDirectory, "npm install");
                 return result;
             }
             finally

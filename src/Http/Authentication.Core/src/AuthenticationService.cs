@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
+        private HashSet<ClaimsPrincipal> _transformCache;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -77,8 +80,20 @@ namespace Microsoft.AspNetCore.Authentication
             var result = await handler.AuthenticateAsync();
             if (result != null && result.Succeeded)
             {
-                var transformed = await Transform.TransformAsync(result.Principal);
-                return AuthenticateResult.Success(new AuthenticationTicket(transformed, result.Properties, result.Ticket.AuthenticationScheme));
+                var principal = result.Principal;
+                var doTransform = true;
+                _transformCache ??= new HashSet<ClaimsPrincipal>();
+                if (_transformCache.Contains(principal))
+                {
+                    doTransform = false;
+                }
+
+                if (doTransform)
+                {
+                    principal = await Transform.TransformAsync(principal);
+                    _transformCache.Add(principal);
+                }
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket.AuthenticationScheme));
             }
             return result;
         }

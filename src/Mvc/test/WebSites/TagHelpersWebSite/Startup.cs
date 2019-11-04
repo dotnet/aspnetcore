@@ -21,6 +21,7 @@ namespace TagHelpersWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
+            app.UseStaticFiles();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
@@ -38,6 +39,7 @@ namespace TagHelpersWebSite
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStaticWebAssets()
                 .UseStartup<Startup>()
                 .UseKestrel()
                 .UseIISIntegration();

@@ -49,6 +49,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.WsFederation" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
 </Project>

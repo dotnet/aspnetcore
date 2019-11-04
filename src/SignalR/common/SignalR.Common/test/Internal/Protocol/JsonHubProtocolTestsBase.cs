@@ -90,6 +90,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("CloseMessage_HasError", new CloseMessage("Error!"), false, true, "{\"type\":7,\"error\":\"Error!\"}"),
             new JsonProtocolTestData("CloseMessage_HasErrorEmptyString", new CloseMessage(""), false, true, "{\"type\":7,\"error\":\"\"}"),
             new JsonProtocolTestData("CloseMessage_HasErrorWithCamelCase", new CloseMessage("Error!"), true, true, "{\"type\":7,\"error\":\"Error!\"}"),
+            new JsonProtocolTestData("CloseMessage_HasAllowReconnect", new CloseMessage(error: null, allowReconnect: true), true, true, "{\"type\":7,\"allowReconnect\":true}"),
+            new JsonProtocolTestData("CloseMessage_HasErrorAndAllowReconnect", new CloseMessage("Error!", allowReconnect: true), true, true, "{\"type\":7,\"error\":\"Error!\",\"allowReconnect\":true}"),
 
         }.ToDictionary(t => t.Name);
 
@@ -312,6 +314,50 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }, streamItemMessage.Item);
         }
 
+        public static IDictionary<string, MessageSizeTestData> MessageSizeData => new[]
+        {
+            new MessageSizeTestData("InvocationMessage_WithoutInvocationId", new InvocationMessage("Target", new object[] { 1 }), 45),
+            new MessageSizeTestData("InvocationMessage_WithInvocationId", new InvocationMessage("1", "Target", new object[] { 1 }), 64),
+            new MessageSizeTestData("InvocationMessage_WithInvocationIdAndStreamId", new InvocationMessage("1", "Target", new object[] { 1 }, new string[] { "2" }), 82),
+
+            new MessageSizeTestData("CloseMessage_Empty", CloseMessage.Empty, 11),
+            new MessageSizeTestData("CloseMessage_WithError", new CloseMessage("error"), 27),
+
+            new MessageSizeTestData("StreamItemMessage_WithNullItem", new StreamItemMessage("1", null), 42),
+            new MessageSizeTestData("StreamItemMessage_WithItem", new StreamItemMessage("1", 1), 39),
+
+            new MessageSizeTestData("CompletionMessage_Empty", CompletionMessage.Empty("1"), 30),
+            new MessageSizeTestData("CompletionMessage_WithResult", CompletionMessage.WithResult("1", 1), 41),
+            new MessageSizeTestData("CompletionMessage_WithError", CompletionMessage.WithError("1", "error"), 46),
+
+            new MessageSizeTestData("StreamInvocationMessage", new StreamInvocationMessage("1", "target", Array.Empty<object>()), 63),
+            new MessageSizeTestData("StreamInvocationMessage_WithStreamId", new StreamInvocationMessage("1", "target", Array.Empty<object>(), new [] { "2" }), 81),
+
+            new MessageSizeTestData("CancelInvocationMessage", new CancelInvocationMessage("1"), 30),
+
+            new MessageSizeTestData("PingMessage", PingMessage.Instance, 11),
+        }.ToDictionary(t => t.Name);
+
+        public static IEnumerable<object[]> MessageSizeDataNames => MessageSizeData.Keys.Select(name => new object[] { name });
+
+        [Theory]
+        [MemberData(nameof(MessageSizeDataNames))]
+        public void VerifyMessageSize(string testDataName)
+        {
+            var testData = MessageSizeData[testDataName];
+
+            var writer = MemoryBufferWriter.Get();
+            try
+            {
+                JsonHubProtocol.WriteMessage(testData.Message, writer);
+                Assert.Equal(testData.Size, writer.Length);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
+            }
+        }
+
         public static string Frame(string input)
         {
             var data = Encoding.UTF8.GetBytes(input);
@@ -341,6 +387,22 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 Json = json;
                 UseCamelCase = useCamelCase;
                 IgnoreNullValues = ignoreNullValues;
+            }
+
+            public override string ToString() => Name;
+        }
+
+        public class MessageSizeTestData
+        {
+            public string Name { get; }
+            public HubMessage Message { get; }
+            public int Size { get; }
+
+            public MessageSizeTestData(string name, HubMessage message, int size)
+            {
+                Name = name;
+                Message = message;
+                Size = size;
             }
 
             public override string ToString() => Name;

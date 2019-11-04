@@ -59,14 +59,22 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = loggerFactory.CreateLogger<HubConnectionHandler<THub>>();
             _userIdProvider = userIdProvider;
 
-            _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
-            _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
+            _enableDetailedErrors = false;
+            if (_hubOptions.UserHasSetValues)
+            {
+                _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
+                _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+            }
+            else
+            {
+                _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
+                _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+            }
 
             _dispatcher = new DefaultHubDispatcher<THub>(
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
-                hubOptions,
-                globalHubOptions,
+                _enableDetailedErrors,
                 new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
         }
 
@@ -126,7 +134,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 Log.ErrorDispatchingHubEvent(_logger, "OnConnectedAsync", ex);
 
-                await SendCloseAsync(connection, ex);
+                // The client shouldn't try to reconnect given an error in OnConnected.
+                await SendCloseAsync(connection, ex, allowReconnect: false);
 
                 // return instead of throw to let close message send successfully
                 return;
@@ -157,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
             // send close message before aborting the connection
-            await SendCloseAsync(connection, exception);
+            await SendCloseAsync(connection, exception, connection.AllowReconnect);
 
             // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
             // before OnDisconnectedAsync
@@ -176,14 +185,18 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception)
+        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception, bool allowReconnect)
         {
             var closeMessage = CloseMessage.Empty;
 
             if (exception != null)
             {
                 var errorMessage = ErrorMessageHelper.BuildErrorMessage("Connection closed with an error.", exception, _enableDetailedErrors);
-                closeMessage = new CloseMessage(errorMessage);
+                closeMessage = new CloseMessage(errorMessage, allowReconnect);
+            }
+            else if (allowReconnect)
+            {
+                closeMessage = new CloseMessage(error: null, allowReconnect);
             }
 
             try

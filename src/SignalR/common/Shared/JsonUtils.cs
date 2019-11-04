@@ -114,6 +114,18 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        public static bool ReadAsBoolean(JsonTextReader reader, string propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonToken.Boolean || reader.Value == null)
+            {
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Boolean}.");
+            }
+
+            return Convert.ToBoolean(reader.Value, CultureInfo.InvariantCulture);
+        }
+
         public static int? ReadAsInt32(JsonTextReader reader, string propertyName)
         {
             reader.Read();

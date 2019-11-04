@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
@@ -25,8 +26,12 @@ namespace Microsoft.AspNetCore.Components.Server
     // 'sequence' indicates the order in which this component got rendered on the server.
     // 'assemblyName' the assembly name for the rendered component.
     // 'type' the full type name for the rendered component.
+    // 'parameterDefinitions' a JSON serialized array that contains the definitions for the parameters including their names and types and assemblies.
+    // 'parameterValues' a JSON serialized array containing the parameter values.
     // 'invocationId' a random string that matches all components rendered by as part of a single HTTP response.
     // For example: base64(dataprotection({ "sequence": 1, "assemblyName": "Microsoft.AspNetCore.Components", "type":"Microsoft.AspNetCore.Components.Routing.Router", "invocationId": "<<guid>>"}))
+    // With parameters
+    // For example: base64(dataprotection({ "sequence": 1, "assemblyName": "Microsoft.AspNetCore.Components", "type":"Microsoft.AspNetCore.Components.Routing.Router", "invocationId": "<<guid>>", parameterDefinitions: "[{ \"name\":\"Parameter\", \"typeName\":\"string\", \"assembly\":\"System.Private.CoreLib\"}], parameterValues: [<<string-value>>]}))
 
     // Serialization:
     // For a given response, MVC renders one or more markers in sequence, including a descriptor for each rendered
@@ -55,11 +60,13 @@ namespace Microsoft.AspNetCore.Components.Server
         private readonly IDataProtector _dataProtector;
         private readonly ILogger<ServerComponentDeserializer> _logger;
         private readonly ServerComponentTypeCache _rootComponentTypeCache;
+        private readonly ComponentParameterDeserializer _parametersDeserializer;
 
         public ServerComponentDeserializer(
             IDataProtectionProvider dataProtectionProvider,
             ILogger<ServerComponentDeserializer> logger,
-            ServerComponentTypeCache rootComponentTypeCache)
+            ServerComponentTypeCache rootComponentTypeCache,
+            ComponentParameterDeserializer parametersDeserializer)
         {
             // When we protect the data we use a time-limited data protector with the
             // limits established in 'ServerComponentSerializationSettings.DataExpiration'
@@ -74,6 +81,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             _logger = logger;
             _rootComponentTypeCache = rootComponentTypeCache;
+            _parametersDeserializer = parametersDeserializer;
         }
 
         public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
@@ -146,7 +154,9 @@ namespace Microsoft.AspNetCore.Components.Server
             string unprotected;
             try
             {
-                unprotected = _dataProtector.Unprotect(record.Descriptor);
+                var payload = Convert.FromBase64String(record.Descriptor);
+                var unprotectedBytes = _dataProtector.Unprotect(payload);
+                unprotected = Encoding.UTF8.GetString(unprotectedBytes);
             }
             catch (Exception e)
             {
@@ -176,9 +186,16 @@ namespace Microsoft.AspNetCore.Components.Server
                 return default;
             }
 
+            if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out var parameters))
+            {
+                // TryDeserializeParameters does appropriate logging.
+                return default;
+            }
+            
             var componentDescriptor = new ComponentDescriptor
             {
                 ComponentType = componentType,
+                Parameters = parameters,
                 Sequence = serverComponent.Sequence
             };
 

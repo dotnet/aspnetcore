@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Type modelType,
             string name = null,
             Type containerType = null,
-            ParameterInfo parameterInfo = null)
+            object fieldInfo = null)
         {
             ModelType = modelType;
             Name = name;
             ContainerType = containerType;
-            ParameterInfo = parameterInfo;
+            FieldInfo = fieldInfo;
         }
 
         /// <summary>
@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="name">The name of the property.</param>
         /// <param name="containerType">The container type of the model property.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
+        [Obsolete("This API is obsolete and may be removed in a future release.")]
         public static ModelMetadataIdentity ForProperty(
             Type modelType,
             string name,
@@ -68,6 +69,36 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             return new ModelMetadataIdentity(modelType, name, containerType);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ModelMetadataIdentity"/> for the provided property.
+        /// </summary>
+        /// <param name="modelType">The model type.</param>
+        /// <param name="propertyInfo">The property.</param>
+        /// <param name="containerType">The container type of the model property.</param>
+        /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
+        public static ModelMetadataIdentity ForProperty(
+            PropertyInfo propertyInfo,
+            Type modelType,
+            Type containerType)
+        {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+
+            return new ModelMetadataIdentity(modelType, propertyInfo.Name, containerType, fieldInfo: propertyInfo);
         }
 
         /// <summary>
@@ -97,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            return new ModelMetadataIdentity(modelType, parameter.Name, parameterInfo: parameter);
+            return new ModelMetadataIdentity(modelType, parameter.Name, fieldInfo: parameter);
         }
 
         /// <summary>
@@ -139,11 +170,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public string Name { get; }
 
+        private object FieldInfo { get; }
+
         /// <summary>
         /// Gets a descriptor for the parameter, or <c>null</c> if this instance
         /// does not represent a parameter.
         /// </summary>
-        public ParameterInfo ParameterInfo { get; }
+        public ParameterInfo ParameterInfo => FieldInfo as ParameterInfo;
+
+        /// <summary>
+        /// Gets a descriptor for the property, or <c>null</c> if this instance
+        /// does not represent a property.
+        /// </summary>
+        public PropertyInfo PropertyInfo => FieldInfo as PropertyInfo;
 
         /// <inheritdoc />
         public bool Equals(ModelMetadataIdentity other)
@@ -152,7 +191,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 ContainerType == other.ContainerType &&
                 ModelType == other.ModelType &&
                 Name == other.Name &&
-                ParameterInfo == other.ParameterInfo;
+                ParameterInfo == other.ParameterInfo && 
+                PropertyInfo == other.PropertyInfo;
         }
 
         /// <inheritdoc />
@@ -170,6 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             hash.Add(ModelType);
             hash.Add(Name, StringComparer.Ordinal);
             hash.Add(ParameterInfo);
+            hash.Add(PropertyInfo);
             return hash;
         }
     }

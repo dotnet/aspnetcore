@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,40 +36,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            return TaskToApm.Begin(ReadAsync(buffer, offset, count), callback, state);
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            var task = ReadAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<int>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(task2.Result);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
+            return TaskToApm.End<int>(asyncResult);
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -90,6 +63,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 return await _body.ReadAsync(buffer, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
+        }
+
+        public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _body.CopyToAsync(destination, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {

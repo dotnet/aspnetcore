@@ -23,7 +23,8 @@
   <Target Name="Build" DependsOnTargets="DebBuild" />
   <Target Name="Pack" />
 
-  <Target Name="DebBuild" DependsOnTargets="$(DebBuildDependsOn)">
+  <Target Name="DebBuild" DependsOnTargets="$(DebBuildDependsOn)"
+      Condition="!( '$(IsTargetingPackBuilding)' == 'false' AND '$(MSBuildProjectName)' == 'Debian.TargetingPack' )">
     <!-- Generate debian_config.json. We can't simply use WriteLinesToFile because of https://github.com/Microsoft/msbuild/issues/1622. Use our custom GenerateFileFromTemplate task instead -->
     <PropertyGroup>
       <DebianConfigProperties>

@@ -52,6 +52,7 @@
 
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(_RefSourceFileTFM).cs</_RefSourceFileName>
+      <_ManualRefSourceFileName>$(AssemblyName).Manual.cs</_ManualRefSourceFileName>
       <_RefSourceFileOutputPath>$(_RefSourceOutputPath)$(_RefSourceFileName)</_RefSourceFileOutputPath>
     </PropertyGroup>
 
@@ -87,10 +88,16 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <_ManualReferenceAssemblyContent />
+      <_ManualReferenceAssemblyContent Condition="Exists('$(_RefSourceOutputPath)$(_ManualRefSourceFileName)')">
+      <![CDATA[
+    <Compile Include="$(_ManualRefSourceFileName)" />]]>
+      </_ManualReferenceAssemblyContent>
+
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(_RefProjectFileTFM)'">
-    <Compile Include="$(_RefSourceFileName)" />
+    <Compile Include="$(_RefSourceFileName)" />]]>$(_ManualReferenceAssemblyContent)<![CDATA[
     @(FilteredOriginalReferences->'<Reference Include="%(Identity)"  />', '%0A    ')
   </ItemGroup>
 ]]>

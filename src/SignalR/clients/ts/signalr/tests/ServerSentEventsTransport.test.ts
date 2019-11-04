@@ -6,6 +6,7 @@ import { TransferFormat } from "../src/ITransport";
 import { HttpClient, HttpRequest } from "../src/HttpClient";
 import { ILogger } from "../src/ILogger";
 import { ServerSentEventsTransport } from "../src/ServerSentEventsTransport";
+import { getUserAgentHeader } from "../src/Utils";
 import { VerifyLogger } from "./Common";
 import { TestEventSource, TestMessageEvent } from "./TestEventSource";
 import { TestHttpClient } from "./TestHttpClient";
@@ -16,7 +17,7 @@ registerUnhandledRejectionHandler();
 describe("ServerSentEventsTransport", () => {
     it("does not allow non-text formats", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource);
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true);
 
             await expect(sse.connect("", TransferFormat.Binary))
                 .rejects
@@ -26,7 +27,7 @@ describe("ServerSentEventsTransport", () => {
 
     it("connect waits for EventSource to be connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource);
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true);
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -42,6 +43,27 @@ describe("ServerSentEventsTransport", () => {
 
             await connectPromise;
             expect(connectComplete).toBe(true);
+        });
+    });
+
+    it("connect failure does not call onclose handler", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true);
+            let closeCalled = false;
+            sse.onclose = () => closeCalled = true;
+
+            const connectPromise = (async () => {
+                await sse.connect("http://example.com", TransferFormat.Text);
+            })();
+
+            await TestEventSource.eventSource.openSet;
+
+            TestEventSource.eventSource.onerror(new TestMessageEvent());
+
+            await expect(connectPromise)
+                .rejects
+                .toEqual(new Error("Error occurred"));
+            expect(closeCalled).toBe(false);
         });
     });
 
@@ -147,7 +169,7 @@ describe("ServerSentEventsTransport", () => {
 
     it("send throws if not connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource);
+            const sse = new ServerSentEventsTransport(new TestHttpClient(), undefined, logger, true, TestEventSource, true);
 
             await expect(sse.send(""))
                 .rejects
@@ -179,10 +201,30 @@ describe("ServerSentEventsTransport", () => {
             expect(error).toEqual(new Error("error parsing"));
         });
     });
+
+    it("sets user agent header on connect and sends", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let request: HttpRequest;
+            const httpClient = new TestHttpClient().on((r) => {
+                request = r;
+                return "";
+            });
+
+            const sse = await createAndStartSSE(logger, "http://example.com", undefined, httpClient);
+
+            let [, value] = getUserAgentHeader();
+            expect((TestEventSource.eventSource.eventSourceInitDict as any).headers[`User-Agent`]).toEqual(value);
+            await sse.send("");
+
+            [, value] = getUserAgentHeader();
+            expect(request!.headers![`User-Agent`]).toBe(value);
+            expect(request!.url).toBe("http://example.com");
+        });
+    });
 });
 
 async function createAndStartSSE(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), httpClient?: HttpClient): Promise<ServerSentEventsTransport> {
-    const sse = new ServerSentEventsTransport(httpClient || new TestHttpClient(), accessTokenFactory, logger, true, TestEventSource);
+    const sse = new ServerSentEventsTransport(httpClient || new TestHttpClient(), accessTokenFactory, logger, true, TestEventSource, true);
 
     const connectPromise = sse.connect(url || "http://example.com", TransferFormat.Text);
     await TestEventSource.eventSource.openSet;

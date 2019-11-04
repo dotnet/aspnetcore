@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -84,6 +83,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
 
                 Log.JsonInputException(_logger, jsonException);
+
+                return InputFormatterResult.Failure();
+            }
+            catch (Exception exception) when (exception is FormatException || exception is OverflowException)
+            {
+                // The code in System.Text.Json never throws these exceptions. However a custom converter could produce these errors for instance when
+                // parsing a value. These error messages are considered safe to report to users using ModelState.
+
+                context.ModelState.TryAddModelError(string.Empty, exception, context.Metadata);
+                Log.JsonInputException(_logger, exception);
 
                 return InputFormatterResult.Failure();
             }

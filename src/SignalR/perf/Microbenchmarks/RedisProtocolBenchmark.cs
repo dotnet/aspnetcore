@@ -6,8 +6,10 @@ using System.Buffers;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -28,10 +30,10 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _protocol = new RedisProtocol(new [] {
-                new DummyProtocol("protocol1"),
-                new DummyProtocol("protocol2")
-            });
+            var resolver = new DefaultHubProtocolResolver(new List<IHubProtocol> { new DummyProtocol("protocol1"),
+                new DummyProtocol("protocol2") }, NullLogger<DefaultHubProtocolResolver>.Instance);
+
+            _protocol = new RedisProtocol(new DefaultHubMessageSerializer(resolver, new List<string>() { "protocol1", "protocol2" }, hubSupportedProtocols: null));
 
             _groupCommand = new RedisGroupCommand(id: 42, serverName: "Server", GroupAction.Add, groupName: "group", connectionId: "connection");
 
@@ -119,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             return ids;
         }
 
-        private class DummyProtocol: IHubProtocol
+        private class DummyProtocol : IHubProtocol
         {
             private static readonly byte[] _fixedOutput = new byte[] { 0x68, 0x68, 0x6C, 0x6C, 0x6F };
 

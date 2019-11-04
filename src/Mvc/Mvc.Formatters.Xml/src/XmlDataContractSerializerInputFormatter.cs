@@ -118,8 +118,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var request = context.HttpContext.Request;
             Stream readStream = new NonDisposableStream(request.Body);
+            var disposeReadStream = false;
 
-            if (!request.Body.CanSeek && !_options.SuppressInputFormatterBuffering)
+            if (readStream.CanSeek)
+            {
+                // The most common way of getting here is the user has request buffering on.
+                // However, request buffering isn't eager, and consequently it will peform pass-thru synchronous
+                // reads as part of the deserialization.
+                // To avoid this, drain and reset the stream.
+                var position = request.Body.Position;
+                await readStream.DrainAsync(CancellationToken.None);
+                readStream.Position = position;
+            }
+            else if (!_options.SuppressInputFormatterBuffering)
             {
                 // XmlDataContractSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
@@ -135,6 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
+
+                disposeReadStream = true;
             }
 
             try
@@ -162,9 +175,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             finally
             {
-                if (readStream is FileBufferingReadStream fileBufferingReadStream)
+                if (disposeReadStream)
                 {
-                    await fileBufferingReadStream.DisposeAsync();
+                    await readStream.DisposeAsync();
                 }
             }
         }

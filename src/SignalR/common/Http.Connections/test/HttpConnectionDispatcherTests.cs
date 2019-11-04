@@ -1148,9 +1148,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.True(request1.IsCompleted);
 
                 request1 = dispatcher.ExecuteAsync(context1, options, app);
+                var count = 0;
+                // Wait until the request has started internally
+                while (connection.TransportTask.IsCompleted && count < 50)
+                {
+                    count++;
+                    await Task.Delay(15);
+                }
+                if (count == 50)
+                {
+                    Assert.True(false, "Poll took too long to start");
+                }
+
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
-                await request1;
+                // Wait for poll to be canceled
+                await request1.OrTimeout();
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
                 Assert.Equal(HttpConnectionStatus.Active, connection.Status);
@@ -1164,7 +1177,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2040", "All")]
         public async Task MultipleRequestsToActiveConnectionId409ForLongPolling()
         {
             using (StartVerifiableLog())

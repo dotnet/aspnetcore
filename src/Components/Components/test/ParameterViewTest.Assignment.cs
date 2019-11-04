@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 builder.CloseComponent();
 
-                var view = new ParameterView(builder.GetFrames().Array, ownerIndex: 0);
+                var view = new ParameterView(ParameterViewLifetime.Unbound, builder.GetFrames().Array, ownerIndex: 0);
 
                 var cascadingParameters = new List<CascadingParameterState>();
                 foreach (var kvp in _keyValuePairs)

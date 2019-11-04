@@ -120,6 +120,11 @@ namespace BasicWebSite.Controllers
         [HttpPost]
         public IActionResult Product(Product product)
         {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem();
+            }
+
             return RedirectToAction();
         }
 

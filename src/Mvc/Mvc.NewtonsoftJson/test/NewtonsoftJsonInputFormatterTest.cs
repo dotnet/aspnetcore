@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -21,8 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
     {
-        private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
-        private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
+        private readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
+        private readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
         [Fact]
         public async Task Constructor_BuffersRequestBody_UsingDefaultOptions()
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var serializerSettings = new JsonSerializerSettings();
 
             // Act
-            var formatter = new TestableJsonInputFormatter(serializerSettings);
+            var formatter = new TestableJsonInputFormatter(serializerSettings, _objectPoolProvider);
 
             // Assert
             Assert.Same(serializerSettings, formatter.SerializerSettings);
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 MaxDepth = 2,
                 DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
             };
-            var formatter = new TestableJsonInputFormatter(settings);
+            var formatter = new TestableJsonInputFormatter(settings, _objectPoolProvider);
 
             // Act
             var actual = formatter.CreateJsonSerializer(null);
@@ -304,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ReadAsync_lowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
+        public async Task ReadAsync_AllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
         {
             // Arrange
             var formatter = new NewtonsoftJsonInputFormatter(
@@ -336,10 +337,72 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.NotEmpty(modelError.ErrorMessage);
         }
 
+        [Fact]
+        public async Task ReadAsync_DoesNotRethrowFormatExceptions()
+        {
+            // Arrange
+            _serializerSettings.Converters.Add(new IsoDateTimeConverter());
+
+            var formatter = new NewtonsoftJsonInputFormatter(
+                GetLogger(),
+                _serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                new MvcOptions(),
+                new MvcNewtonsoftJsonOptions());
+
+            var contentBytes = Encoding.UTF8.GetBytes("{\"dateValue\":\"not-a-date\"}");
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.False(formatterContext.ModelState.IsValid);
+
+            var modelError = Assert.Single(formatterContext.ModelState["dateValue"].Errors);
+            Assert.Null(modelError.Exception);
+            Assert.Equal("The supplied value is invalid.", modelError.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ReadAsync_DoesNotRethrowOverflowExceptions()
+        {
+            // Arrange
+            _serializerSettings.Converters.Add(new IsoDateTimeConverter());
+
+            var formatter = new NewtonsoftJsonInputFormatter(
+                GetLogger(),
+                _serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                new MvcOptions(),
+                new MvcNewtonsoftJsonOptions());
+
+            var contentBytes = Encoding.UTF8.GetBytes("{\"shortValue\":\"32768\"}");
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.False(formatterContext.ModelState.IsValid);
+
+            var modelError = Assert.Single(formatterContext.ModelState["shortValue"].Errors);
+            Assert.Null(modelError.Exception);
+            Assert.Equal("The supplied value is invalid.", modelError.ErrorMessage);
+        }
+
         private class TestableJsonInputFormatter : NewtonsoftJsonInputFormatter
         {
-            public TestableJsonInputFormatter(JsonSerializerSettings settings)
-                : base(GetLogger(), settings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions(), new MvcNewtonsoftJsonOptions())
+            public TestableJsonInputFormatter(JsonSerializerSettings settings, ObjectPoolProvider objectPoolProvider)
+                : base(GetLogger(), settings, ArrayPool<char>.Shared, objectPoolProvider, new MvcOptions(), new MvcNewtonsoftJsonOptions())
             {
             }
 
@@ -417,6 +480,27 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             [JsonProperty(Required = Required.Always)]
             public string Password { get; set; }
+        }
+
+        public class TypeWithPrimitives
+        {
+            public DateTime DateValue { get; set; }
+
+            [JsonConverter(typeof(IncorrectShortConverter))]
+            public short ShortValue { get; set; }
+        }
+
+        private class IncorrectShortConverter : JsonConverter<short>
+        {
+            public override short ReadJson(JsonReader reader, Type objectType, short existingValue, bool hasExistingValue, JsonSerializer serializer)
+            {
+                return short.Parse(reader.Value.ToString());
+            }
+
+            public override void WriteJson(JsonWriter writer, short value, JsonSerializer serializer)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

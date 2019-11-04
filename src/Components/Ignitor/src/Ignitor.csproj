@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Intentionally targeting netcoreapp3.0 because we do not want to update the Benchmark client to use 3.1 -->
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>

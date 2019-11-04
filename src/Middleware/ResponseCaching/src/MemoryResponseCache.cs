@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
-        {
-            return Task.FromResult(Get(key));
-        }
-
         public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             if (entry is CachedResponse cachedResponse)
@@ -75,12 +70,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         Size = CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules)
                     });
             }
-        }
-
-        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
-        {
-            Set(key, entry, validFor);
-            return Task.CompletedTask;
         }
     }
 }

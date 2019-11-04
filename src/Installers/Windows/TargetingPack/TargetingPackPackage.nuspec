@@ -14,5 +14,6 @@
     </metadata>
     <files>
         <file src="$ASPNETCORE_RUNTIME_MSI$" />
+        <file src="$PACKAGE_ICON_PATH$" target="" />
     </files>
 </package>

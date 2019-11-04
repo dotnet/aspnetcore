@@ -11,6 +11,7 @@ export class TestEventSource {
     public onmessage!: (evt: MessageEvent) => any;
     public readyState: number = 0;
     public url: string = "";
+    public eventSourceInitDict?: EventSourceInit;
     public withCredentials: boolean = false;
 
     // tslint:disable-next-line:variable-name
@@ -31,6 +32,7 @@ export class TestEventSource {
 
     constructor(url: string, eventSourceInitDict?: EventSourceInit) {
         this.url = url;
+        this.eventSourceInitDict = eventSourceInitDict;
 
         TestEventSource.eventSource = this;
 

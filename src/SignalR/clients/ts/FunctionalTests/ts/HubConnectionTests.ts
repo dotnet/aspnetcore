@@ -6,6 +6,7 @@
 
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { getUserAgentHeader, Platform } from "@microsoft/signalr/dist/esm/Utils";
 
 import { eachTransport, eachTransportAndProtocolAndHttpClient, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
@@ -1090,6 +1091,33 @@ describe("hubConnection", () => {
         } catch (e) {
             fail(e);
         }
+    });
+
+    eachTransport((t) => {
+        it("sets the user agent header", async (done) => {
+            const hubConnection = getConnectionBuilder(t, TESTHUBENDPOINT_URL)
+                .withHubProtocol(new JsonHubProtocol())
+                .build();
+
+            try {
+                await hubConnection.start();
+
+                // Check to see that the Content-Type header is set the expected value
+                const [name, value] = getUserAgentHeader();
+                const headerValue = await hubConnection.invoke("GetHeader", name);
+
+                if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
+                    expect(headerValue).toBeNull();
+                } else {
+                    expect(headerValue).toEqual(value);
+                }
+
+                await hubConnection.stop();
+                done();
+            } catch (e) {
+                fail(e);
+            }
+        });
     });
 
     function getJwtToken(url: string): Promise<string> {
