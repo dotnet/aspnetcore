@@ -423,7 +423,7 @@
     -->
     <ItemGroup>
       <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)">
-        <RelativeDirNoTrailingSlash>$([System.String]::Copy('%(RelativeDir)').TrimEnd('\'))</RelativeDirNoTrailingSlash>
+        <RelativeDirNoTrailingSlash>$([System.String]::Copy('%(RelativeDir)').TrimEnd('\').TrimEnd('/'))</RelativeDirNoTrailingSlash>
         <IsLinkable Condition="$([System.String]::Copy('%(FileName)').StartsWith('System.'))">true</IsLinkable>
         <IsLinkable Condition="$([System.String]::Copy('%(FileName)').StartsWith('Microsoft.Extensions.'))">true</IsLinkable>
       </_BlazorDependencyAssembly>
