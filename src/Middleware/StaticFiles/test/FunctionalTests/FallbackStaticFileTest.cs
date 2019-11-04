@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("hello");
                     var responseText = await response.Content.ReadAsStringAsync();
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
                 var environment = server.Services.GetRequiredService<IWebHostEnvironment>();
-                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                using (var client = new HttpClient { BaseAddress = new Uri(Helpers.GetAddress(server)) })
                 {
                     var response = await client.GetAsync("hello");
                     var responseText = await response.Content.ReadAsStringAsync();

@@ -7,6 +7,7 @@
     </packageTypes>
   </metadata>
   <files>
+    $CommonFileElements$
     <file
       src="content/**"
       exclude="**/bin/**;**/obj/**;**/.template.config.src/**;content/Directory.Build.props;content/Directory.Build.targets;"

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http
         /// The cookie path.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.Path"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.Path"/>.
         /// </remarks>
         public virtual string Path { get; set; }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         /// The domain to associate the cookie with.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.Domain"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.Domain"/>.
         /// </remarks>
         public virtual string Domain { get; set; }
 
@@ -44,20 +44,20 @@ namespace Microsoft.AspNetCore.Http
         /// Indicates whether a cookie is accessible by client-side script.
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.HttpOnly"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.HttpOnly"/>.
         /// </remarks>
         public virtual bool HttpOnly { get; set; }
 
         /// <summary>
-        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.None"/>
+        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
         /// </summary>
         /// <remarks>
-        /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
+        /// Determines the value that will set on <see cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.None;
+        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
         /// <summary>
-        /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.
+        /// The policy that will be used to determine <see cref="CookieOptions.Secure"/>.
         /// This is determined from the <see cref="HttpContext"/> passed to <see cref="Build(HttpContext, DateTimeOffset)"/>.
         /// </summary>
         public virtual CookieSecurePolicy SecurePolicy { get; set; }
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http
         /// Creates the cookie options from the given <paramref name="context"/> with an expiration based on <paramref name="expiresFrom"/> and <see cref="Expiration"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
-        /// <param name="expiresFrom">The time to use as the base for computing <seealso cref="CookieOptions.Expires" />.</param>
+        /// <param name="expiresFrom">The time to use as the base for computing <see cref="CookieOptions.Expires" />.</param>
         /// <returns>The cookie options.</returns>
         public virtual CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
         {

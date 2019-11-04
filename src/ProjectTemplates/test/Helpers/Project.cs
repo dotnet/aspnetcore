@@ -21,7 +21,7 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public const string DefaultFramework = "netcoreapp3.1";
+        public const string DefaultFramework = "netcoreapp5.0";
 
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
@@ -287,7 +287,7 @@ namespace Templates.Test.Helpers
             try
             {
                 output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                var result = await ProcessEx.RunViaShellAsync(output, workingDirectory, "npm install");
+                var result = ProcessEx.RunViaShell(output, workingDirectory, "npm install");
                 return result;
             }
             finally

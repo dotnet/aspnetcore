@@ -101,7 +101,7 @@ export function discoverComponents(document: Document): ComponentDescriptor[] {
     discoveredComponents.push(entry);
   }
 
-  return discoveredComponents;
+  return discoveredComponents.sort((a, b) => a.sequence - b.sequence);
 }
 
 

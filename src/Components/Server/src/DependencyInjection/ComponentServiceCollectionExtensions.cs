@@ -58,6 +58,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<CircuitFactory>();
             services.TryAddSingleton<ServerComponentDeserializer>();
             services.TryAddSingleton<ServerComponentTypeCache>();
+            services.TryAddSingleton<ComponentParameterDeserializer>();
+            services.TryAddSingleton<ComponentParametersTypeCache>();
             services.TryAddSingleton<CircuitIdFactory>();
 
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);

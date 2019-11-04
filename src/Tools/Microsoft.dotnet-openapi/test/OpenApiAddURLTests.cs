@@ -440,8 +440,8 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             var url = BrokenUrl;
             var run = app.Execute(new[] { "add", "url", url });
 
-            Assert.Equal(_error.ToString(), $"The given url returned 'NotFound', " +
-    "indicating failure. The url might be wrong, or there might be a networking issue."+Environment.NewLine);
+            Assert.Equal($"The given url returned 'NotFound', " +
+    "indicating failure. The url might be wrong, or there might be a networking issue."+Environment.NewLine, _error.ToString());
             Assert.Equal(1, run);
 
             var expectedJsonName = "dingos.json";

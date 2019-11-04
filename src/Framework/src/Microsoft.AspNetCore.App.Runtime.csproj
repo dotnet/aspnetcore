@@ -25,7 +25,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFileOutputPath>$(InstallersOutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
 
-    <!-- NuGet appends target framework to this value. Example: runtimes/win-x64/lib/netcoreapp3.1/ -->
+    <!-- NuGet appends target framework to this value. Example: runtimes/win-x64/lib/netcoreappX.Y/ -->
     <BuildOutputTargetFolder>runtimes/$(RuntimeIdentifier)/lib/</BuildOutputTargetFolder>
     <!-- We still need the native path to these assets though for the RuntimeList.xml manifest -->
     <ManagedAssetsPackagePath>$(BuildOutputTargetFolder)$(DefaultNetCoreTargetFramework)</ManagedAssetsPackagePath>

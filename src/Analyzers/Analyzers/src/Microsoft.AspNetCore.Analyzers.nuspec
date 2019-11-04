@@ -5,6 +5,7 @@
   </metadata>
 
   <files>
+    $CommonFileElements$
     <file src="$OutputBinary$" target="analyzers\dotnet\cs\" />
     <file src="$OutputSymbol$" target="analyzers\dotnet\cs\" />
   </files>

@@ -69,6 +69,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                 endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
 
+                endpoints.MapHub<TestHub>("/negotiateProtocolVersion12", options =>
+                {
+                    options.MinimumProtocolVersion = 12;
+                });
+
+                endpoints.MapHub<TestHub>("/negotiateProtocolVersionNegative", options =>
+                {
+                    options.MinimumProtocolVersion = -1;
+                });
+
                 endpoints.MapGet("/generateJwtToken", context =>
                 {
                     return context.Response.WriteAsync(GenerateJwtToken());

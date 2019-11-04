@@ -48,11 +48,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
         /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="connectionId"></param>
+        /// <param name="connectionToken"></param>
         /// <param name="logger"></param>
-        public HttpConnectionContext(string id, ILogger logger)
+        public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger)
         {
-            ConnectionId = id;
+            ConnectionId = connectionId;
+            ConnectionToken = connectionToken;
             LastSeenUtc = DateTime.UtcNow;
 
             // The default behavior is that both formats are supported.
@@ -74,8 +76,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
         }
 
-        public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
-            : this(id, logger)
+        internal HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
+            : this(id, null, logger)
         {
             Transport = transport;
             Application = application;
@@ -112,6 +114,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
         public override string ConnectionId { get; set; }
+
+        internal string ConnectionToken { get; set; }
 
         public override IFeatureCollection Features { get; }
 
@@ -249,7 +253,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                     if (TransportType == HttpTransportType.WebSockets)
                     {
-                        // The websocket transport will close the application output automatically when reading is cancelled
+                        // The websocket transport will close the application output automatically when reading is canceled
                         Cancellation?.Cancel();
                     }
                     else
@@ -436,6 +440,45 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Connection was disposed
                 nonClonedContext.Response.StatusCode = StatusCodes.Status404NotFound;
                 nonClonedContext.Response.ContentType = "text/plain";
+            }
+        }
+
+        internal async Task<bool> CancelPreviousPoll(HttpContext context)
+        {
+            CancellationTokenSource cts;
+            lock (_stateLock)
+            {
+                // Need to sync cts access with DisposeAsync as that will dispose the cts
+                if (Status == HttpConnectionStatus.Disposed)
+                {
+                    cts = null;
+                }
+                else
+                {
+                    cts = Cancellation;
+                    Cancellation = null;
+                }
+            }
+
+            using (cts)
+            {
+                // Cancel the previous request
+                cts?.Cancel();
+
+                try
+                {
+                    // Wait for the previous request to drain
+                    await PreviousPollTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Previous poll canceled due to connection closing, close this poll too
+                    context.Response.ContentType = "text/plain";
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return false;
+                }
+
+                return true;
             }
         }
 

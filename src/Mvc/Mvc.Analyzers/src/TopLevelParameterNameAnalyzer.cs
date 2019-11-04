@@ -89,9 +89,14 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 return false;
             }
 
-            if (SpecifiesModelType(symbolCache, parameter))
+            if (SpecifiesModelType(in symbolCache, parameter))
             {
                 // Ignore parameters that specify a model type.
+                return false;
+            }
+
+            if (!IsComplexType(parameter.Type))
+            {
                 return false;
             }
 
@@ -120,6 +125,26 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             return false;
+        }
+
+        private static bool IsComplexType(ITypeSymbol type)
+        {
+            // This analyzer should not apply to simple types. In MVC, a simple type is any type that has a type converter that returns true for TypeConverter.CanConvertFrom(typeof(string)).
+            // Unfortunately there isn't a Roslyn way of determining if a TypeConverter exists for a given symbol or if the converter allows string conversions.
+            // https://github.com/dotnet/corefx/blob/v3.0.0-preview8.19405.3/src/System.ComponentModel.TypeConverter/src/System/ComponentModel/ReflectTypeDescriptionProvider.cs#L103-L141
+            // provides a list of types that have built-in converters.
+            // We'll use a simpler heuristic in the analyzer: A type is simple if it's a value type or if it's in the "System.*" namespace hierarchy.
+
+            var @namespace = type.ContainingNamespace?.ToString();
+            if (@namespace != null)
+            {
+                // Things in the System.* namespace hierarchy don't count as complex types. This workarounds
+                // the problem of discovering type converters on types in mscorlib.
+                return @namespace != "System" &&
+                    !@namespace.StartsWith("System.", StringComparison.Ordinal);
+            }
+
+            return true;
         }
 
         internal static string GetName(in SymbolCache symbolCache, ISymbol symbol)

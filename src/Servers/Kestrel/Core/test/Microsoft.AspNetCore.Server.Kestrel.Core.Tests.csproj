@@ -15,6 +15,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
+    <Compile Include="$(SharedSourceRoot)test\Shared.Tests\Http2\**\*.cs" Link="Shared\Http2\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

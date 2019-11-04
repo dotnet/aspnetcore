@@ -99,11 +99,101 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Empty(GetLogLines);
         }
 
+        [Theory]
+        [InlineData("target")]
+        [InlineData("intermediate")]
+        public void StopPropagation(string whereToStopPropagation)
+        {
+            // If stopPropagation is off, we observe the event on the listener and all its ancestors
+            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Equal(new[] { "target onclick", "parent onclick" }, GetLogLines);
+
+            // If stopPropagation is on, the event doesn't reach the ancestor
+            // Note that in the "intermediate element" case, the intermediate element does *not* itself
+            // listen for this event, which shows that stopPropagation works independently of handling
+            ClearLog();
+            Browser.FindElement(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
+            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Equal(new[] { "target onclick" }, GetLogLines);
+
+            // We can also toggle it back off
+            ClearLog();
+            Browser.FindElement(By.Id($"{whereToStopPropagation}-stop-propagation")).Click();
+            Browser.FindElement(By.Id("button-with-onclick")).Click();
+            Browser.Equal(new[] { "target onclick", "parent onclick" }, GetLogLines);
+        }
+
+        [Fact]
+        public void PreventDefaultWorksOnTarget()
+        {
+            // Clicking a checkbox without preventDefault produces both "click" and "change"
+            // events, and it becomes checked
+            var checkboxWithoutPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-false"));
+            checkboxWithoutPreventDefault.Click();
+            Browser.Equal(new[] { "Checkbox click", "Checkbox change" }, GetLogLines);
+            Browser.True(() => checkboxWithoutPreventDefault.Selected);
+
+            // Clicking a checkbox with preventDefault produces a "click" event, but no "change"
+            // event, and it remains unchecked
+            ClearLog();
+            var checkboxWithPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-true"));
+            checkboxWithPreventDefault.Click();
+            Browser.Equal(new[] { "Checkbox click" }, GetLogLines);
+            Browser.False(() => checkboxWithPreventDefault.Selected);
+        }
+
+        [Fact]
+        public void PreventDefault_WorksOnAncestorElement()
+        {
+            // Even though the checkbox we're clicking this case does *not* have preventDefault,
+            // if its ancestor does, then we don't get the "change" event and it remains unchecked
+            Browser.FindElement(By.Id($"ancestor-prevent-default")).Click();
+            var checkboxWithoutPreventDefault = Browser.FindElement(By.Id("checkbox-with-preventDefault-false"));
+            checkboxWithoutPreventDefault.Click();
+            Browser.Equal(new[] { "Checkbox click" }, GetLogLines);
+            Browser.False(() => checkboxWithoutPreventDefault.Selected);
+
+            // We can also toggle it back off dynamically
+            Browser.FindElement(By.Id($"ancestor-prevent-default")).Click();
+            ClearLog();
+            checkboxWithoutPreventDefault.Click();
+            Browser.Equal(new[] { "Checkbox click", "Checkbox change" }, GetLogLines);
+            Browser.True(() => checkboxWithoutPreventDefault.Selected);
+        }
+
+        [Fact]
+        public void PreventDefaultCanBlockKeystrokes()
+        {
+            // By default, the textbox accepts keystrokes
+            var textbox = Browser.FindElement(By.Id($"textbox-that-can-block-keystrokes"));
+            textbox.SendKeys("a");
+            Browser.Equal(new[] { "Received keydown" }, GetLogLines);
+            Browser.Equal("a", () => textbox.GetAttribute("value"));
+
+            // We can turn on preventDefault to stop keystrokes
+            // There will still be a keydown event, but we're preventing it from actually changing the textbox value
+            ClearLog();
+            Browser.FindElement(By.Id($"prevent-keydown")).Click();
+            textbox.SendKeys("b");
+            Browser.Equal(new[] { "Received keydown" }, GetLogLines);
+            Browser.Equal("a", () => textbox.GetAttribute("value"));
+
+            // We can turn it back off
+            ClearLog();
+            Browser.FindElement(By.Id($"prevent-keydown")).Click();
+            textbox.SendKeys("c");
+            Browser.Equal(new[] { "Received keydown" }, GetLogLines);
+            Browser.Equal("ac", () => textbox.GetAttribute("value"));
+        }
+
         private string[] GetLogLines()
             => Browser.FindElement(By.TagName("textarea"))
             .GetAttribute("value")
             .Replace("\r\n", "\n")
             .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        void ClearLog()
+            => Browser.FindElement(By.Id("clear-log")).Click();
 
         private void TriggerCustomBubblingEvent(string elementId, string eventName)
         {

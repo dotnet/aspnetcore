@@ -9,10 +9,10 @@ set -euo pipefail
 scriptroot="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 reporoot="$(dirname "$(dirname "$scriptroot")")"
 
-export DotNetBuildFromSource='true'
-
- # Build repo tasks
+# Build repo tasks
 "$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj
 
- # Build projects
+export DotNetBuildFromSource='true'
+
+# Build projects
 "$reporoot/eng/common/build.sh" --restore --build --pack "$@"

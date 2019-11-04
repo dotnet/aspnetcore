@@ -24,8 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #if LIBUV
         [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
 #else
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
 #endif
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/14382", Queues = "Windows.10.Amd64.Open")]
         [ConditionalFact]
         [CollectDump]
         public async Task TestUnixDomainSocket()

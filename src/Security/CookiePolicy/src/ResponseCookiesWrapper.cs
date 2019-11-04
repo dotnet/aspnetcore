@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
         private bool CheckPolicyRequired()
         {
             return !CanTrack
-                || Options.MinimumSameSitePolicy != SameSiteMode.None
+                || Options.MinimumSameSitePolicy != SameSiteMode.Unspecified
                 || Options.HttpOnly != HttpOnlyPolicy.None
                 || Options.Secure != CookieSecurePolicy.None;
         }
@@ -241,27 +241,13 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 default:
                     throw new InvalidOperationException();
             }
-            switch (Options.MinimumSameSitePolicy)
+
+            if (options.SameSite < Options.MinimumSameSitePolicy)
             {
-                case SameSiteMode.None:
-                    break;
-                case SameSiteMode.Lax:
-                    if (options.SameSite == SameSiteMode.None)
-                    {
-                        options.SameSite = SameSiteMode.Lax;
-                        _logger.CookieSameSiteUpgraded(key, "lax");
-                    }
-                    break;
-                case SameSiteMode.Strict:
-                    if (options.SameSite != SameSiteMode.Strict)
-                    {
-                        options.SameSite = SameSiteMode.Strict;
-                        _logger.CookieSameSiteUpgraded(key, "strict");
-                    }
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unrecognized {nameof(SameSiteMode)} value {Options.MinimumSameSitePolicy.ToString()}");
+                options.SameSite = Options.MinimumSameSitePolicy;
+                _logger.CookieSameSiteUpgraded(key, Options.MinimumSameSitePolicy.ToString());
             }
+
             switch (Options.HttpOnly)
             {
                 case HttpOnlyPolicy.Always:

@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     var count = Descriptors.Count;
                     for (var i = 0; i < count; i++)
                     {
-                        var (componentType, sequence) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, sequence.ToString());
+                        var (componentType, parameters, sequence) = Descriptors[i];
+                        await Renderer.AddComponentAsync(componentType, parameters, sequence.ToString());
                     }
 
                     Log.InitializationSucceeded(_logger);
@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     // Report errors asynchronously. InitializeAsync is designed not to throw.
                     Log.InitializationFailed(_logger, ex);
                     UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                    await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
                 }
             });
         }
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
 
             Renderer.Dispatcher.AssertAccess();
-            
+
             List<Exception> exceptions = null;
 
             for (var i = 0; i < _circuitHandlers.Length; i++)
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
 
             Renderer.Dispatcher.AssertAccess();
-            
+
             List<Exception> exceptions = null;
 
             for (var i = 0; i < _circuitHandlers.Length; i++)
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         // EndInvokeJSFromDotNet is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
+        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeeded, string arguments)
         {
             AssertInitialized();
             AssertNotDisposed();
@@ -364,7 +365,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    if (!succeded)
+                    if (!succeeded)
                     {
                         // We can log the arguments here because it is simply the JS error with the call stack.
                         Log.EndInvokeJSFailed(_logger, asyncCall, arguments);
@@ -545,7 +546,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             else
             {
                 return $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                    $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'. {additionalInformation}";
+                    $"detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'. {additionalInformation}";
             }
         }
 
@@ -577,11 +578,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _intializationStarted;
-            private static readonly Action<ILogger, Exception> _intializationSucceded;
-            private static readonly Action<ILogger, Exception> _intializationFailed;
+            private static readonly Action<ILogger, Exception> _initializationStarted;
+            private static readonly Action<ILogger, Exception> _initializationSucceded;
+            private static readonly Action<ILogger, Exception> _initializationFailed;
             private static readonly Action<ILogger, CircuitId, Exception> _disposeStarted;
-            private static readonly Action<ILogger, CircuitId, Exception> _disposeSucceded;
+            private static readonly Action<ILogger, CircuitId, Exception> _disposeSucceeded;
             private static readonly Action<ILogger, CircuitId, Exception> _disposeFailed;
             private static readonly Action<ILogger, CircuitId, Exception> _onCircuitOpened;
             private static readonly Action<ILogger, CircuitId, string, Exception> _onConnectionUp;
@@ -639,7 +640,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId EndInvokeJSSucceeded = new EventId(206, "EndInvokeJSSucceeded");
                 public static readonly EventId DispatchEventThroughJSInterop = new EventId(207, "DispatchEventThroughJSInterop");
                 public static readonly EventId LocationChange = new EventId(208, "LocationChange");
-                public static readonly EventId LocationChangeSucceded = new EventId(209, "LocationChangeSucceeded");
+                public static readonly EventId LocationChangeSucceeded = new EventId(209, "LocationChangeSucceeded");
                 public static readonly EventId LocationChangeFailed = new EventId(210, "LocationChangeFailed");
                 public static readonly EventId LocationChangeFailedInCircuit = new EventId(211, "LocationChangeFailedInCircuit");
                 public static readonly EventId OnRenderCompletedFailed = new EventId(212, "OnRenderCompletedFailed");
@@ -647,17 +648,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             static Log()
             {
-                _intializationStarted = LoggerMessage.Define(
+                _initializationStarted = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationStarted,
                     "Circuit initialization started.");
 
-                _intializationSucceded = LoggerMessage.Define(
+                _initializationSucceded = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationSucceeded,
                     "Circuit initialization succeeded.");
 
-                _intializationFailed = LoggerMessage.Define(
+                _initializationFailed = LoggerMessage.Define(
                     LogLevel.Debug,
                     EventIds.InitializationFailed,
                     "Circuit initialization failed.");
@@ -667,10 +668,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.DisposeStarted,
                     "Disposing circuit '{CircuitId}' started.");
 
-                _disposeSucceded = LoggerMessage.Define<CircuitId>(
+                _disposeSucceeded = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
                     EventIds.DisposeSucceeded,
-                    "Disposing circuit '{CircuitId}' succeded.");
+                    "Disposing circuit '{CircuitId}' succeeded.");
 
                 _disposeFailed = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
@@ -725,7 +726,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _unhandledExceptionClientDisconnected = LoggerMessage.Define<CircuitId>(
                     LogLevel.Debug,
                     EventIds.UnhandledExceptionClientDisconnected,
-                    "An exception ocurred on the circuit host '{CircuitId}' while the client is disconnected.");
+                    "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.");
 
                 _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
@@ -779,8 +780,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 _locationChangeSucceeded = LoggerMessage.Define<string, CircuitId>(
                     LogLevel.Debug,
-                    EventIds.LocationChangeSucceded,
-                    "Location change to '{URI}' in circuit '{CircuitId}' succeded.");
+                    EventIds.LocationChangeSucceeded,
+                    "Location change to '{URI}' in circuit '{CircuitId}' succeeded.");
 
                 _locationChangeFailed = LoggerMessage.Define<string, CircuitId>(
                     LogLevel.Debug,
@@ -798,11 +799,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.");
             }
 
-            public static void InitializationStarted(ILogger logger) => _intializationStarted(logger, null);
-            public static void InitializationSucceeded(ILogger logger) => _intializationSucceded(logger, null);
-            public static void InitializationFailed(ILogger logger, Exception exception) => _intializationFailed(logger, exception);
+            public static void InitializationStarted(ILogger logger) => _initializationStarted(logger, null);
+            public static void InitializationSucceeded(ILogger logger) => _initializationSucceded(logger, null);
+            public static void InitializationFailed(ILogger logger, Exception exception) => _initializationFailed(logger, exception);
             public static void DisposeStarted(ILogger logger, CircuitId circuitId) => _disposeStarted(logger, circuitId, null);
-            public static void DisposeSucceeded(ILogger logger, CircuitId circuitId) => _disposeSucceded(logger, circuitId, null);
+            public static void DisposeSucceeded(ILogger logger, CircuitId circuitId) => _disposeSucceeded(logger, circuitId, null);
             public static void DisposeFailed(ILogger logger, CircuitId circuitId, Exception exception) => _disposeFailed(logger, circuitId, exception);
             public static void CircuitOpened(ILogger logger, CircuitId circuitId) => _onCircuitOpened(logger, circuitId, null);
             public static void ConnectionUp(ILogger logger, CircuitId circuitId, string connectionId) => _onConnectionUp(logger, circuitId, connectionId, null);

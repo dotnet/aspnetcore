@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -755,6 +756,176 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             };
 
             testContext.InitializeHeartbeat();
+            var dateHeaderValueManager = new DateHeaderValueManager();
+            dateHeaderValueManager.OnHeartbeat(DateTimeOffset.MinValue);
+            testContext.DateHeaderValueManager = dateHeaderValueManager;
+
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
+            async Task App(HttpContext context)
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    requestAborted = true;
+                });
+
+                for (var i = 0; i < chunkCount; i++)
+                {
+                    await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
+                }
+
+                appFuncCompleted.SetResult(null);
+            }
+
+            using (var server = new TestServer(App, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // Close the connection with the last request so AssertStreamCompleted actually completes.
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {dateHeaderValueManager.GetDateHeaderValues().String}");
+
+                    // Make sure consuming a single chunk exceeds the 2 second timeout.
+                    var targetBytesPerSecond = chunkSize / 4;
+
+                    // expectedBytes was determined by manual testing. A constant Date header is used, so this shouldn't change unless
+                    // the response header writing logic or response body chunking logic itself changes.
+                    await AssertBytesReceivedAtTargetRate(connection.Stream, expectedBytes: 33_553_537, targetBytesPerSecond);
+                    await appFuncCompleted.Task.DefaultTimeout();
+
+                    connection.ShutdownSend();
+                    await connection.WaitForConnectionClose();
+                }
+                await server.StopAsync();
+            }
+
+            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.False(requestAborted);
+        }
+
+        [Fact]
+        [CollectDump]
+        public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
+        {
+            var headerSize = 1024 * 1024; // 1 MB for each header value
+            var headerCount = 64; // 64 MB of headers per response
+            var requestCount = 4; // Minimum of 256 MB of total response headers
+            var headerValue = new string('a', headerSize);
+            var headerStringValues = new StringValues(Enumerable.Repeat(headerValue, headerCount).ToArray());
+
+            var requestAborted = false;
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            {
+                ServerOptions =
+                {
+                    Limits =
+                    {
+                        MinResponseDataRate = new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(2))
+                    }
+                }
+            };
+
+            testContext.InitializeHeartbeat();
+            var dateHeaderValueManager = new DateHeaderValueManager();
+            dateHeaderValueManager.OnHeartbeat(DateTimeOffset.MinValue);
+            testContext.DateHeaderValueManager = dateHeaderValueManager;
+
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
+            async Task App(HttpContext context)
+            {
+                context.RequestAborted.Register(() =>
+                {
+                    requestAborted = true;
+                });
+
+                context.Response.Headers[$"X-Custom-Header"] = headerStringValues;
+                context.Response.ContentLength = 0;
+
+                await context.Response.BodyWriter.FlushAsync();
+            }
+
+            using (var server = new TestServer(App, testContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    for (var i = 0; i < requestCount - 1; i++)
+                    {
+                        await connection.Send(
+                            "GET / HTTP/1.1",
+                            "Host:",
+                            "",
+                            "");
+                    }
+
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {dateHeaderValueManager.GetDateHeaderValues().String}");
+
+                    var minResponseSize = headerSize * headerCount;
+                    var minTotalOutputSize = requestCount * minResponseSize;
+
+                    // Make sure consuming a single set of response headers exceeds the 2 second timeout.
+                    var targetBytesPerSecond = minResponseSize / 4;
+
+                    // expectedBytes was determined by manual testing. A constant Date header is used, so this shouldn't change unless
+                    // the response header writing logic itself changes.
+                    await AssertBytesReceivedAtTargetRate(connection.Stream, expectedBytes: 268_439_596, targetBytesPerSecond);
+                    connection.ShutdownSend();
+                    await connection.WaitForConnectionClose();
+                }
+
+                await server.StopAsync();
+            }
+
+            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
+            Assert.False(requestAborted);
+        }
+
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/13219", FlakyOn.AzP.Linux, FlakyOn.Helix.All)]
+        public async Task ClientCanReceiveFullConnectionCloseResponseWithoutErrorAtALowDataRate()
+        {
+            var chunkSize = 64 * 128 * 1024;
+            var chunkCount = 4;
+            var chunkData = new byte[chunkSize];
+
+            var requestAborted = false;
+            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
+            {
+                ServerOptions =
+                {
+                    Limits =
+                    {
+                        MinResponseDataRate = new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(2))
+                    }
+                }
+            };
+
+            testContext.InitializeHeartbeat();
+            var dateHeaderValueManager = new DateHeaderValueManager();
+            dateHeaderValueManager.OnHeartbeat(DateTimeOffset.MinValue);
+            testContext.DateHeaderValueManager = dateHeaderValueManager;
 
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
@@ -785,93 +956,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    var minTotalOutputSize = chunkCount * chunkSize;
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {dateHeaderValueManager.GetDateHeaderValues().String}");
 
                     // Make sure consuming a single chunk exceeds the 2 second timeout.
                     var targetBytesPerSecond = chunkSize / 4;
-                    await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
+
+                    // expectedBytes was determined by manual testing. A constant Date header is used, so this shouldn't change unless
+                    // the response header writing logic or response body chunking logic itself changes.
+                    await AssertStreamCompletedAtTargetRate(connection.Stream, expectedBytes: 33_553_556, targetBytesPerSecond);
                     await appFuncCompleted.Task.DefaultTimeout();
-                }
-                await server.StopAsync();
-            }
-
-            mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-            mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
-            Assert.False(requestAborted);
-        }
-
-        private bool ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate(Exception e)
-            => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
-
-        [Fact]
-        [Flaky("https://github.com/dotnet/corefx/issues/30691", FlakyOn.AzP.Windows)]
-        [CollectDump]
-        public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
-        {
-            var headerSize = 1024 * 1024; // 1 MB for each header value
-            var headerCount = 64; // 64 MB of headers per response
-            var requestCount = 4; // Minimum of 256 MB of total response headers
-            var headerValue = new string('a', headerSize);
-            var headerStringValues = new StringValues(Enumerable.Repeat(headerValue, headerCount).ToArray());
-
-            var requestAborted = false;
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
-            {
-                ServerOptions =
-                {
-                    Limits =
-                    {
-                        MinResponseDataRate = new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(2))
-                    }
-                }
-            };
-
-            testContext.InitializeHeartbeat();
-
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-
-            async Task App(HttpContext context)
-            {
-                context.RequestAborted.Register(() =>
-                {
-                    requestAborted = true;
-                });
-
-                context.Response.Headers[$"X-Custom-Header"] = headerStringValues;
-                context.Response.ContentLength = 0;
-
-                await context.Response.BodyWriter.FlushAsync();
-            }
-
-            using (var server = new TestServer(App, testContext, listenOptions))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    for (var i = 0; i < requestCount - 1; i++)
-                    {
-                        await connection.Send(
-                            "GET / HTTP/1.1",
-                            "Host:",
-                            "",
-                            "");
-                    }
-
-                    // Close the connection with the last request so AssertStreamCompleted actually completes.
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "Host:",
-                        "Connection: close",
-                        "",
-                        "");
-
-                    var responseSize = headerSize * headerCount;
-                    var minTotalOutputSize = requestCount * responseSize;
-
-                    // Make sure consuming a single set of response headers exceeds the 2 second timeout.
-                    var targetBytesPerSecond = responseSize / 4;
-                    await AssertStreamCompleted(connection.Stream, minTotalOutputSize, targetBytesPerSecond);
                 }
                 await server.StopAsync();
             }
@@ -908,7 +1004,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(totalReceived < totalBytes, $"{nameof(AssertStreamAborted)} Stream completed successfully.");
         }
 
-        private async Task AssertStreamCompleted(Stream stream, long minimumBytes, int targetBytesPerSecond)
+        private async Task AssertBytesReceivedAtTargetRate(Stream stream, int expectedBytes, int targetBytesPerSecond)
+        {
+            var receiveBuffer = new byte[64 * 1024];
+            var totalReceived = 0;
+            var startTime = DateTimeOffset.UtcNow;
+
+            do
+            {
+                var received = await stream.ReadAsync(receiveBuffer, 0, Math.Min(receiveBuffer.Length, expectedBytes - totalReceived));
+
+                Assert.NotEqual(0, received);
+
+                totalReceived += received;
+
+                var expectedTimeElapsed = TimeSpan.FromSeconds(totalReceived / targetBytesPerSecond);
+                var timeElapsed = DateTimeOffset.UtcNow - startTime;
+                if (timeElapsed < expectedTimeElapsed)
+                {
+                    await Task.Delay(expectedTimeElapsed - timeElapsed);
+                }
+            } while (totalReceived < expectedBytes);
+        }
+
+        private async Task AssertStreamCompletedAtTargetRate(Stream stream, long expectedBytes, int targetBytesPerSecond)
         {
             var receiveBuffer = new byte[64 * 1024];
             var received = 0;
@@ -928,7 +1047,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             } while (received > 0);
 
-            Assert.True(totalReceived >= minimumBytes, $"{nameof(AssertStreamCompleted)} Stream aborted prematurely.");
+            Assert.Equal(expectedBytes, totalReceived);
         }
 
         public static TheoryData<string, StringValues, string> NullHeaderData

@@ -22,21 +22,30 @@ namespace Templates.Test
 
         public Project Project { get; set; }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public async Task WebApiTemplateAsync(string languageOverride)
+        [Fact]
+        public async Task WebApiTemplateFSharp() => await WebApiTemplateCore(languageOverride: "F#");
+
+        [Fact]
+        public async Task WebApiTemplateCSharp() => await WebApiTemplateCore(languageOverride: null);
+
+        private async Task WebApiTemplateCore(string languageOverride)
         {
             Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
             var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
+            // Avoid the F# compiler. See https://github.com/aspnet/AspNetCore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
+
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.1/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             var buildResult = await Project.RunDotNetBuildAsync();

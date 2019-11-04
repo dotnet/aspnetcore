@@ -422,7 +422,7 @@
     4) Add the file we just created to the list of file writes, to support incremental builds.
     -->
     <ItemGroup>
-      <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath)" />
+      <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath);$(MonoWasmFrameworkPath)" />
       <_BlazorAssembliesToLink Include="@(_BlazorDependencyInput->'-a &quot;%(Identity)&quot;')" />
       <_BlazorAssembliesToLink Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
       <_BlazorFolderLookupPaths Include="@(_MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
@@ -436,9 +436,15 @@
 
     <!-- Clear the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
     <Delete Files="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+	
+	
+	<PropertyGroup>
+	  <_MonoLinkerDotNetPath>$(DOTNET_HOST_PATH)</_MonoLinkerDotNetPath>
+	  <_MonoLinkerDotNetPath Condition="'$(_MonoLinkerDotNetPath)' == ''">dotnet</_MonoLinkerDotNetPath>
+	</PropertyGroup>
 
     <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
-    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
+    <Exec Command="$(_MonoLinkerDotNetPath) &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToLink, ' ')"  />
 
     <!-- Collect the contents of /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker/ -->
     <ItemGroup>
@@ -522,7 +528,7 @@
 
     <PropertyGroup>
       <_ReferencesArg Condition="'@(_BlazorDependencyInput)' != ''">--references &quot;$(BlazorResolveDependenciesFilePath)&quot;</_ReferencesArg>
-      <_BclParameter>--base-class-library &quot;$(MonoBaseClassLibraryPath)&quot; --base-class-library &quot;$(MonoBaseClassLibraryFacadesPath)&quot;</_BclParameter>
+      <_BclParameter>--base-class-library &quot;$(MonoBaseClassLibraryPath)&quot; --base-class-library &quot;$(MonoBaseClassLibraryFacadesPath)&quot; --base-class-library &quot;$(MonoWasmFrameworkPath)&quot;</_BclParameter>
     </PropertyGroup>
 
     <WriteLinesToFile

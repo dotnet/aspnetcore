@@ -162,4 +162,7 @@
   <data name="ViewEngine_FallbackViewNotFound" xml:space="preserve">
     <value>The fallback partial view '{0}' was not found. The following locations were searched:{1}</value>
   </data>
+  <data name="AttributeIsRequired" xml:space="preserve">
+    <value>A value for the '{0}' attribute must be supplied to the '{1}' tag helper.</value>
+  </data>
 </root>

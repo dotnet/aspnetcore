@@ -1,3 +1,6 @@
 <Project>
 <!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository -->
+  <PropertyGroup>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+  </PropertyGroup>
 </Project>

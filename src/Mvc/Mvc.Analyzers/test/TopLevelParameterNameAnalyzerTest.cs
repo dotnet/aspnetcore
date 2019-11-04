@@ -95,6 +95,30 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.False(result);
         }
 
+        // Test for https://github.com/aspnet/AspNetCore/issues/6945
+        [Fact]
+        public async Task IsProblematicParameter_ReturnsFalse_ForSimpleTypes()
+        {
+            var testName = nameof(IsProblematicParameter_ReturnsFalse_ForSimpleTypes);
+            var testSource = MvcTestSource.Read(GetType().Name, testName);
+            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+
+            var compilation = await project.GetCompilationAsync();
+
+            var modelType = compilation.GetTypeByMetadataName($"Microsoft.AspNetCore.Mvc.Analyzers.TopLevelParameterNameAnalyzerTestFiles.{testName}");
+            var method = (IMethodSymbol)modelType.GetMembers("ActionMethod").First();
+
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
+
+            Assert.Collection(
+                method.Parameters,
+                p => Assert.False(TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, p)),
+                p => Assert.False(TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, p)),
+                p => Assert.False(TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, p)),
+                p => Assert.False(TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, p)),
+                p => Assert.False(TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, p)));
+        }
+
         [Fact]
         public async Task IsProblematicParameter_IgnoresStaticProperties()
         {

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [CollectDump]
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/9985", Queues = "Fedora.28.Amd64.Open")] // https://github.com/aspnet/AspNetCore/issues/9985
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/9985", Queues = "Fedora.28.Amd64.Open")]
         [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.All)]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await stopTask.DefaultTimeout();
             }
 
-            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished in"));
+            Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("Request finished "));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         }

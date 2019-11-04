@@ -63,20 +63,20 @@ namespace Templates.Test.SpaTemplateTest
             using var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
             Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
 
-            using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
+            using var lintResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
-            if (template == "react" || template == "reactredux")
-            {
-                using var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
-                Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
-            }
+            // The default behavior of angular tests is watch mode, which leaves the test process open after it finishes, which leads to delays/hangs.
+            var testcommand = "npm run test" + template == "angular" ? "-- --watch=false" : "";
+
+            using var testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, testcommand);
+            Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
 
             using var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-            // The output from publish will go into bin/Release/netcoreapp3.1/publish and won't be affected by calling build
+            // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
             using var buildResult = await Project.RunDotNetBuildAsync();
@@ -159,7 +159,7 @@ namespace Templates.Test.SpaTemplateTest
             {
                 try
                 {
-                    testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npx rimraf ./build");
                     testResultExitCode = testResult.ExitCode;
                     if (testResultExitCode == 0)
                     {

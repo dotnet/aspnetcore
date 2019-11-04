@@ -270,6 +270,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var exceptionDetailProvider = new ExceptionDetailsProvider(
                         hostingEnv.ContentRootFileProvider,
+                        logger,
                         sourceCodeLineCount: 6);
 
                     model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

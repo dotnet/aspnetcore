@@ -11,8 +11,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -30,6 +33,44 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Server_ConnectExistingQueueName_Success()
+        {
+            string address;
+            var queueName = Guid.NewGuid().ToString();
+
+            // First create the queue.
+            HttpRequestQueueV2Handle requestQueueHandle = null;
+            var statusCode = HttpApi.HttpCreateRequestQueue(
+                    HttpApi.Version,
+                    queueName,
+                    null,
+                    0,
+                    out requestQueueHandle);
+
+            Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+
+            // Now attach to the existing one
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                return Task.FromResult(0);
+            }, options =>
+            {
+                options.RequestQueueName = queueName;
+                options.RequestQueueMode = RequestQueueMode.Attach;
+            }))
+            {
+                var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
+                {
+                    RedirectStandardOutput = true
+                };
+                using var process = Process.Start(psi);
+                process.Start();
+                var netshOutput = await process.StandardOutput.ReadToEndAsync();
+                Assert.Contains(queueName, netshOutput);
             }
         }
 
@@ -304,10 +345,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
                         }
                     }
-
-                    // A connection has been closed, try again.
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
                 }
             }
         }
@@ -322,31 +359,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(server.Listener.Options.MaxConnections);
                 server.Listener.Options.MaxConnections = null;
                 server.Listener.Options.MaxConnections = 3;
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Server_SetConnectionLimit_Success()
-        {
-            using (Utilities.CreateDynamicHost(out var address, options =>
-            {
-                Assert.Null(options.MaxConnections);
-                options.MaxConnections = 3;
-            }, httpContext => Task.FromResult(0)))
-            {
-                using (var client1 = await SendHungRequestAsync("GET", address))
-                using (var client2 = await SendHungRequestAsync("GET", address))
-                {
-                    using (var client3 = await SendHungRequestAsync("GET", address))
-                    {
-                        // Maxed out, refuses connection and throws
-                        await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
-                    }
-
-                    // A connection has been closed, try again.
-                    string responseText = await SendRequestAsync(address);
-                    Assert.Equal(string.Empty, responseText);
-                }
             }
         }
 
@@ -583,6 +595,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 await server.StopAsync(default(CancellationToken)).TimeoutAfter(TimeSpan.FromSeconds(10));
             }
+        }
+
+        [ConditionalFact]
+        public async Task Server_AttachToExistingQueue_NoIServerAddresses_NoDefaultAdded()
+        {
+            var queueName = Guid.NewGuid().ToString();
+            using var server = Utilities.CreateHttpServer(out var address, httpContext => Task.CompletedTask, options =>
+            {
+                options.RequestQueueName = queueName;
+            });
+            using var attachedServer = Utilities.CreatePump(options =>
+            {
+                options.RequestQueueName = queueName;
+                options.RequestQueueMode = RequestQueueMode.Attach;
+            });
+            await attachedServer.StartAsync(new DummyApplication(context => Task.CompletedTask), default);
+            var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();
+            Assert.Empty(addressesFeature.Addresses);
+            Assert.Empty(attachedServer.Listener.Options.UrlPrefixes);
         }
 
         private async Task<string> SendRequestAsync(string uri)

@@ -1,6 +1,7 @@
 import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getFileNameFromUrl } from '../Url';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
+import { showErrorNotification } from '../../BootErrors';
 
 const assemblyHandleCache: { [assemblyName: string]: number } = {};
 const typeHandleCache: { [fullyQualifiedTypeName: string]: number } = {};
@@ -25,10 +26,14 @@ export const monoPlatform: Platform = {
       window['Browser'] = {
         init: () => { },
       };
-      // Emscripten works by expecting the module config to be a global
-      window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
 
-      addScriptTagsToDocument();
+      // Emscripten works by expecting the module config to be a global
+      // For compatibility with macOS Catalina, we have to assign a temporary value to window.Module
+      // before we start loading the WebAssembly files
+      addGlobalModuleScriptTagsToDocument(() => {
+        window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
+        addScriptTagsToDocument();
+      });
     });
   },
 
@@ -205,13 +210,34 @@ function addScriptTagsToDocument() {
   document.body.appendChild(scriptElem);
 }
 
+// Due to a strange behavior in macOS Catalina, we have to delay loading the WebAssembly files
+// until after it finishes evaluating a <script> element that assigns a value to window.Module.
+// This may be fixed in a later version of macOS/iOS, or even if not it may be possible to reduce
+// this to a smaller workaround.
+function addGlobalModuleScriptTagsToDocument(callback: () => void) {
+  const scriptElem = document.createElement('script');
+
+  // This pollutes global but is needed so it can be called from the script.
+  // The callback is put in the global scope so that it can be run after the script is loaded.
+  // onload cannot be used in this case for non-file scripts.
+  window['__wasmmodulecallback__'] = callback;
+  scriptElem.type = 'text/javascript';
+  scriptElem.text = 'var Module; window.__wasmmodulecallback__(); delete window.__wasmmodulecallback__;';
+
+  document.body.appendChild(scriptElem);
+}
+
 function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
   const wasmBinaryFile = '_framework/wasm/mono.wasm';
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
-  module.printErr = line => console.error(`WASM: ${line}`);
+
+  module.printErr = line => {
+    console.error(`WASM: ${line}`);
+    showErrorNotification();
+  };
   module.preRun = [];
   module.postRun = [];
   module.preloadPlugins = [];

@@ -3574,7 +3574,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);
@@ -3699,6 +3699,39 @@ namespace Microsoft.AspNetCore.Components.Test
             var ex = Assert.Throws<InvalidOperationException>(
                 () => renderer.RenderRootComponent(componentId));
             Assert.Contains("Cannot start a batch when one is already in progress.", ex.Message);
+        }
+
+        [Fact]
+        public void CannotAccessParameterViewAfterSynchronousReturn()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<ParameterViewIllegalCapturingComponent>(0);
+                builder.AddAttribute(1, nameof(ParameterViewIllegalCapturingComponent.SomeParam), 0);
+                builder.CloseComponent();
+            });
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+
+            // Note that we're not waiting for the async render to complete, since we want to assert
+            // about the situation immediately after the component yields the thread
+            renderer.RenderRootComponentAsync(rootComponentId);
+
+            // Act/Assert
+            var capturingComponent = (ParameterViewIllegalCapturingComponent)renderer.GetCurrentRenderTreeFrames(rootComponentId).Array[0].Component;
+            var parameterView = capturingComponent.CapturedParameterView;
+
+            // All public APIs on capturingComponent should be electrified now
+            // Internal APIs don't have to be, because we won't call them at the wrong time
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetEnumerator());
+            Assert.Throws<InvalidOperationException>(() => parameterView.GetValueOrDefault<object>("anything"));
+            Assert.Throws<InvalidOperationException>(() => parameterView.SetParameterProperties(new object()));
+            Assert.Throws<InvalidOperationException>(() => parameterView.ToDictionary());
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterView.TryGetValue<object>("anything", out _));
+
+            // It's enough to assert about one of the messages
+            Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
         private class NoOpRenderer : Renderer
@@ -4442,6 +4475,26 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             public new void ProcessPendingRender()
                 => base.ProcessPendingRender();
+        }
+
+        class ParameterViewIllegalCapturingComponent : IComponent
+        {
+            public ParameterView CapturedParameterView { get; private set; }
+
+            [Parameter] public int SomeParam { get; set; }
+
+            public void Attach(RenderHandle renderHandle)
+            {
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                CapturedParameterView = parameters;
+
+                // Return a task that never completes to show that access is forbidden
+                // after the synchronous return, not just after the returned task completes
+                return new TaskCompletionSource<object>().Task;
+            }
         }
     }
 }

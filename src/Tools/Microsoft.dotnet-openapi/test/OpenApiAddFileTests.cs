@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.Single(openApiRefs);
         }
 
-        [Fact (Skip = "https://github.com/aspnet/AspNetCore/pull/13571/#issuecomment-531466801")]
+        [Fact]
         public async Task OpenApi_Add_NSwagTypeScript()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -155,20 +155,9 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
                 Assert.Contains("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"", content);
                 Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\" CodeGenerator=\"NSwagTypeScript\" />", content);
             }
-
-            // Build project and make sure it compiles
-            using var buildProc = ProcessEx.Run(_outputHelper, _tempDir.Root, "dotnet", "build");
-            await buildProc.Exited;
-            Assert.True(buildProc.ExitCode == 0, $"Build failed: {buildProc.Output}");
-
-
-            // Run project and make sure it doesn't crash
-            using var runProc = ProcessEx.Run(_outputHelper, _tempDir.Root, "dotnet", "run");
-            Thread.Sleep(100);
-            Assert.False(runProc.HasExited, $"Run failed with: {runProc.Output}");
         }
 
-        [Fact (Skip = "https://github.com/aspnet/AspNetCore/pull/13571/#issuecomment-531466801")]
+        [Fact]
         public async Task OpenApi_Add_FromJson()
         {
             var project = CreateBasicProject(withOpenApi: true);
@@ -189,16 +178,6 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
                 Assert.Contains("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"", content);
                 Assert.Contains($"<OpenApiReference Include=\"{nswagJsonFile}\"", content);
             }
-
-            // Build project and make sure it compiles
-            var buildProc = ProcessEx.Run(_outputHelper, _tempDir.Root, "dotnet", "build");
-            await buildProc.Exited;
-            Assert.True(buildProc.ExitCode == 0, $"Build failed: {buildProc.Output}");
-
-            // Run project and make sure it doesn't crash
-            using var runProc = ProcessEx.Run(_outputHelper, _tempDir.Root, "dotnet", "run");
-            Thread.Sleep(100);
-            Assert.False(runProc.HasExited, $"Run failed with: {runProc.Output}");
         }
 
         [Fact]

@@ -207,6 +207,37 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("abcdefghijklmn", () => output.Text);
         }
 
+        [Fact]
+        public void NonInteractiveElementWithDisabledAttributeDoesRespondToMouseEvents()
+        {
+            Browser.MountTestComponent<EventDisablingComponent>();
+            var element = Browser.FindElement(By.Id("disabled-div"));
+            var eventLog = Browser.FindElement(By.Id("event-log"));
+
+            Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+            element.Click();
+            Browser.Equal("Got event on div", () => eventLog.GetAttribute("value"));
+        }
+
+        [Theory]
+        [InlineData("#disabled-button")]
+        [InlineData("#disabled-button span")]
+        [InlineData("#disabled-textarea")]
+        public void InteractiveElementWithDisabledAttributeDoesNotRespondToMouseEvents(string elementSelector)
+        {
+            Browser.MountTestComponent<EventDisablingComponent>();
+            var element = Browser.FindElement(By.CssSelector(elementSelector));
+            var eventLog = Browser.FindElement(By.Id("event-log"));
+
+            Browser.Equal(string.Empty, () => eventLog.GetAttribute("value"));
+            element.Click();
+
+            // It's no use observing that the log is still empty, since maybe the UI just hasn't updated yet
+            // To be sure that the preceding action has no effect, we need to trigger a different action that does have an effect
+            Browser.FindElement(By.Id("enabled-button")).Click();
+            Browser.Equal("Got event on enabled button", () => eventLog.GetAttribute("value"));
+        }
+
         void SendKeysSequentially(IWebElement target, string text)
         {
             // Calling it for each character works around some chars being skipped

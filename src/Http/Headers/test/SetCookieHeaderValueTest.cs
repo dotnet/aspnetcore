@@ -57,7 +57,7 @@ namespace Microsoft.Net.Http.Headers
                 {
                     SameSite = SameSiteMode.None,
                 };
-                dataset.Add(header7, "name7=value7");
+                dataset.Add(header7, "name7=value7; samesite=none");
 
 
                 return dataset;
@@ -155,9 +155,20 @@ namespace Microsoft.Net.Http.Headers
                 {
                     SameSite = SameSiteMode.Strict
                 };
-                var string6a = "name6=value6; samesite";
-                var string6b = "name6=value6; samesite=Strict";
-                var string6c = "name6=value6; samesite=invalid";
+                var string6 = "name6=value6; samesite=Strict";
+
+                var header7 = new SetCookieHeaderValue("name7", "value7")
+                {
+                    SameSite = SameSiteMode.None
+                };
+                var string7 = "name7=value7; samesite=None";
+
+                var header8 = new SetCookieHeaderValue("name8", "value8")
+                {
+                    SameSite = SameSiteMode.Unspecified
+                };
+                var string8a = "name8=value8; samesite";
+                var string8b = "name8=value8; samesite=invalid";
 
                 dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
@@ -170,9 +181,10 @@ namespace Microsoft.Net.Http.Headers
                 dataset.Add(new[] { header1, header2, header3, header4 }.ToList(), new[] { string.Join(",", string1, string2, string3, string4) });
                 dataset.Add(new[] { header5 }.ToList(), new[] { string5a });
                 dataset.Add(new[] { header5 }.ToList(), new[] { string5b });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6a });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6b });
-                dataset.Add(new[] { header6 }.ToList(), new[] { string6c });
+                dataset.Add(new[] { header6 }.ToList(), new[] { string6 });
+                dataset.Add(new[] { header7 }.ToList(), new[] { string7 });
+                dataset.Add(new[] { header8 }.ToList(), new[] { string8a });
+                dataset.Add(new[] { header8 }.ToList(), new[] { string8b });
 
                 return dataset;
             }

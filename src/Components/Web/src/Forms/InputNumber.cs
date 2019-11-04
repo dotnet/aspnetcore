@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // of it for us. We will only get asked to parse the T for nonempty inputs.
             var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
             if (targetType == typeof(int) ||
+                targetType == typeof(long) ||
                 targetType == typeof(float) ||
                 targetType == typeof(double) ||
                 targetType == typeof(decimal))
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <summary>
-        /// Formats the value as a string. Derived classes can override this to determine the formating used for <c>CurrentValueAsString</c>.
+        /// Formats the value as a string. Derived classes can override this to determine the formatting used for <c>CurrentValueAsString</c>.
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>

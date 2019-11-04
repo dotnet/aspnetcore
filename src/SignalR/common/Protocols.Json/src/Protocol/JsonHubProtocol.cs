@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
         private const string ErrorPropertyName = "error";
         private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
+        private const string AllowReconnectPropertyName = "allowReconnect";
+        private static JsonEncodedText AllowReconnectPropertyNameBytes = JsonEncodedText.Encode(AllowReconnectPropertyName);
         private const string TargetPropertyName = "target";
         private static JsonEncodedText TargetPropertyNameBytes = JsonEncodedText.Encode(TargetPropertyName);
         private const string ArgumentsPropertyName = "arguments";
@@ -132,6 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 ExceptionDispatchInfo argumentBindingException = null;
                 Dictionary<string, string> headers = null;
                 var completed = false;
+                var allowReconnect = false;
 
                 var reader = new Utf8JsonReader(input, isFinalBlock: true, state: default);
 
@@ -185,6 +189,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
+                            }
+                            else if (reader.ValueTextEquals(AllowReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                            {
+                                allowReconnect = reader.ReadAsBoolean(AllowReconnectPropertyName);
                             }
                             else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
@@ -372,7 +380,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.PingMessageType:
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
-                        return BindCloseMessage(error);
+                        return BindCloseMessage(error, allowReconnect);
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -544,6 +552,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 writer.WriteString(ErrorPropertyNameBytes, message.Error);
             }
+
+            if (message.AllowReconnect)
+            {
+                writer.WriteBoolean(AllowReconnectPropertyNameBytes, true);
+            }
         }
 
         private void WriteArguments(object[] arguments, Utf8JsonWriter writer)
@@ -551,19 +564,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
-                var type = argument?.GetType();
-                if (type == typeof(DateTime))
-                {
-                    writer.WriteStringValue((DateTime)argument);
-                }
-                else if (type == typeof(DateTimeOffset))
-                {
-                    writer.WriteStringValue((DateTimeOffset)argument);
-                }
-                else
-                {
-                    JsonSerializer.Serialize(writer, argument, type, _payloadSerializerOptions);
-                }
+                JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
             }
             writer.WriteEndArray();
         }
@@ -722,16 +723,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return arguments ?? Array.Empty<object>();
         }
 
-        private CloseMessage BindCloseMessage(string error)
+        private CloseMessage BindCloseMessage(string error, bool allowReconnect)
         {
             // An empty string is still an error
-            if (error == null)
+            if (error == null && !allowReconnect)
             {
                 return CloseMessage.Empty;
             }
 
-            var message = new CloseMessage(error);
-            return message;
+            return new CloseMessage(error, allowReconnect);
         }
 
         private HubMessage ApplyHeaders(HubMessage message, Dictionary<string, string> headers)
@@ -746,19 +746,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         internal static JsonSerializerOptions CreateDefaultSerializerSettings()
         {
-            var options = new JsonSerializerOptions();
-            options.WriteIndented = false;
-            options.ReadCommentHandling = JsonCommentHandling.Disallow;
-            options.AllowTrailingCommas = false;
-            options.IgnoreNullValues = false;
-            options.IgnoreReadOnlyProperties = false;
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            options.PropertyNameCaseInsensitive = true;
-            options.MaxDepth = 64;
-            options.DictionaryKeyPolicy = null;
-            options.DefaultBufferSize = 16 * 1024;
-
-            return options;
+            return new JsonSerializerOptions()
+            {
+                WriteIndented = false,
+                ReadCommentHandling = JsonCommentHandling.Disallow,
+                AllowTrailingCommas = false,
+                IgnoreNullValues = false,
+                IgnoreReadOnlyProperties = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+                MaxDepth = 64,
+                DictionaryKeyPolicy = null,
+                DefaultBufferSize = 16 * 1024,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            };
         }
     }
 }

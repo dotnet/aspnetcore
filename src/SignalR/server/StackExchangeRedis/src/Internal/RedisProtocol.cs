@@ -8,17 +8,18 @@ using System.IO;
 using System.Runtime.InteropServices;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
     internal class RedisProtocol
     {
-        private readonly IReadOnlyList<IHubProtocol> _protocols;
+        private readonly DefaultHubMessageSerializer _messageSerializer;
 
-        public RedisProtocol(IReadOnlyList<IHubProtocol> protocols)
+        public RedisProtocol(DefaultHubMessageSerializer messageSerializer)
         {
-            _protocols = protocols;
+            _messageSerializer = messageSerializer;
         }
 
         // The Redis Protocol:
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         // * Acks are sent to the Acknowledgement channel.
         // * See the Write[type] methods for a description of the protocol for each in-depth.
         // * The "Variable length integer" is the length-prefixing format used by BinaryReader/BinaryWriter:
-        //   * https://docs.microsoft.com/en-us/dotnet/api/system.io.binarywriter.write?view=netstandard-2.0
+        //   * https://docs.microsoft.com/dotnet/api/system.io.binarywriter.write?view=netcore-2.2
         // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
         //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 
@@ -60,8 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
                     MessagePackBinary.WriteArrayHeader(writer, 0);
                 }
 
-                WriteSerializedHubMessage(writer,
-                    new SerializedHubMessage(new InvocationMessage(methodName, args)));
+                WriteHubMessage(writer, new InvocationMessage(methodName, args));
                 return writer.ToArray();
             }
             finally
@@ -163,19 +163,20 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             return MessagePackUtil.ReadInt32(ref data);
         }
 
-        private void WriteSerializedHubMessage(Stream stream, SerializedHubMessage message)
+        private void WriteHubMessage(Stream stream, HubMessage message)
         {
             // Written as a MessagePack 'map' where the keys are the name of the protocol (as a MessagePack 'str')
             // and the values are the serialized blob (as a MessagePack 'bin').
 
-            MessagePackBinary.WriteMapHeader(stream, _protocols.Count);
+            var serializedHubMessages = _messageSerializer.SerializeMessage(message);
 
-            foreach (var protocol in _protocols)
+            MessagePackBinary.WriteMapHeader(stream, serializedHubMessages.Count);
+
+            foreach (var serializedMessage in serializedHubMessages)
             {
-                MessagePackBinary.WriteString(stream, protocol.Name);
+                MessagePackBinary.WriteString(stream, serializedMessage.ProtocolName);
 
-                var serialized = message.GetSerializedMessage(protocol);
-                var isArray = MemoryMarshal.TryGetArray(serialized, out var array);
+                var isArray = MemoryMarshal.TryGetArray(serializedMessage.Serialized, out var array);
                 Debug.Assert(isArray);
                 MessagePackBinary.WriteBytes(stream, array.Array, array.Offset, array.Count);
             }
