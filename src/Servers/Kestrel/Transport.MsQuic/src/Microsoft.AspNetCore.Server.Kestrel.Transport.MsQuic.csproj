@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Libuv transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -27,11 +27,11 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="..\msquic.dll">
+    <Content Include="..\msquic.dll" Condition="Exists('..\msquic.dll')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="..\msquic.pdb">
+    <Content Include="..\msquic.pdb" Condition="Exists('..\msquic.pdb')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
