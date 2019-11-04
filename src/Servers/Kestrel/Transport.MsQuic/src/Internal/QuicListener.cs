@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void Start(IPEndPoint localIpEndpoint)
         {
-            var address = MsQuicNativeMethods.ConvertToSocketAddrInet(localIpEndpoint.Address);
+            var address = MsQuicNativeMethods.Convert(localIpEndpoint);
             MsQuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
                 _nativeObjPtr,
                 ref address));

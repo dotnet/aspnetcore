@@ -111,8 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var status = Registration.ConnectionStartDelegate(
                 _nativeObjPtr,
                 family,
-                Encoding.ASCII.GetString(
-                    Encoding.UTF8.GetBytes("localhost")),
+                serverName,
                 serverPort);
 
             MsQuicStatusException.ThrowIfFailed(status);
@@ -176,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var status = MsQuicConstants.InternalError;
             if (connectionEvent.Type == QUIC_CONNECTION_EVENT.CONNECTED)
             {
-                _tcsConnection.TrySetResult(null);
+                _tcsConnection?.TrySetResult(null);
             }
             else if (connectionEvent.Type == QUIC_CONNECTION_EVENT.SHUTDOWN_BEGIN)
             {

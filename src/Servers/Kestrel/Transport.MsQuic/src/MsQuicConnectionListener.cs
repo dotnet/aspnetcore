@@ -147,7 +147,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 default:
                     return MsQuicConstants.InternalError;
             }
-            Console.WriteLine("Woah?");
 
             return MsQuicConstants.Success;
         }

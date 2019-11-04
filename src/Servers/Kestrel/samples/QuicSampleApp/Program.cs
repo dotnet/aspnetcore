@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,30 @@ namespace QuicSampleApp
 
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
-                         listenOptions.UseHttps();
+                         listenOptions.Use((next) =>
+                         {
+                             return async connection =>
+                             {
+                                 var streamFeature = connection.Features.Get<IStreamListener>();
+                                 if (streamFeature != null)
+                                 {
+                                     while (true)
+                                     {
+                                         var connectionContext = await streamFeature.AcceptAsync();
+                                         if (connectionContext == null)
+                                         {
+                                             return;
+                                         }
+                                         _ = next(connectionContext);
+                                     }
+                                 }
+                                 else
+                                 {
+                                     await next(connection);
+                                 }
+                             };
+                         });
+
                          async Task EchoServer(ConnectionContext connection)
                          {
                              // For graceful shutdown

@@ -27,11 +27,31 @@ namespace QuicSampleClient
             var connectionContext = await factory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
             var streamFeature = connectionContext.Features.Get<IStreamListener>();
             var streamContext = await streamFeature.StartBidirectionalStreamAsync();
-            await streamContext.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Test"));
-            var readResult = await streamContext.Transport.Input.ReadAsync();
-            if (readResult.Buffer.Length > 0)
+
+            Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
             {
-                Console.WriteLine(Encoding.ASCII.GetString(readResult.Buffer.ToArray()));
+                streamContext.Transport.Output.Complete();
+            });
+
+            while (true)
+            {
+                try
+                {
+                    var input = Console.ReadLine();
+                    await streamContext.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(input));
+
+                    var readResult = await streamContext.Transport.Input.ReadAsync();
+                    if (readResult.Buffer.Length > 0)
+                    {
+                        Console.WriteLine(Encoding.ASCII.GetString(readResult.Buffer.ToArray()));
+                    }
+                    streamContext.Transport.Input.AdvanceTo(readResult.Buffer.End);
+                }
+                catch (Exception)
+                {
+                    // Pipe is already completed.
+                    return;
+                }
             }
         }
     }

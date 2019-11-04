@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private const ushort AF_INET6 = 23;
         private const ushort AF_UNSPEC = 0;
 
-        public static SOCKADDR_INET ConvertToSocketAddrInet(IPAddress ipAddress)
+        private static SOCKADDR_INET ConvertToSocketAddrInet(IPAddress ipAddress)
         {
             var lResult = new SOCKADDR_INET();
             switch (ipAddress.AddressFamily)
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return lResult;
         }
 
-        public static IPAddress ConvertToIPAddress(SOCKADDR_INET addr)
+        private static IPAddress ConvertToIPAddress(SOCKADDR_INET addr)
         {
             switch (addr.si_family)
             {
