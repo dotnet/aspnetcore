@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
     {
         protected ResendEmailConfirmationModel() { }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
-        public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual void OnGet() { }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
         public partial class InputModel
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             public InputModel() { }
             [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
             [System.ComponentModel.DataAnnotations.RequiredAttribute]
-            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     {
         protected ResendEmailConfirmationModel() { }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
-        public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal.ResendEmailConfirmationModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual void OnGet() { }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
         public partial class InputModel
@@ -685,7 +685,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             public InputModel() { }
             [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
             [System.ComponentModel.DataAnnotations.RequiredAttribute]
-            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
