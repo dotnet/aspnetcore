@@ -50,7 +50,6 @@ stages:
       displayName: Signing Validation
       variables:
         - template: common-variables.yml
-        - group: AzureDevOps-Artifact-Feeds-Pats
       pool:
         vmImage: 'windows-2019'
       steps:
@@ -64,7 +63,6 @@ stages:
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
         # otherwise it'll complain about accessing a private feed.
         - task: NuGetAuthenticate@0
-          condition: eq(variables['IsInternalBuild'], 'true')
           displayName: 'Authenticate to AzDO Feeds'
 
         - task: PowerShell@2

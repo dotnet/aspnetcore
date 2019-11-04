@@ -4,7 +4,7 @@
 
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
-disable_configure_toolset_import=${disable_configure_toolset_import:-null}
+disable_configure_toolset_import=${disable_configure_toolset_import:-}
 
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
@@ -273,7 +273,7 @@ function GetNuGetPackageCachePath {
 }
 
 function InitializeNativeTools() {
-  if [[ -z "${DisableNativeToolsetInstalls:-}" ]]; then
+  if [[ -n "${DisableNativeToolsetInstalls:-}" ]]; then
     return
   fi
   if grep -Fq "native-tools" $global_json_file
@@ -437,7 +437,7 @@ Write-PipelineSetVariable -name "Temp" -value "$temp_dir"
 Write-PipelineSetVariable -name "TMP" -value "$temp_dir"
 
 # Import custom tools configuration, if present in the repo.
-if [[ "$disable_configure_toolset_import" != null ]]; then
+if [[ -z "$disable_configure_toolset_import" ]]; then
   configure_toolset_script="$eng_root/configure-toolset.sh"
   if [[ -a "$configure_toolset_script" ]]; then
     . "$configure_toolset_script"
