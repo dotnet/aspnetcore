@@ -345,7 +345,7 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Error,
                 formatString: "The key ring does not contain a valid default key, and the key manager is configured with auto-generation of keys disabled.");
             _usingInmemoryRepository = LoggerMessage.Define(
-                eventId: new EventId(50, "UsingInmemoryRepository"),
+                eventId: new EventId(50, "UsingInMemoryRepository"),
                 logLevel: LogLevel.Warning,
                 formatString: "Using an in-memory repository. Keys will not be persisted to storage.");
             _decryptingSecretElementUsingWindowsDPAPI = LoggerMessage.Define(
