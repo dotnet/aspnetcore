@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="StandaloneApp"/>
+  <assembly fullname="Mono.WebAssembly.Interop"/>
+  <assembly fullname="Microsoft.JSInterop"/>
+  <assembly fullname="Microsoft.AspNetCore.Blazor"/>
+  <assembly fullname="Microsoft.AspNetCore.Components"/>
+  <assembly fullname="Microsoft.AspNetCore.Components.Web"/>
+</linker>

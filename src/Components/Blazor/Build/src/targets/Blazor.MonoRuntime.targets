@@ -423,9 +423,14 @@
     -->
     <ItemGroup>
       <_MonoBaseClassLibraryFolder Include="$(MonoBaseClassLibraryPath);$(MonoBaseClassLibraryFacadesPath);$(MonoWasmFrameworkPath)" />
-      <_BlazorAssembliesToLink Include="@(_BlazorDependencyInput->'-a &quot;%(Identity)&quot;')" />
+
+      <_BlazorDependencyInput>
+        <RelativeDirNoTrailingSlash>$([System.String]::Copy('%(RelativeDir)').TrimEnd('\'))</RelativeDirNoTrailingSlash>
+      </_BlazorDependencyInput>
+
       <_BlazorAssembliesToLink Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
       <_BlazorFolderLookupPaths Include="@(_MonoBaseClassLibraryFolder->'-d &quot;%(Identity)&quot;')" />
+      <_BlazorFolderLookupPaths Include="@(_BlazorDependencyInput->'-d &quot;%(RelativeDirNoTrailingSlash)&quot;')" />
       <_BlazorAssemblyDescriptorFiles
         Include="@(BlazorLinkerDescriptor->'-x &quot;%(FullPath)&quot;')" Condition="'@(BlazorLinkerDescriptor)' != ''" />
     </ItemGroup>
