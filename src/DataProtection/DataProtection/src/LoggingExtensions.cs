@@ -390,27 +390,27 @@ namespace Microsoft.Extensions.Logging
                 formatString: Resources.FileSystem_EphemeralKeysLocationInContainer);
 
             _usingRegistryAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(
-                eventId: new EventId(0, "UsingRegistryAsKeyRepositoryWithDPAPI"),
+                eventId: new EventId(61, "UsingRegistryAsKeyRepositoryWithDPAPI"),
                 logLevel: LogLevel.Information,
                 formatString: "User profile not available. Using '{Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
             _usingProfileAsKeyRepository = LoggerMessage.Define<string>(
-                eventId: new EventId(0, "UsingProfileAsKeyRepository"),
+                eventId: new EventId(62, "UsingProfileAsKeyRepository"),
                 logLevel: LogLevel.Information,
                 formatString: "User profile is available. Using '{FullName}' as key repository; keys will not be encrypted at rest.");
             _usingProfileAsKeyRepositoryWithDPAPI = LoggerMessage.Define<string>(
-                eventId: new EventId(0, "UsingProfileAsKeyRepositoryWithDPAPI"),
+                eventId: new EventId(63, "UsingProfileAsKeyRepositoryWithDPAPI"),
                 logLevel: LogLevel.Information,
                 formatString: "User profile is available. Using '{FullName}' as key repository and Windows DPAPI to encrypt keys at rest.");
             _usingAzureAsKeyRepository = LoggerMessage.Define<string>(
-                eventId: new EventId(0, "UsingAzureAsKeyRepository"),
+                eventId: new EventId(64, "UsingAzureAsKeyRepository"),
                 logLevel: LogLevel.Information,
                 formatString: "Azure Web Sites environment detected. Using '{FullName}' as key repository; keys will not be encrypted at rest.");
             _keyRingWasLoadedOnStartup = LoggerMessage.Define<Guid>(
-                eventId: new EventId(0, "KeyRingWasLoadedOnStartup"),
+                eventId: new EventId(65, "KeyRingWasLoadedOnStartup"),
                 logLevel: LogLevel.Debug,
                 formatString: "Key ring with default key {KeyId:B} was loaded during application startup.");
             _keyRingFailedToLoadOnStartup = LoggerMessage.Define(
-                eventId: new EventId(0, "KeyRingFailedToLoadOnStartup"),
+                eventId: new EventId(66, "KeyRingFailedToLoadOnStartup"),
                 logLevel: LogLevel.Information,
                 formatString: "Key ring failed to load during application startup.");
         }

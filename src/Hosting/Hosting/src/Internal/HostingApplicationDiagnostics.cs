@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             _logger.Log(
                 logLevel: LogLevel.Information,
-                eventId: new EventId(LoggerEventIds.RequestStarting, "RequestStarting"),
+                eventId: LoggerEventIds.RequestStarting,
                 state: startLog,
                 exception: null,
                 formatter: HostingRequestStartingLog.Callback);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 _logger.Log(
                     logLevel: LogLevel.Information,
-                    eventId: new EventId(LoggerEventIds.RequestFinished, "RequestFinished"),
+                    eventId: LoggerEventIds.RequestFinished,
                     state: new HostingRequestFinishedLog(context, elapsed),
                     exception: null,
                     formatter: HostingRequestFinishedLog.Callback);

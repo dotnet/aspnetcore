@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static void ApplicationError(this ILogger logger, Exception exception)
         {
             logger.ApplicationError(
-                eventId: new EventId(LoggerEventIds.ApplicationStartupException, "ApplicationStartupException"),
+                eventId: LoggerEventIds.ApplicationStartupException,
                 message: "Application startup exception",
                 exception: exception);
         }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static void HostingStartupAssemblyError(this ILogger logger, Exception exception)
         {
             logger.ApplicationError(
-                eventId: new EventId(LoggerEventIds.HostingStartupAssemblyException, "HostingStartupAssemblyException"),
+                eventId: LoggerEventIds.HostingStartupAssemblyException,
                 message: "Hosting startup assembly exception",
                 exception: exception);
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 logger.LogDebug(
-                   eventId: new EventId(LoggerEventIds.Starting, "Starting"),
+                   eventId: LoggerEventIds.Starting,
                    message: "Hosting starting");
             }
         }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 logger.LogDebug(
-                    eventId: new EventId(LoggerEventIds.Started, "Started"),
+                    eventId: LoggerEventIds.Started,
                     message: "Hosting started");
             }
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 logger.LogDebug(
-                    eventId: new EventId(LoggerEventIds.Shutdown, "Shutdown"),
+                    eventId: LoggerEventIds.Shutdown,
                     message: "Hosting shutdown");
             }
         }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 logger.LogDebug(
-                    eventId: new EventId(LoggerEventIds.ServerShutdownException, "ServerShutdownException"),
+                    eventId: LoggerEventIds.ServerShutdownException,
                     exception: ex,
                     message: "Server shutdown exception");
             }
