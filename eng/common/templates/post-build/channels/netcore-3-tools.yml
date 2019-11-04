@@ -35,6 +35,18 @@ stages:
           artifactName: 'PDBArtifacts'
         continueOnError: true
 
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise there will be authentication failures when accessing a private feed hosted in a different org.
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
       - task: PowerShell@2
         displayName: Publish
         inputs:
@@ -52,8 +64,6 @@ stages:
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
-      - group: DotNet-Blob-Feed
-      - group: AzureDevOps-Artifact-Feeds-Pats
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
