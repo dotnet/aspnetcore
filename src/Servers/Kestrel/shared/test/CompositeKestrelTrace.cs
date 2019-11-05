@@ -122,10 +122,10 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.NotAllConnectionsAborted();
         }
 
-        public void HeartbeatSlow(TimeSpan interval, DateTimeOffset now)
+        public void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _trace1.HeartbeatSlow(interval, now);
-            _trace2.HeartbeatSlow(interval, now);
+            _trace1.HeartbeatSlow(heartbeatDuration, interval, now);
+            _trace2.HeartbeatSlow(heartbeatDuration, interval, now);
         }
 
         public void ApplicationNeverCompleted(string connectionId)
