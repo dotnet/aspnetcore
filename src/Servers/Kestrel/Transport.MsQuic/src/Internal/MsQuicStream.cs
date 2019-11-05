@@ -5,37 +5,50 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal class MsQuicStream : TransportConnection
     {
         private Task _processingTask;
-        private QuicStream _stream;
         private MsQuicConnection _connection;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
         private IMsQuicTrace _trace;
+        private bool _disposed;
+        private IntPtr _nativeObjPtr;
+        private GCHandle _handle;
+        private StreamCallback _callback;
+        private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        public MsQuicStream(MsQuicConnection connection, MemoryPool<byte> memoryPool, PipeScheduler scheduler, IMsQuicTrace trace, QUIC_STREAM_OPEN_FLAG flags, long? maxReadBufferSize = null, long? maxWriteBufferSize = null)
+        public MsQuicStream(MsQuicApi registration, MsQuicConnection connection, MsQuicTransportContext context, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr)
         {
             Debug.Assert(connection != null);
-            Debug.Assert(memoryPool != null);
-            Debug.Assert(trace != null);
+
+            Registration = registration;
+            _nativeObjPtr = nativeObjPtr;
+            StreamCallbackDelegate nativeCallback = NativeCallbackHandler;
+            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
 
             _connection = connection;
-            MemoryPool = memoryPool;
-            _trace = trace;
+            MemoryPool = context.Options.MemoryPoolFactory();
+            _trace = context.Log;
 
             ConnectionClosed = _streamClosedTokenSource.Token;
 
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, scheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, scheduler, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
+            var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
+            var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
+
+            // TODO should we allow these PipeScheduler to be configurable here?
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
@@ -50,17 +63,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             Transport = pair.Transport;
             Application = pair.Application;
+
+            SetCallbackHandler(HandleStreamEvent);
+            _processingTask = ProcessSends();
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
-
-        // TODO make start async now that we have an event.
-        public void Start(QuicStream stream)
-        {
-            _stream = stream;
-            stream.SetCallbackHandler(HandleStreamEvent);
-            _processingTask = ProcessSends();
-        }
 
         private async Task ProcessSends()
         {
@@ -73,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
                     if (result.IsCanceled)
                     {
-                        _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
+                        ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
                         break;
                     }
 
@@ -84,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     if (!buffer.IsEmpty)
                     {
                         // Invalid parameter here?
-                        await _stream.SendAsync(buffer, QUIC_SEND_FLAG.NONE, null);
+                        await SendAsync(buffer, QUIC_SEND_FLAG.NONE, null);
                     }
 
                     output.AdvanceTo(end);
@@ -92,14 +100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     if (isCompleted)
                     {
                         // Once the stream pipe is closed, shutdown the stream.
-                        _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.GRACEFUL, 0);
+                        ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.GRACEFUL, 0);
                         break;
                     }
                 }
             }
             catch (Exception)
             {
-                _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
+                ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
                 // TODO log
             }
         }
@@ -109,7 +117,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public PipeReader Output => Application.Input;
 
         public uint HandleStreamEvent(
-            QuicStream stream,
             ref MsQuicNativeMethods.StreamEvent evt)
         {
             var status = MsQuicConstants.Success;
@@ -117,12 +124,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             switch (evt.Type)
             {
                 case QUIC_STREAM_EVENT.START_COMPLETE:
-                    status = HandleStartComplete(stream);
+                    status = HandleStartComplete();
                     break;
                 case QUIC_STREAM_EVENT.RECV:
                     {
                         status = HandleEventRecv(
-                            stream,
                             ref evt);
                     }
                     break;
@@ -156,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     break;
                 case QUIC_STREAM_EVENT.SHUTDOWN_COMPLETE:
                     {
-                        _stream.Close();
+                        Close();
                         return MsQuicConstants.Success;
                     }
 
@@ -176,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return MsQuicConstants.Success;
         }
 
-        private uint HandleStartComplete(QuicStream stream)
+        private uint HandleStartComplete()
         {
             return MsQuicConstants.Success;
         }
@@ -198,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return MsQuicConstants.Success;
         }
 
-        protected uint HandleEventRecv(QuicStream stream, ref MsQuicNativeMethods.StreamEvent evt)
+        protected uint HandleEventRecv(ref MsQuicNativeMethods.StreamEvent evt)
         {
             var input = Input;
             var length = (int)evt.TotalBufferLength;
@@ -218,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             async Task AwaitFlush(ValueTask<FlushResult> ft)
             {
                 await ft;
-                stream.EnableReceive();
+                EnableReceive();
             }
 
             return MsQuicConstants.Success;
@@ -235,6 +241,159 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private void Shutdown(Exception shutdownReason)
         {
             // TODO move stream shutudown logic here.
+        }
+
+        public delegate uint StreamCallback(
+            ref StreamEvent evt);
+
+        public MsQuicApi Registration { get; set; }
+
+        internal StreamCallbackDelegate NativeCallback { get; private set; }
+
+        internal static uint NativeCallbackHandler(
+           IntPtr stream,
+           IntPtr context,
+           ref StreamEvent connectionEventStruct)
+        {
+            var handle = GCHandle.FromIntPtr(context);
+            var quicStream = (MsQuicStream)handle.Target;
+
+            return quicStream.ExecuteCallback(ref connectionEventStruct);
+        }
+
+        private uint ExecuteCallback(
+            ref StreamEvent evt)
+        {
+            var status = MsQuicConstants.InternalError;
+            if (evt.Type == QUIC_STREAM_EVENT.SEND_COMPLETE)
+            {
+                SendContext.HandleNativeCallback(evt.ClientContext);
+            }
+            try
+            {
+                status = _callback(
+                    ref evt);
+            }
+            catch (Exception)
+            {
+                // TODO log
+            }
+            return status;
+        }
+
+        public void SetCallbackHandler(
+            StreamCallback callback)
+        {
+            _handle = GCHandle.Alloc(this);
+            _callback = callback;
+            Registration.SetCallbackHandlerDelegate(
+                _nativeObjPtr,
+                _unmanagedFnPtrForNativeCallback,
+                GCHandle.ToIntPtr(_handle));
+        }
+
+        public unsafe Task SendAsync(
+           ReadOnlySequence<byte> buffers,
+           QUIC_SEND_FLAG flags,
+           object clientSendContext)
+        {
+            var sendContext = new SendContext(buffers, clientSendContext);
+            var status = Registration.StreamSendDelegate(
+                _nativeObjPtr,
+                sendContext.Buffers,
+                sendContext.BufferCount,
+                (uint)flags,
+                sendContext.NativeClientSendContext);
+            MsQuicStatusException.ThrowIfFailed(status);
+
+            return sendContext.TcsTask; // TODO make QuicStream implement IValueTaskSource?
+        }
+
+        public Task StartAsync(QUIC_STREAM_START_FLAG flags)
+        {
+            var status = (uint)Registration.StreamStartDelegate(
+              _nativeObjPtr,
+              (uint)flags);
+            MsQuicStatusException.ThrowIfFailed(status);
+            return Task.CompletedTask;
+        }
+
+        public void ReceiveComplete(int bufferLength)
+        {
+            var status = (uint)Registration.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
+            MsQuicStatusException.ThrowIfFailed(status);
+        }
+
+        public void ShutDown(
+            QUIC_STREAM_SHUTDOWN_FLAG flags,
+            ushort errorCode)
+        {
+            var status = (uint)Registration.StreamShutdownDelegate(
+                _nativeObjPtr,
+                (uint)flags,
+                errorCode);
+            MsQuicStatusException.ThrowIfFailed(status);
+        }
+
+        public void Close()
+        {
+            var status = (uint)Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
+            MsQuicStatusException.ThrowIfFailed(status);
+        }
+
+        public long Handle { get => (long)_nativeObjPtr; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        public unsafe void EnableReceive()
+        {
+            var val = true;
+            var buffer = new QuicBuffer()
+            {
+                Length = sizeof(bool),
+                Buffer = (byte*)&val
+            };
+            SetParam(QUIC_PARAM_STREAM.RECEIVE_ENABLED, buffer);
+        }
+
+        private void SetParam(
+              QUIC_PARAM_STREAM param,
+              QuicBuffer buf)
+        {
+            MsQuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
+                _nativeObjPtr,
+                (uint)QUIC_PARAM_LEVEL.SESSION,
+                (uint)param,
+                buf));
+        }
+
+
+        ~MsQuicStream()
+        {
+            Dispose(false);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_nativeObjPtr != IntPtr.Zero)
+            {
+                Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
+            }
+
+            _nativeObjPtr = IntPtr.Zero;
+            Registration = null;
+
+            _disposed = true;
         }
     }
 

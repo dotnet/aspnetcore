@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
@@ -37,5 +38,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         /// Sets the idle timeout for connections and streams.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; }
+
+        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
+
+        public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
+
+        public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
     }
 }

@@ -4,7 +4,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.QuicListener;
+using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -20,41 +20,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _nativeObjPtr = nativeObjPtr;
         }
 
-        public QuicListener ListenerOpen(ListenerCallback callback)
-        {
-            var listenerPtr = IntPtr.Zero;
-            var status = _registration.ListenerOpenDelegate(
-                _nativeObjPtr,
-                NativeCallbackHandler,
-                IntPtr.Zero,
-                out listenerPtr
-                );
-
-            MsQuicStatusException.ThrowIfFailed(status);
-            var listener = new QuicListener(
-                _registration,
-                listenerPtr,
-                true);
-
-            listener.SetCallbackHandler(callback);
-            return listener;
-        }
-
-        public async ValueTask<MsQuicConnection> ConnectionOpenAsync(IPEndPoint endpoint)
+        public async ValueTask<MsQuicConnection> ConnectionOpenAsync(IPEndPoint endpoint, MsQuicTransportContext context)
         {
             var status = _registration.ConnectionOpenDelegate(
                 _nativeObjPtr,
-                QuicConnection.NativeCallbackHandler,
+                MsQuicConnection.NativeCallbackHandler,
                 IntPtr.Zero,
                 out var connectionPtr);
 
             MsQuicStatusException.ThrowIfFailed(status);
-            var connection = new QuicConnection(_registration, connectionPtr, true);
-            var msQuicConnection = new MsQuicConnection(connection);
 
-            await connection.StartAsync((ushort)endpoint.AddressFamily, endpoint.Address.ToString(), (ushort)endpoint.Port);
+            var msQuicConnection = new MsQuicConnection(_registration, context, connectionPtr);
+
+            await msQuicConnection.StartAsync((ushort)endpoint.AddressFamily, endpoint.Address.ToString(), (ushort)endpoint.Port);
 
             return msQuicConnection;
+        }
+
+        internal IntPtr ListenerOpen(ListenerCallbackDelegate callback)
+        {
+            var status = _registration.ListenerOpenDelegate(
+                                        _nativeObjPtr,
+                                        callback,
+                                        IntPtr.Zero,
+                                        out var listenerPointer
+                                        );
+
+            MsQuicStatusException.ThrowIfFailed(status);
+
+            return listenerPointer;
         }
 
         public void ShutDown(
