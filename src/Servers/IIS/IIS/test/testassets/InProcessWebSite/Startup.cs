@@ -34,6 +34,10 @@ namespace TestSite
     {
         public void Configure(IApplicationBuilder app)
         {
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
+            {
+                app.UseHttpsRedirection();
+            }
             TestStartup.Register(app, this);
         }
 
@@ -990,6 +994,13 @@ namespace TestSite
         private async Task ProcessId(HttpContext context)
         {
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
+        }
+
+        public async Task ANCM_HTTPS_PORT(HttpContext context)
+        {
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
 
         public async Task HTTPS_PORT(HttpContext context)

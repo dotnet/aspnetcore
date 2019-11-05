@@ -43,7 +43,7 @@ public:
         environmentVariables.insert_or_assign(ASPNETCORE_IIS_PHYSICAL_PATH_ENV_STR, pApplicationPhysicalPath);
         if (pHttpsPort)
         {
-            environmentVariables.try_emplace(ASPNETCORE_HTTPS_PORT_ENV_STR, pHttpsPort);
+            environmentVariables.try_emplace(ASPNETCORE_ANCM_HTTPS_PORT_ENV_STR, pHttpsPort);
         }
 
         std::wstring strIisAuthEnvValue;

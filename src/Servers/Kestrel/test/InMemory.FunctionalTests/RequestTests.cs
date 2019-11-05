@@ -19,11 +19,12 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Serilog;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
-    public class RequestTests : LoggedTest
+    public class RequestTests : TestApplicationErrorLoggerLoggedTest
     {
         [Fact]
         public async Task StreamsAreNotPersistedAcrossRequests()
@@ -1438,6 +1439,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
             }
+        }
+
+        [Fact]
+        public async Task ContentLengthSwallowedUnexpectedEndOfRequestContentDoesNotResultInWarnings()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                try
+                {
+                    await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+                }
+                catch
+                {
+                }
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "");
+                    connection.ShutdownSend();
+
+                    await connection.ReceiveEnd();
+                }
+            }
+
+            Assert.Empty(TestApplicationErrorLogger.Messages.Where(m => m.LogLevel >= LogLevel.Warning));
         }
 
         [Fact]

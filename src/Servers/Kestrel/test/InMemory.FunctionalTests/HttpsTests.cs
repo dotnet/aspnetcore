@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
 
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
-            Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
+            Assert.Equal(3, loggerProvider.FilterLogger.LastEventId);
             Assert.Equal(LogLevel.Error, loggerProvider.FilterLogger.LastLogLevel);
         }
 

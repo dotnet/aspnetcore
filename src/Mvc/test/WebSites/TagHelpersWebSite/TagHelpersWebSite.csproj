@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

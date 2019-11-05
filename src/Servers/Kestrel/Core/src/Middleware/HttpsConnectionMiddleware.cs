@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     }
                     else
                     {
-                        _logger?.LogError(2, ex, CoreStrings.BadDeveloperCertificateState);
+                        _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
                     }
 
                     await sslStream.DisposeAsync();

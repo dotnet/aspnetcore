@@ -35,6 +35,11 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
+        public IActionResult MyHtml()
+        {
+            return View();
+        }
+
         public IActionResult ViewComponentTagHelpers()
         {
             return View();
