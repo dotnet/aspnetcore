@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
-    internal class RedirectToWwwRule : IRule
+    internal class RedirectToNonWwwRule : IRule
     {
         private const string WwwDot = "www.";
 
         private readonly string[] _domains;
         private readonly int _statusCode;
 
-        public RedirectToWwwRule(int statusCode)
+        public RedirectToNonWwwRule(int statusCode)
         {
             _statusCode = statusCode;
         }
 
-        public RedirectToWwwRule(int statusCode, params string[] domains)
+        public RedirectToNonWwwRule(int statusCode, params string[] domains)
         {
             if (domains == null)
             {
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Rewrite
 
         public void ApplyRule(RewriteContext context)
         {
-            var req = context.HttpContext.Request;
+            var request = context.HttpContext.Request;
 
-            var hostInDomains = RedirectToWwwHelper.IsHostInDomains(req, _domains);
+            var hostInDomains = RedirectToWwwHelper.IsHostInDomains(request, _domains);
 
             if (!hostInDomains)
             {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 return;
             }
 
-            if (req.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
+            if (!request.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
             {
                 context.Result = RuleResult.ContinueRules;
                 return;
@@ -55,10 +55,10 @@ namespace Microsoft.AspNetCore.Rewrite
 
             RedirectToWwwHelper.SetRedirect(
                 context,
-                new HostString($"www.{context.HttpContext.Request.Host.Value}"),
+                new HostString(request.Host.Value.Substring(4)), // We verified the hostname begins with "www." already.
                 _statusCode);
 
-            context.Logger.RedirectedToWww();
+            context.Logger.RedirectedToNonWww();
         }
     }
 }
