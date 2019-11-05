@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
             if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
                 field.GetValue(nullableAttribute) is byte[] flags &&
-                flags.Length >= 0 &&
+                flags.Length > 0 &&
                 flags[0] == 1) // First element is the property/parameter type.
             {
                 isNullable = true;

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Routing;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Provides an abstraction for querying and mananging URI navigation.
+    /// Provides an abstraction for querying and managing URI navigation.
     /// </summary>
     public abstract class NavigationManager
     {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Allows derived classes to lazyly self-initialize. Implementations that support lazy-initialization should override
+        /// Allows derived classes to lazily self-initialize. Implementations that support lazy-initialization should override
         /// this method and call <see cref="Initialize(string, string)" />.
         /// </summary>
         protected virtual void EnsureInitialized()

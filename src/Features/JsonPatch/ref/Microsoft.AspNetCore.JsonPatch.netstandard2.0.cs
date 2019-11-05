@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.JsonPatch
         public JsonPatchDocument() { }
         public JsonPatchDocument(System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation> operations, Newtonsoft.Json.Serialization.IContractResolver contractResolver) { }
         [Newtonsoft.Json.JsonIgnoreAttribute]
-        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation> Operations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation> Operations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.JsonPatch.JsonPatchDocument Add(string path, object value) { throw null; }
         public void ApplyTo(object objectToApplyTo) { }
         public void ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) { }
@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.JsonPatch
         public JsonPatchDocument() { }
         public JsonPatchDocument(System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>> operations, Newtonsoft.Json.Serialization.IContractResolver contractResolver) { }
         [Newtonsoft.Json.JsonIgnoreAttribute]
-        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>> Operations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>> Operations { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel> Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) { throw null; }
         public Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel> Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value, int position) { throw null; }
         public Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel> Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path, TProp value) { throw null; }
@@ -69,15 +69,15 @@ namespace Microsoft.AspNetCore.JsonPatch
     public partial class JsonPatchError
     {
         public JsonPatchError(object affectedObject, Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, string errorMessage) { }
-        public object AffectedObject { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ErrorMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.JsonPatch.Operations.Operation Operation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object AffectedObject { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ErrorMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.JsonPatch.Operations.Operation Operation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class JsonPatchProperty
     {
         public JsonPatchProperty(Newtonsoft.Json.Serialization.JsonProperty property, object parent) { }
-        public object Parent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Newtonsoft.Json.Serialization.JsonProperty Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public object Parent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Newtonsoft.Json.Serialization.JsonProperty Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.JsonPatch.Adapters
@@ -107,9 +107,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
     {
         public ObjectAdapter(Newtonsoft.Json.Serialization.IContractResolver contractResolver, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) { }
         public ObjectAdapter(Newtonsoft.Json.Serialization.IContractResolver contractResolver, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction, Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory adapterFactory) { }
-        public Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory AdapterFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> LogErrorAction { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory AdapterFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Newtonsoft.Json.Serialization.IContractResolver ContractResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> LogErrorAction { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Add(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) { }
         public void Copy(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) { }
         public void Move(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) { }
@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Exceptions
         public JsonPatchException(Microsoft.AspNetCore.JsonPatch.JsonPatchError jsonPatchError) { }
         public JsonPatchException(Microsoft.AspNetCore.JsonPatch.JsonPatchError jsonPatchError, System.Exception innerException) { }
         public JsonPatchException(string message, System.Exception innerException) { }
-        public object AffectedObject { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.JsonPatch.Operations.Operation FailedOperation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object AffectedObject { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.JsonPatch.Operations.Operation FailedOperation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.JsonPatch.Helpers
@@ -150,8 +150,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Helpers
     public partial class GetValueResult
     {
         public GetValueResult(object propertyValue, bool hasError) { }
-        public bool HasError { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object PropertyValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool HasError { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object PropertyValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.JsonPatch.Internal
@@ -159,8 +159,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     public partial class ConversionResult
     {
         public ConversionResult(bool canBeConverted, object convertedInstance) { }
-        public bool CanBeConverted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object ConvertedInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool CanBeConverted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object ConvertedInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class ConversionResultProvider
     {
@@ -201,6 +201,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         bool TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage);
         bool TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage);
     }
+    public partial class JObjectAdapter : Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
+    {
+        public JObjectAdapter() { }
+        public virtual bool TryAdd(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryGet(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object value, out string errorMessage) { throw null; }
+        public virtual bool TryRemove(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out string errorMessage) { throw null; }
+        public virtual bool TryReplace(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) { throw null; }
+        public virtual bool TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage) { throw null; }
+    }
     public partial class ListAdapter : Microsoft.AspNetCore.JsonPatch.Internal.IAdapter
     {
         public ListAdapter() { }
@@ -225,8 +235,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             private readonly int _dummyPrimitive;
             public PositionInfo(Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType type, int index) { throw null; }
-            public int Index { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-            public Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+            public int Index { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+            public Microsoft.AspNetCore.JsonPatch.Internal.ListAdapter.PositionType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         }
         protected enum PositionType
         {
@@ -246,6 +256,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     public readonly partial struct ParsedPath
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public ParsedPath(string path) { throw null; }
         public string LastSegment { get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<string> Segments { get { throw null; } }
@@ -271,7 +282,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
         public Operation(string op, string path, string from) { }
         public Operation(string op, string path, string from, object value) { }
         [Newtonsoft.Json.JsonPropertyAttribute("value")]
-        public object value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public object value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Apply(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) { }
         public bool ShouldSerializevalue() { throw null; }
     }
@@ -280,13 +291,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
         public OperationBase() { }
         public OperationBase(string op, string path, string from) { }
         [Newtonsoft.Json.JsonPropertyAttribute("from")]
-        public string from { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string from { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Newtonsoft.Json.JsonPropertyAttribute("op")]
         public string op { get { throw null; } set { } }
         [Newtonsoft.Json.JsonIgnoreAttribute]
         public Microsoft.AspNetCore.JsonPatch.Operations.OperationType OperationType { get { throw null; } }
         [Newtonsoft.Json.JsonPropertyAttribute("path")]
-        public string path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool ShouldSerializefrom() { throw null; }
     }
     public enum OperationType

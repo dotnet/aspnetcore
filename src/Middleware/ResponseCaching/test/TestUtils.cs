@@ -385,21 +385,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
-        {
-            return Task.FromResult(Get(key));
-        }
-
         public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             SetCount++;
             _storage[key] = entry;
-        }
-
-        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
-        {
-            Set(key, entry, validFor);
-            return Task.CompletedTask;
         }
     }
 

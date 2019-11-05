@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             services.AddServerSideBlazor();
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
-            var serviceProvder = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
-            return new ApplicationBuilder(serviceProvder);
+            return new ApplicationBuilder(serviceProvider);
         }
 
         private class MyComponent : IComponent

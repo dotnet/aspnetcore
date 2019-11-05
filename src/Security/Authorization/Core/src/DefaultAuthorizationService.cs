@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Authorization
             }
             else
             {
-                _logger.UserAuthorizationFailed();
+                _logger.UserAuthorizationFailed(result.Failure);
             }
             return result;
         }
