@@ -3,12 +3,11 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Connections.Features
+namespace Microsoft.AspNetCore.Connections.Abstractions.Features
 {
-    public interface IStreamListener
+    public interface IQuicCreateStreamFeature
     {
         ValueTask<ConnectionContext> StartUnidirectionalStreamAsync();
         ValueTask<ConnectionContext> StartBidirectionalStreamAsync();
-        ValueTask<ConnectionContext> AcceptAsync();
     }
 }

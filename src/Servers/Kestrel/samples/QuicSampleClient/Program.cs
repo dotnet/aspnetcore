@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Connections.Abstractions.Features;
 
 namespace QuicSampleClient
 {
@@ -25,8 +27,8 @@ namespace QuicSampleClient
             var transportContext = new MsQuicTransportContext(null, null, transportOptions);
             var factory = new MsQuicConnectionFactory(transportContext);
             var connectionContext = await factory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
-            var streamFeature = connectionContext.Features.Get<IStreamListener>();
-            var streamContext = await streamFeature.StartBidirectionalStreamAsync();
+            var createStreamFeature = connectionContext.Features.Get<IQuicCreateStreamFeature>();
+            var streamContext = await createStreamFeature.StartBidirectionalStreamAsync();
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
             {
@@ -45,12 +47,13 @@ namespace QuicSampleClient
                     {
                         Console.WriteLine(Encoding.ASCII.GetString(readResult.Buffer.ToArray()));
                     }
+
                     streamContext.Transport.Input.AdvanceTo(readResult.Buffer.End);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Pipe is already completed.
-                    return;
+                    Console.WriteLine(ex.Message);
+                    break;
                 }
             }
         }

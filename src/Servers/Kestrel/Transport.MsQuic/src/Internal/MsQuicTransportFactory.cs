@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-
             var transport = new MsQuicConnectionListener(_transportContext, endpoint);
             await transport.BindAsync();
             return transport;

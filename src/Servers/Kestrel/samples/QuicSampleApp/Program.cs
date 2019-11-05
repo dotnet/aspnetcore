@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace QuicSampleApp
 {
@@ -49,7 +50,7 @@ namespace QuicSampleApp
                          {
                              return async connection =>
                              {
-                                 var streamFeature = connection.Features.Get<IStreamListener>();
+                                 var streamFeature = connection.Features.Get<IQuicStreamListenerFeature>();
                                  if (streamFeature != null)
                                  {
                                      while (true)

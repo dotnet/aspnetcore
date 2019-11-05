@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -18,41 +20,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private QuicStream _stream;
         private MsQuicConnection _connection;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
+        private IMsQuicTrace _trace;
 
-        public MsQuicStream(MsQuicConnection connection, QUIC_STREAM_OPEN_FLAG flags)
+        public MsQuicStream(MsQuicConnection connection, MemoryPool<byte> memoryPool, PipeScheduler scheduler, IMsQuicTrace trace, QUIC_STREAM_OPEN_FLAG flags, long? maxReadBufferSize = null, long? maxWriteBufferSize = null)
         {
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, 1024 * 1024, 1024 * 1024 / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, 1024 * 64, 1024 * 64 / 2, useSynchronizationContext: false);
+            Debug.Assert(connection != null);
+            Debug.Assert(memoryPool != null);
+            Debug.Assert(trace != null);
+
+            _connection = connection;
+            MemoryPool = memoryPool;
+            _trace = trace;
+
+            ConnectionClosed = _streamClosedTokenSource.Token;
+
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, scheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, scheduler, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
             if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
             {
                 Features.Set<IUnidirectionalStreamFeature>(new UnidirectionalStreamFeature());
             }
 
-            // Add a fake TLS connection feature becuase quic is always secure
+            // TODO populate the ITlsConnectionFeature (requires client certs). 
             var feature = new FakeTlsConnectionFeature();
             Features.Set<ITlsConnectionFeature>(feature);
 
-            // Set the transport and connection id
             Transport = pair.Transport;
             Application = pair.Application;
-            _connection = connection;
-            ConnectionClosed = _streamClosedTokenSource.Token;
         }
 
-        public MsQuicStream(QuicStream stream, bool _)
-        {
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, 1024 * 1024, 1024 * 1024 / 2, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, PipeScheduler.Inline, PipeScheduler.ThreadPool, 1024 * 64, 1024 * 64 / 2, useSynchronizationContext: false);
-
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
-
-            // Set the transport and connection id
-            Transport = pair.Transport;
-            Application = pair.Application;
-            _stream = stream;
-        }
+        public override MemoryPool<byte> MemoryPool { get; }
 
         // TODO make start async now that we have an event.
         public void Start(QuicStream stream)
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
                     if (result.IsCanceled)
                     {
+                        _stream.ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
                         break;
                     }
 
@@ -188,7 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private uint HandleEventPeerSendClose()
         {
             // TODO complete async
-            // Close as fast as possible here.
             Input.Complete();
             return MsQuicConstants.Success;
         }
@@ -222,6 +222,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
 
             return MsQuicConstants.Success;
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            Shutdown(abortReason);
+
+            // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
+            Output.CancelPendingRead();
+        }
+
+        private void Shutdown(Exception shutdownReason)
+        {
+            // TODO move stream shutudown logic here.
         }
     }
 

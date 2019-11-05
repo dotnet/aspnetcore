@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class MsQuicConnection : TransportConnection, IStreamListener
+    internal class MsQuicConnection : TransportConnection, IQuicStreamListenerFeature, IQuicCreateStreamFeature
     {
         private QuicConnection _connection;
-        private IAsyncEnumerator<MsQuicStream> _acceptEnumerator;
         private readonly Channel<MsQuicStream> _acceptQueue = Channel.CreateUnbounded<MsQuicStream>(new UnboundedChannelOptions
         {
             SingleReader = true,
@@ -26,24 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             connection.SetCallbackHandler(HandleEvent);
             connection.SetIdleTimeout(TimeSpan.FromMinutes(10));
 
-            _acceptEnumerator = AcceptStreamsAsync();
-            Features.Set<IStreamListener>(this);
-        }
-
-        private async IAsyncEnumerator<MsQuicStream> AcceptStreamsAsync()
-        {
-            while (true)
-            {
-                while (await _acceptQueue.Reader.WaitToReadAsync())
-                {
-                    while (_acceptQueue.Reader.TryRead(out var stream))
-                    {
-                        yield return stream;
-                    }
-                }
-
-                yield return null;
-            }
+            Features.Set<IQuicStreamListenerFeature>(this);
         }
 
         public uint HandleEvent(
@@ -215,29 +198,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return MsQuicConstants.Success;
         }
 
-        public async ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
-        {
-            var flags = QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL;
-            var msquicStream = new MsQuicStream(this, flags);
-            var stream = _connection.StreamOpen(flags, msquicStream.HandleStreamEvent);
-            await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);
-            msquicStream.Start(stream);
-            return msquicStream;
-        }
-
         public async ValueTask<ConnectionContext> AcceptAsync()
         {
-            if (await _acceptEnumerator.MoveNextAsync())
+            while (await _acceptQueue.Reader.WaitToReadAsync())
             {
-                return _acceptEnumerator.Current;
+                while (_acceptQueue.Reader.TryRead(out var stream))
+                {
+                    return stream;
+                }
             }
 
             return null;
         }
 
-        public async ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
+        public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
         {
-            var flags = QUIC_STREAM_OPEN_FLAG.NONE;
+            return StartStreamAsync(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL);
+        }
+
+        public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
+        {
+            return StartStreamAsync(QUIC_STREAM_OPEN_FLAG.NONE);
+        }
+
+        private async ValueTask<ConnectionContext> StartStreamAsync(QUIC_STREAM_OPEN_FLAG flags)
+        {
             var msquicStream = new MsQuicStream(this, flags);
             var stream = _connection.StreamOpen(flags, msquicStream.HandleStreamEvent);
             await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);

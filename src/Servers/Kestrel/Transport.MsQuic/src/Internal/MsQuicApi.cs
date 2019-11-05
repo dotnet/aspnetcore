@@ -184,11 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 uint status,
                 IntPtr securityConfig)
             {
-                if (MsQuicStatusHelper.Succeeded(status))
-                {
-                    secConfig = new QuicSecConfig(this, securityConfig);
-                }
-
+                secConfig = new QuicSecConfig(this, securityConfig);
                 secConfigCreateStatus = status;
                 tcs.SetResult(null);
             }
@@ -203,11 +199,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public QuicSession SessionOpen(
            string alpn)
         {
-            var buffer = Encoding.UTF8.GetBytes(alpn);
             var sessionPtr = IntPtr.Zero;
+
             var status = SessionOpenDelegate(
                 _registrationContext,
-                buffer,
+                Encoding.UTF8.GetBytes(alpn),
                 IntPtr.Zero,
                 ref sessionPtr);
             MsQuicStatusException.ThrowIfFailed(status);
