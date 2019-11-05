@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private readonly MsQuicTransportContext _context;
         private IntPtr _nativeObjPtr;
-        private ConnectionCallback _callback;
         private static GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
         private TaskCompletionSource<object> _tcsConnection;
@@ -36,23 +35,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             ConnectionCallbackDelegate nativeCallback = NativeCallbackHandler;
             _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
-            SetCallbackHandler(HandleEvent);
+            SetCallbackHandler();
             SetIdleTimeout(TimeSpan.FromMinutes(10));
 
             Features.Set<IQuicStreamListenerFeature>(this);
             Features.Set<IQuicCreateStreamFeature>(this);
+
+            _handle = GCHandle.Alloc(this);
         }
 
-        public uint HandleEvent(
-            ref MsQuicNativeMethods.ConnectionEvent evt)
-        {
-            var status = HandleEventCore(ref evt);
-
-            return status;
-        }
-
-        private uint HandleEventCore(
-          ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        internal uint HandleEvent(ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
         {
             var status = MsQuicConstants.Success;
             switch (connectionEvent.Type)
@@ -224,10 +216,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public MsQuicApi Registration { get; set; }
 
-        public delegate uint ConnectionCallback(
-            ref ConnectionEvent connectionEvent);
-
-
         public unsafe void SetIdleTimeout(TimeSpan timeout)
         {
             var msTime = (ulong)timeout.TotalMilliseconds;
@@ -324,11 +312,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             return new MsQuicStream(Registration, this, _context, flags, streamPtr);
         }
 
-        public void SetCallbackHandler(
-            ConnectionCallback callback)
+        public void SetCallbackHandler()
         {
-            _handle = GCHandle.Alloc(this);
-            _callback = callback;
             Registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,
@@ -353,32 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             var handle = GCHandle.FromIntPtr(context);
             var quicConnection = (MsQuicConnection)handle.Target;
-            return quicConnection.ExecuteCallback(ref connectionEventStruct);
-        }
-
-        private uint ExecuteCallback(
-            ref ConnectionEvent connectionEvent)
-        {
-            var status = MsQuicConstants.InternalError;
-            if (connectionEvent.Type == QUIC_CONNECTION_EVENT.CONNECTED)
-            {
-                _tcsConnection?.TrySetResult(null);
-            }
-            else if (connectionEvent.Type == QUIC_CONNECTION_EVENT.SHUTDOWN_BEGIN)
-            {
-                _tcsConnection?.TrySetResult(new Exception("RIP"));
-            }
-
-            try
-            {
-                status = _callback(
-                    ref connectionEvent);
-            }
-            catch (Exception)
-            {
-                // TODO log
-            }
-            return status;
+            return quicConnection.HandleEvent(ref connectionEventStruct);
         }
 
         private void SetParam(

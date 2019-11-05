@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
-        private StreamCallback _callback;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
         public MsQuicStream(MsQuicApi registration, MsQuicConnection connection, MsQuicTransportContext context, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr)
@@ -64,8 +63,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             Transport = pair.Transport;
             Application = pair.Application;
 
-            SetCallbackHandler(HandleStreamEvent);
+            SetCallbackHandler();
             _processingTask = ProcessSends();
+
+            _handle = GCHandle.Alloc(this);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public PipeReader Output => Application.Input;
 
-        public uint HandleStreamEvent(
+        public uint HandleEvent(
             ref MsQuicNativeMethods.StreamEvent evt)
         {
             var status = MsQuicConstants.Success;
@@ -258,34 +259,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var handle = GCHandle.FromIntPtr(context);
             var quicStream = (MsQuicStream)handle.Target;
 
-            return quicStream.ExecuteCallback(ref connectionEventStruct);
+            return quicStream.HandleEvent(ref connectionEventStruct);
         }
 
-        private uint ExecuteCallback(
-            ref StreamEvent evt)
+        public void SetCallbackHandler()
         {
-            var status = MsQuicConstants.InternalError;
-            if (evt.Type == QUIC_STREAM_EVENT.SEND_COMPLETE)
-            {
-                SendContext.HandleNativeCallback(evt.ClientContext);
-            }
-            try
-            {
-                status = _callback(
-                    ref evt);
-            }
-            catch (Exception)
-            {
-                // TODO log
-            }
-            return status;
-        }
-
-        public void SetCallbackHandler(
-            StreamCallback callback)
-        {
-            _handle = GCHandle.Alloc(this);
-            _callback = callback;
             Registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,
@@ -349,7 +327,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             GC.SuppressFinalize(this);
         }
 
-
         public unsafe void EnableReceive()
         {
             var val = true;
@@ -371,7 +348,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 (uint)param,
                 buf));
         }
-
 
         ~MsQuicStream()
         {

@@ -61,8 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 ErrorCode);
         }
 
-        public long Handle { get => (long)_nativeObjPtr; }
-
         public void Dispose()
         {
             Dispose(true);

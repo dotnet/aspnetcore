@@ -4,10 +4,8 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Connections.Abstractions.Features;
 
 namespace QuicSampleClient
