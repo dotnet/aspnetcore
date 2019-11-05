@@ -256,6 +256,49 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [Fact]
+        public async Task VerifyUntrustedClientCertEndsUpInForbidden()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents
+                }, Certificates.SignedClient);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task VerifyValidClientCertWithTrustedChainAuthenticates()
+        {
+            var server = CreateServer(
+                new CertificateAuthenticationOptions
+                {
+                    Events = sucessfulValidationEvents,
+                    CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
+                    RevocationMode = X509RevocationMode.NoCheck
+                }, Certificates.SignedClient);
+
+            var response = await server.CreateClient().GetAsync("https://example.com/");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
             var server = CreateServer(
@@ -534,11 +577,12 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
+                        options.CustomTrustStore = configureOptions.CustomTrustStore;
                         options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
                         options.Events = configureOptions.Events;
                         options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
-                        options.RevocationFlag = options.RevocationFlag;
-                        options.RevocationMode = options.RevocationMode;
+                        options.RevocationFlag = configureOptions.RevocationFlag;
+                        options.RevocationMode = configureOptions.RevocationMode;
                         options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
                     });
                 }
@@ -599,6 +643,15 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
         private static class Certificates
         {
+            public static X509Certificate2 SelfSignedPrimaryRoot { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedPrimaryRootCertificate.cer"));
+
+            public static X509Certificate2 SignedSecondaryRoot { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSignedSecondaryRootCertificate.cer"));
+
+            public static X509Certificate2 SignedClient { get; private set; } =
+                new X509Certificate2(GetFullyQualifiedFilePath("validSignedClientCertificate.cer"));
+
             public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
                 new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
 
