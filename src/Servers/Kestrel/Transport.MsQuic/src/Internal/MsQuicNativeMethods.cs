@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     /// </summary>
     internal unsafe static class MsQuicNativeMethods
     {
-        internal const string dllName = "msquic.dll";
+        internal const string dllName = "msquic";
 
         [DllImport(dllName)]
         internal static extern int MsQuicOpen(int version, out NativeApi* registration);

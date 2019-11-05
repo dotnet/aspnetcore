@@ -27,11 +27,15 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="..\msquic.dll" Condition="Exists('..\msquic.dll')">
+    <Content Include="msquic.dll" Condition="Exists('msquic.dll')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="..\msquic.pdb" Condition="Exists('..\msquic.pdb')">
+    <Content Include="libmsquic.so" Condition="Exists('libmsquic.so')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="msquic.pdb" Condition="Exists('msquic.pdb')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
