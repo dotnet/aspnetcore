@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        internal ResettableCompletionSource _resettableCts;
+        internal ResettableCompletionSource _resettable;
         private MemoryHandle[] _bufferArrays;
         private GCHandle _sendBuffer;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
-            _resettableCts = new ResettableCompletionSource(this);
+            _resettable = new ResettableCompletionSource(this);
 
             // TODO should we allow these PipeScheduler to be configurable here?
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
@@ -72,8 +72,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _processingTask = ProcessSends();
         }
 
-
         public override MemoryPool<byte> MemoryPool { get; }
+        public PipeWriter Input => Application.Output;
+        public PipeReader Output => Application.Input;
+
 
         private async Task ProcessSends()
         {
@@ -117,10 +119,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             }
         }
 
-        public PipeWriter Input => Application.Output;
-
-        public PipeReader Output => Application.Input;
-
         internal uint HandleEvent(ref MsQuicNativeMethods.StreamEvent evt)
         {
             var status = MsQuicConstants.Success;
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     break;
                 case QUIC_STREAM_EVENT.RECV:
                     {
-                        status = HandleEventRecv(
+                        HandleEventRecv(
                             ref evt);
                     }
                     break;
@@ -188,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private uint HandleStartComplete()
         {
-            _resettableCts.Complete(MsQuicConstants.Success);
+            _resettable.Complete(MsQuicConstants.Success);
             return MsQuicConstants.Success;
         }
 
@@ -199,7 +197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private uint HandleEventPeerSendClose()
         {
-            // TODO complete async
             Input.Complete();
             return MsQuicConstants.Success;
         }
@@ -211,11 +208,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 gchBufferArray.Dispose();
             }
-            _resettableCts.Complete(evt.SendAbortError);
+            _resettable.Complete(evt.SendAbortError);
             return MsQuicConstants.Success;
         }
 
-        protected uint HandleEventRecv(ref MsQuicNativeMethods.StreamEvent evt)
+        protected void HandleEventRecv(ref MsQuicNativeMethods.StreamEvent evt)
         {
             var input = Input;
             var length = (int)evt.TotalBufferLength;
@@ -237,8 +234,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 await ft;
                 EnableReceive();
             }
-
-            return MsQuicConstants.Success;
         }
 
         public override void Abort(ConnectionAbortedException abortReason)
@@ -251,7 +246,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private void Shutdown(Exception shutdownReason)
         {
-            // TODO move stream shutudown logic here.
         }
 
         public MsQuicApi Registration { get; set; }
@@ -288,7 +282,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 bufferCount++;
             }
 
-            // I don't know if I need to pin memory here.
             var quicBufferArray = new QuicBuffer[bufferCount];
             _bufferArrays = new MemoryHandle[bufferCount];
 
@@ -315,18 +308,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             MsQuicStatusException.ThrowIfFailed(status);
 
-            return _resettableCts.GetValueTask();
+            return _resettable.GetValueTask();
         }
 
         public ValueTask<uint> StartAsync()
         {
-            // TODO make start actually async here.
             var status = Registration.StreamStartDelegate(
               _nativeObjPtr,
               (uint)QUIC_STREAM_START_FLAG.ASYNC);
 
             MsQuicStatusException.ThrowIfFailed(status);
-            return _resettableCts.GetValueTask();
+            return _resettable.GetValueTask();
         }
 
         public void ReceiveComplete(int bufferLength)

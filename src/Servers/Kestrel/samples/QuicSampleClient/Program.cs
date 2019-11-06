@@ -30,7 +30,8 @@ namespace QuicSampleClient
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
             {
-                streamContext.Transport.Output.Complete();
+                streamContext.Transport.Input.CancelPendingRead();
+                streamContext.Transport.Output.CancelPendingFlush();
             });
 
             while (true)
@@ -38,9 +39,17 @@ namespace QuicSampleClient
                 try
                 {
                     var input = Console.ReadLine();
-                    await streamContext.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(input));
+                    var flushResult = await streamContext.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes(input));
+                    if (flushResult.IsCanceled)
+                    {
+                        break;
+                    }
 
                     var readResult = await streamContext.Transport.Input.ReadAsync();
+                    if (readResult.IsCanceled)
+                    {
+                        break;
+                    }
                     if (readResult.Buffer.Length > 0)
                     {
                         Console.WriteLine(Encoding.ASCII.GetString(readResult.Buffer.ToArray()));
@@ -54,6 +63,9 @@ namespace QuicSampleClient
                     break;
                 }
             }
+
+            await streamContext.Transport.Input.CompleteAsync();
+            await streamContext.Transport.Output.CompleteAsync();
         }
     }
 }

@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         private readonly MsQuicTransportContext _transportContext;
 
-        // TODO figure out if we need application lifetime.
         public MsQuicTransportFactory(IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<MsQuicTransportOptions> options)
         {
             if (options == null)

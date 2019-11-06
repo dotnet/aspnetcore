@@ -538,6 +538,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             internal byte* Buffer;
         }
 
+        private const ushort IPv4 = 2;
+        private const ushort IPv6 = 23;
+        
         public static SOCKADDR_INET Convert(IPEndPoint endpoint)
         {
             var socketAddress = new SOCKADDR_INET();
@@ -549,7 +552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     socketAddress.Ipv4.sin_addr1 = buffer[1];
                     socketAddress.Ipv4.sin_addr2 = buffer[2];
                     socketAddress.Ipv4.sin_addr3 = buffer[3];
-                    socketAddress.Ipv4.sin_family = 0;
+                    socketAddress.Ipv4.sin_family = IPv4;
                     break;
                 case AddressFamily.InterNetworkV6:
                     socketAddress.Ipv6.sin6_addr0 = buffer[0];
@@ -568,7 +571,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     socketAddress.Ipv6.sin6_addr13 = buffer[13];
                     socketAddress.Ipv6.sin6_addr14 = buffer[14];
                     socketAddress.Ipv6.sin6_addr15 = buffer[15];
-                    socketAddress.Ipv6.sin6_family = 0;
+                    socketAddress.Ipv6.sin6_family = IPv6;
                     break;
                 default:
                     throw new ArgumentException("Only IPv4 or IPv6 are supported");
@@ -587,8 +590,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     socketAddrInet.Ipv4.sin_port = convertedPort;
                     break;
                 case AddressFamily.InterNetworkV6:
-                    socketAddrInet.Ipv6.sin6_port = convertedPort;
-                    break;
                 default:
                     socketAddrInet.Ipv6.sin6_port = convertedPort;
                     break;

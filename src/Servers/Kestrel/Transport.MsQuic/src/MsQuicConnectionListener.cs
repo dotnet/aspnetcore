@@ -168,17 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 return new ValueTask();
             }
 
-            if (_nativeObjPtr != IntPtr.Zero)
-            {
-                _registration.ListenerStopDelegate(_nativeObjPtr);
-                _registration.ListenerCloseDelegate?.Invoke(_nativeObjPtr);
-            }
-
-            _nativeObjPtr = IntPtr.Zero;
-            _registration = null;
-            _disposed = true;
-
-            StopAcceptingConnections();
+            Dispose(true);
 
             return new ValueTask();
         }

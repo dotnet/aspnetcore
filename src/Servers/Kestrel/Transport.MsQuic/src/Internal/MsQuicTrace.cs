@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
     {
         private ILogger _logger;
 
-        // TODO define messages that make sense here to trace.
-
         public MsQuicTrace(ILogger logger)
         {
             _logger = logger;

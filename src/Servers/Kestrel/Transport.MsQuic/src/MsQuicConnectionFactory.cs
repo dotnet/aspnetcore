@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
     public class MsQuicConnectionFactory : IConnectionFactory
     {
-        private MsQuicApi _registration;
+        private MsQuicApi _api;
         private QuicSession _session;
         private bool _started;
 
         public MsQuicConnectionFactory(MsQuicTransportContext transportContext)
         {
-            _registration = new MsQuicApi();
+            _api = new MsQuicApi();
             TransportContext = transportContext;
         }
 
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             {
                 throw new NotSupportedException($"{endPoint} is not supported");
             }
+
             if (!_started)
             {
                 _started = true;
@@ -43,8 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         private ValueTask StartAsync()
         {
-            _registration.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
-            _session = _registration.SessionOpen(TransportContext.Options.Alpn);
+            _api.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
+            _session = _api.SessionOpen(TransportContext.Options.Alpn);
             _session.SetIdleTimeout(TransportContext.Options.IdleTimeout);
             _session.SetPeerBiDirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
             _session.SetPeerUnidirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);

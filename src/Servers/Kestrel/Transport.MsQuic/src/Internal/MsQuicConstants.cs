@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal static class MsQuicConstants
     {
-
         internal static uint InternalError = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.InternalError : Linux.InternalError;
         internal static uint Success = 0;
         internal static uint Pending = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.Pending : Linux.Pending;
