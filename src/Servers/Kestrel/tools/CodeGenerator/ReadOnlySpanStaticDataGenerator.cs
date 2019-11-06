@@ -26,7 +26,9 @@ using System;
 namespace {namespaceName}
 {{
     internal partial class {className}
-    {{{Each(properties, p => $@"
+    {{
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+     {Each(properties, p => $@"
         private static ReadOnlySpan<byte> {p.Data.Name}Bytes => new byte[{p.Data.Value.Length}] {{ {GetDataAsBytes(p.Data.Value)} }};")}
     }}
 }}
