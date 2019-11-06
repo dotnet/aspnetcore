@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
-        internal ResettableCompletionSource _resettable;
+        internal ResettableCompletionSource _resettableCompletion;
         private MemoryHandle[] _bufferArrays;
         private GCHandle _sendBuffer;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
-            _resettable = new ResettableCompletionSource(this);
+            _resettableCompletion = new ResettableCompletionSource(this);
 
             // TODO should we allow these PipeScheduler to be configurable here?
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
+            // TODO when stream is unidirectional, don't create an output pipe.
             if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
             {
                 Features.Set<IUnidirectionalStreamFeature>(this);
@@ -99,7 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     var isCompleted = result.IsCompleted;
                     if (!buffer.IsEmpty)
                     {
-                        // Invalid parameter here?
                         await SendAsync(buffer, QUIC_SEND_FLAG.NONE);
                     }
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private uint HandleStartComplete()
         {
-            _resettable.Complete(MsQuicConstants.Success);
+            _resettableCompletion.Complete(MsQuicConstants.Success);
             return MsQuicConstants.Success;
         }
 
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 gchBufferArray.Dispose();
             }
-            _resettable.Complete(evt.SendAbortError);
+            _resettableCompletion.Complete(evt.SendAbortError);
             return MsQuicConstants.Success;
         }
 
@@ -226,13 +226,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 _ = AwaitFlush(flushTask);
 
-                return MsQuicConstants.Pending;
+                return;
             }
 
             async Task AwaitFlush(ValueTask<FlushResult> ft)
             {
                 await ft;
+                // TODO figure out when to call these for receive.
                 EnableReceive();
+                ReceiveComplete(length);
             }
         }
 
@@ -308,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             MsQuicStatusException.ThrowIfFailed(status);
 
-            return _resettable.GetValueTask();
+            return _resettableCompletion.GetValueTask();
         }
 
         public ValueTask<uint> StartAsync()
@@ -318,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
               (uint)QUIC_STREAM_START_FLAG.ASYNC);
 
             MsQuicStatusException.ThrowIfFailed(status);
-            return _resettable.GetValueTask();
+            return _resettableCompletion.GetValueTask();
         }
 
         public void ReceiveComplete(int bufferLength)

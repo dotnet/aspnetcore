@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 if (isValid)
                 {
                     _valueTaskSource.Reset();
-                    _stream._resettable = this;
+                    _stream._resettableCompletion = this;
                 }
             }
         }
