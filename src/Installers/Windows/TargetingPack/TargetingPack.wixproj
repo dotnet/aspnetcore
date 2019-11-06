@@ -24,10 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <WixExtension Include="WixDependencyExtension">
       <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
       <Name>WixDependencyExtension</Name>
@@ -104,6 +100,8 @@
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)' ^
-                      '$(PackageIconFullPath)'" />
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
   </Target>
 </Project>

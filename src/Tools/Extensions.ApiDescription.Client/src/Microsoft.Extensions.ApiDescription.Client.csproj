@@ -21,6 +21,5 @@
   <ItemGroup>
     <NuspecProperty Include="baseOutputPath=$(BaseOutputPath)" />
     <NuspecProperty Include="configuration=$(Configuration)" />
-    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 </Project>
