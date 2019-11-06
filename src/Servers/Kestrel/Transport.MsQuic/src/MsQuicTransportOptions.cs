@@ -39,11 +39,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         /// </summary>
         public TimeSpan IdleTimeout { get; set; }
 
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
-
+        /// <summary>
+        /// The maximum read size.
+        /// </summary>
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
+        /// <summary>
+        /// The maximum write size.
+        /// </summary>
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
+
+        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 
     }
 }

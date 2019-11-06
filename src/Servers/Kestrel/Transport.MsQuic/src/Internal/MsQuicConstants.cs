@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal static class MsQuicConstants
     {
-        public const uint SuccessConst = 0;
 
         internal static uint InternalError = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.InternalError : Linux.InternalError;
         internal static uint Success = 0;
         internal static uint Pending = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.Pending : Linux.Pending;
+        private const uint SuccessConst = 0;
 
         internal static Func<uint, string> ErrorTypeFromErrorCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.GetError : (Func<uint, string>)Linux.GetError;
 

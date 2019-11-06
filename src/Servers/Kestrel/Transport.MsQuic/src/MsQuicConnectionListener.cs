@@ -17,14 +17,13 @@ using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQui
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
     /// <summary>
-    /// Listens for new Quic Connections
+    /// Listens for new Quic Connections.
     /// </summary>
     public class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable, IDisposable
     {
         private MsQuicApi _registration;
         private QuicSecConfig _secConfig;
         private QuicSession _session;
-        private IAsyncEnumerator<MsQuicConnection> _acceptEnumerator;
         private bool _disposed;
         private bool _stopped;
         private IntPtr _nativeObjPtr;
@@ -42,8 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             _registration = new MsQuicApi();
             TransportContext = transportContext;
             EndPoint = endpoint;
-            ListenerCallbackDelegate nativeCallback = NativeCallbackHandler;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
+            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ListenerCallbackDelegate)NativeCallbackHandler);
             _handle = GCHandle.Alloc(this);
         }
 
@@ -54,17 +52,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            if (_disposed)
+            if (await _acceptConnectionQueue.Reader.WaitToReadAsync())
             {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-
-            if (await _acceptEnumerator.MoveNextAsync())
-            {
-                return _acceptEnumerator.Current;
+                if (_acceptConnectionQueue.Reader.TryRead(out var connection))
+                {
+                    return connection;
+                }
             }
 
             return null;
+        }
+
+        internal async Task BindAsync()
+        {
+            await StartAsync();
         }
 
         public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
@@ -77,29 +78,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             _stopped = true;
 
             await DisposeAsync();
-        }
-
-        internal async Task BindAsync()
-        {
-            await StartAsync();
-
-            _acceptEnumerator = AcceptConnectionsAsync();
-        }
-
-        private async IAsyncEnumerator<MsQuicConnection> AcceptConnectionsAsync()
-        {
-            while (true)
-            {
-                while (await _acceptConnectionQueue.Reader.WaitToReadAsync())
-                {
-                    while (_acceptConnectionQueue.Reader.TryRead(out var connection))
-                    {
-                        yield return connection;
-                    }
-                }
-
-                yield return null;
-            }
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -172,11 +150,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 GCHandle.ToIntPtr(_handle));
         }
 
-        internal void Stop()
-        {
-            _registration.ListenerStopDelegate(_nativeObjPtr);
-        }
-
         ~MsQuicConnectionListener()
         {
             Dispose(false);
@@ -197,6 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
             if (_nativeObjPtr != IntPtr.Zero)
             {
+                _registration.ListenerStopDelegate(_nativeObjPtr);
                 _registration.ListenerCloseDelegate?.Invoke(_nativeObjPtr);
             }
 
@@ -218,7 +192,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
             if (_nativeObjPtr != IntPtr.Zero)
             {
-                _registration.ListenerCloseDelegate?.Invoke(_nativeObjPtr);
+                _registration.ListenerStopDelegate(_nativeObjPtr);
+                _registration.ListenerCloseDelegate(_nativeObjPtr);
             }
 
             _nativeObjPtr = IntPtr.Zero;

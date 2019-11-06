@@ -16,7 +16,7 @@ using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQui
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    internal class MsQuicStream : TransportConnection
+    internal class MsQuicStream : TransportConnection, IUnidirectionalStreamFeature
     {
         private Task _processingTask;
         private MsQuicConnection _connection;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
             {
-                Features.Set<IUnidirectionalStreamFeature>(new UnidirectionalStreamFeature());
+                Features.Set<IUnidirectionalStreamFeature>(this);
             }
 
             // TODO populate the ITlsConnectionFeature (requires client certs). 
@@ -109,7 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             catch (Exception)
             {
                 ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
-                // TODO log
             }
         }
 
@@ -117,8 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public PipeReader Output => Application.Input;
 
-        public uint HandleEvent(
-            ref MsQuicNativeMethods.StreamEvent evt)
+        internal uint HandleEvent(ref MsQuicNativeMethods.StreamEvent evt)
         {
             var status = MsQuicConstants.Success;
 
@@ -244,9 +242,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             // TODO move stream shutudown logic here.
         }
 
-        public delegate uint StreamCallback(
-            ref StreamEvent evt);
-
         public MsQuicApi Registration { get; set; }
 
         internal StreamCallbackDelegate NativeCallback { get; private set; }
@@ -318,8 +313,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var status = (uint)Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
             MsQuicStatusException.ThrowIfFailed(status);
         }
-
-        public long Handle { get => (long)_nativeObjPtr; }
 
         public void Dispose()
         {

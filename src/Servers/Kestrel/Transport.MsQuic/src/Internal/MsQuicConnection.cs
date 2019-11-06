@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
     internal class MsQuicConnection : TransportConnection, IQuicStreamListenerFeature, IQuicCreateStreamFeature, IDisposable
     {
+        public MsQuicApi _registration;
         private bool _disposed;
         private readonly MsQuicTransportContext _context;
         private IntPtr _nativeObjPtr;
@@ -29,22 +30,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public MsQuicConnection(MsQuicApi registration, MsQuicTransportContext context, IntPtr nativeObjPtr)
         {
-            Registration = registration;
+            _registration = registration;
             _context = context;
             _nativeObjPtr = nativeObjPtr;
+            _handle = GCHandle.Alloc(this);
 
-            ConnectionCallbackDelegate nativeCallback = NativeCallbackHandler;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
+            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ConnectionCallbackDelegate)NativeCallbackHandler);
+
             SetCallbackHandler();
+
             SetIdleTimeout(TimeSpan.FromMinutes(10));
 
             Features.Set<IQuicStreamListenerFeature>(this);
             Features.Set<IQuicCreateStreamFeature>(this);
-
-            _handle = GCHandle.Alloc(this);
         }
 
-        internal uint HandleEvent(ref MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        internal uint HandleEvent(ref ConnectionEvent connectionEvent)
         {
             var status = MsQuicConstants.Success;
             switch (connectionEvent.Type)
@@ -77,21 +78,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     }
                     break;
 
-                case QUIC_CONNECTION_EVENT.LOCAL_ADDR_CHANGED:
-                    {
-                        status = HandleEventLocalAddrChanged(
-                            connectionEvent);
-                    }
-                    break;
-
-
-                case QUIC_CONNECTION_EVENT.PEER_ADDR_CHANGED:
-                    {
-                        status = HandleEventPeerAddrChanged(
-                            connectionEvent);
-                    }
-                    break;
-
                 case QUIC_CONNECTION_EVENT.NEW_STREAM:
                     {
                         status = HandleEventNewStream(
@@ -106,88 +92,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     }
                     break;
 
-                case QUIC_CONNECTION_EVENT.PEER_NEEDS_STREAMS:
-                    {
-                    }
-                    break;
-
-                case QUIC_CONNECTION_EVENT.IDEAL_SEND_BUFFER:
-                    {
-                        status = HandleEventIdealSendBuffer(
-                            connectionEvent);
-                    }
-                    break;
-
                 default:
                     break;
             }
             return status;
         }
 
-        protected virtual uint HandleEventConnected(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventConnected(ConnectionEvent connectionEvent)
         {
             return MsQuicConstants.Success;
         }
 
-        protected virtual uint HandleEventShutdownBegin(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventShutdownBegin(ConnectionEvent connectionEvent)
         {
             return MsQuicConstants.Success;
         }
 
-        protected virtual uint HandleEventShutdownBeginPeer(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventShutdownBeginPeer(ConnectionEvent connectionEvent)
         {
             return MsQuicConstants.Success;
         }
 
-        protected virtual uint HandleEventShutdownComplete(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventShutdownComplete(ConnectionEvent connectionEvent)
         {
             return MsQuicConstants.Success;
         }
 
-        protected virtual uint HandleEventLocalAddrChanged(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventNewStream(ConnectionEvent connectionEvent)
         {
-            return MsQuicConstants.Success;
-        }
-
-        protected virtual uint HandleEventPeerAddrChanged(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
-        {
-            return MsQuicConstants.Success;
-        }
-
-        protected virtual uint HandleEventNewStream(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
-        {
-            //var stream = new QuicStream(connection.Registration, connectionEvent.Data.NewStream.Stream, shouldOwnNativeObj: false);
-            var msQuicStream = new MsQuicStream(Registration, this, _context, connectionEvent.StreamFlags, connectionEvent.Data.NewStream.Stream);
+            var msQuicStream = new MsQuicStream(_registration, this, _context, connectionEvent.StreamFlags, connectionEvent.Data.NewStream.Stream);
 
             _acceptQueue.Writer.TryWrite(msQuicStream);
 
             return MsQuicConstants.Success;
         }
 
-        protected virtual uint HandleEventStreamsAvailable(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
-        {
-            return MsQuicConstants.Success;
-        }
-
-        protected virtual uint HandleEventIdealSendBuffer(
-            MsQuicNativeMethods.ConnectionEvent connectionEvent)
+        protected virtual uint HandleEventStreamsAvailable(ConnectionEvent connectionEvent)
         {
             return MsQuicConstants.Success;
         }
 
         public async ValueTask<ConnectionContext> AcceptAsync()
         {
-            while (await _acceptQueue.Reader.WaitToReadAsync())
+            if (await _acceptQueue.Reader.WaitToReadAsync())
             {
-                while (_acceptQueue.Reader.TryRead(out var stream))
+                if (_acceptQueue.Reader.TryRead(out var stream))
                 {
                     return stream;
                 }
@@ -212,9 +161,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);
             return stream;
         }
-
-
-        public MsQuicApi Registration { get; set; }
 
         public unsafe void SetIdleTimeout(TimeSpan timeout)
         {
@@ -247,16 +193,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetUshortParamter(QUIC_PARAM_CONN.LOCAL_UNIDI_STREAM_COUNT, count);
         }
 
-        private unsafe void SetUshortParamter(QUIC_PARAM_CONN param, ushort count)
-        {
-            var buffer = new QuicBuffer()
-            {
-                Length = sizeof(ushort),
-                Buffer = (byte*)&count
-            };
-            SetParam(param, buffer);
-        }
-
         public unsafe void EnableBuffering()
         {
             var val = true;
@@ -286,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             _tcsConnection = new TaskCompletionSource<object>();
 
-            var status = Registration.ConnectionStartDelegate(
+            var status = _registration.ConnectionStartDelegate(
                 _nativeObjPtr,
                 family,
                 serverName,
@@ -301,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             QUIC_STREAM_OPEN_FLAG flags)
         {
             var streamPtr = IntPtr.Zero;
-            var status = Registration.StreamOpenDelegate(
+            var status = _registration.StreamOpenDelegate(
                 _nativeObjPtr,
                 (uint)flags,
                 MsQuicStream.NativeCallbackHandler,
@@ -309,12 +245,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 out streamPtr);
             MsQuicStatusException.ThrowIfFailed(status);
 
-            return new MsQuicStream(Registration, this, _context, flags, streamPtr);
+            return new MsQuicStream(_registration, this, _context, flags, streamPtr);
         }
 
         public void SetCallbackHandler()
         {
-            Registration.SetCallbackHandlerDelegate(
+            _registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,
                 GCHandle.ToIntPtr(_handle));
@@ -324,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             QUIC_CONNECTION_SHUTDOWN_FLAG Flags,
             ushort ErrorCode)
         {
-            var status = Registration.ConnectionShutdownDelegate(
+            var status = _registration.ConnectionShutdownDelegate(
                 _nativeObjPtr,
                 (uint)Flags,
                 ErrorCode);
@@ -339,17 +275,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var handle = GCHandle.FromIntPtr(context);
             var quicConnection = (MsQuicConnection)handle.Target;
             return quicConnection.HandleEvent(ref connectionEventStruct);
-        }
-
-        private void SetParam(
-            QUIC_PARAM_CONN param,
-            QuicBuffer buf)
-        {
-            MsQuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
-                _nativeObjPtr,
-                (uint)QUIC_PARAM_LEVEL.CONNECTION,
-                (uint)param,
-                buf));
         }
 
         public void Dispose()
@@ -372,14 +297,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             if (_nativeObjPtr != IntPtr.Zero)
             {
-                Registration.ConnectionCloseDelegate?.Invoke(_nativeObjPtr);
+                _registration.ConnectionCloseDelegate?.Invoke(_nativeObjPtr);
             }
 
             _nativeObjPtr = IntPtr.Zero;
-            Registration = null;
+            _registration = null;
 
             _handle.Free();
             _disposed = true;
+        }
+
+        private unsafe void SetUshortParamter(QUIC_PARAM_CONN param, ushort count)
+        {
+            var buffer = new QuicBuffer()
+            {
+                Length = sizeof(ushort),
+                Buffer = (byte*)&count
+            };
+            SetParam(param, buffer);
+        }
+
+        private void SetParam(
+            QUIC_PARAM_CONN param,
+            QuicBuffer buf)
+        {
+            MsQuicStatusException.ThrowIfFailed(_registration.UnsafeSetParam(
+                _nativeObjPtr,
+                (uint)QUIC_PARAM_LEVEL.CONNECTION,
+                (uint)param,
+                buf));
         }
     }
 }
