@@ -127,6 +127,25 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("does not send pings for connection with inherentKeepAlive", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection(true, true);
+                const hubConnection = createHubConnection(connection, logger);
+
+                hubConnection.keepAliveIntervalInMilliseconds = 5;
+
+                try {
+                    await hubConnection.start();
+                    await delayUntil(500);
+
+                    const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
+                    expect(numPings).toEqual(0);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
     });
 
     describe("stop", () => {
@@ -822,7 +841,9 @@ describe("HubConnection", () => {
 
                     await hubConnection.start();
 
+                    // allowReconnect Should have no effect since auto reconnect is disabled by default.
                     connection.receive({
+                        allowReconnect: true,
                         error: "Error!",
                         type: MessageType.Close,
                     });

@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "obj",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", "NSwagClient" },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "obj",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "obj",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", "NSwagClient" },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -201,7 +201,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "bin",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -351,7 +351,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "bin",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -414,7 +414,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "bin",
             };
 
-            IDictionary<string, string> expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className },
                 { "CodeGenerator", "NSwagCSharp" },
@@ -481,7 +481,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                 OutputDirectory = "obj",
             };
 
-            IDictionary<string, string> expectedMetadata1 = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata1 = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className12 },
                 { "CodeGenerator", codeGenerator13 },
@@ -496,7 +496,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     $"OutputPath={outputPath1}|ClassName={className12}|Namespace={@namespace}"
                 },
             };
-            IDictionary<string, string> expectedMetadata2 = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata2 = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className12 },
                 { "CodeGenerator", codeGenerator2 },
@@ -511,7 +511,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
                     $"OutputPath={outputPath2}|ClassName={className12}|Namespace={@namespace}"
                 },
             };
-            IDictionary<string, string> expectedMetadata3 = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            var expectedMetadata3 = new SortedDictionary<string, string>(StringComparer.Ordinal)
             {
                 { "ClassName", className3 },
                 { "CodeGenerator", codeGenerator13 },

@@ -223,12 +223,12 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.Equal("yes", consentCookie.Value);
             Assert.True(consentCookie.Expires.HasValue);
             Assert.True(consentCookie.Expires.Value > DateTimeOffset.Now + TimeSpan.FromDays(364));
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, consentCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
             var testCookie = cookies[1];
             Assert.Equal("Test", testCookie.Name);
             Assert.Equal("Value", testCookie.Value);
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, testCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, testCookie.SameSite);
             Assert.Null(testCookie.Expires);
         }
 
@@ -400,12 +400,12 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var testCookie = cookies[0];
             Assert.Equal("Test", testCookie.Name);
             Assert.Equal("Value1", testCookie.Value);
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, testCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, testCookie.SameSite);
             Assert.Null(testCookie.Expires);
             var consentCookie = cookies[1];
             Assert.Equal(".AspNet.Consent", consentCookie.Name);
             Assert.Equal("", consentCookie.Value);
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, consentCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
         }
 
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var testCookie = cookies[0];
             Assert.Equal("Test", testCookie.Name);
             Assert.Equal("", testCookie.Value);
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, testCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, testCookie.SameSite);
             Assert.NotNull(testCookie.Expires);
         }
 
@@ -576,7 +576,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent", consentCookie.Name);
             Assert.Equal("yes", consentCookie.Value);
-            Assert.Equal(Net.Http.Headers.SameSiteMode.None, consentCookie.SameSite);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Unspecified, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
 
             cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers["ManualCookie"]);

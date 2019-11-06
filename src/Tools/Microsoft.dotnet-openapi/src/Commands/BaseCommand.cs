@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Openapi.Tools;
@@ -240,13 +243,13 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         internal async Task DownloadToFileAsync(string url, string destinationPath, bool overwrite)
         {
-            using var response = await _httpClient.GetResponseAsync(url);
+            using var response = await RetryRequest(() => _httpClient.GetResponseAsync(url));
             await WriteToFileAsync(await response.Stream, destinationPath, overwrite);
         }
 
         internal async Task<string> DownloadGivenOption(string url, CommandOption fileOption)
         {
-            using var response = await _httpClient.GetResponseAsync(url);
+            using var response = await RetryRequest(() => _httpClient.GetResponseAsync(url));
 
             if (response.IsSuccessCode())
             {
@@ -270,6 +273,56 @@ namespace Microsoft.DotNet.OpenApi.Commands
             {
                 throw new ArgumentException($"The given url returned '{response.StatusCode}', indicating failure. The url might be wrong, or there might be a networking issue.");
             }
+        }
+
+        /// <summary>
+        /// Retries every 1 sec for 60 times by default.
+        /// </summary>
+        /// <param name="retryBlock"></param>
+        /// <param name="logger"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="retryCount"></param>
+        private static async Task<IHttpResponseMessageWrapper> RetryRequest(
+            Func<Task<IHttpResponseMessageWrapper>> retryBlock,
+            CancellationToken cancellationToken = default,
+            int retryCount = 60)
+        {
+            for (var retry = 0; retry < retryCount; retry++)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException("Failed to connect, retry canceled.", cancellationToken);
+                }
+
+                try
+                {
+                    var response = await retryBlock().ConfigureAwait(false);
+
+                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                    {
+                        // Automatically retry on 503. May be application is still booting.
+                        continue;
+                    }
+
+                    return response; // Went through successfully
+                }
+                catch (Exception exception)
+                {
+                    if (retry == retryCount - 1)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        if (exception is HttpRequestException || exception is WebException)
+                        {
+                            await Task.Delay(1 * 1000); //Wait for a while before retry.
+                        }
+                    }
+                }
+            }
+
+            throw new OperationCanceledException("Failed to connect, retry limit exceeded.");
         }
 
         private string GetUniqueFileName(string directory, string fileName, string extension)

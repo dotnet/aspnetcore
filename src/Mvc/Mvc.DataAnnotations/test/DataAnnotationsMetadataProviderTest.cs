@@ -599,13 +599,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             provider.CreateDisplayMetadata(context);
 
             // Assert
-            using(new CultureReplacer("en-US", "en-US"))
+            using (new CultureReplacer("en-US", "en-US"))
             {
                 Assert.Equal("name from localizer en-US", context.DisplayMetadata.DisplayName());
                 Assert.Equal("description from localizer en-US", context.DisplayMetadata.Description());
                 Assert.Equal("prompt from localizer en-US", context.DisplayMetadata.Placeholder());
             }
-            using(new CultureReplacer("fr-FR", "fr-FR"))
+            using (new CultureReplacer("fr-FR", "fr-FR"))
             {
                 Assert.Equal("name from localizer fr-FR", context.DisplayMetadata.DisplayName());
                 Assert.Equal("description from localizer fr-FR", context.DisplayMetadata.Description());
@@ -1031,12 +1031,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Assert
             var groupTwo = Assert.Single(enumNameAndGroup, e => e.Value.Equals("2", StringComparison.Ordinal));
 
-            using(new CultureReplacer("en-US", "en-US"))
+            using (new CultureReplacer("en-US", "en-US"))
             {
                 Assert.Equal("Loc_Two_Name", groupTwo.Key.Name);
             }
 
-            using(new CultureReplacer("fr-FR", "fr-FR"))
+            using (new CultureReplacer("fr-FR", "fr-FR"))
             {
                 Assert.Equal("Loc_Two_Name", groupTwo.Key.Name);
             }
@@ -1051,12 +1051,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Assert
             var groupTwo = Assert.Single(enumNameAndGroup, e => e.Value.Equals("2", StringComparison.Ordinal));
 
-            using(new CultureReplacer("en-US", "en-US"))
+            using (new CultureReplacer("en-US", "en-US"))
             {
                 Assert.Equal("Loc_Two_Name en-US", groupTwo.Key.Name);
             }
 
-            using(new CultureReplacer("fr-FR", "fr-FR"))
+            using (new CultureReplacer("fr-FR", "fr-FR"))
             {
                 Assert.Equal("Loc_Two_Name fr-FR", groupTwo.Key.Name);
             }
@@ -1071,12 +1071,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Assert
             var groupThree = Assert.Single(enumNameAndGroup, e => e.Value.Equals("3", StringComparison.Ordinal));
 
-            using(new CultureReplacer("en-US", "en-US"))
+            using (new CultureReplacer("en-US", "en-US"))
             {
                 Assert.Equal("type three name en-US", groupThree.Key.Name);
             }
 
-            using(new CultureReplacer("fr-FR", "fr-FR"))
+            using (new CultureReplacer("fr-FR", "fr-FR"))
             {
                 Assert.Equal("type three name fr-FR", groupThree.Key.Name);
             }
@@ -1091,12 +1091,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var groupThree = Assert.Single(enumNameAndGroup, e => e.Value.Equals("3", StringComparison.Ordinal));
 
             // Assert
-            using(new CultureReplacer("en-US", "en-US"))
+            using (new CultureReplacer("en-US", "en-US"))
             {
                 Assert.Equal("type three name en-US", groupThree.Key.Name);
             }
 
-            using(new CultureReplacer("fr-FR", "fr-FR"))
+            using (new CultureReplacer("fr-FR", "fr-FR"))
             {
                 Assert.Equal("type three name fr-FR", groupThree.Key.Name);
             }
@@ -1111,7 +1111,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var required = new RequiredAttribute();
 
             var attributes = new Attribute[] { required };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
@@ -1131,7 +1132,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var provider = CreateProvider();
 
             var attributes = new Attribute[] { };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.ValidationMetadata.IsRequired = initialValue;
 
@@ -1152,8 +1154,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)));
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(string));
+                typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)),
+                typeof(string),
+                typeof(NullableReferenceTypes));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
@@ -1174,9 +1177,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var attributes = ModelAttributes.GetAttributesForProperty(
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired)));
+
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired), typeof(string));
+                typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceTypeWithRequired)),
+                typeof(string),
+                typeof(NullableReferenceTypes));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
             // Act
@@ -1201,10 +1206,196 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var attributes = ModelAttributes.GetAttributesForProperty(
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)));
+
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes),
-                nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(string));
+                typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)),
+                typeof(string),
+                typeof(NullableReferenceTypes));
+
             var context = new ValidationMetadataProviderContext(key, attributes);
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.Null(context.ValidationMetadata.IsRequired);
+            Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Theory]
+        [InlineData(nameof(DerivedTypeWithAllNonNullProperties.Property1))]
+        [InlineData(nameof(DerivedTypeWithAllNonNullProperties.Property2))]
+        public void CreateValidationMetadata_InfersRequiredAttributeOnDerivedType_BaseAnDerivedTypHaveAllNonNullProperties(string propertyName)
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithAllNonNullProperties);
+            var property = modelType.GetProperty(propertyName);
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // This test verifies how MVC reads the NullableContextOptions. We expect the property to not have a Nullable attribute on, and for
+            // the types to have NullableContext. We'll encode our expectations as assertions so that we can catch if or when the compiler changes
+            // this behavior and the test needs to be tweaked.
+            Assert.False(DataAnnotationsMetadataProvider.HasNullableAttribute(context.PropertyAttributes, out _), "We do not expect NullableAttribute to be defined on the property");
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.True(context.ValidationMetadata.IsRequired);
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_InfersRequiredAttributeOnDerivedType_PropertyDeclaredOnBaseType()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithAllNonNullProperties_WithNullableProperties);
+            var property = modelType.GetProperty(nameof(DerivedTypeWithAllNonNullProperties_WithNullableProperties.Property1));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.True(context.ValidationMetadata.IsRequired);
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_InfersRequiredAttributeOnDerivedType_NullablePropertyDeclaredOnDerviedType()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithAllNonNullProperties_WithNullableProperties);
+            var property = modelType.GetProperty(nameof(DerivedTypeWithAllNonNullProperties_WithNullableProperties.Property2));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.Null(context.ValidationMetadata.IsRequired);
+            Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Theory]
+        [InlineData(nameof(DerivedTypeWithNullableProperties.Property1))]
+        [InlineData(nameof(DerivedTypeWithNullableProperties.Property2))]
+        public void CreateValidationMetadata_BaseAnDerivedTypHaveAllNullableProperties_DoesNotInferRequiredAttribute(string propertyName)
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithNullableProperties);
+            var property = modelType.GetProperty(propertyName);
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.Null(context.ValidationMetadata.IsRequired);
+            Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_InfersRequiredAttribute_BaseTypeIsNullable_PropertyIsNotNull()
+        {
+            // Tests the scenario listed in https://github.com/aspnet/AspNetCore/issues/14812
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithNullableProperties_WithNonNullProperties);
+            var property = modelType.GetProperty(nameof(DerivedTypeWithNullableProperties_WithNonNullProperties.Property2));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.True(context.ValidationMetadata.IsRequired);
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_InfersRequiredAttribute_ShadowedPropertyIsNonNull()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(DerivedTypeWithNullableProperties_ShadowedProperty);
+            var property = modelType.GetProperty(nameof(DerivedTypeWithNullableProperties_ShadowedProperty.Property1));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.True(context.ValidationMetadata.IsRequired);
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_TypeImplementingNonNullAbstractClass()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(TypeImplementIInterfaceWithNonNullProperty);
+            var property = modelType.GetProperty(nameof(TypeImplementIInterfaceWithNonNullProperty.Property));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.True(context.ValidationMetadata.IsRequired);
+            Assert.Contains(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_DoesNotInfersRequiredAttribute_TypeImplementingNonNullAbstractClass_NotNullable()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(TypeImplementIInterfaceWithNonNullProperty_AsNullable);
+            var property = modelType.GetProperty(nameof(TypeImplementIInterfaceWithNonNullProperty_AsNullable.Property));
+            var key = ModelMetadataIdentity.ForProperty(property, property.PropertyType, modelType);
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            Assert.Null(context.ValidationMetadata.IsRequired);
+            Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+        }
+
+        [Fact]
+        public void CreateValidationMetadata_WithOldModelIdentity_DoesNotInferValueBasedOnContext()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var modelType = typeof(TypeWithAllNonNullProperties);
+            var property = modelType.GetProperty(nameof(TypeWithAllNonNullProperties.Property1));
+#pragma warning disable CS0618 // Type or member is obsolete
+            var key = ModelMetadataIdentity.ForProperty(property.PropertyType, property.Name, modelType);
+#pragma warning restore CS0618 // Type or member is obsolete
+            var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -1227,7 +1418,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 });
 
             var attributes = new Attribute[] { new EmailAddressAttribute(), validationProviderAttribute };
-            var key = ModelMetadataIdentity.ForProperty(typeof(string), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
@@ -1254,7 +1446,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var provider = CreateProvider();
 
             var attributes = new Attribute[] { new RequiredAttribute() };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -1275,7 +1468,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var provider = CreateProvider();
 
             var attributes = new Attribute[] { };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.BindingMetadata.IsReadOnly = initialValue;
 
@@ -1294,7 +1488,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
             // Act
@@ -1313,7 +1508,29 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
-            var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
+            var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
+            context.ValidationMetadata.ValidatorMetadata.Add(attribute);
+
+            // Act
+            provider.CreateValidationMetadata(context);
+
+            // Assert
+            var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
+            Assert.Same(attribute, validatorMetadata);
+        }
+
+        [Fact]
+        public void CreateValidationDetails_ForProperty()
+        {
+            // Arrange
+            var provider = CreateProvider();
+
+            var attribute = new TestValidationAttribute();
+            var attributes = new Attribute[] { attribute };
+            var property = typeof(string).GetProperty(nameof(string.Length));
+            var key = ModelMetadataIdentity.ForProperty(property, typeof(int), typeof(string));
             var context = new ValidationMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
@@ -1479,7 +1696,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             public bool Equals(KeyValuePair<EnumGroupAndName, string> x, KeyValuePair<EnumGroupAndName, string> y)
             {
-                using(new CultureReplacer(string.Empty, string.Empty))
+                using (new CultureReplacer(string.Empty, string.Empty))
                 {
                     return x.Key.Name.Equals(y.Key.Name, StringComparison.Ordinal)
                         && x.Key.Group.Equals(y.Key.Group, StringComparison.Ordinal);
@@ -1488,7 +1705,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             public int GetHashCode(KeyValuePair<EnumGroupAndName, string> obj)
             {
-                using(new CultureReplacer(string.Empty, string.Empty))
+                using (new CultureReplacer(string.Empty, string.Empty))
                 {
                     return obj.Key.GetHashCode();
                 }
@@ -1657,6 +1874,56 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             {
             }
         }
+
+        private class TypeWithAllNonNullProperties
+        {
+            public string Property1 { get; set; } = string.Empty;
+        }
+
+        private class DerivedTypeWithAllNonNullProperties : TypeWithAllNonNullProperties
+        {
+            public string Property2 { get; set; } = string.Empty;
+        }
+
+        private class DerivedTypeWithAllNonNullProperties_WithNullableProperties : TypeWithAllNonNullProperties
+        {
+            public string? Property2 { get; set; } = string.Empty;
+        }
+
+        private class TypeWithNullableProperties
+        {
+            public string? Property1 { get; set; }
+        }
+
+        private class DerivedTypeWithNullableProperties : TypeWithNullableProperties
+        {
+            public string? Property2 { get; set; }
+        }
+
+        private class DerivedTypeWithNullableProperties_WithNonNullProperties : TypeWithNullableProperties
+        {
+            public string Property2 { get; set; } = string.Empty;
+        }
+
+        private class DerivedTypeWithNullableProperties_ShadowedProperty : TypeWithNullableProperties
+        {
+            public new string Property1 { get; set; } = string.Empty;
+        }
+
+        public abstract class AbstraceTypehNonNullProperty
+        {
+            public abstract string Property { get; set; }
+        }
+
+        public class TypeImplementIInterfaceWithNonNullProperty : AbstraceTypehNonNullProperty
+        {
+            public override string Property { get; set; } = string.Empty;
+        }
 #nullable restore
+
+        public class TypeImplementIInterfaceWithNonNullProperty_AsNullable : AbstraceTypehNonNullProperty
+        {
+            public override string Property { get; set; }
+        }
     }
 }

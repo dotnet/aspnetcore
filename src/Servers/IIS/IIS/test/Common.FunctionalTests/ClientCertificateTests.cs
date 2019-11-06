@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
-            deploymentParameters.AddHttpsToServerConfig();
+            deploymentParameters.AddHttpsWithClientCertToServerConfig();
 
             var handler = new HttpClientHandler
             {

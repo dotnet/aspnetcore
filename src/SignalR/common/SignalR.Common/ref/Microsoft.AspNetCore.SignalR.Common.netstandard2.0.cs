@@ -31,14 +31,16 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         public static readonly Microsoft.AspNetCore.SignalR.Protocol.CloseMessage Empty;
         public CloseMessage(string error) { }
-        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public CloseMessage(string error, bool allowReconnect) { }
+        public bool AllowReconnect { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class CompletionMessage : Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage
     {
         public CompletionMessage(string invocationId, string error, object result, bool hasResult) : base (default(string)) { }
-        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool HasResult { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool HasResult { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage Empty(string invocationId) { throw null; }
         public override string ToString() { throw null; }
         public static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage WithError(string invocationId, string error) { throw null; }
@@ -55,20 +57,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public partial class HandshakeRequestMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
         public HandshakeRequestMessage(string protocol, int version) { }
-        public string Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class HandshakeResponseMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
         public static readonly Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage Empty;
         public HandshakeResponseMessage(string error) { }
-        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class HubInvocationMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
         protected HubInvocationMessage(string invocationId) { }
-        public System.Collections.Generic.IDictionary<string, string> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, string> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class HubMessage
     {
@@ -78,9 +80,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         protected HubMethodInvocationMessage(string invocationId, string target, object[] arguments) : base (default(string)) { }
         protected HubMethodInvocationMessage(string invocationId, string target, object[] arguments, string[] streamIds) : base (default(string)) { }
-        public object[] Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string[] StreamIds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Target { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object[] Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string[] StreamIds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Target { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class HubProtocolConstants
     {
@@ -109,8 +111,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public partial class InvocationBindingFailureMessage : Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage
     {
         public InvocationBindingFailureMessage(string invocationId, string target, System.Runtime.ExceptionServices.ExceptionDispatchInfo bindingFailure) : base (default(string)) { }
-        public System.Runtime.ExceptionServices.ExceptionDispatchInfo BindingFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Target { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Runtime.ExceptionServices.ExceptionDispatchInfo BindingFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Target { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class InvocationMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage
     {
@@ -127,8 +129,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public partial class StreamBindingFailureMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
         public StreamBindingFailureMessage(string id, System.Runtime.ExceptionServices.ExceptionDispatchInfo bindingFailure) { }
-        public System.Runtime.ExceptionServices.ExceptionDispatchInfo BindingFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Runtime.ExceptionServices.ExceptionDispatchInfo BindingFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class StreamInvocationMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage
     {
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public partial class StreamItemMessage : Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage
     {
         public StreamItemMessage(string invocationId, object item) : base (default(string)) { }
-        public object Item { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object Item { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string ToString() { throw null; }
     }
 }

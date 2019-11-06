@@ -1,0 +1,39 @@
+@page "/PreventDefaultCases"
+
+<h2>Interactions with preventDefault</h2>
+
+<p>
+    Note that navigation actions are independent of event bubbling. Stopping click event propagation before
+    it reaches an &lt;a&gt; element does <em>not</em> stop navigation from happening. This is by design,
+    because the same is true natively in JavaScript. Navigation only responds to preventDefault.
+</p>
+
+<p __internal_preventDefault_onclick="@ancestorPreventDefault">
+    <a id="external-navigation" href="about:blank" __internal_preventDefault_onclick="@targetPreventDefault">
+        External navigation
+        <span __internal_preventDefault_onclick="@descendantPreventDefault">[Descendant element]</span>
+    </a>
+</p>
+<p __internal_preventDefault_onclick="@ancestorPreventDefault">
+    <a id="internal-navigation" href="Other" __internal_preventDefault_onclick="@targetPreventDefault">
+        Internal navigation
+        <span __internal_preventDefault_onclick="@descendantPreventDefault">[Descendant element]</span>
+    </a>
+</p>
+
+<fieldset class="prevent-default">
+    <legend>Prevent default on...</legend>
+    <label><input class="ancestor" type="checkbox" @bind="ancestorPreventDefault" /> Ancestor</label>
+    <label><input class="target" type="checkbox" @bind="targetPreventDefault" /> Target</label>
+    <label><input class="descendant" type="checkbox" @bind="descendantPreventDefault" /> Descendant</label>
+
+    @* So we can assert that navigation didn't happen *@
+    <button class="counter-button" @onclick="@(() => counter++)">Counter: @counter</button>
+</fieldset>
+
+@code {
+    bool ancestorPreventDefault;
+    bool targetPreventDefault;
+    bool descendantPreventDefault;
+    int counter;
+}

@@ -5,11 +5,15 @@ import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalCh
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './RendererEventDispatcher';
+import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
+const internalAttributeNamePrefix = '__internal_';
+const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
+const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
@@ -23,6 +27,11 @@ export class BrowserRenderer {
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
       raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
     });
+
+    // We don't yet know whether or not navigation interception will be enabled, but in case it will be,
+    // we wire up the navigation manager to the event delegator so it has the option to participate
+    // in the synthetic event bubbling process later
+    attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
@@ -281,15 +290,10 @@ export class BrowserRenderer {
   private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
-    const browserRendererId = this.browserRendererId;
     const eventHandlerId = frameReader.attributeEventHandlerId(attributeFrame);
 
     if (eventHandlerId) {
-      const firstTwoChars = attributeName.substring(0, 2);
-      const eventName = attributeName.substring(2);
-      if (firstTwoChars !== 'on' || !eventName) {
-        throw new Error(`Attribute has nonzero event handler ID, but attribute name '${attributeName}' does not start with 'on'.`);
-      }
+      const eventName = stripOnPrefix(attributeName);
       this.eventDelegator.setListener(toDomElement, eventName, eventHandlerId, componentId);
       return;
     }
@@ -310,14 +314,45 @@ export class BrowserRenderer {
         return this.tryApplyValueProperty(batch, element, attributeFrame);
       case 'checked':
         return this.tryApplyCheckedProperty(batch, element, attributeFrame);
-      default:
+      default: {
+        if (attributeName.startsWith(internalAttributeNamePrefix)) {
+          this.applyInternalAttribute(batch, element, attributeName.substring(internalAttributeNamePrefix.length), attributeFrame);
+          return true;
+        }
         return false;
+      }
     }
   }
 
-  private tryApplyValueProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null) {
+  private applyInternalAttribute(batch: RenderBatch, element: Element, internalAttributeName: string, attributeFrame: RenderTreeFrame | null) {
+    const attributeValue = attributeFrame ? batch.frameReader.attributeValue(attributeFrame) : null;
+
+    if (internalAttributeName.startsWith(eventStopPropagationAttributeNamePrefix)) {
+      // Stop propagation
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopPropagationAttributeNamePrefix.length));
+      this.eventDelegator.setStopPropagation(element, eventName, attributeValue !== null);
+    } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
+      // Prevent default
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));
+      this.eventDelegator.setPreventDefault(element, eventName, attributeValue !== null);
+    } else {
+      // The prefix makes this attribute name reserved, so any other usage is disallowed
+      throw new Error(`Unsupported internal attribute '${internalAttributeName}'`);
+    }
+  }
+
+  private tryApplyValueProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null): boolean {
     // Certain elements have built-in behaviour for their 'value' property
     const frameReader = batch.frameReader;
+
+    if (element.tagName === 'INPUT' && element.getAttribute('type') === 'time' && !element.getAttribute('step')) {
+      const timeValue = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
+      if (timeValue) {
+        element['value'] = timeValue.substring(0, 5);
+        return true;
+      }
+    }
+
     switch (element.tagName) {
       case 'INPUT':
       case 'SELECT':
@@ -476,4 +511,12 @@ function clearBetween(start: Node, end: Node): void {
   // We sanitize the start comment by removing all the information from it now that we don't need it anymore
   // as it adds noise to the DOM.
   start.textContent = '!';
+}
+
+function stripOnPrefix(attributeName: string) {
+  if (attributeName.startsWith('on')) {
+    return attributeName.substring(2);
+  }
+
+  throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
 }

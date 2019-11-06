@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             });
             testHttpMessageHandler.OnRequest((request, next, cancellationToken) =>
             {
-                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.Contains("&id="))
+                if (request.Method.Equals(HttpMethod.Delete) && request.RequestUri.PathAndQuery.Contains("id="))
                 {
                     deleteCts.Cancel();
                     return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.Accepted));

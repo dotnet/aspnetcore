@@ -488,7 +488,7 @@ namespace WsProxy {
 			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
 			// results in a "Memory access out of bounds", causing 'values' to be null,
 			// so skip returning variable values in that case.
-			while (values != null && i < var_ids.Length && i < values.Length) {
+			while (values != null && i < vars.Length && i < values.Length) {
 				var value = values [i] ["value"];
 				if (((string)value ["description"]) == null)
 					value ["description"] = value ["value"]?.ToString();

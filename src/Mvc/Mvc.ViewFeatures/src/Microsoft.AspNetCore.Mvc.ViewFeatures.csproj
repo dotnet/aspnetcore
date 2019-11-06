@@ -34,6 +34,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
   </ItemGroup>
 
 </Project>

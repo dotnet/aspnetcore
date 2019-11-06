@@ -25,19 +25,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
-            }
+            ThrowIfCompleted();
             return _context.Input.ReadAsync(cancellationToken);
         }
 
         public override bool TryRead(out ReadResult result)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
-            }
+            ThrowIfCompleted();
             return _context.Input.TryRead(out result);
         }
 

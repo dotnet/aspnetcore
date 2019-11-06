@@ -203,6 +203,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(exception));
             }
 
+            if ((exception is InputFormatterException || exception is ValueProviderException)
+               && !string.IsNullOrEmpty(exception.Message))
+            {
+                // InputFormatterException, ValueProviderException is a signal that the message is safe to expose to clients
+                return TryAddModelError(key, exception.Message);
+            }
+
             if (ErrorCount >= MaxAllowedErrors - 1)
             {
                 EnsureMaxErrorsReachedRecorded();
@@ -311,9 +318,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 return TryAddModelError(key, errorMessage);
             }
-            else if (exception is InputFormatterException && !string.IsNullOrEmpty(exception.Message))
+            else if ((exception is InputFormatterException || exception is ValueProviderException)
+                && !string.IsNullOrEmpty(exception.Message))
             {
-                // InputFormatterException is a signal that the message is safe to expose to clients
+                // InputFormatterException, ValueProviderException is a signal that the message is safe to expose to clients
                 return TryAddModelError(key, exception.Message);
             }
 

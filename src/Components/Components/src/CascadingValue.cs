@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components
 
             if (_subscribers != null && ChangeDetection.MayHaveChanged(previousValue, Value))
             {
-                NotifySubscribers();
+                NotifySubscribers(parameters.Lifetime);
             }
 
             return Task.CompletedTask;
@@ -168,11 +168,11 @@ namespace Microsoft.AspNetCore.Components
             _subscribers.Remove(subscriber);
         }
 
-        private void NotifySubscribers()
+        private void NotifySubscribers(in ParameterViewLifetime lifetime)
         {
             foreach (var subscriber in _subscribers)
             {
-                subscriber.NotifyCascadingValueChanged();
+                subscriber.NotifyCascadingValueChanged(lifetime);
             }
         }
 

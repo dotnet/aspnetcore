@@ -46,7 +46,6 @@
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
@@ -62,6 +61,10 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
+    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
+    <NoWarn>$(NoWarn);NU5131</NoWarn>
+    <!-- Needed until we resolve https://github.com/aspnet/AspNetCore-Internal/issues/3103 -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
@@ -86,7 +89,7 @@
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
     <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(IsServicingBuild)' == 'true' AND '$(DotNetBuildFromSource)' != 'true'">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.

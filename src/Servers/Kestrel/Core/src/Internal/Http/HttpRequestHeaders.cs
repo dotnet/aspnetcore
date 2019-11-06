@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void AppendContentLength(Span<byte> value)
+        private void AppendContentLength(ReadOnlySpan<byte> value)
         {
             if (_contentLength.HasValue)
             {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe void AppendUnknownHeaders(Span<byte> name, string valueString)
+        private unsafe void AppendUnknownHeaders(ReadOnlySpan<byte> name, string valueString)
         {
             string key = name.GetHeaderName();
             Unknown.TryGetValue(key, out var existing);

@@ -83,6 +83,44 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
+        [Fact]
+        public async Task ExecuteAsync_ExceptionInSyncContext()
+        {
+            // Arrange
+            var view = CreateView((v) =>
+            {
+                v.Writer.Write("xyz");
+                throw new NotImplementedException("This should be raw!");
+            });
+
+            var context = new DefaultHttpContext();
+            var stream = new Mock<Stream>();
+            stream.Setup(s => s.CanWrite).Returns(true);
+
+            context.Response.Body = stream.Object;
+            var actionContext = new ActionContext(
+                context,
+                new RouteData(),
+                new ActionDescriptor());
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+
+            var viewExecutor = CreateViewExecutor();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<NotImplementedException>(async () => await viewExecutor.ExecuteAsync(
+                actionContext,
+                view,
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                contentType: null,
+                statusCode: null)
+            );
+
+            // Assert
+            Assert.Equal("This should be raw!", exception.Message);
+            stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        }
+
         [Theory]
         [MemberData(nameof(ViewExecutorSetsContentTypeAndEncodingData))]
         public async Task ExecuteAsync_SetsContentTypeAndEncoding(

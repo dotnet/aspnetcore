@@ -4,10 +4,16 @@ JavaScript and TypeScript clients for SignalR for ASP.NET Core and Azure SignalR
 
 ```bash
 npm install @microsoft/signalr
-```
-or
-```bash
+# or
 yarn add @microsoft/signalr
+```
+
+To try previews of the next version, use the `next` tag on NPM:
+
+```bash
+npm install @microsoft/signalr@next
+# or
+yarn add @microsoft/signalr@next
 ```
 
 ## Usage

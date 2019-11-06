@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var connectionToken = GetConnectionToken(context);
             if (connectionToken != null)
             {
-                _manager.TryGetConnection(GetConnectionToken(context), out connectionContext);
+                _manager.TryGetConnection(connectionToken, out connectionContext);
             }
 
             var logScope = new ConnectionLogScope(connectionContext?.ConnectionId);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 Log.EstablishedConnection(_logger);
 
-                // Allow the reads to be cancelled
+                // Allow the reads to be canceled
                 connection.Cancellation = new CancellationTokenSource();
 
                 var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
@@ -189,27 +189,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     return;
                 }
 
+                if (!await connection.CancelPreviousPoll(context))
+                {
+                    // Connection closed. It's already set the response status code.
+                    return;
+                }
+
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
                 var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                using (connection.Cancellation)
-                {
-                    // Cancel the previous request
-                    connection.Cancellation?.Cancel();
-
-                    try
-                    {
-                        // Wait for the previous request to drain
-                        await connection.PreviousPollTask;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Previous poll canceled due to connection closing, close this poll too
-                        context.Response.ContentType = "text/plain";
-                        context.Response.StatusCode = StatusCodes.Status204NoContent;
-                        return;
-                    }
-                }
 
                 if (!connection.TryActivateLongPollingConnection(
                         connectionDelegate, context, options.LongPolling.PollTimeout,
@@ -298,6 +285,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
                     Log.InvalidNegotiateProtocolVersion(_logger, queryStringVersionValue);
                 }
+                else if (clientProtocolVersion < options.MinimumProtocolVersion)
+                {
+                    error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
+                    Log.NegotiateProtocolVersionMismatch(_logger, clientProtocolVersion);
+                }
+                else if (clientProtocolVersion > _protocolVersion)
+                {
+                    clientProtocolVersion = _protocolVersion;
+                }
+            }
+            else if (options.MinimumProtocolVersion > 0)
+            {
+                // NegotiateVersion wasn't parsed meaning the client requests version 0.
+                error = $"The client requested version '0', but the server does not support this version.";
+                Log.NegotiateProtocolVersionMismatch(_logger, 0);
             }
 
             // Establish the connection
@@ -343,32 +345,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            if (clientProtocolVersion > 0)
-            {
-                if (clientProtocolVersion < options.MinimumProtocolVersion)
-                {
-                    response.Error = $"The client requested version '{clientProtocolVersion}', but the server does not support this version.";
-                    Log.NegotiateProtocolVersionMismatch(_logger, clientProtocolVersion);
-                    NegotiateProtocol.WriteResponse(response, writer);
-                    return;
-                }
-                else if (clientProtocolVersion > _protocolVersion)
-                {
-                    response.Version = _protocolVersion;
-                }
-                else
-                {
-                    response.Version = clientProtocolVersion;
-                }
-            }
-            else if (options.MinimumProtocolVersion > 0)
-            {
-                // NegotiateVersion wasn't parsed meaning the client requests version 0.
-                response.Error = $"The client requested version '0', but the server does not support this version.";
-                NegotiateProtocol.WriteResponse(response, writer);
-                return;
-            }
-
+            response.Version = clientProtocolVersion;
             response.ConnectionId = connectionId;
             response.ConnectionToken = connectionToken;
             response.AvailableTransports = new List<AvailableTransport>();

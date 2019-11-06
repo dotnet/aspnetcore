@@ -1796,36 +1796,62 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
-        assertEquals("http://example.com?negotiateVersion=1&id=connection-token-value", transport.getUrl());
+        assertEquals("http://example.com?id=connection-token-value", transport.getUrl());
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
         assertNull(hubConnection.getConnectionId());
     }
 
-        @Test
-        public void connectionTokenIsIgnoredIfNegotiateVersionIsNotPresentInNegotiateResponse() {
-            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                    (req) -> Single.just(new HttpResponse(200, "",
-                            "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
-                            "\"connectionToken\":\"connection-token-value\"," +
-                            "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+    @Test
+    public void connectionTokenIsIgnoredIfNegotiateVersionIsNotPresentInNegotiateResponse() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                        "\"connectionToken\":\"connection-token-value\"," +
+                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
 
-            MockTransport transport = new MockTransport(true);
-            HubConnection hubConnection = HubConnectionBuilder
-                    .create("http://example.com")
-                    .withTransportImplementation(transport)
-                    .withHttpClient(client)
-                    .build();
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
 
-            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-            assertNull(hubConnection.getConnectionId());
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-            assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
-            assertEquals("http://example.com?negotiateVersion=1&id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
-            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
-            assertNull(hubConnection.getConnectionId());
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
+        assertEquals("http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+    }
+
+    @Test
+    public void negotiateVersionIsNotAddedIfAlreadyPresent() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=42",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                        "\"connectionToken\":\"connection-token-value\"," +
+                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com?negotiateVersion=42")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", hubConnection.getConnectionId());
+        assertEquals("http://example.com?negotiateVersion=42&id=bVOiRPG8-6YiJ6d7ZcTOVQ", transport.getUrl());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
     }
 
     @Test
@@ -2115,7 +2141,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        assertEquals("http://testexample.com/?negotiateVersion=1&id=connection-token-value", transport.getUrl());
+        assertEquals("http://testexample.com/?id=connection-token-value", transport.getUrl());
         hubConnection.stop();
         assertEquals("Bearer newToken", token.get());
     }

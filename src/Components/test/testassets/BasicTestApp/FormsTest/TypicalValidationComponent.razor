@@ -1,8 +1,15 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+    @if (UseExperimentalValidator)
+    {
+        <ObjectGraphDataAnnotationsValidator />
+    }
+    else
+    {
     <DataAnnotationsValidator />
+    }
 
     <p class="name">
         Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
@@ -10,6 +17,10 @@
     <p class="email">
         Email: <InputText @bind-Value="person.Email" />
         <ValidationMessage For="@(() => person.Email)" />
+    </p>
+    <p class="confirm-email">
+        Email: <InputText @bind-Value="person.ConfirmEmail" />
+        <ValidationMessage For="@(() => person.ConfirmEmail)" />
     </p>
     <p class="age">
         Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
@@ -42,8 +53,16 @@
     <p class="is-evil">
         Is evil: <InputCheckbox @bind-Value="person.IsEvil" />
     </p>
+    <p class="username">
+        Username (optional): <InputText @bind-Value="person.Username" />
+        <button type="button" @onclick="@TriggerAsyncValidationError">Trigger async error</button>
+    </p>
 
     <button type="submit">Submit</button>
+
+    <p class="model-errors">
+        <ValidationSummary Model="person" />
+    </p>
 
     <ValidationSummary />
 </EditForm>
@@ -51,7 +70,17 @@
 <ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
 
 @code {
+    protected virtual bool UseExperimentalValidator => false;
+
     Person person = new Person();
+    EditContext editContext;
+    ValidationMessageStore customValidationMessageStore;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person);
+        customValidationMessageStore = new ValidationMessageStore(editContext);
+    }
 
     // Usually this would be in a different file
     class Person
@@ -62,6 +91,9 @@
         [EmailAddress(ErrorMessage = "That doesn't look like a real email address")]
         [StringLength(10, ErrorMessage = "We only accept very short email addresses (max 10 chars)")]
         public string Email { get; set; }
+
+        [Compare(nameof(Email), ErrorMessage = "Email and confirm email do not match.")]
+        public string ConfirmEmail { get; set; }
 
         [Range(0, 200, ErrorMessage = "Nobody is that old")]
         public int AgeInYears { get; set; }
@@ -83,6 +115,8 @@
 
         [Required, EnumDataType(typeof(TicketClass))]
         public TicketClass TicketClass { get; set; }
+
+        public string Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
@@ -92,5 +126,23 @@
     void HandleValidSubmit()
     {
         submissionLog.Add("OnValidSubmit");
+    }
+
+    void TriggerAsyncValidationError()
+    {
+        customValidationMessageStore.Clear();
+
+        // Note that this method returns void, so the renderer doesn't react to
+        // its async flow by default. This is to simulate some external system
+        // implementing async validation.
+        Task.Run(async () =>
+        {
+            // The duration of the delay doesn't matter to the test, as long as it's not
+            // so long that we time out. Picking a value that's long enough for humans
+            // to observe the asynchrony too.
+            await Task.Delay(500);
+            customValidationMessageStore.Add(editContext.Field(nameof(Person.Username)), "This is invalid, asynchronously");
+            _ = InvokeAsync(editContext.NotifyValidationStateChanged);
+        });
     }
 }

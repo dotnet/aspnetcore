@@ -20,6 +20,10 @@ while [[ $# > 0 ]]; do
       verbosity=$2
       shift
       ;;
+    --toolpath)
+      toolpath=$2
+      shift
+      ;;
     *)
       echo "Invalid argument: $1"
       usage
@@ -52,17 +56,27 @@ function InstallDarcCli {
   InitializeDotNetCli
   local dotnet_root=$_InitializeDotNetCli
 
-  local uninstall_command=`$dotnet_root/dotnet tool uninstall $darc_cli_package_name -g`
-  local tool_list=$($dotnet_root/dotnet tool list -g)
-  if [[ $tool_list = *$darc_cli_package_name* ]]; then
-    echo $($dotnet_root/dotnet tool uninstall $darc_cli_package_name -g)
+  if [ -z "$toolpath" ]; then
+    local tool_list=$($dotnet_root/dotnet tool list -g)
+    if [[ $tool_list = *$darc_cli_package_name* ]]; then
+      echo $($dotnet_root/dotnet tool uninstall $darc_cli_package_name -g)
+    fi
+  else
+    local tool_list=$($dotnet_root/dotnet tool list --tool-path "$toolpath")
+    if [[ $tool_list = *$darc_cli_package_name* ]]; then
+      echo $($dotnet_root/dotnet tool uninstall $darc_cli_package_name --tool-path "$toolpath")
+    fi
   fi
 
-  local arcadeServicesSource="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"
+  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
 
   echo "Installing Darc CLI version $darcVersion..."
   echo "You may need to restart your command shell if this is the first dotnet tool you have installed."
-  echo $($dotnet_root/dotnet tool install $darc_cli_package_name --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g)
+  if [ -z "$toolpath" ]; then
+    echo $($dotnet_root/dotnet tool install $darc_cli_package_name --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity -g)
+  else
+    echo $($dotnet_root/dotnet tool install $darc_cli_package_name --version $darcVersion --add-source "$arcadeServicesSource" -v $verbosity --tool-path "$toolpath")
+  fi
 }
 
 InstallDarcCli

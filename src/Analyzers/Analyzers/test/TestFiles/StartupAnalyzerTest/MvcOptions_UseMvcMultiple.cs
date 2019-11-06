@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         {
             /*MM1*/app.UseMvcWithDefaultRoute();
 
-            app.UseAuthorization();
+            app.UseStaticFiles();
             app.UseMiddleware<AuthorizationMiddleware>();
 
             /*MM2*/app.UseMvc();

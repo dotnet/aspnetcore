@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [InlineData("invalid address")]
         [InlineData("")]
         [InlineData(null)]
-        public void OverridingIServerAdressesFeatureWithDirectConfiguration_WarnsOnStart(string serverAddress)
+        public void OverridingIServerAddressesFeatureWithDirectConfiguration_WarnsOnStart(string serverAddress)
         {
             var overrideAddress = "http://localhost:11002/";
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public void UseIServerAdressesFeature_WhenNoDirectConfiguration()
+        public void UseIServerAddressesFeature_WhenNoDirectConfiguration()
         {
             var serverAddress = "http://localhost:11001/";
 

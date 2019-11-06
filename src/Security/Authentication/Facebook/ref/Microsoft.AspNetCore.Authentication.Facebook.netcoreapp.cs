@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         public FacebookOptions() { }
         public string AppId { get { throw null; } set { } }
         public string AppSecret { get { throw null; } set { } }
-        public System.Collections.Generic.ICollection<string> Fields { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool SendAppSecretProof { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.ICollection<string> Fields { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool SendAppSecretProof { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void Validate() { }
     }
 }

@@ -21,6 +21,8 @@ const nonBubblingEvents = toLookup([
   'DOMNodeRemovedFromDocument',
 ]);
 
+const disableableEventNames = toLookup(['click', 'dblclick', 'mousedown', 'mousemove', 'mouseup']);
+
 export interface OnEventCallback {
   (event: Event, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>, eventFieldInfo: EventFieldInfo | null): void;
 }
@@ -31,7 +33,9 @@ export interface OnEventCallback {
 export class EventDelegator {
   private static nextEventDelegatorId = 0;
 
-  private eventsCollectionKey: string;
+  private readonly eventsCollectionKey: string;
+
+  private readonly afterClickCallbacks: ((event: MouseEvent) => void)[] = [];
 
   private eventInfoStore: EventInfoStore;
 
@@ -42,21 +46,18 @@ export class EventDelegator {
   }
 
   public setListener(element: Element, eventName: string, eventHandlerId: number, renderingComponentId: number) {
-    // Ensure we have a place to store event info for this element
-    let infoForElement: EventHandlerInfosForElement = element[this.eventsCollectionKey];
-    if (!infoForElement) {
-      infoForElement = element[this.eventsCollectionKey] = {};
-    }
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const existingHandler = infoForElement.getHandler(eventName);
 
-    if (infoForElement.hasOwnProperty(eventName)) {
+    if (existingHandler) {
       // We can cheaply update the info on the existing object and don't need any other housekeeping
-      const oldInfo = infoForElement[eventName];
-      this.eventInfoStore.update(oldInfo.eventHandlerId, eventHandlerId);
+      // Note that this also takes care of updating the eventHandlerId on the existing handler object
+      this.eventInfoStore.update(existingHandler.eventHandlerId, eventHandlerId);
     } else {
       // Go through the whole flow which might involve registering a new global handler
       const newInfo = { element, eventName, eventHandlerId, renderingComponentId };
       this.eventInfoStore.add(newInfo);
-      infoForElement[eventName] = newInfo;
+      infoForElement.setHandler(eventName, newInfo);
     }
   }
 
@@ -69,14 +70,29 @@ export class EventDelegator {
       // Looks like this event handler wasn't already disposed
       // Remove the associated data from the DOM element
       const element = info.element;
-      if (element.hasOwnProperty(this.eventsCollectionKey)) {
-        const elementEventInfos: EventHandlerInfosForElement = element[this.eventsCollectionKey];
-        delete elementEventInfos[info.eventName];
-        if (Object.getOwnPropertyNames(elementEventInfos).length === 0) {
-          delete element[this.eventsCollectionKey];
-        }
+      const elementEventInfos = this.getEventHandlerInfosForElement(element, false);
+      if (elementEventInfos) {
+        elementEventInfos.removeHandler(info.eventName);
       }
     }
+  }
+
+  public notifyAfterClick(callback: (event: MouseEvent) => void) {
+    // This is extremely special-case. It's needed so that navigation link click interception
+    // can be sure to run *after* our synthetic bubbling process. If a need arises, we can
+    // generalise this, but right now it's a purely internal detail.
+    this.afterClickCallbacks.push(callback);
+    this.eventInfoStore.addGlobalListener('click'); // Ensure we always listen for this
+  }
+
+  public setStopPropagation(element: Element, eventName: string, value: boolean) {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    infoForElement.stopPropagation(eventName, value);
+  }
+
+  public setPreventDefault(element: Element, eventName: string, value: boolean) {
+    const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    infoForElement.preventDefault(eventName, value);
   }
 
   private onGlobalEvent(evt: Event) {
@@ -88,22 +104,46 @@ export class EventDelegator {
     let candidateElement = evt.target as Element | null;
     let eventArgs: EventForDotNet<UIEventArgs> | null = null; // Populate lazily
     const eventIsNonBubbling = nonBubblingEvents.hasOwnProperty(evt.type);
+    let stopPropagationWasRequested = false;
     while (candidateElement) {
-      if (candidateElement.hasOwnProperty(this.eventsCollectionKey)) {
-        const handlerInfos: EventHandlerInfosForElement = candidateElement[this.eventsCollectionKey];
-        if (handlerInfos.hasOwnProperty(evt.type)) {
+      const handlerInfos = this.getEventHandlerInfosForElement(candidateElement, false);
+      if (handlerInfos) {
+        const handlerInfo = handlerInfos.getHandler(evt.type);
+        if (handlerInfo && !eventIsDisabledOnElement(candidateElement, evt.type)) {
           // We are going to raise an event for this element, so prepare info needed by the .NET code
           if (!eventArgs) {
             eventArgs = EventForDotNet.fromDOMEvent(evt);
           }
 
-          const handlerInfo = handlerInfos[evt.type];
           const eventFieldInfo = EventFieldInfo.fromEvent(handlerInfo.renderingComponentId, evt);
           this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs, eventFieldInfo);
         }
+
+        if (handlerInfos.stopPropagation(evt.type)) {
+          stopPropagationWasRequested = true;
+        }
+
+        if (handlerInfos.preventDefault(evt.type)) {
+          evt.preventDefault();
+        }
       }
 
-      candidateElement = eventIsNonBubbling ? null : candidateElement.parentElement;
+      candidateElement = (eventIsNonBubbling || stopPropagationWasRequested) ? null : candidateElement.parentElement;
+    }
+
+    // Special case for navigation interception
+    if (evt.type === 'click') {
+      this.afterClickCallbacks.forEach(callback => callback(evt as MouseEvent));
+    }
+  }
+
+  private getEventHandlerInfosForElement(element: Element, createIfNeeded: boolean): EventHandlerInfosForElement | null {
+    if (element.hasOwnProperty(this.eventsCollectionKey)) {
+      return element[this.eventsCollectionKey];
+    } else if (createIfNeeded) {
+      return (element[this.eventsCollectionKey] = new EventHandlerInfosForElement());
+    } else {
+      return null;
     }
   }
 }
@@ -126,7 +166,10 @@ class EventInfoStore {
 
     this.infosByEventHandlerId[info.eventHandlerId] = info;
 
-    const eventName = info.eventName;
+    this.addGlobalListener(info.eventName);
+  }
+
+  public addGlobalListener(eventName: string) {
     if (this.countByEventName.hasOwnProperty(eventName)) {
       this.countByEventName[eventName]++;
     } else {
@@ -168,14 +211,46 @@ class EventInfoStore {
   }
 }
 
-interface EventHandlerInfosForElement {
+class EventHandlerInfosForElement {
   // Although we *could* track multiple event handlers per (element, eventName) pair
   // (since they have distinct eventHandlerId values), there's no point doing so because
   // our programming model is that you declare event handlers as attributes. An element
   // can only have one attribute with a given name, hence only one event handler with
   // that name at any one time.
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
-  [eventName: string]: EventHandlerInfo;
+  private handlers: { [eventName: string]: EventHandlerInfo } = {};
+  private preventDefaultFlags: { [eventName: string]: boolean } | null = null;
+  private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
+
+  public getHandler(eventName: string): EventHandlerInfo | null {
+    return this.handlers.hasOwnProperty(eventName) ? this.handlers[eventName] : null;
+  }
+
+  public setHandler(eventName: string, handler: EventHandlerInfo) {
+    this.handlers[eventName] = handler;
+  }
+
+  public removeHandler(eventName: string) {
+    delete this.handlers[eventName];
+  }
+
+  public preventDefault(eventName: string, setValue?: boolean): boolean {
+    if (setValue !== undefined) {
+      this.preventDefaultFlags = this.preventDefaultFlags || {};
+      this.preventDefaultFlags[eventName] = setValue;
+    }
+
+    return this.preventDefaultFlags ? this.preventDefaultFlags[eventName] : false;
+  }
+
+  public stopPropagation(eventName: string, setValue?: boolean): boolean {
+    if (setValue !== undefined) {
+      this.stopPropagationFlags = this.stopPropagationFlags || {};
+      this.stopPropagationFlags[eventName] = setValue;
+    }
+
+    return this.stopPropagationFlags ? this.stopPropagationFlags[eventName] : false;
+  }
 }
 
 interface EventHandlerInfo {
@@ -195,4 +270,12 @@ function toLookup(items: string[]): { [key: string]: boolean } {
     result[value] = true;
   });
   return result;
+}
+
+function eventIsDisabledOnElement(element: Element, eventName: string): boolean {
+  // We want to replicate the normal DOM event behavior that, for 'interactive' elements
+  // with a 'disabled' attribute, certain mouse events are suppressed
+  return (element instanceof HTMLButtonElement || element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)
+    && disableableEventNames.hasOwnProperty(eventName)
+    && element.disabled;
 }

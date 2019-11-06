@@ -733,7 +733,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.All)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseChunks()
         {
             var chunkSize = 64 * 128 * 1024;
