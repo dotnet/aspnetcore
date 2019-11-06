@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private IntPtr _nativeObjPtr;
         private static GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
-        private TaskCompletionSource<object> _tcsConnection;
 
         private readonly Channel<MsQuicStream> _acceptQueue = Channel.CreateUnbounded<MsQuicStream>(new UnboundedChannelOptions
         {
@@ -33,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _registration = registration;
             _context = context;
             _nativeObjPtr = nativeObjPtr;
-            _handle = GCHandle.Alloc(this);
 
             _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ConnectionCallbackDelegate)NativeCallbackHandler);
 
@@ -158,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private async ValueTask<ConnectionContext> StartStreamAsync(QUIC_STREAM_OPEN_FLAG flags)
         {
             var stream = StreamOpen(flags);
-            await stream.StartAsync(QUIC_STREAM_START_FLAG.NONE);
+            await stream.StartAsync();
             return stream;
         }
 
@@ -215,12 +213,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetParam(QUIC_PARAM_CONN.USE_SEND_BUFFER, buffer);
         }
 
-        public Task StartAsync(
+        public ValueTask StartAsync(
             ushort family,
             string serverName,
             ushort serverPort)
         {
-            _tcsConnection = new TaskCompletionSource<object>();
 
             var status = _registration.ConnectionStartDelegate(
                 _nativeObjPtr,
@@ -230,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             MsQuicStatusException.ThrowIfFailed(status);
 
-            return _tcsConnection.Task;
+            return new ValueTask();
         }
 
         public MsQuicStream StreamOpen(
@@ -250,6 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void SetCallbackHandler()
         {
+            _handle = GCHandle.Alloc(this);
             _registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,

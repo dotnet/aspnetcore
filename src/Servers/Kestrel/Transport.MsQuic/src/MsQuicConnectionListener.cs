@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             TransportContext = transportContext;
             EndPoint = endpoint;
             _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ListenerCallbackDelegate)NativeCallbackHandler);
-            _handle = GCHandle.Alloc(this);
         }
 
         public MsQuicTransportContext TransportContext { get; }
@@ -144,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         internal void SetCallbackHandler()
         {
+            _handle = GCHandle.Alloc(this);
             _registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,

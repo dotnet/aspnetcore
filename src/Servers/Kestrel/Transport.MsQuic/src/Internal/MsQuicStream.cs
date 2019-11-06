@@ -27,14 +27,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private GCHandle _handle;
         private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
+        internal ResettableCompletionSource _resettableCts;
+        private MemoryHandle[] _bufferArrays;
+        private GCHandle _sendBuffer;
+
         public MsQuicStream(MsQuicApi registration, MsQuicConnection connection, MsQuicTransportContext context, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr)
         {
             Debug.Assert(connection != null);
 
             Registration = registration;
             _nativeObjPtr = nativeObjPtr;
-            StreamCallbackDelegate nativeCallback = NativeCallbackHandler;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate(nativeCallback);
+            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((StreamCallbackDelegate)NativeCallbackHandler);
 
             _connection = connection;
             MemoryPool = context.Options.MemoryPoolFactory();
@@ -44,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var maxReadBufferSize = context.Options.MaxReadBufferSize.Value;
             var maxWriteBufferSize = context.Options.MaxWriteBufferSize.Value;
+            _resettableCts = new ResettableCompletionSource(this);
 
             // TODO should we allow these PipeScheduler to be configurable here?
             var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, PipeScheduler.Inline, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false);
@@ -64,10 +68,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             Application = pair.Application;
 
             SetCallbackHandler();
-            _processingTask = ProcessSends();
 
-            _handle = GCHandle.Alloc(this);
+            _processingTask = ProcessSends();
         }
+
 
         public override MemoryPool<byte> MemoryPool { get; }
 
@@ -82,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
                     if (result.IsCanceled)
                     {
+                        // TODO how to get abort codepath sync'd
                         ShutDown(QUIC_STREAM_SHUTDOWN_FLAG.ABORT, 0);
                         break;
                     }
@@ -93,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                     if (!buffer.IsEmpty)
                     {
                         // Invalid parameter here?
-                        await SendAsync(buffer, QUIC_SEND_FLAG.NONE, null);
+                        await SendAsync(buffer, QUIC_SEND_FLAG.NONE);
                     }
 
                     output.AdvanceTo(end);
@@ -183,6 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private uint HandleStartComplete()
         {
+            _resettableCts.Complete(MsQuicConstants.Success);
             return MsQuicConstants.Success;
         }
 
@@ -200,6 +206,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public uint HandleEventSendComplete(ref MsQuicNativeMethods.StreamEvent evt)
         {
+            _sendBuffer.Free();
+            foreach (var gchBufferArray in _bufferArrays)
+            {
+                gchBufferArray.Dispose();
+            }
+            _resettableCts.Complete(evt.SendAbortError);
             return MsQuicConstants.Success;
         }
 
@@ -259,36 +271,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void SetCallbackHandler()
         {
+            _handle = GCHandle.Alloc(this);
             Registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
                 _unmanagedFnPtrForNativeCallback,
                 GCHandle.ToIntPtr(_handle));
         }
 
-        public unsafe Task SendAsync(
+        public unsafe ValueTask<uint> SendAsync(
            ReadOnlySequence<byte> buffers,
-           QUIC_SEND_FLAG flags,
-           object clientSendContext)
+           QUIC_SEND_FLAG flags)
         {
-            var sendContext = new SendContext(buffers, clientSendContext);
+            var bufferCount = 0;
+            foreach (var memory in buffers)
+            {
+                bufferCount++;
+            }
+
+            // I don't know if I need to pin memory here.
+            var quicBufferArray = new QuicBuffer[bufferCount];
+            _bufferArrays = new MemoryHandle[bufferCount];
+
+            var i = 0;
+            foreach (var memory in buffers)
+            {
+                var handle = memory.Pin();
+                _bufferArrays[i] = handle;
+                quicBufferArray[i].Length = (uint)memory.Length;
+                quicBufferArray[i].Buffer = (byte*)handle.Pointer;
+                i++;
+            }
+
+            _sendBuffer = GCHandle.Alloc(quicBufferArray, GCHandleType.Pinned);
+
+            var quicBufferPointer = (QuicBuffer*)Marshal.UnsafeAddrOfPinnedArrayElement(quicBufferArray, 0);
+
             var status = Registration.StreamSendDelegate(
                 _nativeObjPtr,
-                sendContext.Buffers,
-                sendContext.BufferCount,
+                quicBufferPointer,
+                (uint)bufferCount,
                 (uint)flags,
-                sendContext.NativeClientSendContext);
+                _nativeObjPtr);
+
             MsQuicStatusException.ThrowIfFailed(status);
 
-            return sendContext.TcsTask; // TODO make QuicStream implement IValueTaskSource?
+            return _resettableCts.GetValueTask();
         }
 
-        public Task StartAsync(QUIC_STREAM_START_FLAG flags)
+        public ValueTask<uint> StartAsync()
         {
-            var status = (uint)Registration.StreamStartDelegate(
+            // TODO make start actually async here.
+            var status = Registration.StreamStartDelegate(
               _nativeObjPtr,
-              (uint)flags);
+              (uint)QUIC_STREAM_START_FLAG.ASYNC);
+
             MsQuicStatusException.ThrowIfFailed(status);
-            return Task.CompletedTask;
+            return _resettableCts.GetValueTask();
         }
 
         public void ReceiveComplete(int bufferLength)
