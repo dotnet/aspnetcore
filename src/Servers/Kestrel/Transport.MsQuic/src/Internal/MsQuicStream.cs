@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
+        private StreamCallbackDelegate _delegate;
         private string _connectionId;
 
         internal ResettableCompletionSource _resettableCompletion;
@@ -38,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             Api = api;
             _nativeObjPtr = nativeObjPtr;
-            var del = new StreamCallbackDelegate(NativeCallbackHandler);
 
             _connection = connection;
             MemoryPool = context.Options.MemoryPoolFactory();
@@ -74,8 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _processingTask = ProcessSends();
 
             // Concatenate stream id with ConnectionId.
-            var connectionId = ConnectionId;
-            ConnectionId = $"{connection.ConnectionId}:{connectionId}";
             _log.NewStream(ConnectionId);
         }
 
@@ -295,10 +293,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public void SetCallbackHandler()
         {
             _handle = GCHandle.Alloc(this);
-            var del = new StreamCallbackDelegate(NativeCallbackHandler);
+
+            _delegate = new StreamCallbackDelegate(NativeCallbackHandler);
             Api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                del,
+                _delegate,
                 GCHandle.ToIntPtr(_handle));
         }
 

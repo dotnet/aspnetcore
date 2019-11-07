@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 throw new ArgumentNullException(nameof(options));
             }
             _api = new MsQuicApi();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicConnectionFactory");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Client");
             var trace = new MsQuicTrace(logger);
 
             _transportContext = new MsQuicTransportContext(lifetime, trace, options.Value);

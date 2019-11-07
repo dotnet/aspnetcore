@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
     public class MsQuicTransportFactory : IConnectionListenerFactory
     {
-        private readonly MsQuicTransportContext _transportContext;
+        private MsQuicTrace _log;
+        private IHostApplicationLifetime _applicationLifetime;
+        private MsQuicTransportOptions _options;
 
         public MsQuicTransportFactory(IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<MsQuicTransportOptions> options)
         {
@@ -30,14 +32,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             }
 
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic");
-            var trace = new MsQuicTrace(logger);
-
-            _transportContext = new MsQuicTransportContext(applicationLifetime, trace, options.Value);
+            _log = new MsQuicTrace(logger);
+            _applicationLifetime = applicationLifetime;
+            _options = options.Value;
         }
 
         public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
-            var transport = new MsQuicConnectionListener(_transportContext, endpoint);
+            var transport = new MsQuicConnectionListener(_options, _applicationLifetime, _log, endpoint);
             await transport.BindAsync();
             return transport;
         }

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private readonly IMsQuicTrace _log;
         private IntPtr _nativeObjPtr;
         private static GCHandle _handle;
-
+        private ConnectionCallbackDelegate _connectionDelegate;
         private readonly Channel<MsQuicStream> _acceptQueue = Channel.CreateUnbounded<MsQuicStream>(new UnboundedChannelOptions
         {
             SingleReader = true,
@@ -248,9 +248,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public void SetCallbackHandler()
         {
             _handle = GCHandle.Alloc(this);
+            _connectionDelegate = new ConnectionCallbackDelegate(NativeCallbackHandler);
             _api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                new ConnectionCallbackDelegate(NativeCallbackHandler),
+                _connectionDelegate,
                 GCHandle.ToIntPtr(_handle));
         }
 

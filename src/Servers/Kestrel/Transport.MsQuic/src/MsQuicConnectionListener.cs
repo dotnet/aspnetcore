@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
     /// <summary>
     /// Listens for new Quic Connections.
     /// </summary>
-    public class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable, IDisposable
+    internal class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable, IDisposable
     {
         private IMsQuicTrace _log;
         private MsQuicApi _api;
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         private bool _stopped;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
+        private ListenerCallbackDelegate _listenerDelegate;
         private MsQuicTransportContext _transportContext;
 
         private readonly Channel<MsQuicConnection> _acceptConnectionQueue = Channel.CreateUnbounded<MsQuicConnection>(new UnboundedChannelOptions
@@ -39,16 +40,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             SingleWriter = true
         });
 
-        public MsQuicConnectionListener(IOptions<MsQuicTransportOptions> options, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, EndPoint endpoint)
+        public MsQuicConnectionListener(MsQuicTransportOptions options, IHostApplicationLifetime lifetime, IMsQuicTrace log, EndPoint endpoint)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
             _api = new MsQuicApi();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.");
-            var trace = new MsQuicTrace(logger);
-            _transportContext = new MsQuicTransportContext(lifetime, trace, options.Value);
+            _log = log;
+            _transportContext = new MsQuicTransportContext(lifetime, _log, options);
             EndPoint = endpoint;
         }
 
@@ -146,9 +142,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         internal void SetCallbackHandler()
         {
             _handle = GCHandle.Alloc(this);
+            _listenerDelegate = new ListenerCallbackDelegate(NativeCallbackHandler);
             _api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                new ListenerCallbackDelegate(NativeCallbackHandler),
+                _listenerDelegate,
                 GCHandle.ToIntPtr(_handle));
         }
 
