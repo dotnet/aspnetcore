@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         private MsQuicApi _api;
         private QuicSession _session;
         private bool _started;
+        private MsQuicTransportContext _transportContext;
 
         public MsQuicConnectionFactory(IOptions<MsQuicTransportOptions> options, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory)
         {
@@ -27,13 +28,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 throw new ArgumentNullException(nameof(options));
             }
             _api = new MsQuicApi();
-            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Client");
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicConnectionFactory");
             var trace = new MsQuicTrace(logger);
 
-            TransportContext = new MsQuicTransportContext(lifetime, trace, options.Value);
+            _transportContext = new MsQuicTransportContext(lifetime, trace, options.Value);
         }
-
-        public MsQuicTransportContext TransportContext { get; }
 
         public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
         {
@@ -48,17 +47,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 await StartAsync();
             }
 
-            var connection = await _session.ConnectionOpenAsync(endPoint as IPEndPoint, TransportContext);
+            var connection = await _session.ConnectionOpenAsync(endPoint as IPEndPoint, _transportContext);
             return connection;
         }
 
         private ValueTask StartAsync()
         {
-            _api.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
-            _session = _api.SessionOpen(TransportContext.Options.Alpn);
-            _session.SetIdleTimeout(TransportContext.Options.IdleTimeout);
-            _session.SetPeerBiDirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
-            _session.SetPeerUnidirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
+            _api.RegistrationOpen(Encoding.ASCII.GetBytes(_transportContext.Options.RegistrationName));
+            _session = _api.SessionOpen(_transportContext.Options.Alpn);
+            _session.SetIdleTimeout(_transportContext.Options.IdleTimeout);
+            _session.SetPeerBiDirectionalStreamCount(_transportContext.Options.MaxBidirectionalStreamCount);
+            _session.SetPeerUnidirectionalStreamCount(_transportContext.Options.MaxBidirectionalStreamCount);
             return new ValueTask();
         }
     }

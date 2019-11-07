@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private bool _disposed;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
+        private string _connectionId;
 
         internal ResettableCompletionSource _resettableCompletion;
         private MemoryHandle[] _bufferArrays;
@@ -81,6 +82,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public override MemoryPool<byte> MemoryPool { get; }
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
+
+        public override string ConnectionId {
+            get
+            {
+                if (_connectionId == null)
+                {
+                    _connectionId = $"{_connection.ConnectionId}:{base.ConnectionId}";
+                }
+                return _connectionId;
+            }
+            set
+            {
+                _connectionId = value;
+            }
+        }
 
         private async Task ProcessSends()
         {

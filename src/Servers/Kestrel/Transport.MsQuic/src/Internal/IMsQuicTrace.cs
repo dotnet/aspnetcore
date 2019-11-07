@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    public interface IMsQuicTrace : ILogger
+    internal interface IMsQuicTrace : ILogger
     {
         void NewConnection(string connectionId);
         void NewStream(string streamId);

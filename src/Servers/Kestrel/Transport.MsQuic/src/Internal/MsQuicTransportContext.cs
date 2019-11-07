@@ -3,9 +3,9 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
-    public class MsQuicTransportContext
+    internal class MsQuicTransportContext
     {
         public MsQuicTransportContext(IHostApplicationLifetime appLifetime, IMsQuicTrace log, MsQuicTransportOptions options)
         {

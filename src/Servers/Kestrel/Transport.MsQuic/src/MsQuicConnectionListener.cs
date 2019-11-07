@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         private bool _stopped;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
+        private MsQuicTransportContext _transportContext;
 
         private readonly Channel<MsQuicConnection> _acceptConnectionQueue = Channel.CreateUnbounded<MsQuicConnection>(new UnboundedChannelOptions
         {
@@ -37,18 +39,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             SingleWriter = true
         });
 
-        public MsQuicConnectionListener(MsQuicTransportContext transportContext, EndPoint endpoint)
+        public MsQuicConnectionListener(IOptions<MsQuicTransportOptions> options, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, EndPoint endpoint)
         {
-            _log = transportContext.Log;
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             _api = new MsQuicApi();
-            TransportContext = transportContext;
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.");
+            var trace = new MsQuicTrace(logger);
+            _transportContext = new MsQuicTransportContext(lifetime, trace, options.Value);
             EndPoint = endpoint;
         }
 
-        public MsQuicTransportContext TransportContext { get; }
         public EndPoint EndPoint { get; set; }
-        public IHostApplicationLifetime AppLifetime => TransportContext.AppLifetime;
-        public IMsQuicTrace Log => TransportContext.Log;
 
         public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
@@ -83,20 +87,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            _api.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
+            _api.RegistrationOpen(Encoding.ASCII.GetBytes(_transportContext.Options.RegistrationName));
 
-            _secConfig = await _api.CreateSecurityConfig(TransportContext.Options.Certificate);
+            _secConfig = await _api.CreateSecurityConfig(_transportContext.Options.Certificate);
 
-            _session = _api.SessionOpen(TransportContext.Options.Alpn);
+            _session = _api.SessionOpen(_transportContext.Options.Alpn);
             _log.LogDebug(0, "Started session");
 
             _nativeObjPtr = _session.ListenerOpen(NativeCallbackHandler);
 
             SetCallbackHandler();
 
-            _session.SetIdleTimeout(TransportContext.Options.IdleTimeout);
-            _session.SetPeerBiDirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
-            _session.SetPeerUnidirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
+            _session.SetIdleTimeout(_transportContext.Options.IdleTimeout);
+            _session.SetPeerBiDirectionalStreamCount(_transportContext.Options.MaxBidirectionalStreamCount);
+            _session.SetPeerUnidirectionalStreamCount(_transportContext.Options.MaxBidirectionalStreamCount);
 
             var address = MsQuicNativeMethods.Convert(EndPoint as IPEndPoint);
             MsQuicStatusException.ThrowIfFailed(_api.ListenerStartDelegate(
@@ -112,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 case QUIC_LISTENER_EVENT.NEW_CONNECTION:
                     {
                         evt.Data.NewConnection.SecurityConfig = _secConfig.NativeObjPtr;
-                        var msQuicConnection = new MsQuicConnection(_api, TransportContext, evt.Data.NewConnection.Connection);
+                        var msQuicConnection = new MsQuicConnection(_api, _transportContext, evt.Data.NewConnection.Connection);
                         _acceptConnectionQueue.Writer.TryWrite(msQuicConnection);
                     }
                     break;
