@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int StreamCopyBufferSize = 81920;
 
         // https://github.com/aspnet/AspNetCore/issues/16797
-        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection", "Cookies" };
+        private static readonly string[] NotForwardedHttpHeaders = new[] { "Connection" };
 
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
