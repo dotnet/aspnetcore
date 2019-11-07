@@ -63,11 +63,12 @@ namespace QuicSampleClient
                     streamContext.Transport.Output.CancelPendingFlush();
                 });
 
+                var input = "asdf";
                 while (true)
                 {
                     try
                     {
-                        var input = Console.ReadLine();
+                        //var input = Console.ReadLine();
                         if (input.Length == 0)
                         {
                             continue;

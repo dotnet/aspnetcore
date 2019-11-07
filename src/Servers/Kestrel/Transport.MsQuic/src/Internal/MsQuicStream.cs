@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
-
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -32,11 +31,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private MemoryHandle[] _bufferArrays;
         private GCHandle _sendBuffer;
 
-        public MsQuicStream(MsQuicApi registration, MsQuicConnection connection, MsQuicTransportContext context, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr)
+        public MsQuicStream(MsQuicApi api, MsQuicConnection connection, MsQuicTransportContext context, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr)
         {
             Debug.Assert(connection != null);
 
-            Registration = registration;
+            Api = api;
             _nativeObjPtr = nativeObjPtr;
             var del = new StreamCallbackDelegate(NativeCallbackHandler);
 
@@ -264,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
         }
 
-        public MsQuicApi Registration { get; set; }
+        public MsQuicApi Api { get; set; }
 
         internal static uint NativeCallbackHandler(
            IntPtr stream,
@@ -280,9 +279,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public void SetCallbackHandler()
         {
             _handle = GCHandle.Alloc(this);
-            Registration.SetCallbackHandlerDelegate(
+            var del = new StreamCallbackDelegate(NativeCallbackHandler);
+            Api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                new StreamCallbackDelegate(NativeCallbackHandler),
+                del,
                 GCHandle.ToIntPtr(_handle));
         }
 
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             var quicBufferPointer = (QuicBuffer*)Marshal.UnsafeAddrOfPinnedArrayElement(quicBufferArray, 0);
 
-            var status = Registration.StreamSendDelegate(
+            var status = Api.StreamSendDelegate(
                 _nativeObjPtr,
                 quicBufferPointer,
                 (uint)bufferCount,
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public ValueTask<uint> StartAsync()
         {
-            var status = Registration.StreamStartDelegate(
+            var status = Api.StreamStartDelegate(
               _nativeObjPtr,
               (uint)QUIC_STREAM_START_FLAG.ASYNC);
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void ReceiveComplete(int bufferLength)
         {
-            var status = (uint)Registration.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
+            var status = (uint)Api.StreamReceiveComplete(_nativeObjPtr, (ulong)bufferLength);
             MsQuicStatusException.ThrowIfFailed(status);
         }
 
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             QUIC_STREAM_SHUTDOWN_FLAG flags,
             ushort errorCode)
         {
-            var status = (uint)Registration.StreamShutdownDelegate(
+            var status = (uint)Api.StreamShutdownDelegate(
                 _nativeObjPtr,
                 (uint)flags,
                 errorCode);
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public void Close()
         {
-            var status = (uint)Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
+            var status = (uint)Api.StreamCloseDelegate?.Invoke(_nativeObjPtr);
             MsQuicStatusException.ThrowIfFailed(status);
         }
 
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
               QUIC_PARAM_STREAM param,
               QuicBuffer buf)
         {
-            MsQuicStatusException.ThrowIfFailed(Registration.UnsafeSetParam(
+            MsQuicStatusException.ThrowIfFailed(Api.UnsafeSetParam(
                 _nativeObjPtr,
                 (uint)QUIC_PARAM_LEVEL.SESSION,
                 (uint)param,
@@ -401,12 +401,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             if (_nativeObjPtr != IntPtr.Zero)
             {
-                Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
+                Api.StreamCloseDelegate?.Invoke(_nativeObjPtr);
             }
 
             _handle.Free();
             _nativeObjPtr = IntPtr.Zero;
-            Registration = null;
+            Api = null;
 
             _disposed = true;
         }
