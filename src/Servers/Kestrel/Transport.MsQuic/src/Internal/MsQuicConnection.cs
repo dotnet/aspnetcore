@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public MsQuicApi _api;
         private bool _disposed;
         private readonly MsQuicTransportContext _context;
+        private readonly IMsQuicTrace _log;
         private IntPtr _nativeObjPtr;
         private static GCHandle _handle;
-        private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
         private readonly Channel<MsQuicStream> _acceptQueue = Channel.CreateUnbounded<MsQuicStream>(new UnboundedChannelOptions
         {
@@ -31,9 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             _api = api;
             _context = context;
+            _log = context.Log;
             _nativeObjPtr = nativeObjPtr;
-
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ConnectionCallbackDelegate)NativeCallbackHandler);
 
             SetCallbackHandler();
 
@@ -41,6 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             Features.Set<IQuicStreamListenerFeature>(this);
             Features.Set<IQuicCreateStreamFeature>(this);
+
+            _log.NewConnection(ConnectionId);
         }
 
         internal uint HandleEvent(ref ConnectionEvent connectionEvent)
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _handle = GCHandle.Alloc(this);
             _api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                _unmanagedFnPtrForNativeCallback,
+                new ConnectionCallbackDelegate(NativeCallbackHandler),
                 GCHandle.ToIntPtr(_handle));
         }
 
@@ -323,6 +324,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 (uint)QUIC_PARAM_LEVEL.CONNECTION,
                 (uint)param,
                 buf));
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
         }
     }
 }

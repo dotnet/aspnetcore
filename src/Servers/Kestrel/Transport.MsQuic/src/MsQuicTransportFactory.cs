@@ -6,13 +6,14 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
-    internal class MsQuicTransportFactory : IConnectionListenerFactory
+    public class MsQuicTransportFactory : IConnectionListenerFactory
     {
         private readonly MsQuicTransportContext _transportContext;
 

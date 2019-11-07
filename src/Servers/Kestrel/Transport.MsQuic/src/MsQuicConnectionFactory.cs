@@ -8,6 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
@@ -17,10 +20,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         private QuicSession _session;
         private bool _started;
 
-        public MsQuicConnectionFactory(MsQuicTransportContext transportContext)
+        public MsQuicConnectionFactory(IOptions<MsQuicTransportOptions> options, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             _api = new MsQuicApi();
-            TransportContext = transportContext;
+            var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Client");
+            var trace = new MsQuicTrace(logger);
+
+            TransportContext = new MsQuicTransportContext(lifetime, trace, options.Value);
         }
 
         public MsQuicTransportContext TransportContext { get; }

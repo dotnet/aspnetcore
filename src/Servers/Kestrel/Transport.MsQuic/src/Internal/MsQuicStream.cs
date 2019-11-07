@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
@@ -21,11 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         private Task _processingTask;
         private MsQuicConnection _connection;
         private readonly CancellationTokenSource _streamClosedTokenSource = new CancellationTokenSource();
-        private IMsQuicTrace _trace;
+        private IMsQuicTrace _log;
         private bool _disposed;
         private IntPtr _nativeObjPtr;
         private GCHandle _handle;
-        private readonly IntPtr _unmanagedFnPtrForNativeCallback;
 
         internal ResettableCompletionSource _resettableCompletion;
         private MemoryHandle[] _bufferArrays;
@@ -37,11 +38,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
             Registration = registration;
             _nativeObjPtr = nativeObjPtr;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((StreamCallbackDelegate)NativeCallbackHandler);
+            var del = new StreamCallbackDelegate(NativeCallbackHandler);
 
             _connection = connection;
             MemoryPool = context.Options.MemoryPoolFactory();
-            _trace = context.Log;
+            _log = context.Log;
 
             ConnectionClosed = _streamClosedTokenSource.Token;
 
@@ -71,12 +72,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             SetCallbackHandler();
 
             _processingTask = ProcessSends();
+
+            // Concatenate stream id with ConnectionId.
+            var connectionId = ConnectionId;
+            ConnectionId = $"{connection.ConnectionId}:{connectionId}";
+            _log.NewStream(ConnectionId);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
-
 
         private async Task ProcessSends()
         {
@@ -86,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 while (true)
                 {
                     var result = await output.ReadAsync();
+                    _log.LogDebug(0, "Handling send event");
 
                     if (result.IsCanceled)
                     {
@@ -208,16 +214,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             {
                 gchBufferArray.Dispose();
             }
-            _resettableCompletion.Complete(evt.SendAbortError);
+            _resettableCompletion.Complete(evt.Data.PeerRecvAbort.ErrorCode);
             return MsQuicConstants.Success;
         }
 
         protected void HandleEventRecv(ref MsQuicNativeMethods.StreamEvent evt)
         {
+            static unsafe void CopyToBuffer(Span<byte> buffer, StreamEvent evt)
+            {
+                var length = (int)evt.Data.Recv.Buffers[0].Length;
+                new Span<byte>(evt.Data.Recv.Buffers[0].Buffer, length).CopyTo(buffer);
+            }
+
+            _log.LogDebug(0, "Handling receive event");
             var input = Input;
-            var length = (int)evt.TotalBufferLength;
+            var length = (int)evt.Data.Recv.TotalBufferLength;
             var result = input.GetSpan(length);
-            evt.CopyToBuffer(result);
+            CopyToBuffer(result, evt);
+
             input.Advance(length);
 
             var flushTask = input.FlushAsync();
@@ -252,12 +266,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         public MsQuicApi Registration { get; set; }
 
-        internal StreamCallbackDelegate NativeCallback { get; private set; }
-
         internal static uint NativeCallbackHandler(
            IntPtr stream,
            IntPtr context,
-           ref StreamEvent connectionEventStruct)
+           StreamEvent connectionEventStruct)
         {
             var handle = GCHandle.FromIntPtr(context);
             var quicStream = (MsQuicStream)handle.Target;
@@ -270,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             _handle = GCHandle.Alloc(this);
             Registration.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                _unmanagedFnPtrForNativeCallback,
+                new StreamCallbackDelegate(NativeCallbackHandler),
                 GCHandle.ToIntPtr(_handle));
         }
 
@@ -376,6 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         ~MsQuicStream()
         {
+            _log.LogDebug("Destructor");
             Dispose(false);
         }
 
@@ -391,6 +404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 Registration.StreamCloseDelegate?.Invoke(_nativeObjPtr);
             }
 
+            _handle.Free();
             _nativeObjPtr = IntPtr.Zero;
             Registration = null;
 

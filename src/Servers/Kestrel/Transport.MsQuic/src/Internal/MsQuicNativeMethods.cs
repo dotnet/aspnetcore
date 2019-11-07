@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         internal delegate void SetCallbackHandlerDelegate(
             IntPtr Handle,
-            IntPtr Handler,
+            Delegate del,
             IntPtr Context);
 
         internal delegate uint SetParamDelegate(
@@ -414,18 +414,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         {
             internal QUIC_STREAM_EVENT Type;
             internal StreamEventDataUnion Data;
-            internal uint ReceiveAbortError => Data.PeerRecvAbort.ErrorCode;
-            internal uint SendAbortError => Data.PeerSendAbort.ErrorCode;
-            internal ulong AbsoluteOffset => Data.Recv.AbsoluteOffset;
-            internal ulong TotalBufferLength => Data.Recv.TotalBufferLength;
-            internal void CopyToBuffer(Span<byte> buffer)
-            {
-                var length = (int)Data.Recv.Buffers[0].Length;
-                new Span<byte>(Data.Recv.Buffers[0].Buffer, length).CopyTo(buffer);
-            }
-            internal bool Canceled => Data.SendComplete.IsCanceled();
-            internal IntPtr ClientContext => Data.SendComplete.ClientContext;
-            internal bool GracefulShutdown => Data.SendShutdownComplete.Graceful;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -498,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         internal delegate uint StreamCallbackDelegate(
             IntPtr Stream,
             IntPtr Context,
-            ref StreamEvent Event);
+            StreamEvent Event);
 
         internal delegate uint StreamOpenDelegate(
             IntPtr Connection,

@@ -29,7 +29,7 @@ namespace QuicSampleApp
             var hostBuilder = new WebHostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {
-                     factory.SetMinimumLevel(LogLevel.Trace);
+                     factory.SetMinimumLevel(LogLevel.Debug);
                      factory.AddConsole();
                  })
                  .UseKestrel()

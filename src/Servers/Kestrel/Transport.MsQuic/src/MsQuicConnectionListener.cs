@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal.MsQuicNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
@@ -21,13 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
     /// </summary>
     public class MsQuicConnectionListener : IConnectionListener, IAsyncDisposable, IDisposable
     {
-        private MsQuicApi _registration;
+        private IMsQuicTrace _log;
+        private MsQuicApi _api;
         private QuicSecConfig _secConfig;
         private QuicSession _session;
         private bool _disposed;
         private bool _stopped;
         private IntPtr _nativeObjPtr;
-        private readonly IntPtr _unmanagedFnPtrForNativeCallback;
         private GCHandle _handle;
 
         private readonly Channel<MsQuicConnection> _acceptConnectionQueue = Channel.CreateUnbounded<MsQuicConnection>(new UnboundedChannelOptions
@@ -38,10 +39,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         public MsQuicConnectionListener(MsQuicTransportContext transportContext, EndPoint endpoint)
         {
-            _registration = new MsQuicApi();
+            _log = transportContext.Log;
+            _api = new MsQuicApi();
             TransportContext = transportContext;
             EndPoint = endpoint;
-            _unmanagedFnPtrForNativeCallback = Marshal.GetFunctionPointerForDelegate((ListenerCallbackDelegate)NativeCallbackHandler);
         }
 
         public MsQuicTransportContext TransportContext { get; }
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 return;
             }
 
+            // TODO abort all streams and connections here?
             _stopped = true;
 
             await DisposeAsync();
@@ -81,11 +83,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            _registration.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
+            _api.RegistrationOpen(Encoding.ASCII.GetBytes(TransportContext.Options.RegistrationName));
 
-            _secConfig = await _registration.CreateSecurityConfig(TransportContext.Options.Certificate);
+            _secConfig = await _api.CreateSecurityConfig(TransportContext.Options.Certificate);
 
-            _session = _registration.SessionOpen(TransportContext.Options.Alpn);
+            _session = _api.SessionOpen(TransportContext.Options.Alpn);
+            _log.LogDebug(0, "Started session");
 
             _nativeObjPtr = _session.ListenerOpen(NativeCallbackHandler);
 
@@ -95,7 +98,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
             _session.SetPeerBiDirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
             _session.SetPeerUnidirectionalStreamCount(TransportContext.Options.MaxBidirectionalStreamCount);
 
-            Start();
+            var address = MsQuicNativeMethods.Convert(EndPoint as IPEndPoint);
+            MsQuicStatusException.ThrowIfFailed(_api.ListenerStartDelegate(
+                _nativeObjPtr,
+                ref address));
         }
 
         internal uint ListenerCallbackHandler(
@@ -106,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 case QUIC_LISTENER_EVENT.NEW_CONNECTION:
                     {
                         evt.Data.NewConnection.SecurityConfig = _secConfig.NativeObjPtr;
-                        var msQuicConnection = new MsQuicConnection(_registration, TransportContext, evt.Data.NewConnection.Connection);
+                        var msQuicConnection = new MsQuicConnection(_api, TransportContext, evt.Data.NewConnection.Connection);
                         _acceptConnectionQueue.Writer.TryWrite(msQuicConnection);
                     }
                     break;
@@ -120,14 +126,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         protected void StopAcceptingConnections()
         {
             _acceptConnectionQueue.Writer.TryComplete();
-        }
-
-        private void Start()
-        {
-            var address = MsQuicNativeMethods.Convert(EndPoint as IPEndPoint);
-            MsQuicStatusException.ThrowIfFailed(_registration.ListenerStartDelegate(
-                _nativeObjPtr,
-                ref address));
         }
 
         internal static uint NativeCallbackHandler(
@@ -144,9 +142,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         internal void SetCallbackHandler()
         {
             _handle = GCHandle.Alloc(this);
-            _registration.SetCallbackHandlerDelegate(
+            _api.SetCallbackHandlerDelegate(
                 _nativeObjPtr,
-                _unmanagedFnPtrForNativeCallback,
+                new ListenerCallbackDelegate(NativeCallbackHandler),
                 GCHandle.ToIntPtr(_handle));
         }
 
@@ -180,17 +178,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
                 return;
             }
 
+            StopAcceptingConnections();
+
             if (_nativeObjPtr != IntPtr.Zero)
             {
-                _registration.ListenerStopDelegate(_nativeObjPtr);
-                _registration.ListenerCloseDelegate(_nativeObjPtr);
+                _api.ListenerStopDelegate(_nativeObjPtr);
+                _api.ListenerCloseDelegate(_nativeObjPtr);
             }
 
             _nativeObjPtr = IntPtr.Zero;
-            _registration = null;
+            _api = null;
             _disposed = true;
-
-            StopAcceptingConnections();
         }
     }
 }
