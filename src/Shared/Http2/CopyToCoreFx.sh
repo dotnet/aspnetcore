@@ -7,9 +7,11 @@ else
 fi
 
 if [ -z "$remote_repo" ]; then
-    echo The 'COREFX_REPO' environment variable or command line paramter is not set, aborting.
+    echo The 'COREFX_REPO' environment variable or command line parameter is not set, aborting.
     exit 1
 fi
+
+cd "$(dirname "$0")"
 
 echo "COREFX_REPO: $remote_repo"
 

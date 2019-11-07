@@ -7,9 +7,11 @@ else
 fi
 
 if [ -z "$remote_repo" ]; then
-    echo The 'ASPNETCORE_REPO' environment variable or command line paramter is not set, aborting.
+    echo The 'ASPNETCORE_REPO' environment variable or command line parameter is not set, aborting.
     exit 1
 fi
+
+cd "$(dirname "$0")"
 
 echo "ASPNETCORE_REPO: $remote_repo"
 
