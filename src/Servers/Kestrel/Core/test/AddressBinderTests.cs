@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "tmp/kestrel-test.sock is not valid for windows. Unix socket path must be absolute.")]
         public void ParseAddressUnixPipe()
         {
             var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(https);
         }
 
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
         public void ParseAddressUnixPipeOnWindows()
         {
             var listenOptions = AddressBinder.ParseAddress(@"http://unix:/c:/foo/bar/pipe.socket", out var https);

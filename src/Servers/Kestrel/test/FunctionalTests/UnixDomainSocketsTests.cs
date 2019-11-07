@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #if LIBUV
         [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Libuv does not support unix domain sockets on Windows.")]
 #else
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_RS4)]
 #endif
         [ConditionalFact]
         [CollectDump]
@@ -146,19 +146,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var host = hostBuilder.Build())
                 {
-                    await host.StartAsync();
+                    await host.StartAsync().DefaultTimeout();
 
                     // https://github.com/dotnet/corefx/issues/5999
                     // .NET Core HttpClient does not support unix sockets, it's difficult to parse raw response data. below is a little hacky way.
                     using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
                     {
-                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path));
-
-                        byte[] readBuffer = new byte[32];
+                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path)).DefaultTimeout();
+   
                         var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
-                        await socket.SendAsync(httpRequest, SocketFlags.None);
+                        await socket.SendAsync(httpRequest, SocketFlags.None).DefaultTimeout();
 
-                        await socket.ReceiveAsync(readBuffer, SocketFlags.None);
+                        var readBuffer = new byte[512];
+                        var read = 0;
+                        while (true)
+                        {
+                            var bytesReceived = await socket.ReceiveAsync(readBuffer.AsMemory(read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0) break;
+                        }
 
                         var httpResponse = Encoding.ASCII.GetString(readBuffer);
                         int httpStatusStart = httpResponse.IndexOf(' ') + 1;
@@ -168,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         Assert.Equal(httpStatus, StatusCodes.Status200OK);
                        
                     }
-                    await host.StopAsync();
+                    await host.StopAsync().DefaultTimeout();
                 }
             }
             finally
