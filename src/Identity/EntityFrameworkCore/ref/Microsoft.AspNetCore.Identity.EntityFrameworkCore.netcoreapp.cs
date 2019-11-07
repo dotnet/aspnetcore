@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         protected IdentityDbContext() { }
         public IdentityDbContext(Microsoft.EntityFrameworkCore.DbContextOptions options) { }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TRoleClaim> RoleClaims { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TRole> Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserRole> UserRoles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TRoleClaim> RoleClaims { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TRole> Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserRole> UserRoles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder builder) { }
     }
     public partial class IdentityUserContext<TUser> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, string> where TUser : Microsoft.AspNetCore.Identity.IdentityUser
@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         protected IdentityUserContext() { }
         public IdentityUserContext(Microsoft.EntityFrameworkCore.DbContextOptions options) { }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserClaim> UserClaims { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserLogin> UserLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TUser> Users { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserToken> UserTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserClaim> UserClaims { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserLogin> UserLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TUser> Users { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual Microsoft.EntityFrameworkCore.DbSet<TUserToken> UserTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder builder) { }
     }
     public partial class RoleStore<TRole> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<TRole, Microsoft.EntityFrameworkCore.DbContext, string> where TRole : Microsoft.AspNetCore.Identity.IdentityRole<string>
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public partial class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> : Microsoft.AspNetCore.Identity.IQueryableRoleStore<TRole>, Microsoft.AspNetCore.Identity.IRoleClaimStore<TRole>, Microsoft.AspNetCore.Identity.IRoleStore<TRole>, System.IDisposable where TRole : Microsoft.AspNetCore.Identity.IdentityRole<TKey> where TContext : Microsoft.EntityFrameworkCore.DbContext where TKey : System.IEquatable<TKey> where TUserRole : Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>, new() where TRoleClaim : Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>, new()
     {
         public RoleStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) { }
-        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Linq.IQueryable<TRole> Roles { get { throw null; } }
         public virtual System.Threading.Tasks.Task AddClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual TKey ConvertIdFromString(string id) { throw null; }
@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public partial class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken> : Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>, Microsoft.AspNetCore.Identity.IProtectedUserStore<TUser>, Microsoft.AspNetCore.Identity.IQueryableUserStore<TUser>, Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<TUser>, Microsoft.AspNetCore.Identity.IUserAuthenticatorKeyStore<TUser>, Microsoft.AspNetCore.Identity.IUserClaimStore<TUser>, Microsoft.AspNetCore.Identity.IUserEmailStore<TUser>, Microsoft.AspNetCore.Identity.IUserLockoutStore<TUser>, Microsoft.AspNetCore.Identity.IUserLoginStore<TUser>, Microsoft.AspNetCore.Identity.IUserPasswordStore<TUser>, Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<TUser>, Microsoft.AspNetCore.Identity.IUserSecurityStampStore<TUser>, Microsoft.AspNetCore.Identity.IUserStore<TUser>, Microsoft.AspNetCore.Identity.IUserTwoFactorRecoveryCodeStore<TUser>, Microsoft.AspNetCore.Identity.IUserTwoFactorStore<TUser>, System.IDisposable where TUser : Microsoft.AspNetCore.Identity.IdentityUser<TKey> where TContext : Microsoft.EntityFrameworkCore.DbContext where TKey : System.IEquatable<TKey> where TUserClaim : Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>, new() where TUserLogin : Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>, new() where TUserToken : Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>, new()
     {
         public UserOnlyStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) : base (default(Microsoft.AspNetCore.Identity.IdentityErrorDescriber)) { }
-        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected Microsoft.EntityFrameworkCore.DbSet<TUserClaim> UserClaims { get { throw null; } }
         protected Microsoft.EntityFrameworkCore.DbSet<TUserLogin> UserLogins { get { throw null; } }
         public override System.Linq.IQueryable<TUser> Users { get { throw null; } }
@@ -164,8 +164,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     public partial class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> : Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>, Microsoft.AspNetCore.Identity.IProtectedUserStore<TUser>, Microsoft.AspNetCore.Identity.IUserStore<TUser>, System.IDisposable where TUser : Microsoft.AspNetCore.Identity.IdentityUser<TKey> where TRole : Microsoft.AspNetCore.Identity.IdentityRole<TKey> where TContext : Microsoft.EntityFrameworkCore.DbContext where TKey : System.IEquatable<TKey> where TUserClaim : Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>, new() where TUserRole : Microsoft.AspNetCore.Identity.IdentityUserRole<TKey>, new() where TUserLogin : Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>, new() where TUserToken : Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>, new() where TRoleClaim : Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>, new()
     {
         public UserStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) : base (default(Microsoft.AspNetCore.Identity.IdentityErrorDescriber)) { }
-        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override System.Linq.IQueryable<TUser> Users { get { throw null; } }
         public override System.Threading.Tasks.Task AddClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override System.Threading.Tasks.Task AddLoginAsync(TUser user, Microsoft.AspNetCore.Identity.UserLoginInfo login, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }

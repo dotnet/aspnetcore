@@ -30,6 +30,7 @@ namespace OpenIdConnectSample
         }
 
         public IConfiguration Configuration { get; set; }
+
         public IWebHostEnvironment Environment { get; }
 
         private void CheckSameSite(HttpContext httpContext, CookieOptions options)

@@ -34,6 +34,10 @@ namespace TestSite
     {
         public void Configure(IApplicationBuilder app)
         {
+            if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
+            {
+                app.UseHttpsRedirection();
+            }
             TestStartup.Register(app, this);
         }
 
@@ -61,6 +65,11 @@ namespace TestSite
         {
             var serverAddresses = ctx.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
+        }
+
+        private async Task CheckProtocol(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(ctx.Request.Protocol);
         }
 
         private async Task ConsoleWrite(HttpContext ctx)
@@ -136,6 +145,12 @@ namespace TestSite
             }
 
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
+        }
+
+        public Task ConnectionClose(HttpContext context)
+        {
+            context.Response.Headers["connection"] = "close";
             return Task.CompletedTask;
         }
 
@@ -979,6 +994,13 @@ namespace TestSite
         private async Task ProcessId(HttpContext context)
         {
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
+        }
+
+        public async Task ANCM_HTTPS_PORT(HttpContext context)
+        {
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("ANCM_HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
 
         public async Task HTTPS_PORT(HttpContext context)

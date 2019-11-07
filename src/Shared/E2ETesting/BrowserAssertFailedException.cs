@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Xunit.Sdk;
 
 namespace OpenQA.Selenium
@@ -13,14 +14,31 @@ namespace OpenQA.Selenium
     // case.
     public class BrowserAssertFailedException : XunitException
     {
-        public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException, string screenShotPath)
-            : base(BuildMessage(logs, screenShotPath), innerException)
+        public BrowserAssertFailedException(IReadOnlyList<LogEntry> logs, Exception innerException, string screenShotPath, string innerHTML)
+            : base(BuildMessage(innerException, logs, screenShotPath, innerHTML), innerException)
         {
         }
 
-        private static string BuildMessage(IReadOnlyList<LogEntry> logs, string screenShotPath) =>
-            (File.Exists(screenShotPath) ? $"Screen shot captured at '{screenShotPath}'" + Environment.NewLine : "") +
-            (logs.Count > 0 ? "Encountered browser errors" : "No browser errors found") + " while running the assertion." + Environment.NewLine +
-            string.Join(Environment.NewLine, logs);
+        private static string BuildMessage(Exception exception, IReadOnlyList<LogEntry> logs, string screenShotPath, string innerHTML)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine(exception.ToString());
+
+            if (File.Exists(screenShotPath))
+            {
+                builder.AppendLine($"Screen shot captured at '{screenShotPath}'");
+            }
+
+            if (logs.Count > 0)
+            {
+                builder.AppendLine("Encountered browser errors")
+                    .AppendJoin(Environment.NewLine, logs);
+            }
+
+            builder.AppendLine("Page content:")
+               .AppendLine(innerHTML);
+
+            return builder.ToString();
+        }
     }
 }

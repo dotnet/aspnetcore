@@ -513,4 +513,7 @@
   <data name="ApiConventions_Title_500" xml:space="preserve">
     <value>An error occured while processing your request.</value>
   </data>
+  <data name="FailedToReadRequestForm" xml:space="preserve">
+    <value>Failed to read the request form. {0}</value>
+  </data>
 </root>

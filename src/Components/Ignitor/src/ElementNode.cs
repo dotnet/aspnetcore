@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 
+#nullable enable
 namespace Ignitor
 {
     public class ElementNode : ContainerNode
@@ -87,7 +88,7 @@ namespace Ignitor
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(args));
         }
 
-        public Task ClickAsync(HubConnection connection)
+        internal Task ClickAsync(HubConnection connection)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
@@ -129,3 +130,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore

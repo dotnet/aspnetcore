@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Bad input data.";
+                $"detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. Bad input data.";
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Failed to dispatch event.";
+                $"detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. Failed to dispatch event.";
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Failed to complete render batch '1846'.";
+                $"detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json' or set 'CircuitOptions.DetailedErrors'. Failed to complete render batch '1846'.";
 
 
             Client.ConfirmRenderBatch = false;

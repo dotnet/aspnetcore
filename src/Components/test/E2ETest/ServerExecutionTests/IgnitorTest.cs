@@ -75,11 +75,6 @@ namespace Microsoft.AspNetCore.Components
 
         async Task IAsyncLifetime.DisposeAsync()
         {
-            if (TestSink != null)
-            {
-                TestSink.MessageLogged -= TestSink_MessageLogged;
-            }
-
             await DisposeAsync();
         }
 
@@ -88,16 +83,32 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        protected virtual Task DisposeAsync()
+        protected async virtual Task DisposeAsync()
         {
-            return Task.CompletedTask;
+            if (TestSink != null)
+            {
+                TestSink.MessageLogged -= TestSink_MessageLogged;
+            }
+
+            await Client.DisposeAsync();
         }
 
         private void TestSink_MessageLogged(WriteContext context)
         {
             var log = new LogMessage(context.LogLevel, context.EventId, context.Message, context.Exception);
             Logs.Enqueue(log);
-            Output.WriteLine(log.ToString());
+            try
+            {
+                // This might produce an InvalidOperationException when the logger tries to log a message after
+                // the test has completed but before the handler has been removed.
+                //  ---> System.InvalidOperationException: There is no currently active test.
+                // For that reason, we capture the exception here and silence it, as the message is captured inside the Logs
+                // variable anyway.
+                Output.WriteLine(log.ToString());
+            }
+            catch (Exception)
+            {
+            }
         }
 
         [DebuggerDisplay("{LogLevel.ToString(),nq} - {Message ?? \"null\",nq} - {Exception?.Message,nq}")]

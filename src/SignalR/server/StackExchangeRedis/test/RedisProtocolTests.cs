@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
             var decoded = protocol.ReadAck(testData.Encoded);
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteAck(string testName)
         {
             var testData = _ackTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
             var encoded = protocol.WriteAck(testData.Decoded);
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void ParseGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
             var decoded = protocol.ReadGroupCommand(testData.Encoded);
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteGroupCommand(string testName)
         {
             var testData = _groupCommandTestData[testName];
-            var protocol = new RedisProtocol(Array.Empty<IHubProtocol>());
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>()));
 
             var encoded = protocol.WriteGroupCommand(testData.Decoded);
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             var testData = _invocationTestData[testName];
             var hubProtocols = new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") };
-            var protocol = new RedisProtocol(hubProtocols);
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(hubProtocols.Cast<IHubProtocol>().ToList()));
 
             var expected = testData.Decoded();
 
@@ -171,7 +171,23 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         public void WriteInvocation(string testName)
         {
             var testData = _invocationTestData[testName];
-            var protocol = new RedisProtocol(new[] { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol(CreateHubMessageSerializer(new List<IHubProtocol>() { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") }));
+
+            // Actual invocation doesn't matter because we're using a dummy hub protocol.
+            // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
+            var expected = testData.Decoded();
+            var encoded = protocol.WriteInvocation(_testMessage.Target, _testMessage.Arguments, expected.ExcludedConnectionIds);
+
+            Assert.Equal(testData.Encoded, encoded);
+        }
+
+        [Theory]
+        [MemberData(nameof(InvocationTestData))]
+        public void WriteInvocationWithHubMessageSerializer(string testName)
+        {
+            var testData = _invocationTestData[testName];
+            var hubMessageSerializer = CreateHubMessageSerializer(new List<IHubProtocol>() { new DummyHubProtocol("p1"), new DummyHubProtocol("p2") });
+            var protocol = new RedisProtocol(hubMessageSerializer);
 
             // Actual invocation doesn't matter because we're using a dummy hub protocol.
             // But the dummy protocol will check that we gave it the test message to make sure everything flows through properly.
@@ -197,6 +213,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 Decoded = decoded;
                 Encoded = encoded;
             }
+        }
+
+        private DefaultHubMessageSerializer CreateHubMessageSerializer(List<IHubProtocol> protocols)
+        {
+            var protocolResolver = new DefaultHubProtocolResolver(protocols, NullLogger<DefaultHubProtocolResolver>.Instance);
+
+            return new DefaultHubMessageSerializer(protocolResolver, protocols.ConvertAll(p => p.Name), hubSupportedProtocols: null);
         }
     }
 }

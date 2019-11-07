@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.SpaServices
             _packageManagerCommand = copyFromOptions.PackageManagerCommand;
             DefaultPageStaticFileOptions = copyFromOptions.DefaultPageStaticFileOptions;
             SourcePath = copyFromOptions.SourcePath;
+            DevServerPort = copyFromOptions.DevServerPort;
         }
 
         /// <summary>
@@ -69,6 +70,11 @@ namespace Microsoft.AspNetCore.SpaServices
         /// development. The directory may not exist in published applications.
         /// </summary>
         public string SourcePath { get; set; }
+
+        /// <summary>
+        /// Controls wether the development server should be used with a dynamic or fixed port.
+        /// </summary>
+        public int DevServerPort { get; set; } = default(int);
 
         /// <summary>
         /// Gets or sets the name of the package manager executible, (e.g npm,

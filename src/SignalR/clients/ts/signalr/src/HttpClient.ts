@@ -25,6 +25,9 @@ export interface HttpRequest {
 
     /** The time to wait for the request to complete before throwing a TimeoutError. Measured in milliseconds. */
     timeout?: number;
+
+    /** This controls whether credentials such as cookies are sent in cross-site requests. */
+    withCredentials?: boolean;
 }
 
 /** Represents an HTTP response. */

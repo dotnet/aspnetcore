@@ -57,4 +57,10 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

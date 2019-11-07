@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 
+#nullable enable
 namespace Ignitor
 {
     public abstract class ContainerNode : Node
@@ -82,3 +83,4 @@ namespace Ignitor
         }
     }
 }
+#nullable restore

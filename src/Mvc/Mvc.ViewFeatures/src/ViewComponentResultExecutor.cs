@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             _writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
 
-            using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            await using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
             {
                 var viewContext = new ViewContext(
                     context,
@@ -149,8 +149,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
                 else
                 {
-                    using var bufferingStream = new FileBufferingWriteStream();
-                    using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
+                    await using var bufferingStream = new FileBufferingWriteStream();
+                    await using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
                     {
                         viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
                     }

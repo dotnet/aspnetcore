@@ -17,6 +17,7 @@ if (typeof XMLHttpRequest === "undefined") {
     requestModule = requireFunc("request");
 }
 
+/** @private */
 export class NodeHttpClient extends HttpClient {
     private readonly logger: ILogger;
     private readonly request: typeof requestModule;

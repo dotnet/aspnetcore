@@ -16,13 +16,13 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixture<PrerenderedStartup>>
+    public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixture<MultipleComponents>>
     {
         private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
 
         public MultipleComponentsTest(
             BrowserFixture browserFixture,
-            BasicTestAppServerSiteFixture<PrerenderedStartup> serverFixture,
+            BasicTestAppServerSiteFixture<MultipleComponents> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void DoesNotStartMultipleConnections()
         {
-            Navigate("/prerendered/multiple-components");
+            Navigate("/multiple-components");
 
             BeginInteractivity();
             Browser.Exists(By.CssSelector("h3.interactive"));
@@ -60,17 +60,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
         }
 
-
         [Fact]
         public void CanRenderMultipleRootComponents()
         {
-            Navigate("/prerendered/multiple-components");
+            Navigate("/multiple-components");
 
             var greets = Browser.FindElements(By.CssSelector(".greet-wrapper .greet")).Select(e => e.Text).ToArray();
 
-            Assert.Equal(5, greets.Length); // 1 statically rendered + 3 prerendered + 1 server prerendered
+            Assert.Equal(7, greets.Length); // 1 statically rendered + 5 prerendered + 1 server prerendered
+            Assert.DoesNotContain("Hello Red fish", greets);
             Assert.Single(greets, "Hello John");
             Assert.Single(greets, "Hello Abraham");
+            Assert.Equal(2, greets.Where(g => g == "Hello Blue fish").Count());
             Assert.Equal(3, greets.Where(g => string.Equals("Hello", g)).Count()); // 3 server prerendered without parameters
             var content = Browser.FindElement(By.Id("test-container")).GetAttribute("innerHTML");
             var markers = ReadMarkers(content);
@@ -86,7 +87,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 false,
                 true,
                 false,
-                true
+                true,
+                false,
+                true,
+                false,
+                true,
             };
             Assert.Equal(expectedComponentSequence, componentSequence);
 
@@ -96,6 +101,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Exists(By.CssSelector("h3.interactive"));
             var updatedGreets = Browser.FindElements(By.CssSelector(".greet-wrapper .greet")).Select(e => e.Text).ToArray();
             Assert.Equal(7, updatedGreets.Where(g => string.Equals("Hello Alfred", g)).Count());
+            Assert.Equal(2, updatedGreets.Where(g => g == "Hello Red fish").Count());
+            Assert.Equal(2, updatedGreets.Where(g => g == "Hello Blue fish").Count());
             Assert.Single(updatedGreets.Where(g => string.Equals("Hello Albert", g)));
             Assert.Single(updatedGreets.Where(g => string.Equals("Hello Abraham", g)));
         }

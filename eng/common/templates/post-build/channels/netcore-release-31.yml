@@ -1,11 +1,13 @@
 parameters:
-  symbolPublishingAdditionalParameters: ''
   artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
   publishInstallersAndChecksums: false
+  symbolPublishingAdditionalParameters: ''
 
 stages:
 - stage: NetCore_Release31_Publish
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: .NET Core 3.1 Release Publishing
@@ -33,6 +35,18 @@ stages:
           artifactName: 'PDBArtifacts'
         continueOnError: true
 
+      # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise it'll complain about accessing a private feed.
+      - task: NuGetAuthenticate@0
+        displayName: 'Authenticate to AzDO Feeds'
+
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
       - task: PowerShell@2
         displayName: Publish
         inputs:
@@ -50,8 +64,6 @@ stages:
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
-      - group: DotNet-Blob-Feed
-      - group: AzureDevOps-Artifact-Feeds-Pats
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
@@ -65,12 +77,14 @@ stages:
         inputs:
           buildType: current
           artifactName: PackageArtifacts
+        continueOnError: true
 
       - task: DownloadBuildArtifacts@0
         displayName: Download Blob Artifacts
         inputs:
           buildType: current
           artifactName: BlobArtifacts
+        continueOnError: true
 
       - task: DownloadBuildArtifacts@0
         displayName: Download Asset Manifests
@@ -86,9 +100,13 @@ stages:
         displayName: 'Authenticate to AzDO Feeds'
 
       - task: PowerShell@2
+        displayName: Enable cross-org publishing
+        inputs:
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
+
+      - task: PowerShell@2
         displayName: Publish Assets
-        env:
-          AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-universal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
@@ -112,7 +130,6 @@ stages:
             /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
             /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
             /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
-            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'

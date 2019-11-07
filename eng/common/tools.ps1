@@ -49,6 +49,8 @@
 # An array of names of processes to stop on script exit if prepareMachine is true.
 $processesToStopOnExit = if (Test-Path variable:processesToStopOnExit) { $processesToStopOnExit } else { @("msbuild", "dotnet", "vbcscompiler") }
 
+$disableConfigureToolsetImport = if (Test-Path variable:disableConfigureToolsetImport) { $disableConfigureToolsetImport } else { $null }
+
 set-strictmode -version 2.0
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -154,15 +156,6 @@ function InitializeDotNetCli([bool]$install) {
   # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
   Write-PipelinePrependPath -Path $dotnetRoot
 
-  # Work around issues with Azure Artifacts credential provider
-  # https://github.com/dotnet/arcade/issues/3932
-  if ($ci) {
-    $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
-    $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
-    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
-    Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
-  }
-
   Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
 
@@ -184,7 +177,14 @@ function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $arc
   InstallDotNet $dotnetRoot $version $architecture
 }
 
-function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtime = "", [bool] $skipNonVersionedFiles = $false) {
+function InstallDotNet([string] $dotnetRoot, 
+  [string] $version, 
+  [string] $architecture = "", 
+  [string] $runtime = "", 
+  [bool] $skipNonVersionedFiles = $false, 
+  [string] $runtimeSourceFeed = "", 
+  [string] $runtimeSourceFeedKey = "") {
+
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
@@ -195,10 +195,29 @@ function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $archit
   if ($runtime) { $installParameters.Runtime = $runtime }
   if ($skipNonVersionedFiles) { $installParameters.SkipNonVersionedFiles = $skipNonVersionedFiles }
 
-  & $installScript @installParameters
-  if ($lastExitCode -ne 0) {
-    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet cli (exit code '$lastExitCode')."
-    ExitWithExitCode $lastExitCode
+  try {
+    & $installScript @installParameters
+  }
+  catch {
+    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' from public location."
+
+    # Only the runtime can be installed from a custom [private] location.
+    if ($runtime -and ($runtimeSourceFeed -or $runtimeSourceFeedKey)) {
+      if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
+
+      if ($runtimeSourceFeedKey) {
+        $decodedBytes = [System.Convert]::FromBase64String($runtimeSourceFeedKey)
+        $decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
+        $installParameters.FeedCredential = $decodedString
+      }
+
+      try {
+        & $installScript @installParameters
+      }
+      catch {
+        Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet runtime '$runtime' from custom location '$runtimeSourceFeed'."
+      }
+    }
   }
 }
 
@@ -427,7 +446,7 @@ function GetSdkTaskProject([string]$taskName) {
 }
 
 function InitializeNativeTools() {
-  if (Get-Member -InputObject $GlobalJson -Name "native-tools") {
+  if (-Not (Test-Path variable:DisableNativeToolsetInstalls) -And (Get-Member -InputObject $GlobalJson -Name "native-tools")) {
     $nativeArgs= @{}
     if ($ci) {
       $nativeArgs = @{
@@ -504,6 +523,11 @@ function MSBuild() {
     # https://github.com/dotnet/arcade/issues/3932
     if ($ci -and $buildTool.Tool -eq "dotnet") {
       dotnet nuget locals http-cache -c
+
+      $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
+      $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
+      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
+      Write-PipelineSetVariable -Name 'NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS' -Value '20'
     }
 
     $toolsetBuildProject = InitializeToolset
@@ -603,3 +627,12 @@ Write-PipelineSetVariable -Name 'Artifacts.Toolset' -Value $ToolsetDir
 Write-PipelineSetVariable -Name 'Artifacts.Log' -Value $LogDir
 Write-PipelineSetVariable -Name 'TEMP' -Value $TempDir
 Write-PipelineSetVariable -Name 'TMP' -Value $TempDir
+
+# Import custom tools configuration, if present in the repo.
+# Note: Import in global scope so that the script set top-level variables without qualification.
+if (!$disableConfigureToolsetImport) {
+  $configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
+  if (Test-Path $configureToolsetScript) {
+      . $configureToolsetScript
+  }
+}

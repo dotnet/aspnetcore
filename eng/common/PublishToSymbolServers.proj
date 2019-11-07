@@ -37,6 +37,8 @@
     <PropertyGroup>
       <DotNetSymbolExpirationInDays Condition="'$(DotNetSymbolExpirationInDays)' == ''">3650</DotNetSymbolExpirationInDays>
       <PublishToSymbolServer>true</PublishToSymbolServer>
+      <PublishToSymWeb Condition="'$(PublishToSymWeb)' == ''">true</PublishToSymWeb>
+      <PublishToMSDL Condition="'$(PublishToMSDL)' == ''">true</PublishToMSDL>
       <PublishToSymbolServer Condition="'@(FilesToPublishToSymbolServer)' == '' and '@(PackagesToPublishToSymbolServer)' == ''">false</PublishToSymbolServer>
     </PropertyGroup>
 
@@ -56,7 +58,7 @@
                     DryRun="false"
                     ConvertPortablePdbsToWindowsPdbs="false"
                     PdbConversionTreatAsWarning=""
-                    Condition="$(PublishToSymbolServer)"/>
+                    Condition="$(PublishToSymbolServer) and $(PublishToMSDL)"/>
 
     <!-- 
       Symbol Uploader: SymWeb 
@@ -73,7 +75,7 @@
                     DryRun="false"
                     ConvertPortablePdbsToWindowsPdbs="false"
                     PdbConversionTreatAsWarning=""
-                    Condition="$(PublishToSymbolServer)"/>
+                    Condition="$(PublishToSymbolServer) and $(PublishToSymWeb)"/>
   </Target>
 
   <ItemGroup>
