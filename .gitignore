@@ -29,6 +29,7 @@ modules/
 *.psess
 *.res
 *.snk
+*.so
 *.suo
 *.tlog
 *.user

@@ -136,6 +136,14 @@ namespace Microsoft.AspNetCore.Connections
         public override string ToString() { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Connections.Abstractions.Features
+{
+    public partial interface IQuicCreateStreamFeature
+    {
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> StartBidirectionalStreamAsync();
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> StartUnidirectionalStreamAsync();
+    }
+}
 namespace Microsoft.AspNetCore.Connections.Features
 {
     public partial interface IConnectionCompleteFeature
@@ -185,6 +193,10 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         System.Buffers.MemoryPool<byte> MemoryPool { get; }
     }
+    public partial interface IQuicStreamListenerFeature
+    {
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync();
+    }
     public partial interface ITlsHandshakeFeature
     {
         System.Security.Authentication.CipherAlgorithmType CipherAlgorithm { get; }
@@ -199,5 +211,8 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         Microsoft.AspNetCore.Connections.TransferFormat ActiveFormat { get; set; }
         Microsoft.AspNetCore.Connections.TransferFormat SupportedFormats { get; }
+    }
+    public partial interface IUnidirectionalStreamFeature
+    {
     }
 }
