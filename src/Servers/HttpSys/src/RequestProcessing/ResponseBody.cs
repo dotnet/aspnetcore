@@ -253,6 +253,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 _requestContext.Response.SerializeTrailers(dataChunks, currentChunk, pins);
             }
+            else if (endOfRequest)
+            {
+                _requestContext.Response.MakeTrailersReadOnly();
+            }
 
             return pins;
         }
@@ -466,6 +470,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_leftToWrite == 0 && !_requestContext.Response.TrailersExpected)
             {
                 // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
+                _requestContext.Response.MakeTrailersReadOnly();
                 _disposed = true;
             }
             // else -1 unlimited

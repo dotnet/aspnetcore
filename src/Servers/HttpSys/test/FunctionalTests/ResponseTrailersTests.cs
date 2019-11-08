@@ -118,11 +118,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ResponseTrailers_WithContentLengthBody_TrailersNotSent()
         {
             var body = "Hello World";
+            var responseFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 httpContext.Response.ContentLength = body.Length;
                 await httpContext.Response.WriteAsync(body);
-                httpContext.Response.AppendTrailer("TrailerName", "Trailer Value");
+                try
+                {
+                    Assert.Throws<InvalidOperationException>(() => httpContext.Response.AppendTrailer("TrailerName", "Trailer Value"));
+                    responseFinished.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    responseFinished.SetException(ex);
+                }
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -131,6 +140,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(body.Length.ToString(CultureInfo.InvariantCulture), response.Content.Headers.GetValues(HeaderNames.ContentLength).Single());
                 Assert.Equal(body, await response.Content.ReadAsStringAsync());
                 Assert.Empty(response.TrailingHeaders);
+                await responseFinished.Task;
             }
         }
 

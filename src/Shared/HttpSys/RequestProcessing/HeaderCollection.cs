@@ -250,6 +250,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (IsReadOnly)
             {
+                if (_checkTrailers)
+                {
+                    throw new InvalidOperationException("The response trailers cannot be modified because the response has already completed. "
+                        + "If this is a Content-Length response then you need to call HttpResponse.DeclareTrailer before starting the body.");
+                }
                 throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
             }
         }

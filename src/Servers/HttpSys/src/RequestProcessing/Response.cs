@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public HeaderCollection Headers { get; }
 
-        public HeaderCollection Trailers => _trailers ??= new HeaderCollection(checkTrailers: true);
+        public HeaderCollection Trailers => _trailers ??= new HeaderCollection(checkTrailers: true) { IsReadOnly = BodyIsFinished };
 
         internal bool HasTrailers => _trailers?.Count > 0;
 
@@ -177,6 +177,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 CheckResponseStarted();
                 _cacheTtl = value;
+            }
+        }
+
+        // The response is being finished with or without trailers. Mark them as readonly to inform
+        // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
+        internal void MakeTrailersReadOnly()
+        {
+            if (_trailers != null)
+            {
+                _trailers.IsReadOnly = true;
             }
         }
 
@@ -639,7 +649,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             Debug.Assert(currentChunk == dataChunks.Length - 1);
             Debug.Assert(HasTrailers);
-            Trailers.IsReadOnly = true; // Prohibit further modifications.
+            MakeTrailersReadOnly();
             var trailerCount = 0;
 
             foreach (var trailerPair in Trailers)
