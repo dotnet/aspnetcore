@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -53,33 +54,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        // https://tools.ietf.org/html/rfc7230#section-4.1.2
-        private readonly List<string> _disallowedTrailers = new List<string>()
-        {
-            // Message framing headers.
-            HeaderNames.TransferEncoding, HeaderNames.ContentLength,
-
-            // Routing headers.
-            HeaderNames.Host,
-
-            // Request modifiers: controls and conditionals.
-            // rfc7231#section-5.1: Controls.
-            HeaderNames.CacheControl, HeaderNames.Expect, HeaderNames.MaxForwards, HeaderNames.Pragma, HeaderNames.Range, HeaderNames.TE,
-
-            // rfc7231#section-5.2: Conditionals.
-            HeaderNames.IfMatch, HeaderNames.IfNoneMatch, HeaderNames.IfModifiedSince, HeaderNames.IfUnmodifiedSince, HeaderNames.IfRange,
-
-            // Authentication headers.
-            HeaderNames.WWWAuthenticate, HeaderNames.Authorization, HeaderNames.ProxyAuthenticate, HeaderNames.ProxyAuthorization, HeaderNames.SetCookie, HeaderNames.Cookie,
-
-            // Response control data.
-            // rfc7231#section-7.1: Control Data.
-            HeaderNames.Age, HeaderNames.Expires, HeaderNames.Date, HeaderNames.Location, HeaderNames.RetryAfter, HeaderNames.Vary, HeaderNames.Warning,
-
-            // Content-Encoding, Content-Type, Content-Range, and Trailer itself.
-            HeaderNames.ContentEncoding, HeaderNames.ContentType, HeaderNames.ContentRange, HeaderNames.Trailer
-        };
-
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_ProhibitedTrailers_Blocked()
@@ -87,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
                 Assert.True(httpContext.Response.SupportsTrailers());
-                foreach (var header in _disallowedTrailers)
+                foreach (var header in HeaderCollection.DisallowedTrailers)
                 {
                     Assert.Throws<InvalidOperationException>(() => httpContext.Response.AppendTrailer(header, "value"));
                 }

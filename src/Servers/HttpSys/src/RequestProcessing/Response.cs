@@ -144,11 +144,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public HeaderCollection Headers { get; }
 
-        public HeaderCollection Trailers { get => _trailers ??= new HeaderCollection(checkTrailers: true); }
+        public HeaderCollection Trailers => _trailers ??= new HeaderCollection(checkTrailers: true);
 
-        internal bool HasTrailers { get => _trailers?.Count > 0; }
+        internal bool HasTrailers => _trailers?.Count > 0;
 
-        // Trailers are supported on this OS, it's HTTP/2, and the app added a Trailer response header to annouce trailers were intended.
+        // Trailers are supported on this OS, it's HTTP/2, and the app added a Trailer response header to announce trailers were intended.
         // Needed to delay the completion of Content-Length responses.
         internal bool TrailersExpected => HasTrailers
             || (ComNetOS.SupportsTrailers && Request.ProtocolVersion >= HttpVersion.Version20

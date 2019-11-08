@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal class HeaderCollection : IHeaderDictionary
     {
         // https://tools.ietf.org/html/rfc7230#section-4.1.2
-        private static readonly HashSet<string> _disallowedTrailers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        internal static readonly HashSet<string> DisallowedTrailers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             // Message framing headers.
             HeaderNames.TransferEncoding, HeaderNames.ContentLength,
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         private void ValidateRestrictedTrailers(string key)
         {
-            if (_checkTrailers && _disallowedTrailers.Contains(key))
+            if (_checkTrailers && DisallowedTrailers.Contains(key))
             {
                 throw new InvalidOperationException($"The '{key}' header is not allowed in HTTP trailers.");
             }
