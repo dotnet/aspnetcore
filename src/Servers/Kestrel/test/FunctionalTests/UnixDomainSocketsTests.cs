@@ -153,8 +153,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
                     {
                         await socket.ConnectAsync(new UnixDomainSocketEndPoint(path)).DefaultTimeout();
-   
-                        var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+
+                        var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\nConnection: close\r\n\r\n");
                         await socket.SendAsync(httpRequest, SocketFlags.None).DefaultTimeout();
 
                         var readBuffer = new byte[512];
@@ -166,13 +166,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             if (bytesReceived <= 0) break;
                         }
 
-                        var httpResponse = Encoding.ASCII.GetString(readBuffer);
+                        var httpResponse = Encoding.ASCII.GetString(readBuffer, 0, read);
                         int httpStatusStart = httpResponse.IndexOf(' ') + 1;
                         int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
 
                         var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart));
                         Assert.Equal(httpStatus, StatusCodes.Status200OK);
-                       
+
                     }
                     await host.StopAsync().DefaultTimeout();
                 }
