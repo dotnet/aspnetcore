@@ -98,7 +98,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var read = 0;
                         while (read < data.Length)
                         {
-                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            var bytesReceived = await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
+                            read += bytesReceived;
+                            if (bytesReceived <= 0) break;
                         }
 
                         Assert.Equal(data, buffer);
