@@ -8,24 +8,24 @@
     "jquery": "^3.4.1",
     "merge": "^1.2.1",
     "oidc-client": "^1.9.0",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
     "react-router-bootstrap": "^0.24.4",
-    "react-router-dom": "^4.2.2",
-    "react-scripts": "^3.0.1",
-    "reactstrap": "^6.3.0",
+    "react-router-dom": "5.1.2",
+    "react-scripts": "^3.2.0",
+    "reactstrap": "^8.1.1",
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
     "ajv": "^6.9.1",
-    "cross-env": "^5.2.0",
-    "eslint": "^5.12.0",
+    "cross-env": "^6.0.3",
+    "eslint": "^6.5.1",
     "eslint-config-react-app": "^4.0.1",
-    "eslint-plugin-flowtype": "^2.0.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.11.1",
-    "typescript": "^3.5.2"
+    "eslint-plugin-flowtype": "^3.13.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.16.0",
+    "typescript": "^3.6.4"
   },
   "eslintConfig": {
     "extends": "react-app"
