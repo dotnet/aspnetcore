@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             var dotnetPath = typeof(WatchableApp).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(s => s.Key == "DotnetPath").Value;
-
+            
             var spec = new ProcessSpec
             {
                 Executable = dotnetPath,
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
-                    ["DOTNET_ROOT"] = "",
+                    ["DOTNET_ROOT"] = Directory.GetParent(dotnetPath).FullName,
                 },
             };
 
