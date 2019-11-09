@@ -825,7 +825,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public async Task SendAsync_Protocol11()
+        public async Task SendAsync_Default_Protocol11()
         {
             // Arrange
             var expected = "GET Response";
@@ -846,7 +846,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public async Task SendAsync_Protocol20()
+        public async Task SendAsync_SetTo20_Protocol20()
         {
             // Arrange
             var expected = "GET Response";
