@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TestDependsOnAppRuntime>true</TestDependsOnAppRuntime>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.5.0.0-ci.nupkg" />
-    <HelixPreCommand Include="dir artifacts\packages\Release\Shipping\*" />    
   </ItemGroup>
 
 </Project>
