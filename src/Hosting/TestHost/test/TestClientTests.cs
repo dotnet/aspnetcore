@@ -846,7 +846,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public async Task SendAsync_SetTo20_Protocol20()
+        public async Task SendAsync_ExplicitlySet_Protocol20()
         {
             // Arrange
             var expected = "GET Response";
