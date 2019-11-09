@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature,
-        IHttpSysRequestInfoFeature
+        IHttpSysRequestInfoFeature,
+        IHttpResponseTrailersFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private PipeWriter _pipeWriter;
         private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
+        private IHeaderDictionary _responseTrailers;
 
         private Fields _initializedFields;
 
@@ -346,6 +348,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Request.IsHttps ? this : null;
         }
 
+        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && ComNetOS.SupportsTrailers)
+            {
+                return this;
+            }
+            return null;
+        }
+
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
@@ -546,6 +557,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
         IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => _responseTrailers ??= Response.Trailers;
+            set => _responseTrailers = value;
+        }
 
         internal async Task OnResponseStart()
         {
