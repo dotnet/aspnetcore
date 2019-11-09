@@ -163,6 +163,7 @@ namespace Microsoft.AspNetCore.TestHost
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
+            response.Version = request.Version;
 
             response.Content = new StreamContent(httpContext.Response.Body);
 
