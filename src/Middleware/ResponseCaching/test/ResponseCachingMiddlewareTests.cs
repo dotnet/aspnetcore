@@ -726,7 +726,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        [InlineData("head")]
         public async Task FinalizeCacheBody_DoNotCache_IfContentLengthMismatches(string method)
         {
             var cache = new TestResponseCache();
@@ -754,11 +753,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Theory]
-        [InlineData("HEAD", false)]
-        [InlineData("head", false)]
-        [InlineData("HEAD", true)]
-        [InlineData("head", true)]
-        public async Task FinalizeCacheBody_RequestHead_Cache_IfContentLengthPresent_AndBodyAbsentOrOfSameLength(string method, bool includeBody)
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task FinalizeCacheBody_RequestHead_Cache_IfContentLengthPresent_AndBodyAbsentOrOfSameLength(bool includeBody)
         {
             var cache = new TestResponseCache();
             var sink = new TestSink();
@@ -768,7 +765,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.ShouldCacheResponse = true;
             middleware.ShimResponseStream(context);
             context.HttpContext.Response.ContentLength = 10;
-            context.HttpContext.Request.Method = method;
+            context.HttpContext.Request.Method = "HEAD";
 
             if (includeBody)
             {
