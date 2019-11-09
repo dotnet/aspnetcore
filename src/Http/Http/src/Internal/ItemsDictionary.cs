@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Http
         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()
             => _items?.GetEnumerator() ?? EmptyEnumerator.Instance;
 
-        IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator() ?? EmptyEnumerator.Instance;
+        IEnumerator IEnumerable.GetEnumerator() => _items?.GetEnumerator() ?? EmptyEnumerator.Instance;
 
         private class EmptyEnumerator : IEnumerator<KeyValuePair<object, object>>
         {
