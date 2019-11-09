@@ -45,4 +45,9 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true'">
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.5.0.0-ci.nupkg" />
+    <HelixPreCommand Include="dir artifacts\packages\Release\Shipping\*" />    
+  </ItemGroup>
+  
 </Project>
