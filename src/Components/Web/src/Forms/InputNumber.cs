@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// An input component for editing numeric values.
-    /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
+    /// Supported numeric types are <see cref="short"/>, <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
     public class InputNumber<TValue> : InputBase<TValue>
     {
@@ -79,6 +79,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 case null:
                     return null;
+
+                case short @short:
+                    return BindConverter.FormatValue(@short, CultureInfo.InvariantCulture);
 
                 case int @int:
                     return BindConverter.FormatValue(@int, CultureInfo.InvariantCulture);

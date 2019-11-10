@@ -96,6 +96,41 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
+        public static string FormatValue(short value, CultureInfo culture = null) => FormatInt16ValueCore(value, culture);
+
+        private static string FormatInt16ValueCore(short value, CultureInfo culture)
+        {
+            return value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
+        public static string FormatValue(short? value, CultureInfo culture = null) => FormatNullableInt16ValueCore(value, culture);
+
+        private static string FormatNullableInt16ValueCore(short? value, CultureInfo culture)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value.Value.ToString(culture ?? CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Formats the provided <paramref name="value"/> for inclusion in an attribute.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <param name="culture">
+        /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <returns>The formatted value.</returns>
         public static string FormatValue(int value, CultureInfo culture = null) => FormatIntValueCore(value, culture);
 
         private static string FormatIntValueCore(int value, CultureInfo culture)
@@ -516,6 +551,71 @@ namespace Microsoft.AspNetCore.Components
         {
             // We expect the input to already be a bool.
             value = (bool?)obj;
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToInt16(object obj, CultureInfo culture, out short value)
+        {
+            return ConvertToInt16Core(obj, culture, out value);
+        }
+
+        /// <summary>
+        /// Attempts to convert a value to a nullable <see cref="System.Int16"/>.
+        /// </summary>
+        /// <param name="obj">The object to convert.</param>
+        /// <param name="culture">The <see cref="CultureInfo"/> to use for conversion.</param>
+        /// <param name="value">The converted value.</param>
+        /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
+        public static bool TryConvertToNullableInt16(object obj, CultureInfo culture, out short? value)
+        {
+            return ConvertToNullableInt16Core(obj, culture, out value);
+        }
+
+        internal static BindParser<short> ConvertToInt16 = ConvertToInt16Core;
+        internal static BindParser<short?> ConvertToNullableInt16 = ConvertToNullableInt16Core;
+
+        private static bool ConvertToInt16Core(object obj, CultureInfo culture, out short value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableInt16Core(object obj, CultureInfo culture, out short? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!short.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
             return true;
         }
 
@@ -1238,6 +1338,14 @@ namespace Microsoft.AspNetCore.Components
                     {
                         formatter = (BindFormatter<DateTimeOffset?>)FormatNullableDateTimeOffsetValueCore;
                     }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        formatter = (BindFormatter<short>)FormatInt16ValueCore;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        formatter = (BindFormatter<short?>)FormatNullableInt16ValueCore;
+                    }
                     else if (typeof(T).IsEnum)
                     {
                         // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
@@ -1362,6 +1470,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(DateTimeOffset?))
                     {
                         parser = ConvertToNullableDateTime;
+                    }
+                    else if (typeof(T) == typeof(short))
+                    {
+                        parser = ConvertToInt16;
+                    }
+                    else if (typeof(T) == typeof(short?))
+                    {
+                        parser = ConvertToNullableInt16;
                     }
                     else if (typeof(T).IsEnum)
                     {

@@ -27,6 +27,18 @@
 
 <h2>Numeric Textboxes</h2>
 <p>
+    short:
+    <input id="textbox-short" @bind="textboxShortValue" type="number" />
+    <span id="textbox-short-value">@textboxShortValue</span>
+    <input id="textbox-short-mirror" @bind="textboxShortValue" readonly />
+</p>
+<p>
+    Nullable short:
+    <input id="textbox-nullable-short" @bind-value="textboxNullableShortValue" type="number" />
+    <span id="textbox-nullable-short-value">@textboxNullableShortValue</span>
+    <input id="textbox-nullable-short-mirror" @bind="textboxNullableShortValue" readonly />
+</p>
+<p>
     int:
     <input id="textbox-int" @bind="textboxIntValue" type="number" />
     <span id="textbox-int-value">@textboxIntValue</span>
@@ -322,6 +334,8 @@
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
 
+    int textboxShortValue = - 42;
+    int? textboxNullableShortValue = null;
     int textboxIntValue = -42;
     int? textboxNullableIntValue = null;
     long textboxLongValue = 3_000_000_000;

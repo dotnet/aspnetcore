@@ -102,6 +102,90 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void FormatValue_Int16()
+        {
+            // Arrange
+            short value = 42;
+            var expected = "42";
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_Int16_Generic()
+        {
+            // Arrange
+            short value = 42;
+            var expected = "42";
+
+            // Act
+            var actual = BindConverter.FormatValue<short>(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_NullableInt16()
+        {
+            // Arrange
+            short? value = 42;
+            var expected = "42";
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_NullableInt16_Generic()
+        {
+            // Arrange
+            short? value = 42;
+            var expected = "42";
+
+            // Act
+            var actual = BindConverter.FormatValue<short?>(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_NullableInt16Null()
+        {
+            // Arrange
+            short? value = null;
+            string expected = null;
+
+            // Act
+            var actual = BindConverter.FormatValue(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void FormatValue_NullableInt16Null_Generic()
+        {
+            // Arrange
+            short? value = null;
+            string expected = null;
+
+            // Act
+            var actual = BindConverter.FormatValue<short?>(value);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void FormatValue_Int()
         {
             // Arrange
