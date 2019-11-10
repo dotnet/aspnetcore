@@ -17,6 +17,13 @@
     <ProjectReference Include="..\src\dotnet-watch.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotnetPath</_Parameter1>
+      <_Parameter2>$(DotNetTool)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
