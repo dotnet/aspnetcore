@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Http
                 EmptyDictionary.Collection.CopyTo(array, arrayIndex);
             }
 
-            _items.CopyTo(array, arrayIndex);
+            _items?.CopyTo(array, arrayIndex);
         }
 
         int ICollection<KeyValuePair<object, object>>.Count => _items?.Count ?? 0;
