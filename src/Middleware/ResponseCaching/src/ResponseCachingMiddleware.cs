@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -345,7 +344,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 var contentLength = context.HttpContext.Response.ContentLength;
                 var bufferStream = context.ResponseCachingStream.GetBufferStream();
-                if (!contentLength.HasValue || contentLength == bufferStream.Length)
+                if (!contentLength.HasValue || contentLength == bufferStream.Length
+                    || (bufferStream.Length == 0
+                        && string.Equals(context.HttpContext.Request.Method, "HEAD", StringComparison.OrdinalIgnoreCase)))
                 {
                     var response = context.HttpContext.Response;
                     // Add a content-length if required
