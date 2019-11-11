@@ -232,14 +232,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
-{
-    public partial class EncoderStreamReader
-    {
-        public EncoderStreamReader(int maxRequestHeaderFieldSize) { }
-        public void Read(System.Buffers.ReadOnlySequence<byte> data) { }
-    }
-}
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public static partial class CertificateLoader

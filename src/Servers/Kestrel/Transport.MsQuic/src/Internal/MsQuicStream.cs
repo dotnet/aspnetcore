@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 
         private unsafe long GetStreamId()
         {
-            var byteArr = new byte[8]; // size of long
+            var byteArr = new byte[sizeof(long)];
             fixed (byte* ptr = byteArr)
             {
                 var buffer = new QuicBuffer()
