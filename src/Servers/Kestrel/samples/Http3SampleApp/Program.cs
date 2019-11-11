@@ -18,11 +18,12 @@ namespace Http3SampleApp
             var hostBuilder = new WebHostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {
-                     // Set logging to the MAX.
                      factory.SetMinimumLevel(LogLevel.Trace);
                      factory.AddConsole();
                  })
                  .UseKestrel()
+                 // TODO figure out how to make this fluent.
+                 // Things like APLN and cert should be able to be passed from corefx into bedrock
                  .UseMsQuic(options =>
                  {
                      options.Certificate = cert;

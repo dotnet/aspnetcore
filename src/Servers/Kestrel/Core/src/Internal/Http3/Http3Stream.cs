@@ -18,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal partial class Http3Stream : HttpProtocol, IHttpHeadersHandler, IHttp3Stream
+    internal abstract class Http3Stream : HttpProtocol, IHttpHeadersHandler, IHttp3Stream, IThreadPoolWorkItem
     {
         private Http3FrameWriter _frameWriter;
         private Http3OutputProducer _http3Output;
@@ -52,11 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // ResponseHeaders aren't set, kind of ugly that we need to reset.
             Reset();
 
-            //_serverSettings.MaxConcurrentStreams = (uint)http3Limits.MaxStreamsPerConnection;
-            //_serverSettings.MaxFrameSize = (uint)http3Limits.MaxFrameSize;
-            //_serverSettings.HeaderTableSize = (uint)http3Limits.HeaderTableSize;
-            //_serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
-            //_serverSettings.InitialWindowSize = (uint)http3Limits.InitialStreamWindowSize;
             _http3Output = new Http3OutputProducer(
                 0, // TODO streamid
                 _frameWriter,
@@ -74,11 +69,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
-        public object EncoderStreamReader { get; private set; }
-
         public void Abort(ConnectionAbortedException ex)
         {
-            throw new NotImplementedException();
+            Abort(ex, Http3ErrorCode.InternalError);
+        }
+
+        public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode)
+        {
         }
 
         public void OnHeadersComplete(bool endStream)
@@ -89,13 +86,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void HandleReadDataRateTimeout()
         {
             Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout));
+            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http3ErrorCode.RequestRejected);
         }
 
         public void HandleRequestHeadersTimeout()
         {
             Log.ConnectionBadRequest(ConnectionId, BadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout));
+            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http3ErrorCode.RequestRejected);
         }
 
         public void OnInputOrOutputCompleted()
@@ -119,32 +116,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             try
             {
-                // three streams will start on the server (control, encode, and decode)
 
-                // TODO _isClosed won't work well for this design.
-                // The input pipe will be closed, and afterwards we want to stop reading.
-                // however, we want to continue writing
                 while (_isClosed == 0)
                 {
-                    // Each side MUST initiate a single control stream at the beginning of the connection and send its SETTINGS frame as the first frame on this stream.
-                    // If the first frame of the control stream is any other frame type, this MUST be treated as a connection error of type HTTP_MISSING_SETTINGS.
-                    // Only one control stream per peer is permitted; receipt of a second stream which claims to be a control stream MUST be treated as a connection error of type HTTP_STREAM_CREATION_ERROR.
-                    // The sender MUST NOT close the control stream, and the receiver MUST NOT request that the sender close the control stream. If either control stream is closed at any point, this MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
                     var result = await Input.ReadAsync();
                     var readableBuffer = result.Buffer;
                     var consumed = readableBuffer.Start;
                     var examined = readableBuffer.End;
 
-                    // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceded their drain timeouts.
-
                     try
                     {
                         if (!readableBuffer.IsEmpty)
                         {
-                            // need to kick off httpprotocol process request async here.
-                            while (Http3FrameReader.ReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                            while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
                             {
-                                //Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                                 consumed = examined = framePayload.End;
                                 await ProcessHttp3Stream(application, framePayload);
                             }
@@ -157,16 +142,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     }
                     catch (Http3StreamErrorException)
                     {
-                        //Log.Http2StreamError(ConnectionId, ex);
-                        //// The client doesn't know this error is coming, allow draining additional frames for now.
-                        //AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
-                        //await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+                        // TODO 
                     }
                     finally
                     {
                         Input.AdvanceTo(consumed, examined);
-
-                        //UpdateConnectionState();
                     }
                 }
             }
@@ -176,8 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             finally
             {
-                // TODO complete async.
-                // Different time than process request async. 
                 await RequestBodyPipe.Writer.CompleteAsync();
             }
         }
@@ -185,30 +163,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload)
         {
-            // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
-            // Streams initiated by a client MUST use odd-numbered stream identifiers; ...
-            // An endpoint that receives an unexpected stream identifier MUST respond with
-            // a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
-
-
-            // TODO remove switch here, just read headers, and then create a wrapper for data frames?
             switch (_incomingFrame.Type)
             {
-                case Http3FrameType.DATA:
+                case Http3FrameType.Data:
                     return ProcessDataFrameAsync(payload);
-                case Http3FrameType.HEADERS:
+                case Http3FrameType.Headers:
                     return ProcessHeadersFrameAsync(application, payload);
                 // need to be on control stream
-                case Http3FrameType.DUPLICATE_PUSH:
+                case Http3FrameType.DuplicatePush:
                     // TODO is nooping correct here?
                     return ProcessUnknownFrameAsync();
-                case Http3FrameType.PUSH_PROMISE:
+                case Http3FrameType.PushPromise:
                     // TODO is nooping correct here?
                     return ProcessUnknownFrameAsync();
-                case Http3FrameType.SETTINGS:
-                case Http3FrameType.GOAWAY:
-                case Http3FrameType.CANCEL_PUSH:
-                case Http3FrameType.MAX_PUSH_ID:
+                case Http3FrameType.Settings:
+                case Http3FrameType.GoAway:
+                case Http3FrameType.CancelPush:
+                case Http3FrameType.MaxPushId:
                     throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
                 default:
                     return ProcessUnknownFrameAsync();
@@ -476,11 +447,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public void AbortStream(ConnectionAbortedException ex)
-        {
-            Abort(ex);
-        }
-
         private Pipe CreateRequestBodyPipe(uint windowSize)
             => new Pipe(new PipeOptions
             (
@@ -494,6 +460,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 useSynchronizationContext: false,
                 minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
+
+        /// <summary>
+        /// Used to kick off the request processing loop by derived classes.
+        /// </summary>
+        public abstract void Execute();
 
         private static class GracefulCloseInitiator
         {

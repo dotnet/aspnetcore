@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Debugger = Mock.Of<IDebugger>();
             _echoApplication = async context =>
             {
-                var buffer = new byte[Http3PeerSetting.MinAllowedMaxFrameSize];
+                var buffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
                 var received = 0;
 
                 while ((received = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var features = new FeatureCollection();
             features.Set<IQuicCreateStreamFeature>(this);
+            features.Set<IQuicStreamListenerFeature>(this);
 
             var httpConnectionContext = new HttpConnectionContext
             {
@@ -214,10 +215,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
+        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IQuicStreamFeature
         {
             internal ConnectionContext ConnectionContext { get; }
-            private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSetting.MinAllowedMaxFrameSize];
+
+            public bool IsUnidirectional => false;
+
+            public long StreamId => 0;
+
+            private readonly byte[] _headerEncodingBuffer = new byte[Http3PeerSettings.MinAllowedMaxFrameSize];
             private QPackEncoder _qpackEncoder = new QPackEncoder();
             private QPackDecoder _qpackDecoder = new QPackDecoder(10000, 10000);
             private long _bytesReceived;
@@ -234,6 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     
                 ConnectionContext = new DefaultConnectionContext();
                 ConnectionContext.Transport = _pair.Transport;
+                ConnectionContext.Features.Set<IQuicStreamFeature>(this);
             }
 
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
@@ -273,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 return http3WithPayload.Payload;
             }
 
-            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http3PeerSetting.DefaultMaxFrameSize)
+            internal async Task<Http3FrameWithPayload> ReceiveFrameAsync(uint maxFrameSize = Http3PeerSettings.DefaultMaxFrameSize)
             {
                 var frame = new Http3FrameWithPayload();
 
@@ -289,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     {
                         Assert.True(buffer.Length > 0);
 
-                        if (Http3FrameReader.ReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
+                        if (Http3FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
                         {
                             consumed = examined = framePayload.End;
                             frame.Payload = framePayload.ToArray();
@@ -335,9 +342,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public ReadOnlySequence<byte> PayloadSequence => new ReadOnlySequence<byte>(Payload);
         }
 
-        internal class Http3ControlStream : Http3StreamBase, IUnidirectionalStreamFeature
+
+        internal class Http3ControlStream : Http3StreamBase, IQuicStreamFeature
         {
             internal ConnectionContext ConnectionContext { get; }
+
+            public bool IsUnidirectional => true;
+
+            // TODO
+            public long StreamId => 0;
 
             public Http3ControlStream(Http3TestBase testBase, Http3Connection connection)
             {
@@ -350,14 +363,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 ConnectionContext = new DefaultConnectionContext();
                 ConnectionContext.Transport = _pair.Transport;
-                ConnectionContext.Features.Set<IUnidirectionalStreamFeature>(this);
+                ConnectionContext.Features.Set<IQuicStreamFeature>(this);
             }
 
             public async Task WriteStreamIdAsync(int id)
             {
                 var writableBuffer = _pair.Application.Output;
                 var buffer = writableBuffer.GetMemory(sizeHint: 8);
-                var lengthWritten = VariableIntHelper.WriteEncodedIntegerToMemory(buffer, id);
+                var lengthWritten = VariableLengthIntegerHelper.WriteEncodedIntegerToMemory(buffer, id);
                 writableBuffer.Advance(lengthWritten);
                 await FlushAsync(writableBuffer);
             }

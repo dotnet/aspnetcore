@@ -193,6 +193,11 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         System.Buffers.MemoryPool<byte> MemoryPool { get; }
     }
+    public partial interface IQuicStreamFeature
+    {
+        bool IsUnidirectional { get; }
+        long StreamId { get; }
+    }
     public partial interface IQuicStreamListenerFeature
     {
         System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync();
@@ -211,8 +216,5 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         Microsoft.AspNetCore.Connections.TransferFormat ActiveFormat { get; set; }
         Microsoft.AspNetCore.Connections.TransferFormat SupportedFormats { get; }
-    }
-    public partial interface IUnidirectionalStreamFeature
-    {
     }
 }

@@ -18,17 +18,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             |                       Frame Payload (*)                     ...
             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         */
-
-        // TODO I need a variable int reader (which also advances the readonlysequence
-        // Make a helper.
-        internal static bool ReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3Frame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
+        internal static bool TryReadFrame(ref ReadOnlySequence<byte> readableBuffer, Http3Frame frame, uint maxFrameSize, out ReadOnlySequence<byte> framePayload)
         {
             framePayload = ReadOnlySequence<byte>.Empty;
             var consumed = readableBuffer.Start;
             var examined = readableBuffer.Start;
 
             // Need to advance somehow here.
-            var type = VariableIntHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
+            var type = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
             if (type == -1)
             {
                 return false;
@@ -36,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             var firstLengthBuffer = readableBuffer.Slice(consumed);
 
-            var length = VariableIntHelper.GetVariableIntFromReadOnlySequence(firstLengthBuffer, out consumed, out examined);
+            var length = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(firstLengthBuffer, out consumed, out examined);
 
             // Make sure the whole frame is buffered
             if (length == -1)

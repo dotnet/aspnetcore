@@ -14,13 +14,16 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal class Http3ControlStream : IHttp3Stream
+    internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
+        private const int ControlStream = 0;
+        private const int EncoderStream = 2;
+        private const int DecoderStream = 3;
         private Http3FrameWriter _frameWriter;
         private readonly Http3Connection _http3Connection;
         private HttpConnectionContext _context;
         private readonly Http3Frame _incomingFrame = new Http3Frame();
-        private int _isClosed;
+        private volatile int _isClosed;
         private int _gracefulCloseInitiator;
 
         private bool _haveReceivedSettingsFrame;
@@ -32,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _http3Connection = http3Connection;
             _context = context;
 
-            // Todo framewriter.
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
                 context.ConnectionContext,
@@ -42,12 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 context.ConnectionId,
                 context.MemoryPool,
                 context.ServiceContext.Log);
+
             var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((Http3ControlStream)state).OnStreamClosed(), this);
         }
 
         private void OnStreamClosed()
         {
-            // TODO how to pass Abort in.
             Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"));
         }
 
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             return false;
         }
 
-        private async Task HandleEncodingTask()
+        private async ValueTask HandleEncodingTask()
         {
             var encoder = new EncoderStreamReader(10000); // TODO get value from limits
             while (_isClosed == 0)
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async Task HandleDecodingTask()
+        private async ValueTask HandleDecodingTask()
         {
             var decoder = new DecoderStreamReader();
             while (_isClosed == 0)
@@ -120,17 +122,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async Task SendStreamIdAsync(int id)
+        private async ValueTask SendStreamIdAsync(int id)
         {
             await _frameWriter.WriteStreamIdAsync(id);
         }
 
-        private async Task SendSettingsFrameAsync()
+        private async ValueTask SendSettingsFrameAsync()
         {
             await _frameWriter.WriteSettingsAsync(null);
         }
 
-        private async Task<Http3ControlStream> CreateNewControlStreamAsync()
+        private async ValueTask<Http3ControlStream> CreateNewControlStreamAsync<TContext>(IHttpApplication<TContext> application)
         {
             var connectionContext = await _http3Connection.Context.ConnectionFeatures.Get<IQuicCreateStreamFeature>().StartUnidirectionalStreamAsync();
             var httpConnectionContext = new HttpConnectionContext
@@ -147,15 +149,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };
 
-            // TODO think about whether we need a new stream or not here.
-            return new Http3ControlStream(_http3Connection, httpConnectionContext);
+            return new Http3ControlStream<TContext>(application, _http3Connection, httpConnectionContext);
         }
 
-        private async Task<long> TryReadStreamIdAsync()
+        private async ValueTask<long> TryReadStreamIdAsync()
         {
             while (_isClosed == 0)
             {
-
                 var result = await Input.ReadAsync();
                 var readableBuffer = result.Buffer;
                 var consumed = readableBuffer.Start;
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        var id = VariableIntHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
+                        var id = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
                         if (id != -1)
                         {
                             return id;
@@ -192,58 +192,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if (streamType == -1)
             {
-                // Error dawg
                 return;
             }
 
-            // idk what to do here.
-            if (streamType == 0)
+            if (streamType == ControlStream)
             {
-                // This control stream may need to be available to everyone.
-                // GOAWAY is sent on it.
                 if (_http3Connection.SettingsStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
 
-                var stream = await CreateNewControlStreamAsync();
+                var stream = await CreateNewControlStreamAsync(application);
                 _http3Connection.SettingsStream = stream;
                 await stream.SendStreamIdAsync(id: 0);
                 await stream.SendSettingsFrameAsync();
                 await HandleControlStream();
-                // loop here.
             }
-            else if (streamType == 2)
+            else if (streamType == EncoderStream)
             {
                 if (_http3Connection.EncoderStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
-                var stream = await CreateNewControlStreamAsync();
+                var stream = await CreateNewControlStreamAsync(application);
                 _http3Connection.EncoderStream = stream;
 
                 await stream.SendStreamIdAsync(id: 2);
                 await HandleEncodingTask();
                 return;
-                // encode qpack
             }
-            else if (streamType == 3)
+            else if (streamType == DecoderStream)
             {
-                // decode qpack
                 if (_http3Connection.DecoderStream != null)
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
-                var stream = await CreateNewControlStreamAsync();
+                var stream = await CreateNewControlStreamAsync(application);
                 _http3Connection.DecoderStream = stream;
                 await stream.SendStreamIdAsync(id: 3);
                 await HandleDecodingTask();
             }
             else
             {
-                // Abort the stream.
-                // returning should be fine?
-                // Need to figure out what to call on msquic.
+                // TODO Close the control stream as it's unexpected.
             }
             return;
         }
@@ -262,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (!readableBuffer.IsEmpty)
                     {
                         // need to kick off httpprotocol process request async here.
-                        while (Http3FrameReader.ReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
+                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, 16 * 1024, out var framePayload))
                         {
                             //Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                             consumed = examined = framePayload.End;
@@ -291,32 +282,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private Task ProcessHttp3ControlStream(in ReadOnlySequence<byte> payload)
+        private ValueTask ProcessHttp3ControlStream(in ReadOnlySequence<byte> payload)
         {
             // Two things:
             // settings must be sent as the first frame of each control stream by each peer
             // Can't send more than two settings frames.
             switch (_incomingFrame.Type)
             {
-                case Http3FrameType.DATA:
-                case Http3FrameType.HEADERS:
-                case Http3FrameType.DUPLICATE_PUSH:
-                case Http3FrameType.PUSH_PROMISE:
+                case Http3FrameType.Data:
+                case Http3FrameType.Headers:
+                case Http3FrameType.DuplicatePush:
+                case Http3FrameType.PushPromise:
                     throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
-                case Http3FrameType.SETTINGS:
+                case Http3FrameType.Settings:
                     return ProcessSettingsFrameAsync(payload);
-                case Http3FrameType.GOAWAY:
+                case Http3FrameType.GoAway:
                     return ProcessGoAwayFrameAsync();
-                case Http3FrameType.CANCEL_PUSH:
+                case Http3FrameType.CancelPush:
                     return ProcessCancelPushFrameAsync();
-                case Http3FrameType.MAX_PUSH_ID:
+                case Http3FrameType.MaxPushId:
                     return ProcessMaxPushIdFrameAsync();
                 default:
                     return ProcessUnknownFrameAsync();
             }
         }
 
-        private Task ProcessSettingsFrameAsync(ReadOnlySequence<byte> payload)
+        private ValueTask ProcessSettingsFrameAsync(ReadOnlySequence<byte> payload)
         {
             if (_haveReceivedSettingsFrame)
             {
@@ -326,14 +317,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // process a bunch of kvp of settings
             while (true)
             {
-                var id = VariableIntHelper.GetVariableIntFromReadOnlySequence(payload, out var consumed, out var examinded);
+                var id = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(payload, out var consumed, out var examinded);
                 if (id == -1)
                 {
                     break;
                 }
                 payload = payload.Slice(consumed);
 
-                var value = VariableIntHelper.GetVariableIntFromReadOnlySequence(payload, out consumed, out examinded);
+                var value = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(payload, out consumed, out examinded);
                 if (id == -1)
                 {
                     break;
@@ -342,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 ProcessSetting(id, value);
             }
 
-            return Task.CompletedTask;
+            return default;
         }
 
         private void ProcessSetting(long id, long value)
@@ -364,41 +355,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private Task ProcessGoAwayFrameAsync()
+        private ValueTask ProcessGoAwayFrameAsync()
         {
             if (!_haveReceivedSettingsFrame)
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            return Task.CompletedTask;
+            // Get highest stream id and write that to the response.
+            return default;
         }
 
-        private Task ProcessCancelPushFrameAsync()
+        private ValueTask ProcessCancelPushFrameAsync()
         {
             if (!_haveReceivedSettingsFrame)
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
             // This should just noop.
-            return Task.CompletedTask;
+            return default;
         }
 
-        private Task ProcessMaxPushIdFrameAsync()
+        private ValueTask ProcessMaxPushIdFrameAsync()
         {
             if (!_haveReceivedSettingsFrame)
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            return Task.CompletedTask;
+            return default;
         }
 
-        private Task ProcessUnknownFrameAsync()
+        private ValueTask ProcessUnknownFrameAsync()
         {
             if (!_haveReceivedSettingsFrame)
             {
                 throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
             }
-            return Task.CompletedTask;
+            return default;
         }
 
         public void StopProcessingNextRequest()
@@ -418,12 +410,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
         }
 
-        // TODO need a way to receive abort from MSQUIC
-
-        public void AbortStream(ConnectionAbortedException ex)
-        {
-            Abort(ex);
-        }
+        /// <summary>
+        /// Used to kick off the request processing loop by derived classes.
+        /// </summary>
+        public abstract void Execute();
 
         private static class GracefulCloseInitiator
         {

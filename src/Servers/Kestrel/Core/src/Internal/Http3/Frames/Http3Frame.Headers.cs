@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public void PrepareHeaders()
         {
             Length = 0;
-            Type = Http3FrameType.HEADERS;
+            Type = Http3FrameType.Headers;
         }
     }
 }

@@ -9,15 +9,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
     [Serializable]
     internal class QPackDecodingException : Exception
     {
-        private object qPackErrorIntegerTooBig;
-
         public QPackDecodingException()
         {
-        }
-
-        public QPackDecodingException(object qPackErrorIntegerTooBig)
-        {
-            this.qPackErrorIntegerTooBig = qPackErrorIntegerTooBig;
         }
 
         public QPackDecodingException(string message) : base(message)

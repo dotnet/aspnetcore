@@ -5,13 +5,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal enum Http3FrameType
     {
-        DATA = 0x0,
-        HEADERS = 0x1,
-        CANCEL_PUSH = 0x3,
-        SETTINGS = 0x4,
-        PUSH_PROMISE = 0x5,
-        GOAWAY = 0x7,
-        MAX_PUSH_ID = 0xD,
-        DUPLICATE_PUSH = 0xE
+        Data = 0x0,
+        Headers = 0x1,
+        CancelPush = 0x3,
+        Settings = 0x4,
+        PushPromise = 0x5,
+        GoAway = 0x7,
+        MaxPushId = 0xD,
+        DuplicatePush = 0xE
     }
 }

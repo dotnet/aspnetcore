@@ -3,16 +3,29 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    public static class VariableIntHelper
+    /// <summary>
+    /// Variable length integer encoding and decoding methods. Based on https://tools.ietf.org/html/draft-ietf-quic-transport-24#section-16.
+    /// Either will take up 1, 2, 4, or 8 bytes.
+    /// </summary>
+    internal static class VariableLengthIntegerHelper
     {
+        private const int TwoByteSubtract = 0x4000;
+        private const uint FourByteSubtract = 0x80000000;
+        private const ulong EightByteSubtract = 0xC000000000000000;
+        private const int OneByteLimit = 64;
+        private const int TwoByteLimit = 16383;
+        private const int FourByteLimit = 1073741823;
+
+        // Per the HTTP/3 spec, the following variable length integer values aren't allowed
+        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#frame-reserved
+        // TODO actually use this method to block streamIds.
         public static long GetVariableIntErrorIfNotAllowedValue(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
-            // 0x1F * N + 0x21 isn't allowed by spec, return -1 if that's the case.
-            // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#frame-reserved
             var longLength = GetVariableIntFromReadOnlySequence(buffer, out consumed, out examined);
             if ((longLength - 0x21) % 0x1F == 0)
             {
@@ -32,12 +45,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 return -1;
             }
 
-            var ros = buffer.Slice(0, 1);
-            var firstByte = ros.FirstSpan[0];
-            // TODO don't use first span here.
+            // The first two bits of the first byte represent the length of the
+            // variable length integer
+            // 00 = length 1
+            // 01 = length 2
+            // 10 = length 4
+            // 11 = length 8
+
+            var span = buffer.Slice(0, Math.Min(buffer.Length, 8)).ToSpan();
+
+            var firstByte = span[0];
+
             if ((firstByte & 0xC0) == 0)
             {
-                consumed = examined = ros.End;
+                consumed = examined = buffer.Slice(1).Start;
                 return firstByte & 0x3F;
             }
             else if ((firstByte & 0xC0) == 0x40)
@@ -46,11 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     return -1;
                 }
-                var twoByte = buffer.Slice(1, 1);
-                var twoByteSpan = twoByte.FirstSpan;
-                consumed = examined = twoByte.End;
-                // TODO confirm bitshifting stuff
-                return (long)(firstByte & 0x3F) << 8 | twoByteSpan[0];
+
+                consumed = examined = buffer.Slice(0, 2).End;
+
+                return BinaryPrimitives.ReadUInt16BigEndian(span) - TwoByteSubtract;
             }
             else if ((firstByte & 0xC0) == 0x80)
             {
@@ -58,36 +78,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     return -1;
                 }
-                var fourByte = buffer.Slice(1, 3);
-                var fourByteSpan = fourByte.FirstSpan;
-                consumed = examined = fourByte.End;
-                return (firstByte & 0x3F) << 24 | fourByteSpan[0] << 16 | fourByteSpan[1] << 8 | fourByteSpan[2];
+                consumed = examined = buffer.Slice(0, 4).End;
+
+                return BinaryPrimitives.ReadUInt32BigEndian(span) - FourByteSubtract;
             }
-            else if ((firstByte & 0xC0) == 0xC0)
+            else
             {
                 if (buffer.Length < 8)
                 {
                     return -1;
                 }
 
-                var eightByte = buffer.Slice(1, 7);
-                var eightByteSpan = eightByte.FirstSpan;
-                consumed = examined = eightByte.End;
-                ulong result = (ulong)(firstByte & 0x3F) << 56;
-                result |= (ulong)eightByteSpan[0] << 48;
-                result |= (ulong)eightByteSpan[1] << 40;
-                result |= (ulong)eightByteSpan[2] << 32;
-                result |= (ulong)eightByteSpan[3] << 24;
-                result |= (ulong)eightByteSpan[4] << 16;
-                result |= (ulong)eightByteSpan[5] << 8;
-                result |= (ulong)eightByteSpan[6];
+                consumed = examined = buffer.Slice(0, 8).End;
 
-                // no truncation because max value is less than a long or ulong
-                return (long)result;
-            }
-            else
-            {
-                throw new Exception("Should not happen");
+                return (long)(BinaryPrimitives.ReadUInt64BigEndian(span) - EightByteSubtract);
             }
         }
 
@@ -98,22 +102,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public static int WriteEncodedIntegerToSpan(Span<byte> buffer, long longToEncode)
         {
-            // TODO we should maybe make these longs eventually.
             Debug.Assert(buffer.Length >= 8);
             Debug.Assert(longToEncode < long.MaxValue / 2);
 
-            if (longToEncode < 64)
+            if (longToEncode < OneByteLimit)
             {
                 buffer[0] = (byte)longToEncode;
                 return 1;
             }
-            else if (longToEncode < 16383)
+            else if (longToEncode < TwoByteLimit)
             {
                 buffer[0] = (byte)((longToEncode >> 8) + 0x40);
                 buffer[1] = (byte)((longToEncode & 0xFF));
                 return 2;
             }
-            else if (longToEncode < 1073741823)
+            else if (longToEncode < FourByteLimit)
             {
                 buffer[0] = (byte)((longToEncode >> 24) + 0x80);
                 buffer[1] = (byte)((longToEncode >> 16) & 0xFF);
@@ -125,12 +128,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 buffer[0] = (byte)((longToEncode >> 56) + 0xC0);
                 buffer[1] = (byte)((longToEncode >> 48) & 0xFF);
-                buffer[1] = (byte)((longToEncode >> 40) & 0xFF);
-                buffer[1] = (byte)((longToEncode >> 32) & 0xFF);
-                buffer[1] = (byte)((longToEncode >> 24) & 0xFF);
-                buffer[1] = (byte)((longToEncode >> 16) & 0xFF);
-                buffer[1] = (byte)((longToEncode >> 8) & 0xFF);
-                buffer[1] = (byte)((longToEncode) & 0xFF);
+                buffer[2] = (byte)((longToEncode >> 40) & 0xFF);
+                buffer[3] = (byte)((longToEncode >> 32) & 0xFF);
+                buffer[4] = (byte)((longToEncode >> 24) & 0xFF);
+                buffer[5] = (byte)((longToEncode >> 16) & 0xFF);
+                buffer[6] = (byte)((longToEncode >> 8) & 0xFF);
+                buffer[7] = (byte)((longToEncode) & 0xFF);
                 return 8;
             }
         }

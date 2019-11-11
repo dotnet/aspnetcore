@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Net.Http;
+using System.Net.Http.HPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
@@ -401,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             {
                 if (_huffman)
                 {
-                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), dst);
+                    return Huffman.Decode(new ReadOnlySpan<byte>(_stringOctets, 0, _stringLength), ref dst);
                 }
                 else
                 {

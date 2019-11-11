@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
@@ -23,39 +23,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         public Http3ControlStream EncoderStream { get; set; }
         public Http3ControlStream DecoderStream { get; set; }
 
-        private readonly ConcurrentDictionary<int, Http3Stream> _streams = new ConcurrentDictionary<int, Http3Stream>();
+        private readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
+
+        // To be used by GO_AWAY
+        private long _highestOpenedStreamId;
 
         public Http3Connection(HttpConnectionContext context)
         {
             Context = context;
             DynamicTable = new DynamicTable(0);
-            // TODO qpack decoders need to be one per stream?
+        }
 
+        internal long HighestStreamId
+        {
+            get
+            {
+                return _highestOpenedStreamId;
+            }
+            set
+            {
+                if (_highestOpenedStreamId < value)
+                {
+                    _highestOpenedStreamId = value;
+                }
+            }
         }
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
-            var streamFeature = Context.ConnectionFeatures.Get<IQuicStreamListenerFeature>();
-            if (streamFeature == null)
-            {
-                throw new Http3ConnectionException();
-            }
+            var streamListenerFeature = Context.ConnectionFeatures.Get<IQuicStreamListenerFeature>();
 
             try
             {
-                var i = 0;
                 while (true)
                 {
-                    var connectionContext = await streamFeature.AcceptAsync();
+                    var connectionContext = await streamListenerFeature.AcceptAsync();
                     if (connectionContext == null)
                     {
                         break;
                     }
 
-                    // Need to keep calling AcceptAsync here.
                     var httpConnectionContext = new HttpConnectionContext
                     {
-                        ConnectionId = connectionContext.ConnectionId + i, // TODO this is just adding an int for the stream id, which isn't great.
+                        ConnectionId = connectionContext.ConnectionId,
                         ConnectionContext = connectionContext,
                         Protocols = Context.Protocols,
                         ServiceContext = Context.ServiceContext,
@@ -68,20 +78,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     };
 
                     IHttp3Stream stream;
-                    if (httpConnectionContext.ConnectionFeatures.Get<IUnidirectionalStreamFeature>() != null)
+                    var streamFeature = httpConnectionContext.ConnectionFeatures.Get<IQuicStreamFeature>();
+                    var streamId = streamFeature.StreamId;
+                    HighestStreamId = streamId;
+
+                    if (streamFeature.IsUnidirectional)
                     {
-                        stream = new Http3ControlStream(this, httpConnectionContext);
+                        stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
                     }
                     else
                     {
-                        var http3Stream = new Http3Stream(this, httpConnectionContext);
+                        var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
                         stream = http3Stream;
-                        _streams[i] = http3Stream;
-                        // TODO Figure out how to make ids more unique
+                        _streams[streamId] = http3Stream;
                     }
 
-                    i++;
-                    _ = Task.Run(() => stream.ProcessRequestAsync(application));
+                    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                 }
             }
             finally
@@ -121,6 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             // TODO something here to call OnHeader?
         }
+
         internal void ApplyBlockedStream(long value)
         {
         }

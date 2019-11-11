@@ -1,9 +1,4 @@
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Xunit;
 
@@ -11,13 +6,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class VariableIntHelperTests
     {
-        // 0x1F * N + 0x21 is ignored.
         [Theory]
         [MemberData(nameof(IntegerData))]
         public void CheckDecoding(long expected, byte[] input)
         {
-            var decoded = VariableIntHelper.GetVariableIntFromReadOnlySequence(new ReadOnlySequence<byte>(input), out _, out _);
+            var decoded = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(new ReadOnlySequence<byte>(input), out _, out _);
             Assert.Equal(expected, decoded);
+        }
+
+        [Theory]
+        [MemberData(nameof(IntegerData))]
+        public void CheckEncoding(long input, byte[] expected)
+        {
+            var outputBuffer = new byte[8];
+            var encodedLength = VariableLengthIntegerHelper.WriteEncodedIntegerToMemory(outputBuffer, input);
+            Assert.Equal(expected.Length, encodedLength);
+            for(var i = 0; i < expected.Length; i++)
+            {
+                Assert.Equal(expected[i], outputBuffer[i]);
+            }
         }
 
         public static TheoryData<long, byte[]> IntegerData
@@ -30,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 data.Add(494878333, new byte[] { 0x9d, 0x7f, 0x3e, 0x7d });
                 data.Add(15293, new byte[] { 0x7b, 0xbd });
                 data.Add(37, new byte[] { 0x25 });
-                data.Add(37, new byte[] { 0x40, 0x25 });
 
                 return data;
             }

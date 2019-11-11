@@ -7,9 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
     internal readonly struct HeaderField
     {
-        // TODO confirm this.
-        public const int RfcOverhead = 32;
-
         public HeaderField(Span<byte> name, Span<byte> value)
         {
             Name = new byte[name.Length];
@@ -25,6 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 
         public int Length => GetLength(Name.Length, Value.Length);
 
-        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength + 32;
+        public static int GetLength(int nameLength, int valueLength) => nameLength + valueLength;
     }
 }

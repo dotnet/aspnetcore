@@ -79,10 +79,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        // Abort the stream. TODO
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
-            throw new NotImplementedException();
+            _stream.Abort(abortReason, Http3ErrorCode.InternalError);
         }
 
         public void Advance(int bytes)

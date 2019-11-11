@@ -141,7 +141,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     {
                         foreach (var transportFactory in _transportFactories)
                         {
-                            // TODO hacky
                             if (transportFactory.GetType().Name.Contains("Quic"))
                             {
                                 factory = transportFactory;

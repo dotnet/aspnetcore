@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             IntPtr Handle,
             uint Level,
             uint Param,
-            IntPtr BufferLength,
-            IntPtr Buffer);
+            out uint BufferLength,
+            out byte* Buffer);
 
         internal delegate uint RegistrationOpenDelegate(byte[] appName, out IntPtr RegistrationContext);
 

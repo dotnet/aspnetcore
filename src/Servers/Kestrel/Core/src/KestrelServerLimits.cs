@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public Http2Limits Http2 { get; } = new Http2Limits();
 
         /// <summary>
-        /// Limits only applicable to HTTP/2 connections.
+        /// Limits only applicable to HTTP/3 connections.
         /// </summary>
         public Http3Limits Http3 { get; } = new Http3Limits();
 

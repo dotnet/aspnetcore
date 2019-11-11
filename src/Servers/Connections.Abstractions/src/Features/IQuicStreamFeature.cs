@@ -3,7 +3,9 @@
 
 namespace Microsoft.AspNetCore.Connections.Features
 {
-    public interface IUnidirectionalStreamFeature
+    public interface IQuicStreamFeature
     {
+        bool IsUnidirectional { get; }
+        long StreamId { get; }
     }
 }

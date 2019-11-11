@@ -73,6 +73,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public KestrelConfigurationLoader ConfigurationLoader { get; set; }
 
         /// <summary>
+        /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
+        /// </summary>
+        public bool DisableAltSvc { get; set; } = true;
+
+        /// <summary>
         /// A default configuration action for all endpoints. Use for Listen, configuration, the default url, and URLs.
         /// </summary>
         private Action<ListenOptions> EndpointDefaults { get; set; } = _ => { };

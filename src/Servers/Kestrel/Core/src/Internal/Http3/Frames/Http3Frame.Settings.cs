@@ -3,13 +3,12 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    // TODO idk if this exists in http3
     internal partial class Http3Frame
     {
         public void PrepareSettings()
         {
             Length = 0;
-            Type = Http3FrameType.SETTINGS;
+            Type = Http3FrameType.Settings;
         }
     }
 }

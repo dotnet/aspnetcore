@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.HPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
@@ -494,7 +495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 
                     var statusBytes = StatusCodes.ToStatusBytes(statusCode);
                     buffer[1] = (byte)statusBytes.Length;
-                    ((Span<byte>)statusBytes).CopyTo(buffer.Slice(2));
+                    ((ReadOnlySpan<byte>)statusBytes).CopyTo(buffer.Slice(2));
 
                     return 2 + statusBytes.Length;
             }

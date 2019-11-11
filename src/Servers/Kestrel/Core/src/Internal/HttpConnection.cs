@@ -204,7 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private HttpProtocols SelectProtocol()
         {
-            // TODO make this check more thorough.
             if (_context.Protocols == HttpProtocols.Http3)
             {
                 return HttpProtocols.Http3;

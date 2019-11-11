@@ -79,13 +79,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             _options = options;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
-        public Task OnConnectionAsync(ConnectionContext context)
-        {
-            return Task.Run(() => InnerOnConnectionAsync(context));
-        }
 
-        private async Task InnerOnConnectionAsync(ConnectionContext context)
+        public async Task OnConnectionAsync(ConnectionContext context)
         {
+            await Task.Yield();
+
             bool certificateRequired;
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
@@ -93,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             if (_options.HttpProtocols == HttpProtocols.Http3)
             {
+                // Http3 will always be "secure"
                 await _next(context);
                 return;
             }
