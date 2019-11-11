@@ -85,7 +85,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted();
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/16912")]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
