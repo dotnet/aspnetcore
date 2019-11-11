@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             public string Name { get; set; }
             public IList<string> States { get; set; } = new List<string>();
-            public IDictionary<string, string> Countries = new Dictionary<string, string>();
+            public IDictionary<string, string> CountriesAndRegions = new Dictionary<string, string>();
             public dynamic Items { get; set; } = new ExpandoObject();
         }
 
@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             get
             {
                 var model = new Class1();
-                yield return new object[] { model, "/Countries/USA", model.Countries };
-                yield return new object[] { model.Countries, "/USA", model.Countries };
+                yield return new object[] { model, "/CountriesAndRegions/USA", model.CountriesAndRegions };
+                yield return new object[] { model.CountriesAndRegions, "/USA", model.CountriesAndRegions };
 
                 var nestedModel = new Class1Nested();
                 nestedModel.Customers.Add(new Class1());
-                yield return new object[] { nestedModel, "/Customers/0/Countries/USA", nestedModel.Customers[0].Countries };
-                yield return new object[] { nestedModel.Customers, "/0/Countries/USA", nestedModel.Customers[0].Countries };
-                yield return new object[] { nestedModel.Customers[0], "/Countries/USA", nestedModel.Customers[0].Countries };
+                yield return new object[] { nestedModel, "/Customers/0/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
+                yield return new object[] { nestedModel.Customers, "/0/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
+                yield return new object[] { nestedModel.Customers[0], "/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
             }
         }
 
