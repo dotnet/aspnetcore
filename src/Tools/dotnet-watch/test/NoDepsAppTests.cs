@@ -42,7 +42,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/16912")]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();
