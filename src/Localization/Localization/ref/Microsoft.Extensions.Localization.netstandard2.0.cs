@@ -18,13 +18,13 @@ namespace Microsoft.Extensions.Localization
     public partial class LocalizationOptions
     {
         public LocalizationOptions() { }
-        public string ResourcesPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ResourcesPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=false)]
     public partial class ResourceLocationAttribute : System.Attribute
     {
         public ResourceLocationAttribute(string resourceLocation) { }
-        public string ResourceLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ResourceLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class ResourceManagerStringLocalizer : Microsoft.Extensions.Localization.IStringLocalizer
     {
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Localization
     public partial class RootNamespaceAttribute : System.Attribute
     {
         public RootNamespaceAttribute(string rootNamespace) { }
-        public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string RootNamespace { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.Localization.Internal
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Localization.Internal
     public partial class AssemblyWrapper
     {
         public AssemblyWrapper(System.Reflection.Assembly assembly) { }
-        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual string FullName { get { throw null; } }
         public virtual System.IO.Stream GetManifestResourceStream(string name) { throw null; }
     }
