@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool _metadataSkipped = false;
         private readonly MultipartBoundary _boundary;
         private int _partialMatchIndex = 0;
+        private readonly bool _canSeek;
 
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> EndOfFileDelimiter => new byte[] { (byte)'-', (byte)'-' };
@@ -26,20 +27,21 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override bool CanRead => true;
 
-        public override bool CanSeek => false;
+        public override bool CanSeek => _canSeek;
 
         public override bool CanWrite => false;
 
         public override long Length => _observedLength;
         public long RawLength { get; private set; } = 0;
 
-        public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public override long Position { get => 0; set => throw new NotImplementedException(); }
         public long? LengthLimit { get; private set; }
 
-        public MultipartPipeReaderStream(PipeReader pipeReader, MultipartBoundary boundary)
+        public MultipartPipeReaderStream(PipeReader pipeReader, MultipartBoundary boundary, bool canSeek)
         {
             _pipeReader = pipeReader;
             _boundary = boundary;
+            _canSeek = canSeek;
         }
 
 
@@ -198,11 +200,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int CopySequenceToBuffer(ReadOnlySequence<byte> sequence, byte[] buffer, int offset)
         {
             var span = buffer.AsSpan(offset);
-            sequence.CopyTo(span);
             if (sequence.Length > buffer.Length - offset)
             {
+                sequence.Slice(0, buffer.Length - offset).CopyTo(span);
                 return span.Length;
             }
+
+            sequence.CopyTo(span);
             return (int)sequence.Length;
         }
 
@@ -286,6 +290,14 @@ namespace Microsoft.AspNetCore.WebUtilities
                     sequence = sequence.Slice(sequenceReader.Position);
                     RawLength += _boundary.BoundaryBytes.Length;
                     return (true, read);
+                }
+                else
+                {
+                    //advance reader to end
+                    body = sequence.Slice(sequenceReader.Position);
+                    read += CopySequenceToBuffer(body, buffer, offset + read);
+                    sequence = sequence.Slice(read);
+                    return (false, read);
                 }
             }
             return (false, read);

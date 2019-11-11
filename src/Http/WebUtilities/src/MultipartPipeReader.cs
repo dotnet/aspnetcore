@@ -25,19 +25,21 @@ namespace Microsoft.AspNetCore.WebUtilities
         private long _bytesConsumed = 0;
         private readonly MultipartBoundary _boundary;
         private MultipartPipeReaderStream _currentStream;
+        private readonly bool _canSeek;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
 
-        public MultipartPipeReader(string boundary, PipeReader pipeReader)
+        public MultipartPipeReader(string boundary, PipeReader pipeReader, bool canSeek)
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
             _boundary = new MultipartBoundary(boundary ?? throw new ArgumentNullException(nameof(boundary)), false);
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary);
+            _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, canSeek);
+            _canSeek = canSeek;
         }
 
         /// <summary>
@@ -86,8 +88,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
-                        _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary);
-                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = _bytesConsumed }; ;
+                        _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, _canSeek);
+                        long? baseStreamOffset = _canSeek ? (long?)_bytesConsumed : null;
+                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
                     }
                 }
 
@@ -342,10 +345,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-
-                var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
-                span = span.Slice(0, bytes);
-
                 return Encoding.UTF8.GetString(span);
             }
         }
