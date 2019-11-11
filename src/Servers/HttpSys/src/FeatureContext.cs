@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _responseHeaders = value; }
         }
 
-        bool IHttpResponseFeature.HasStarted => Response.HasStarted;
+        bool IHttpResponseFeature.HasStarted => _responseStarted;
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
