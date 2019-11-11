@@ -112,28 +112,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             else if (longToEncode < TwoByteLimit)
             {
-                buffer[0] = (byte)((longToEncode >> 8) + 0x40);
-                buffer[1] = (byte)((longToEncode & 0xFF));
+                BinaryPrimitives.WriteUInt16BigEndian(buffer, (ushort)longToEncode);
+                buffer[0] += 0x40;
                 return 2;
             }
             else if (longToEncode < FourByteLimit)
             {
-                buffer[0] = (byte)((longToEncode >> 24) + 0x80);
-                buffer[1] = (byte)((longToEncode >> 16) & 0xFF);
-                buffer[2] = (byte)((longToEncode >> 8) & 0xFF);
-                buffer[3] = (byte)((longToEncode) & 0xFF);
+                BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)longToEncode);
+                buffer[0] += 0x80;
                 return 4;
             }
             else
             {
-                buffer[0] = (byte)((longToEncode >> 56) + 0xC0);
-                buffer[1] = (byte)((longToEncode >> 48) & 0xFF);
-                buffer[2] = (byte)((longToEncode >> 40) & 0xFF);
-                buffer[3] = (byte)((longToEncode >> 32) & 0xFF);
-                buffer[4] = (byte)((longToEncode >> 24) & 0xFF);
-                buffer[5] = (byte)((longToEncode >> 16) & 0xFF);
-                buffer[6] = (byte)((longToEncode >> 8) & 0xFF);
-                buffer[7] = (byte)((longToEncode) & 0xFF);
+                BinaryPrimitives.WriteUInt64BigEndian(buffer, (ulong)longToEncode);
+                buffer[0] += 0xC0;
                 return 8;
             }
         }
