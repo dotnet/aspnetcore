@@ -1,12 +1,14 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace InteropTests
+namespace InteropTests.Helpers
 {
     public class InteropTestsFixture : IDisposable
     {
-        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
         private WebServerProcess _process;
 
         public async Task EnsureStarted(ITestOutputHelper output)
@@ -20,7 +22,7 @@ namespace InteropTests
 
             _process = new WebServerProcess(webPath, output);
 
-            await _process.WaitForReady().TimeoutAfter(DefaultTimeout);
+            await _process.WaitForReady();
         }
 
         public void Dispose()

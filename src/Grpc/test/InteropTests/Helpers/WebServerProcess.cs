@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -5,15 +8,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
 
-namespace InteropTests.Infrastructure
+namespace InteropTests.Helpers
 {
-    public class ClientProcess : IDisposable
+    public class WebServerProcess : IDisposable
     {
         private readonly Process _process;
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
+        private readonly StringBuilder _output;
 
-        public ClientProcess(ITestOutputHelper output, string path, int port, string testCase)
+        public WebServerProcess(string path, ITestOutputHelper output)
         {
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo
@@ -21,7 +25,7 @@ namespace InteropTests.Infrastructure
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 FileName = "dotnet.exe",
-                Arguments = @$"run -p {path} --use_tls false --server_port {port} --client_type httpclient --test_case {testCase}"
+                Arguments = @$"run -p {path}"
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
@@ -30,21 +34,26 @@ namespace InteropTests.Infrastructure
             _processEx = new ProcessEx(output, _process);
 
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _output = new StringBuilder();
         }
 
         public Task WaitForReady()
         {
+            if (_processEx.HasExited)
+            {
+                return Task.FromException(new InvalidOperationException("Server is not running."));
+            }
+
             return _startTcs.Task;
         }
-
-        public int ExitCode => _process.ExitCode;
-        public Task Exited => _processEx.Exited;
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             var data = e.Data;
             if (data != null)
             {
+                _output.AppendLine(data);
+
                 if (data.Contains("Application started."))
                 {
                     _startTcs.TrySetResult(null);

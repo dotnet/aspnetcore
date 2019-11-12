@@ -1,19 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\Process\ProcessEx.cs" Link="Infrastructure\ProcessEx.cs" />
-    <Compile Include="..\..\..\Shared\Process\ProcessExtensions.cs" Link="Infrastructure\ProcessExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
-    <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <PackageReference Include="coverlet.collector" Version="1.0.1" />
+    <Compile Include="..\..\..\Shared\Process\ProcessEx.cs" Link="Helpers\ProcessEx.cs" />
+    <Compile Include="..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
   </ItemGroup>
 
 </Project>

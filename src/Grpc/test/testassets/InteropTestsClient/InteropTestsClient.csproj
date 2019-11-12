@@ -14,7 +14,7 @@
 
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
-    <PackageReference Include="Grpc.Net.Client" Version="2.25.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="$(GrpcAspNetCorePackageVersion)" />
 
     <PackageReference Include="CommandLineParser" Version="2.3.0" />
     <PackageReference Include="Google.Protobuf" Version="3.10.0" />

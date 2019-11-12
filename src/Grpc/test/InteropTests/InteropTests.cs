@@ -1,7 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InteropTests.Helpers;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,6 +16,34 @@ namespace InteropTests
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+        private readonly InteropTestsFixture _fixture;
+        private readonly ITestOutputHelper _output;
+
+        public InteropTests(InteropTestsFixture fixture, ITestOutputHelper output)
+        {
+            _fixture = fixture;
+            _output = output;
+        }
+
+        [Theory]
+        [MemberData(nameof(TestCaseData))]
+        public async Task InteropTestCase(string name)
+        {
+            await _fixture.EnsureStarted(_output).TimeoutAfter(DefaultTimeout);
+
+            var clientPath = @"C:\Development\Source\AspNetCore\src\Grpc\test\testassets\InteropTestsClient\";
+
+            using (var clientProcess = new ClientProcess(_output, clientPath, 50052, name))
+            {
+                await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
+
+                await clientProcess.Exited.TimeoutAfter(DefaultTimeout);
+
+                Assert.Equal(0, clientProcess.ExitCode);
+            }
+        }
+
+        #region TestData
         // All interop test cases, minus GCE authentication specific tests
         private static string[] AllTests = new string[]
         {
@@ -36,32 +69,6 @@ namespace InteropTests
         };
 
         public static IEnumerable<object[]> TestCaseData => AllTests.Select(t => new object[] { t });
-
-        private readonly ITestOutputHelper _output;
-        private readonly InteropTestsFixture _fixture;
-
-        public InteropTests(ITestOutputHelper output, InteropTestsFixture fixture)
-        {
-            _output = output;
-            _fixture = fixture;
-        }
-
-        [Theory]
-        [MemberData(nameof(TestCaseData))]
-        public async Task InteropTestCase(string name)
-        {
-            await _fixture.EnsureStarted(_output);
-
-            var clientPath = @"C:\Development\Source\AspNetCore\src\Grpc\test\testassets\InteropTestsClient\";
-
-            using (var clientProcess = new ClientProcess(_output, clientPath, 50052, name))
-            {
-                await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
-
-                await clientProcess.Exited.TimeoutAfter(DefaultTimeout);
-
-                Assert.Equal(0, clientProcess.ExitCode);
-            }
-        }
+        #endregion
     }
 }
