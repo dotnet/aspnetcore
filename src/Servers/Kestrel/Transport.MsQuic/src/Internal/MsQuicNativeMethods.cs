@@ -534,36 +534,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             var socketAddress = new SOCKADDR_INET();
             // TODO how to use IPv4 vs IPv6 here?
             var buffer = endpoint.Address.GetAddressBytes();
-            switch (endpoint.Address.AddressFamily)
+            if (endpoint.Address != IPAddress.Any && endpoint.Address != IPAddress.IPv6Any)
             {
-                case AddressFamily.InterNetwork:
-                    socketAddress.Ipv4.sin_addr0 = buffer[0];
-                    socketAddress.Ipv4.sin_addr1 = buffer[1];
-                    socketAddress.Ipv4.sin_addr2 = buffer[2];
-                    socketAddress.Ipv4.sin_addr3 = buffer[3];
-                    socketAddress.Ipv4.sin_family = 0;
-                    break;
-                case AddressFamily.InterNetworkV6:
-                    socketAddress.Ipv6.sin6_addr0 = buffer[0];
-                    socketAddress.Ipv6.sin6_addr1 = buffer[1];
-                    socketAddress.Ipv6.sin6_addr2 = buffer[2];
-                    socketAddress.Ipv6.sin6_addr3 = buffer[3];
-                    socketAddress.Ipv6.sin6_addr4 = buffer[4];
-                    socketAddress.Ipv6.sin6_addr5 = buffer[5];
-                    socketAddress.Ipv6.sin6_addr6 = buffer[6];
-                    socketAddress.Ipv6.sin6_addr7 = buffer[7];
-                    socketAddress.Ipv6.sin6_addr8 = buffer[8];
-                    socketAddress.Ipv6.sin6_addr9 = buffer[9];
-                    socketAddress.Ipv6.sin6_addr10 = buffer[10];
-                    socketAddress.Ipv6.sin6_addr11 = buffer[11];
-                    socketAddress.Ipv6.sin6_addr12 = buffer[12];
-                    socketAddress.Ipv6.sin6_addr13 = buffer[13];
-                    socketAddress.Ipv6.sin6_addr14 = buffer[14];
-                    socketAddress.Ipv6.sin6_addr15 = buffer[15];
-                    socketAddress.Ipv6.sin6_family = 0;
-                    break;
-                default:
-                    throw new ArgumentException("Only IPv4 or IPv6 are supported");
+                switch (endpoint.Address.AddressFamily)
+                {
+                    case AddressFamily.InterNetwork:
+                        socketAddress.Ipv4.sin_addr0 = buffer[0];
+                        socketAddress.Ipv4.sin_addr1 = buffer[1];
+                        socketAddress.Ipv4.sin_addr2 = buffer[2];
+                        socketAddress.Ipv4.sin_addr3 = buffer[3];
+                        socketAddress.Ipv4.sin_family = IPv4;
+                        break;
+                    case AddressFamily.InterNetworkV6:
+                        socketAddress.Ipv6.sin6_addr0 = buffer[0];
+                        socketAddress.Ipv6.sin6_addr1 = buffer[1];
+                        socketAddress.Ipv6.sin6_addr2 = buffer[2];
+                        socketAddress.Ipv6.sin6_addr3 = buffer[3];
+                        socketAddress.Ipv6.sin6_addr4 = buffer[4];
+                        socketAddress.Ipv6.sin6_addr5 = buffer[5];
+                        socketAddress.Ipv6.sin6_addr6 = buffer[6];
+                        socketAddress.Ipv6.sin6_addr7 = buffer[7];
+                        socketAddress.Ipv6.sin6_addr8 = buffer[8];
+                        socketAddress.Ipv6.sin6_addr9 = buffer[9];
+                        socketAddress.Ipv6.sin6_addr10 = buffer[10];
+                        socketAddress.Ipv6.sin6_addr11 = buffer[11];
+                        socketAddress.Ipv6.sin6_addr12 = buffer[12];
+                        socketAddress.Ipv6.sin6_addr13 = buffer[13];
+                        socketAddress.Ipv6.sin6_addr14 = buffer[14];
+                        socketAddress.Ipv6.sin6_addr15 = buffer[15];
+                        socketAddress.Ipv6.sin6_family = IPv6;
+                        break;
+                    default:
+                        throw new ArgumentException("Only IPv4 or IPv6 are supported");
+                }
             }
 
             SetPort(endpoint.Address.AddressFamily, ref socketAddress, endpoint.Port);
