@@ -75,6 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
         {
+            System.Threading.Thread.Sleep(10);
+        
             // Get Method and set the offset
             var method = HttpUtilities.GetKnownMethod(data, length, out var pathStartOffset);
 
