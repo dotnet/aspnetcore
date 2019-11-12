@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.Internal
         {
             if (symbol.ContainingAssembly == context.Compilation.Assembly)
             {
-                // This is part of the compilation, avoid this analyzer when building from source.
+                // The type is being referenced within the same assembly. This is valid use of an "internal" type
                 return;
             }
 
