@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                 }
 
-                if(line.IsEmpty)
+                if (line.IsEmpty)
                 {
                     buffer = buffer.Slice(sequenceReader.Position);
                     headersLength += sequenceReader.Consumed;
@@ -254,14 +254,12 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var lineReader = new SequenceReader<byte>(line);
                 ReadOnlySequence<byte> value;
 
-                if (lineReader.TryReadTo(out var key, ColonDelimiter))
-                {
-                    value = line.Slice(lineReader.Position);
-                }
-                else
+                if (!lineReader.TryReadTo(out var key, ColonDelimiter))
                 {
                     throw new InvalidDataException($"Invalid header line: {line}");
                 }
+                value = line.Slice(lineReader.Position);
+
 
                 var decodedKey = GetDecodedStringFromReadOnlySequence(key);
                 var decodedValue = GetDecodedStringFromReadOnlySequence(value);
