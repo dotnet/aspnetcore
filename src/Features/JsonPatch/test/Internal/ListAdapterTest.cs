@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Moq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -15,9 +14,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Patch_OnArrayObject_Fails()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new[] { 20, 30 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, "0", "40", out var message);
@@ -31,11 +30,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Patch_OnNonGenericListObject_Fails()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new ArrayList();
             targetObject.Add(20);
             targetObject.Add(30);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, "-", "40", out var message);
@@ -49,9 +48,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_WithIndexSameAsNumberOfElements_Works()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
             var position = targetObject.Count.ToString();
 
             // Act
@@ -71,9 +70,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_WithOutOfBoundsIndex_Fails(string position)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, position, "40", out var message);
@@ -89,9 +88,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Patch_WithInvalidPositionFormat_Fails(string position)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, position, "40", out var message);
@@ -124,8 +123,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_Appends_AtTheEnd(List<int> targetObject, List<int> expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, "-", "20", out var message);
@@ -141,8 +140,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_NullObject_ToReferenceTypeListWorks()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
             var targetObject = new List<string>() { "James", "Mike" };
 
             // Act
@@ -161,9 +160,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var sDto = new SimpleObject();
             var iDto = new InheritedObject();
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<SimpleObject>() { sDto };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, "-", iDto, out var message);
@@ -179,9 +178,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_NonCompatibleType_Fails()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, "-", "James", out var message);
@@ -230,8 +229,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_DifferentComplexTypeWorks(IList targetObject, object value, string position, IList expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, position, value, out var message);
@@ -285,8 +284,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Add_KeepsObjectReference(IList targetObject, object value, string position, IList expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var addStatus = listAdapter.TryAdd(targetObject, position, value, out var message);
@@ -305,9 +304,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Get_IndexOutOfBounds(int[] input, string position)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var getStatus = listAdapter.TryGet(targetObject, position, out var value, out var message);
@@ -324,9 +323,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Get(int[] input, string position, object expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var getStatus = listAdapter.TryGet(targetObject, position, out var value, out var message);
@@ -344,9 +343,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Remove_IndexOutOfBounds(int[] input, string position)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var removeStatus = listAdapter.TryRemove(targetObject, position, out var message);
@@ -363,9 +362,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Remove(int[] input, string position, int[] expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var removeStatus = listAdapter.TryRemove(targetObject, position, out var message);
@@ -379,9 +378,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Replace_NonCompatibleType_Fails()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var replaceStatus = listAdapter.TryReplace(targetObject, "-", "James", out var message);
@@ -395,9 +394,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Replace_ReplacesValue_AtTheEnd()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var replaceStatus = listAdapter.TryReplace(targetObject, "-", "30", out var message);
@@ -431,9 +430,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Replace_ReplacesValue_AtGivenPosition(string position, List<int> expected)
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var replaceStatus = listAdapter.TryReplace(targetObject, position, "30", out var message);
@@ -448,9 +447,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Test_DoesNotThrowException_IfTestIsSuccessful()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
 
             // Act
             var testStatus = listAdapter.TryTest(targetObject, "0", "10", out var message);
@@ -464,9 +463,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Test_ThrowsJsonPatchException_IfTestFails()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
             var expectedErrorMessage = "The current value '20' at position '1' is not equal to the test value '10'.";
 
             // Act
@@ -481,9 +480,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Test_ThrowsJsonPatchException_IfListPositionOutOfBounds()
         {
             // Arrange
-            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter(resolver.Object);
+            var contractResolver = new DefaultContractResolver();
+            var listAdapter = new ListAdapter(contractResolver);
             var expectedErrorMessage = "The index value provided by path segment '2' is out of bounds of the array size.";
 
             // Act
