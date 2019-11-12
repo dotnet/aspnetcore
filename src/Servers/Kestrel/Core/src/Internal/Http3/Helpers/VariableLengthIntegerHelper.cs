@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             else if ((firstByte & 0xC0) == 0x40)
             {
-                if (buffer.Length < 2)
+                if (span.Length < 2)
                 {
                     return -1;
                 }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             else if ((firstByte & 0xC0) == 0x80)
             {
-                if (buffer.Length < 4)
+                if (span.Length < 4)
                 {
                     return -1;
                 }
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             else
             {
-                if (buffer.Length < 8)
+                if (span.Length < 8)
                 {
                     return -1;
                 }
