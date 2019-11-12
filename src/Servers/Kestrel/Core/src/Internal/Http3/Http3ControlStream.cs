@@ -122,34 +122,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        private async ValueTask SendStreamIdAsync(int id)
+        internal async ValueTask SendStreamIdAsync(int id)
         {
             await _frameWriter.WriteStreamIdAsync(id);
         }
 
-        private async ValueTask SendSettingsFrameAsync()
+        internal async ValueTask SendSettingsFrameAsync()
         {
             await _frameWriter.WriteSettingsAsync(null);
-        }
-
-        private async ValueTask<Http3ControlStream> CreateNewControlStreamAsync<TContext>(IHttpApplication<TContext> application)
-        {
-            var connectionContext = await _http3Connection.Context.ConnectionFeatures.Get<IQuicCreateStreamFeature>().StartUnidirectionalStreamAsync();
-            var httpConnectionContext = new HttpConnectionContext
-            {
-                ConnectionId = connectionContext.ConnectionId,
-                ConnectionContext = connectionContext,
-                Protocols = _context.Protocols,
-                ServiceContext = _context.ServiceContext,
-                ConnectionFeatures = connectionContext.Features,
-                MemoryPool = _context.MemoryPool,
-                Transport = connectionContext.Transport,
-                TimeoutControl = _context.TimeoutControl,
-                LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
-                RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
-            };
-
-            return new Http3ControlStream<TContext>(application, _http3Connection, httpConnectionContext);
         }
 
         private async ValueTask<long> TryReadStreamIdAsync()
@@ -202,10 +182,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
 
-                var stream = await CreateNewControlStreamAsync(application);
-                _http3Connection.SettingsStream = stream;
-                await stream.SendStreamIdAsync(id: 0);
-                await stream.SendSettingsFrameAsync();
                 await HandleControlStream();
             }
             else if (streamType == EncoderStream)
@@ -214,10 +190,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
-                var stream = await CreateNewControlStreamAsync(application);
-                _http3Connection.EncoderStream = stream;
-
-                await stream.SendStreamIdAsync(id: 2);
                 await HandleEncodingTask();
                 return;
             }
@@ -227,9 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     throw new Http3ConnectionException("HTTP_STREAM_CREATION_ERROR");
                 }
-                var stream = await CreateNewControlStreamAsync(application);
-                _http3Connection.DecoderStream = stream;
-                await stream.SendStreamIdAsync(id: 3);
                 await HandleDecodingTask();
             }
             else
@@ -311,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             if (_haveReceivedSettingsFrame)
             {
-                throw new Http3ConnectionException("HTTP_FRAME_UNEXPECTED");
+                throw new Http3ConnectionException("H3_SETTINGS_ERROR");
             }
             _haveReceivedSettingsFrame = true;
             // process a bunch of kvp of settings
@@ -343,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 case (long)Http3SettingType.QPACK_MAX_TABLE_CAPACITY:
                     _http3Connection.ApplyMaxTableCapacity(value);
                     break;
-                case (long)Http3SettingType.MAX_HEADER_LIST_SIZE:
+                case (long)Http3SettingType.MaxHeaderListSize:
                     _http3Connection.ApplyMaxHeaderListSize(value);
                     break;
                 case (long)Http3SettingType.QPACK_BLOCKED_STREAMS:

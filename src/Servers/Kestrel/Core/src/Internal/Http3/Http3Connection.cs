@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
@@ -26,7 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly ConcurrentDictionary<long, Http3Stream> _streams = new ConcurrentDictionary<long, Http3Stream>();
 
         // To be used by GO_AWAY
-        private long _highestOpenedStreamId;
+        private long _highestOpenedStreamId; // TODO lock to access
+        private volatile bool _haveSentGoAway;
+
 
         public Http3Connection(HttpConnectionContext context)
         {
@@ -53,6 +56,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             var streamListenerFeature = Context.ConnectionFeatures.Get<IQuicStreamListenerFeature>();
 
+            // Start other three unidirectional streams here.
+            await CreateSettingsStream(application);
+            await CreateEncoderStream(application);
+            await CreateDecoderStream(application);
+
             try
             {
                 while (true)
@@ -61,6 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     if (connectionContext == null)
                     {
                         break;
+                    }
+                    if (_haveSentGoAway)
+                    {
+                        // error here.
                     }
 
                     var httpConnectionContext = new HttpConnectionContext
@@ -105,6 +117,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
+        private async ValueTask CreateSettingsStream<TContext>(IHttpApplication<TContext> application)
+        {
+            var stream = await CreateNewUnidirectionalStreamAsync(application);
+            SettingsStream = stream;
+            await stream.SendStreamIdAsync(id: 0);
+            await stream.SendSettingsFrameAsync();
+        }
+
+        private async ValueTask CreateEncoderStream<TContext>(IHttpApplication<TContext> application)
+        {
+            var stream = await CreateNewUnidirectionalStreamAsync(application);
+            EncoderStream = stream;
+            await stream.SendStreamIdAsync(id: 2);
+        }
+
+        private async ValueTask CreateDecoderStream<TContext>(IHttpApplication<TContext> application)
+        {
+            var stream = await CreateNewUnidirectionalStreamAsync(application);
+            DecoderStream = stream;
+            await stream.SendStreamIdAsync(id: 3);
+        }
+
+        private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application)
+        {
+            var connectionContext = await Context.ConnectionFeatures.Get<IQuicCreateStreamFeature>().StartUnidirectionalStreamAsync();
+            var httpConnectionContext = new HttpConnectionContext
+            {
+                ConnectionId = connectionContext.ConnectionId,
+                ConnectionContext = connectionContext,
+                Protocols = Context.Protocols,
+                ServiceContext = Context.ServiceContext,
+                ConnectionFeatures = connectionContext.Features,
+                MemoryPool = Context.MemoryPool,
+                Transport = connectionContext.Transport,
+                TimeoutControl = Context.TimeoutControl,
+                LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
+                RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
+            };
+
+            return new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+        }
+
         public void StopProcessingNextRequest()
         {
         }
@@ -127,6 +181,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public void Abort(ConnectionAbortedException ex)
         {
+            // Send goaway
+            // Abort currently active streams
+            // TODO need to figure out if there is server initiated connection close rather than stream close?
         }
 
         public void ApplyMaxHeaderListSize(long value)

@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal partial class Http3Frame
     {
-        // I don't think there is anything here.
         public void PrepareHeaders()
         {
             Length = 0;
