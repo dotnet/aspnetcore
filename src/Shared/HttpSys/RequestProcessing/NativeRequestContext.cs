@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -112,6 +113,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
             _nativeOverlapped?.Dispose();
+            var backingBuffer = _backingBuffer;
+            if (backingBuffer != null)
+            {
+                _backingBuffer = null;
+                ArrayPool<byte>.Shared.Return(backingBuffer, clearArray: true);
+            }
         }
 
         // These methods require the HTTP_REQUEST to still be pinned in its original location.

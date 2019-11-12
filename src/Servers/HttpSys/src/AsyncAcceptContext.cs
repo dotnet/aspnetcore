@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -195,8 +196,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
-            uint newSize = size.HasValue ? size.Value : DefaultBufferSize;
-            var backingBuffer = new byte[newSize + AlignmentPadding];
+            var newSize = (int)(size.HasValue ? size.Value : DefaultBufferSize) + AlignmentPadding;
+            var backingBuffer = ArrayPool<byte>.Shared.Rent(newSize);
+            new Span<byte>(backingBuffer).Fill(0);// Zero the buffer
 
             var boundHandle = Server.RequestQueue.BoundHandle;
             var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
