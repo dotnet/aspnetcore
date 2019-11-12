@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
@@ -328,6 +331,44 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
             Assert.Same(iDto, targetObject.SimpleObject);
             Assert.Null(targetObject.InheritedObject);
         }
+
+        [Fact]
+        public void Replace_WithNestedObjectRespectsPassedContractSerializerValue()
+        {
+            var expectedString = "this is a test";
+
+            // Arrange
+            var targetObject = new SimpleObjectWithNestedObject()
+            {
+            };
+
+            var contractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            };
+
+            var patchDocument = new JsonPatchDocument<SimpleObjectWithNestedObject>(
+                new List<Operation<SimpleObjectWithNestedObject>>
+                {
+                    new Operation<SimpleObjectWithNestedObject>
+                    {
+                        op = "replace",
+                        path = "/nested_object",
+                        value = new
+                        {
+                            string_property = expectedString
+                        }
+                    }
+                }, contractResolver);
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.NotNull(targetObject.NestedObject);
+            Assert.Equal(expectedString, targetObject.NestedObject.StringProperty);
+        }
+
 
         private class SimpleObjectWithNullCheck
         {

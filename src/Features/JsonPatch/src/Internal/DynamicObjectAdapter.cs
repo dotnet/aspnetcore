@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         protected virtual bool TryConvertValue(object value, Type propertyType, out object convertedValue)
         {
-            var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType);
+            var conversionResult = ConversionResultProvider.ConvertTo(value, propertyType, _contractResolver);
             if (!conversionResult.CanBeConverted)
             {
                 convertedValue = null;

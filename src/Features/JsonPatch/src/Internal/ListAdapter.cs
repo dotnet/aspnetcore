@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             out object convertedValue,
             out string errorMessage)
         {
-            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument);
+            var conversionResult = ConversionResultProvider.ConvertTo(originalValue, listTypeArgument, _contractResolver);
             if (!conversionResult.CanBeConverted)
             {
                 convertedValue = null;

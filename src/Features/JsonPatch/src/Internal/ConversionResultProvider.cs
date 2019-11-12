@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public static class ConversionResultProvider
     {
-        public static ConversionResult ConvertTo(object value, Type typeToConvertTo)
+        public static ConversionResult ConvertTo(object value, Type typeToConvertTo, IContractResolver contractResolver)
         {
             if (value == null)
             {
@@ -28,7 +29,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             {
                 try
                 {
-                    var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo);
+                    var serializerSettings = new JsonSerializerSettings
+                    {
+                        ContractResolver = contractResolver
+                    };
+                    var deserialized = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(value), typeToConvertTo, serializerSettings);
                     return new ConversionResult(true, deserialized);
                 }
                 catch
