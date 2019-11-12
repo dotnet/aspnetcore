@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 431, "Request Header Fields Too Large" },
             { 451, "Unavailable For Legal Reasons" },
 
-            { 500, "Internal Server Error" },
+            { 500, "An error occured while processing your request." },
             { 501, "Not Implemented" },
             { 502, "Bad Gateway" },
             { 503, "Service Unavailable" },
