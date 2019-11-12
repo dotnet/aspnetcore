@@ -19,6 +19,7 @@
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
+    <AppRuntimeVersion>5.0.0-ci</AppRuntimeVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
@@ -46,8 +47,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true' AND '$(IsHelixJob)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.5.0.0-ci.nupkg" />
-    <HelixPreCommand Include="dir artifacts\packages\Release\Shipping\*" />    
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 $(AppRuntimeVersion) || exit /b 1" />
   </ItemGroup>
   
 </Project>
