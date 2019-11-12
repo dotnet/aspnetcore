@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
 
-namespace InteropTests
+namespace InteropTests.Infrastructure
 {
     public class ClientProcess : IDisposable
     {

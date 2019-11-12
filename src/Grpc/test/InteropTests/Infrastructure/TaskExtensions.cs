@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InteropTests
+namespace InteropTests.Infrastructure
 {
     public static class TaskExtensions
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
 
-namespace InteropTests
+namespace InteropTests.Infrastructure
 {
     public class WebServerProcess : IDisposable
     {
@@ -43,8 +43,6 @@ namespace InteropTests
 
             return _startTcs.Task;
         }
-
-        public Task Exited => _processEx.Exited;
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
