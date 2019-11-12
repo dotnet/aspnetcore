@@ -137,11 +137,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
 
                     IConnectionListenerFactory factory = null;
-                    if (options.Protocols == HttpProtocols.Http3)
+                    if (options.Protocols >= HttpProtocols.Http3)
                     {
                         foreach (var transportFactory in _transportFactories)
                         {
-                            if (transportFactory.GetType().Name.Contains("Quic"))
+                            if (transportFactory is IMultiplexedConnectionListenerFactory)
                             {
                                 factory = transportFactory;
                                 break;

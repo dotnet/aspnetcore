@@ -18,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract class Http3Stream : HttpProtocol, IHttpHeadersHandler, IHttp3Stream, IThreadPoolWorkItem
+    internal abstract class Http3Stream : HttpProtocol, IHttpHeadersHandler, IThreadPoolWorkItem
     {
         private Http3FrameWriter _frameWriter;
         private Http3OutputProducer _http3Output;
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
                 context.ConnectionContext,
-                this,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,

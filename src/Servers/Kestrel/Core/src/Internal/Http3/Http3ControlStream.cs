@@ -4,17 +4,15 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
-    internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
+    internal abstract class Http3ControlStream : IThreadPoolWorkItem
     {
         private const int ControlStream = 0;
         private const int EncoderStream = 2;
@@ -38,7 +36,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _frameWriter = new Http3FrameWriter(
                 context.Transport.Output,
                 context.ConnectionContext,
-                this,
                 context.TimeoutControl,
                 httpLimits.MinResponseDataRate,
                 context.ConnectionId,
@@ -145,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        var id = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
+                        var id = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
                         if (id != -1)
                         {
                             return id;
@@ -237,16 +234,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch (Http3StreamErrorException)
                 {
-                    //Log.Http2StreamError(ConnectionId, ex);
-                    //// The client doesn't know this error is coming, allow draining additional frames for now.
-                    //AbortStream(_incomingFrame.StreamId, new IOException(ex.Message, ex));
-                    //await _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
                 }
                 finally
                 {
                     Input.AdvanceTo(consumed, examined);
-
-                    //UpdateConnectionState();
                 }
             }
         }
@@ -282,22 +273,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 throw new Http3ConnectionException("H3_SETTINGS_ERROR");
             }
+
             _haveReceivedSettingsFrame = true;
-            // process a bunch of kvp of settings
+
             while (true)
             {
-                var id = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(payload, out var consumed, out var examinded);
+                var id = VariableLengthIntegerHelper.GetInteger(payload, out var consumed, out var examinded);
                 if (id == -1)
                 {
                     break;
                 }
+
                 payload = payload.Slice(consumed);
 
-                var value = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(payload, out consumed, out examinded);
+                var value = VariableLengthIntegerHelper.GetInteger(payload, out consumed, out examinded);
                 if (id == -1)
                 {
                     break;
                 }
+
                 payload = payload.Slice(consumed);
                 ProcessSetting(id, value);
             }

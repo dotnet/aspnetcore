@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<ArgumentNullException>(() =>
                 new KestrelServer(Options.Create<KestrelServerOptions>(null), null, mockLoggerFactory.Object));
 
-            Assert.Equal("transportFactory", exception.ParamName);
+            Assert.Equal("transportFactories", exception.ParamName);
         }
 
         [Fact]

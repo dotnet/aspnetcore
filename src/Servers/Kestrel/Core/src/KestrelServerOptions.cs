@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
         /// </summary>
-        public bool DisableAltSvc { get; set; } = true;
+        public bool EnableAltSvc { get; set; } = false;
 
         /// <summary>
         /// A default configuration action for all endpoints. Use for Listen, configuration, the default url, and URLs.

@@ -24,8 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var consumed = readableBuffer.Start;
             var examined = readableBuffer.Start;
 
-            // Need to advance somehow here.
-            var type = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(readableBuffer, out consumed, out examined);
+            var type = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out examined);
             if (type == -1)
             {
                 return false;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             var firstLengthBuffer = readableBuffer.Slice(consumed);
 
-            var length = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(firstLengthBuffer, out consumed, out examined);
+            var length = VariableLengthIntegerHelper.GetInteger(firstLengthBuffer, out consumed, out examined);
 
             // Make sure the whole frame is buffered
             if (length == -1)

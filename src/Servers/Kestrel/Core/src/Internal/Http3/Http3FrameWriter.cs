@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly PipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
-        private readonly IHttp3Stream _http3Stream;
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate _minResponseDataRate;
         private readonly MemoryPool<byte> _memoryPool;
@@ -42,11 +41,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         //private int _unflushedBytes;
 
-        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, IHttp3Stream http3Stream, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
+        public Http3FrameWriter(PipeWriter output, ConnectionContext connectionContext, ITimeoutControl timeoutControl, MinDataRate minResponseDataRate, string connectionId, MemoryPool<byte> memoryPool, IKestrelTrace log)
         {
             _outputWriter = output;
             _connectionContext = connectionContext;
-            _http3Stream = http3Stream;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
             _memoryPool = memoryPool;
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         internal Task WriteStreamIdAsync(long id)
         {
             var buffer = _outputWriter.GetSpan(8);
-            _outputWriter.Advance(VariableLengthIntegerHelper.WriteEncodedIntegerToSpan(buffer, id));
+            _outputWriter.Advance(VariableLengthIntegerHelper.WriteInteger(buffer, id));
             return _outputWriter.FlushAsync().AsTask();
         }
 
@@ -181,11 +179,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // max size of the header is 16, most likely it will be smaller.
             var buffer = output.GetSpan(16);
 
-            var typeLength = VariableLengthIntegerHelper.WriteEncodedIntegerToSpan(buffer, (int)frame.Type);
+            var typeLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Type);
 
             buffer = buffer.Slice(typeLength);
 
-            var lengthLength = VariableLengthIntegerHelper.WriteEncodedIntegerToSpan(buffer, (int)frame.Length);
+            var lengthLength = VariableLengthIntegerHelper.WriteInteger(buffer, (int)frame.Length);
 
             var totalLength = typeLength + lengthLength;
             output.Advance(typeLength + lengthLength);
@@ -209,10 +207,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     var done = _qpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
-                catch (QPackEncodingException hex)
+                catch (QPackEncodingException)
                 {
                     //_log.HPackEncodingError(_connectionId, streamId, hex);
-                    _http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    //_http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
                 }
 
                 return TimeFlushUnsynchronizedAsync();
@@ -261,7 +259,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 }
                 catch (QPackEncodingException hex)
                 {
-                    _http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
+                    // TODO figure out how to abort the stream here.
+                    //_http3Stream.Abort(new ConnectionAbortedException(hex.Message, hex));
                     throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
                 }
             }

@@ -123,6 +123,9 @@ namespace Microsoft.AspNetCore.Connections
     {
         System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
+    public partial interface IMultiplexedConnectionListenerFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
+    {
+    }
     [System.FlagsAttribute]
     public enum TransferFormat
     {

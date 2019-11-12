@@ -46,7 +46,6 @@ namespace QuicSampleApp
 
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
-                         // TODO remove Http3 somehow?
                          listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http3;
                          listenOptions.Use((next) =>
                          {

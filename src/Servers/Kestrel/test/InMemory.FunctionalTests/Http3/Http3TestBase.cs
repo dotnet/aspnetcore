@@ -369,8 +369,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public async Task WriteStreamIdAsync(int id)
             {
                 var writableBuffer = _pair.Application.Output;
-                var buffer = writableBuffer.GetMemory(sizeHint: 8);
-                var lengthWritten = VariableLengthIntegerHelper.WriteEncodedIntegerToMemory(buffer, id);
+                var buffer = writableBuffer.GetSpan(sizeHint: 8);
+                var lengthWritten = VariableLengthIntegerHelper.WriteInteger(buffer, id);
                 writableBuffer.Advance(lengthWritten);
                 await FlushAsync(writableBuffer);
             }

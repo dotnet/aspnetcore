@@ -21,21 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private const int TwoByteLimit = 16383;
         private const int FourByteLimit = 1073741823;
 
-        // Per the HTTP/3 spec, the following variable length integer values aren't allowed
-        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#frame-reserved
-        // TODO actually use this method to block streamIds.
-        public static long GetVariableIntErrorIfNotAllowedValue(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
-        {
-            var longLength = GetVariableIntFromReadOnlySequence(buffer, out consumed, out examined);
-            if ((longLength - 0x21) % 0x1F == 0)
-            {
-                return -1;
-            }
-
-            return longLength;
-        }
-
-        public static long GetVariableIntFromReadOnlySequence(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public static long GetInteger(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -96,12 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
         }
 
-        public static int WriteEncodedIntegerToMemory(Memory<byte> buffer, long longToEncode)
-        {
-            return WriteEncodedIntegerToSpan(buffer.Span, longToEncode);
-        }
-
-        public static int WriteEncodedIntegerToSpan(Span<byte> buffer, long longToEncode)
+        public static int WriteInteger(Span<byte> buffer, long longToEncode)
         {
             Debug.Assert(buffer.Length >= 8);
             Debug.Assert(longToEncode < long.MaxValue / 2);

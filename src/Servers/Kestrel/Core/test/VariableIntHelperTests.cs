@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Xunit;
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(IntegerData))]
         public void CheckDecoding(long expected, byte[] input)
         {
-            var decoded = VariableLengthIntegerHelper.GetVariableIntFromReadOnlySequence(new ReadOnlySequence<byte>(input), out _, out _);
+            var decoded = VariableLengthIntegerHelper.GetInteger(new ReadOnlySequence<byte>(input), out _, out _);
             Assert.Equal(expected, decoded);
         }
 
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(IntegerData))]
         public void CheckEncoding(long input, byte[] expected)
         {
-            var outputBuffer = new byte[8];
-            var encodedLength = VariableLengthIntegerHelper.WriteEncodedIntegerToMemory(outputBuffer, input);
+            var outputBuffer = new Span<byte>(new byte[8]);
+            var encodedLength = VariableLengthIntegerHelper.WriteInteger(outputBuffer, input);
             Assert.Equal(expected.Length, encodedLength);
             for(var i = 0; i < expected.Length; i++)
             {

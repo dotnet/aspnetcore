@@ -28,8 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         // To be used by GO_AWAY
         private long _highestOpenedStreamId; // TODO lock to access
-        private volatile bool _haveSentGoAway;
-
+        //private volatile bool _haveSentGoAway;
 
         public Http3Connection(HttpConnectionContext context)
         {
@@ -70,10 +69,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         break;
                     }
-                    if (_haveSentGoAway)
-                    {
-                        // error here.
-                    }
+
+                    //if (_haveSentGoAway)
+                    //{
+                    //    // error here.
+                    //}
 
                     var httpConnectionContext = new HttpConnectionContext
                     {
@@ -89,23 +89,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                         RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
                     };
 
-                    IHttp3Stream stream;
                     var streamFeature = httpConnectionContext.ConnectionFeatures.Get<IQuicStreamFeature>();
                     var streamId = streamFeature.StreamId;
                     HighestStreamId = streamId;
 
                     if (streamFeature.IsUnidirectional)
                     {
-                        stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+                        var stream = new Http3ControlStream<TContext>(application, this, httpConnectionContext);
+                        ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
                     else
                     {
                         var http3Stream = new Http3Stream<TContext>(application, this, httpConnectionContext);
-                        stream = http3Stream;
+                        var stream = http3Stream;
                         _streams[streamId] = http3Stream;
+                        ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                     }
-
-                    ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
                 }
             }
             finally
