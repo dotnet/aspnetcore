@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
-
         public MultipartPipeReader(string boundary, PipeReader pipeReader, bool trackBaseOffsets)
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
@@ -54,7 +53,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// The optional limit for the total response body length.
         /// </summary>
         public long? BodyLengthLimit { get; set; }
-
 
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
@@ -272,7 +270,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             return false;
         }
 
-
         // Check that key/value constraints are met and appends value to accumulator.
         private void AppendAndVerify(ref KeyValueAccumulator accumulator, string decodedKey, string decodedValue)
         {
@@ -283,7 +280,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new InvalidDataException($"Multipart headers count limit {HeadersCountLimit} exceeded.");
             }
         }
-
 
         private string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
         {
