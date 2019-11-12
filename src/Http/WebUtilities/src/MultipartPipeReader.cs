@@ -158,20 +158,19 @@ namespace Microsoft.AspNetCore.WebUtilities
                     span = span.Slice(line.Length + CrlfDelimiter.Length);
                     consumed += line.Length + CrlfDelimiter.Length;
                 }
+                // We can't know that what is currently read is the end of the header value, that's only the case if this is the final block
+                // If we're not in the final block, then consume nothing
+                else if (!isFinalBlock)
+                {
+                    // Don't buffer indefinately
+                    if (span.Length > lengthLimit)
+                    {
+                        throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
+                    }
+                    return false;
+                }
                 else
                 {
-                    // We can't know that what is currently read is the end of the header value, that's only the case if this is the final block
-                    // If we're not in the final block, then consume nothing
-                    if (!isFinalBlock)
-                    {
-                        // Don't buffer indefinately
-                        if (span.Length > lengthLimit)
-                        {
-                            throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                        }
-                        return false;
-                    }
-
                     line = span;
                     span = default;
                     consumed += line.Length;
@@ -182,6 +181,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                     return true;
                 }
 
+                if (line.Length > lengthLimit)
+                {
+                    throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
+                }
+
                 colon = line.IndexOf(ColonDelimiter);
 
                 if (colon == -1)
@@ -190,10 +194,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    if (line.Length > lengthLimit)
-                    {
-                        throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                    }
                     key = line.Slice(0, colon);
                     value = line.Slice(colon + ColonDelimiter.Length);
                 }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    throw new InvalidDataException($"Invalid header line: {line.ToString()}");
+                    throw new InvalidDataException($"Invalid header line: {line}");
                 }
 
                 var decodedKey = GetDecodedStringFromReadOnlySequence(key);

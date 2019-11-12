@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 pipe.Writer.Write(bytes);
                 pipe.Writer.Complete();
-                var multipartReader = new MultipartPipeReader(Boundary,pipe.Reader);
+                var multipartReader = new MultipartPipeReader(Boundary,pipe.Reader, true);
                 for (int j = 0; j < 2; j++)
                 {
                     await multipartReader.ReadNextSectionAsync();
