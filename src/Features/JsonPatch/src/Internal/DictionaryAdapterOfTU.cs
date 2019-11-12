@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -14,14 +14,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public class DictionaryAdapter<TKey, TValue> : IAdapter
     {
-        public virtual bool TryAdd(
-            object target,
+        private readonly IContractResolver _contractResolver;
+
+        public DictionaryAdapter(IContractResolver contractResolver)
+        {
+            _contractResolver = contractResolver;
+        }
+
+        public virtual bool TryAdd(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -41,14 +46,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryGet(
-            object target,
+        public virtual bool TryGet(object target,
             string segment,
-            IContractResolver contractResolver,
             out object value,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -70,13 +73,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryRemove(
-            object target,
+        public virtual bool TryRemove(object target,
             string segment,
-            IContractResolver contractResolver,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -98,14 +99,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryReplace(
-            object target,
+        public virtual bool TryReplace(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -132,14 +131,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTest(
-            object target,
+        public virtual bool TryTest(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 
@@ -181,14 +178,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public virtual bool TryTraverse(
-            object target,
+        public virtual bool TryTraverse(object target,
             string segment,
-            IContractResolver contractResolver,
             out object nextTarget,
             out string errorMessage)
         {
-            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var contract = (JsonDictionaryContract)_contractResolver.ResolveContract(target.GetType());
             var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<TKey, TValue>)target;
 

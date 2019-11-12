@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryAdd_AddsNewProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryAdd(target, segment, resolver, "new", out string errorMessage);
+            var status = adapter.TryAdd(target, segment, "new", out string errorMessage);
 
             // Assert
             Assert.True(status);
@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryAdd_ReplacesExistingPropertyValue()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             target.List = new List<int>() { 1, 2, 3 };
             var value = new List<string>() { "stringValue1", "stringValue2" };
             var segment = "List";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryAdd(target, segment, resolver, value, out string errorMessage);
+            var status = adapter.TryAdd(target, segment, value, out string errorMessage);
 
             // Assert
             Assert.True(status);
@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryGet_GetsPropertyValue_ForExistingProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act 1
-            var addStatus = adapter.TryAdd(target, segment, resolver, "new", out string errorMessage);
+            var addStatus = adapter.TryAdd(target, segment, "new", out string errorMessage);
 
             // Assert 1
             Assert.True(addStatus);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("new", target.NewProperty);
 
             // Act 2
-            var getStatus = adapter.TryGet(target, segment, resolver, out object getValue, out string getErrorMessage);
+            var getStatus = adapter.TryGet(target, segment, out object getValue, out string getErrorMessage);
 
             // Assert 2
             Assert.True(getStatus);
@@ -77,13 +77,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryGet_ThrowsPathNotFoundException_ForNonExistingProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var getStatus = adapter.TryGet(target, segment, resolver, out object getValue, out string getErrorMessage);
+            var getStatus = adapter.TryGet(target, segment, out object getValue, out string getErrorMessage);
 
             // Assert
             Assert.False(getStatus);
@@ -95,15 +95,15 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryTraverse_FindsNextTarget()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             target.NestedObject = new DynamicTestObject();
             target.NestedObject.NewProperty = "A";
             var segment = "NestedObject";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryTraverse(target, segment, resolver, out object nextTarget, out string errorMessage);
+            var status = adapter.TryTraverse(target, segment, out object nextTarget, out string errorMessage);
 
             // Assert
             Assert.True(status);
@@ -115,14 +115,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryTraverse_ThrowsPathNotFoundException_ForNonExistingProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             target.NestedObject = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryTraverse(target.NestedObject, segment, resolver, out object nextTarget, out string errorMessage);
+            var status = adapter.TryTraverse(target.NestedObject, segment, out object nextTarget, out string errorMessage);
 
             // Assert
             Assert.False(status);
@@ -133,14 +133,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryReplace_RemovesExistingValue_BeforeAddingNewValue()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new WriteOnceDynamicTestObject();
             target.NewProperty = new object();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryReplace(target, segment, resolver, "new", out string errorMessage);
+            var status = adapter.TryReplace(target, segment, "new", out string errorMessage);
 
             // Assert
             Assert.True(status);
@@ -152,13 +152,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryReplace_ThrowsPathNotFoundException_ForNonExistingProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryReplace(target, segment, resolver, "test", out string errorMessage);
+            var status = adapter.TryReplace(target, segment, "test", out string errorMessage);
 
             // Assert
             Assert.False(status);
@@ -169,14 +169,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryReplace_ThrowsPropertyInvalidException_IfNewValueIsNotTheSameTypeAsInitialValue()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             target.NewProperty = 1;
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var status = adapter.TryReplace(target, segment, resolver, "test", out string errorMessage);
+            var status = adapter.TryReplace(target, segment, "test", out string errorMessage);
 
             // Assert
             Assert.False(status);
@@ -189,13 +189,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryRemove_SetsPropertyToDefaultOrNull(object value, object expectedValue)
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act 1
-            var addStatus = adapter.TryAdd(target, segment, resolver, value, out string errorMessage);
+            var addStatus = adapter.TryAdd(target, segment, value, out string errorMessage);
 
             // Assert 1
             Assert.True(addStatus);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(value, target.NewProperty);
 
             // Act 2
-            var removeStatus = adapter.TryRemove(target, segment, resolver, out string removeErrorMessage);
+            var removeStatus = adapter.TryRemove(target, segment, out string removeErrorMessage);
 
             // Assert 2
             Assert.True(removeStatus);
@@ -215,13 +215,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void TryRemove_ThrowsPathNotFoundException_ForNonExistingProperty()
         {
             // Arrange
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var removeStatus = adapter.TryRemove(target, segment, resolver, out string removeErrorMessage);
+            var removeStatus = adapter.TryRemove(target, segment, out string removeErrorMessage);
 
             // Assert
             Assert.False(removeStatus);
@@ -231,7 +231,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         [Fact]
         public void TryTest_DoesNotThrowException_IfTestSuccessful()
         {
-            var adapter = new DynamicObjectAdapter();
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             var value = new List<object>()
             {
@@ -241,10 +242,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             };
             target.NewProperty = value;
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
 
             // Act
-            var testStatus = adapter.TryTest(target, segment, resolver, value, out string errorMessage);
+            var testStatus = adapter.TryTest(target, segment, value, out string errorMessage);
 
             // Assert
             Assert.Equal(value, target.NewProperty);
@@ -255,16 +255,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         [Fact]
         public void TryTest_ThrowsJsonPatchException_IfTestFails()
         {
-            // Arrange            
-            var adapter = new DynamicObjectAdapter();
+            // Arrange
+            var resolver = new DefaultContractResolver();
+            var adapter = new DynamicObjectAdapter(resolver);
             dynamic target = new DynamicTestObject();
             target.NewProperty = "Joana";
             var segment = "NewProperty";
-            var resolver = new DefaultContractResolver();
             var expectedErrorMessage = $"The current value 'Joana' at path '{segment}' is not equal to the test value 'John'.";
 
             // Act
-            var testStatus = adapter.TryTest(target, segment, resolver, "John", out string errorMessage);
+            var testStatus = adapter.TryTest(target, segment, "John", out string errorMessage);
 
             // Assert
             Assert.False(testStatus);

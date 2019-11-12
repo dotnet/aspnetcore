@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections;
@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new[] { 20, 30 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "0", resolver.Object, "40", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "0", "40", out var message);
 
             // Assert
             Assert.False(addStatus);
@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var targetObject = new ArrayList();
             targetObject.Add(20);
             targetObject.Add(30);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, "40", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "-", "40", out var message);
 
             // Assert
             Assert.False(addStatus);
@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
             var position = targetObject.Count.ToString();
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "Rob", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, position, "Rob", out var message);
 
             // Assert
             Assert.Null(message);
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "40", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, position, "40", out var message);
 
             // Assert
             Assert.False(addStatus);
@@ -91,10 +91,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<string>() { "James", "Mike" };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "40", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, position, "40", out var message);
 
             // Assert
             Assert.False(addStatus);
@@ -125,10 +125,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, "20", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "-", "20", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
             var targetObject = new List<string>() { "James", "Mike" };
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, value: null, errorMessage: out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "-", value: null, errorMessage: out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -163,10 +163,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var iDto = new InheritedObject();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<SimpleObject>() { sDto };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, iDto, out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "-", iDto, out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -181,10 +181,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, "James", out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, "-", "James", out var message);
 
             // Assert
             Assert.False(addStatus);
@@ -231,10 +231,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, value, out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, position, value, out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -286,10 +286,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, value, out var message);
+            var addStatus = listAdapter.TryAdd(targetObject, position, value, out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -307,10 +307,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var getStatus = listAdapter.TryGet(targetObject, position, resolver.Object, out var value, out var message);
+            var getStatus = listAdapter.TryGet(targetObject, position, out var value, out var message);
 
             // Assert
             Assert.False(getStatus);
@@ -326,10 +326,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var getStatus = listAdapter.TryGet(targetObject, position, resolver.Object, out var value, out var message);
+            var getStatus = listAdapter.TryGet(targetObject, position, out var value, out var message);
 
             // Assert
             Assert.True(getStatus);
@@ -346,10 +346,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var removeStatus = listAdapter.TryRemove(targetObject, position, resolver.Object, out var message);
+            var removeStatus = listAdapter.TryRemove(targetObject, position, out var message);
 
             // Assert
             Assert.False(removeStatus);
@@ -365,10 +365,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>(input);
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var removeStatus = listAdapter.TryRemove(targetObject, position, resolver.Object, out var message);
+            var removeStatus = listAdapter.TryRemove(targetObject, position, out var message);
 
             // Assert
             Assert.True(removeStatus);
@@ -381,10 +381,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var replaceStatus = listAdapter.TryReplace(targetObject, "-", resolver.Object, "James", out var message);
+            var replaceStatus = listAdapter.TryReplace(targetObject, "-", "James", out var message);
 
             // Assert
             Assert.False(replaceStatus);
@@ -397,10 +397,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var replaceStatus = listAdapter.TryReplace(targetObject, "-", resolver.Object, "30", out var message);
+            var replaceStatus = listAdapter.TryReplace(targetObject, "-", "30", out var message);
 
             // Assert
             Assert.True(replaceStatus);
@@ -433,10 +433,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var replaceStatus = listAdapter.TryReplace(targetObject, position, resolver.Object, "30", out var message);
+            var replaceStatus = listAdapter.TryReplace(targetObject, position, "30", out var message);
 
             // Assert
             Assert.True(replaceStatus);
@@ -450,10 +450,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
 
             // Act
-            var testStatus = listAdapter.TryTest(targetObject, "0", resolver.Object, "10", out var message);
+            var testStatus = listAdapter.TryTest(targetObject, "0", "10", out var message);
 
             //Assert
             Assert.True(testStatus);
@@ -466,11 +466,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
             var expectedErrorMessage = "The current value '20' at position '1' is not equal to the test value '10'.";
 
             // Act
-            var testStatus = listAdapter.TryTest(targetObject, "1", resolver.Object, "10", out var errorMessage);
+            var testStatus = listAdapter.TryTest(targetObject, "1", "10", out var errorMessage);
 
             //Assert
             Assert.False(testStatus);
@@ -483,11 +483,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
             var targetObject = new List<int>() { 10, 20 };
-            var listAdapter = new ListAdapter();
+            var listAdapter = new ListAdapter(resolver.Object);
             var expectedErrorMessage = "The index value provided by path segment '2' is out of bounds of the array size.";
 
             // Act
-            var testStatus = listAdapter.TryTest(targetObject, "2", resolver.Object, "10", out var errorMessage);
+            var testStatus = listAdapter.TryTest(targetObject, "2", "10", out var errorMessage);
 
             //Assert
             Assert.False(testStatus);

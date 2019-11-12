@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var key = "Status";
             var dictionary = new Dictionary<string, int>(StringComparer.Ordinal);
             dictionary[key] = 404;
-            var dictionaryAdapter = new DictionaryAdapter<string, int>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, int>(resolver);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, key, resolver, 200, out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, key, 200, out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var intKey = 1;
             var dictionary = new Dictionary<int, object>();
             dictionary[intKey] = "Mike";
-            var dictionaryAdapter = new DictionaryAdapter<int, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<int, object>(resolver);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, intKey.ToString(), resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, intKey.ToString(), "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void GetInvalidKey_ThrowsInvalidPathSegmentException()
         {
             // Arrange
-            var dictionaryAdapter = new DictionaryAdapter<int, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<int, object>(resolver);
             var key = 1;
             var dictionary = new Dictionary<int, object>();
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, key.ToString(), resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, key.ToString(), "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Act
             var guidKey = new Guid();
-            var getStatus = dictionaryAdapter.TryGet(dictionary, guidKey.ToString(), resolver, out var outValue, out message);
+            var getStatus = dictionaryAdapter.TryGet(dictionary, guidKey.ToString(), out var outValue, out message);
 
             // Assert
             Assert.False(getStatus);
@@ -82,13 +82,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Get_UsingCaseSensitiveKey_FailureScenario()
         {
             // Arrange
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            var getStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpper(), resolver, out var outValue, out message);
+            var getStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpper(), out var outValue, out message);
 
             // Assert
             Assert.False(getStatus);
@@ -109,13 +109,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Get_UsingCaseSensitiveKey_SuccessScenario()
         {
             // Arrange
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver, "James", out var message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey, resolver, out var outValue, out message);
+            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey, out var outValue, out message);
 
             // Assert
             Assert.True(addStatus);
@@ -139,11 +139,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             dictionary.Add(nameKey, "Mike");
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver, "James", out var message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, "James", out var message);
 
             // Assert
             Assert.True(replaceStatus);
@@ -159,11 +159,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var guidKey = new Guid();
             var dictionary = new Dictionary<Guid, object>();
             dictionary.Add(guidKey, "Mike");
-            var dictionaryAdapter = new DictionaryAdapter<Guid, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<Guid, object>(resolver);
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, guidKey.ToString(), resolver, "James", out var message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, guidKey.ToString(), "James", out var message);
 
             // Assert
             Assert.True(replaceStatus);
@@ -179,11 +179,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var guidKey = new Guid();
             var dictionary = new Dictionary<Guid, int>();
             dictionary.Add(guidKey, 5);
-            var dictionaryAdapter = new DictionaryAdapter<Guid, int>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<Guid, int>(resolver);
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, guidKey.ToString(), resolver, "test", out var message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, guidKey.ToString(), "test", out var message);
 
             // Assert
             Assert.False(replaceStatus);
@@ -197,11 +197,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver, "Mike", out var message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, "Mike", out var message);
 
             // Assert
             Assert.False(replaceStatus);
@@ -215,11 +215,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
 
             // Act
-            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver, out var message);
+            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, out var message);
 
             // Assert
             Assert.False(removeStatus);
@@ -234,11 +234,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             dictionary[nameKey] = "James";
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
 
             // Act
-            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver, out var message);
+            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, out var message);
 
             //Assert
             Assert.True(removeStatus);
@@ -253,11 +253,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var uriKey = new Uri("http://www.test.com/name");
             var dictionary = new Dictionary<Uri, object>();
             dictionary[uriKey] = "James";
-            var dictionaryAdapter = new DictionaryAdapter<Uri, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<Uri, object>(resolver);
 
             // Act
-            var removeStatus = dictionaryAdapter.TryRemove(dictionary, uriKey.ToString(), resolver, out var message);
+            var removeStatus = dictionaryAdapter.TryRemove(dictionary, uriKey.ToString(), out var message);
 
             //Assert
             Assert.True(removeStatus);
@@ -278,11 +278,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 new Customer("James", 25)
             };
             dictionary[key] = value;
-            var dictionaryAdapter = new DictionaryAdapter<string, List<object>>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, List<object>>(resolver);
 
             // Act
-            var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, value, out var message);
+            var testStatus = dictionaryAdapter.TryTest(dictionary, key, value, out var message);
 
             //Assert
             Assert.True(testStatus);
@@ -296,12 +296,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var key = "Name";
             var dictionary = new Dictionary<string, object>();
             dictionary[key] = "James";
-            var dictionaryAdapter = new DictionaryAdapter<string, object>();
             var resolver = new DefaultContractResolver();
+            var dictionaryAdapter = new DictionaryAdapter<string, object>(resolver);
             var expectedErrorMessage = "The current value 'James' at path 'Name' is not equal to the test value 'John'.";
 
             // Act
-            var testStatus = dictionaryAdapter.TryTest(dictionary, key, resolver, "John", out var errorMessage);
+            var testStatus = dictionaryAdapter.TryTest(dictionary, key, "John", out var errorMessage);
 
             //Assert
             Assert.False(testStatus);

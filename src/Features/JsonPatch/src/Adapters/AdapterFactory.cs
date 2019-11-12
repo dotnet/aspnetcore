@@ -3,8 +3,6 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
@@ -32,24 +30,24 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             if (target is JObject)
             {
-                return new JObjectAdapter();
+                return new JObjectAdapter(contractResolver);
             }
             if (target is IList)
             {
-                return new ListAdapter();
+                return new ListAdapter(contractResolver);
             }
             else if (jsonContract is JsonDictionaryContract jsonDictionaryContract)
             {
                 var type = typeof(DictionaryAdapter<,>).MakeGenericType(jsonDictionaryContract.DictionaryKeyType, jsonDictionaryContract.DictionaryValueType);
-                return (IAdapter)Activator.CreateInstance(type);
+                return (IAdapter)Activator.CreateInstance(type, contractResolver);
             }
             else if (jsonContract is JsonDynamicContract)
             {
-                return new DynamicObjectAdapter();
+                return new DynamicObjectAdapter(contractResolver);
             }
             else
             {
-                return new PocoAdapter();
+                return new PocoAdapter(contractResolver);
             }
         }
     }

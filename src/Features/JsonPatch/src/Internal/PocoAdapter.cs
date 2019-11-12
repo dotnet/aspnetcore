@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,14 +16,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public class PocoAdapter : IAdapter
     {
-        public virtual bool TryAdd(
-            object target,
+        private readonly IContractResolver _contractResolver;
+
+        public PocoAdapter(IContractResolver contractResolver)
+        {
+            _contractResolver = contractResolver;
+        }
+
+        public virtual bool TryAdd(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (!TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
@@ -47,14 +52,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryGet(
-            object target,
+        public virtual bool TryGet(object target,
             string segment,
-            IContractResolver contractResolver,
             out object value,
             out string errorMessage)
         {
-            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (!TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 value = null;
@@ -73,13 +76,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryRemove(
-            object target,
+        public virtual bool TryRemove(object target,
             string segment,
-            IContractResolver contractResolver,
             out string errorMessage)
         {
-            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (!TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
@@ -106,15 +107,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryReplace(
-            object target,
+        public virtual bool TryReplace(object target,
             string segment,
-            IContractResolver
-            contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (!TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
@@ -138,15 +136,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTest(
-            object target,
+        public virtual bool TryTest(object target,
             string segment,
-            IContractResolver
-            contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (!TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
                 return false;
@@ -175,10 +170,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTraverse(
-            object target,
+        public virtual bool TryTraverse(object target,
             string segment,
-            IContractResolver contractResolver,
             out object value,
             out string errorMessage)
         {
@@ -189,7 +182,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            if (TryGetJsonProperty(target, _contractResolver, segment, out var jsonProperty))
             {
                 value = jsonProperty.ValueProvider.GetValue(target);
                 errorMessage = null;

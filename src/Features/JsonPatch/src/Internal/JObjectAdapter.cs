@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.JsonPatch.Internal;
+using Microsoft.AspNetCore.JsonPatch.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -7,10 +7,15 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class JObjectAdapter : IAdapter
     {
-        public virtual bool TryAdd(
-            object target,
+        private readonly IContractResolver _contractResolver;
+
+        public JObjectAdapter(IContractResolver contractResolver)
+        {
+            _contractResolver = contractResolver;
+        }
+
+        public virtual bool TryAdd(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
@@ -22,10 +27,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryGet(
-            object target,
+        public virtual bool TryGet(object target,
             string segment,
-            IContractResolver contractResolver,
             out object value,
             out string errorMessage)
         {
@@ -43,10 +46,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryRemove(
-            object target,
+        public virtual bool TryRemove(object target,
             string segment,
-            IContractResolver contractResolver,
             out string errorMessage)
         {
             var obj = (JObject) target;
@@ -62,10 +63,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryReplace(
-            object target,
+        public virtual bool TryReplace(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
@@ -83,10 +82,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTest(
-            object target,
+        public virtual bool TryTest(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
@@ -116,10 +113,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTraverse(
-            object target,
+        public virtual bool TryTraverse(object target,
             string segment,
-            IContractResolver contractResolver,
             out object nextTarget,
             out string errorMessage)
         {

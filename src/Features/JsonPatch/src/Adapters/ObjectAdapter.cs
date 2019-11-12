@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 return;
             }
 
-            if (!adapter.TryAdd(target, parsedPath.LastSegment, ContractResolver, value, out errorMessage))
+            if (!adapter.TryAdd(target, parsedPath.LastSegment, value, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, path, operation, errorMessage);
                 ErrorReporter(error);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 return;
             }
 
-            if (!adapter.TryRemove(target, parsedPath.LastSegment, ContractResolver, out errorMessage))
+            if (!adapter.TryRemove(target, parsedPath.LastSegment, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, errorMessage);
                 ErrorReporter(error);
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 return;
             }
 
-            if (!adapter.TryReplace(target, parsedPath.LastSegment, ContractResolver, operation.value, out errorMessage))
+            if (!adapter.TryReplace(target, parsedPath.LastSegment, operation.value, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, errorMessage);
                 ErrorReporter(error);
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 return;
             }
 
-            if (!adapter.TryTest(target, parsedPath.LastSegment, ContractResolver, operation.value, out errorMessage))
+            if (!adapter.TryTest(target, parsedPath.LastSegment, operation.value, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, errorMessage);
                 ErrorReporter(error);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 return false;
             }
 
-            if (!adapter.TryGet(target, parsedPath.LastSegment, ContractResolver, out propertyValue, out errorMessage))
+            if (!adapter.TryGet(target, parsedPath.LastSegment, out propertyValue, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToGetValueFrom, fromLocation, operation, errorMessage);
                 ErrorReporter(error);

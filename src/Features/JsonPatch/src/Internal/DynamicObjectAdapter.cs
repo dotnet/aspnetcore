@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,14 +19,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
     /// </summary>
     public class DynamicObjectAdapter : IAdapter
     {
-        public virtual bool TryAdd(
-            object target,
+        private readonly IContractResolver _contractResolver;
+
+        public DynamicObjectAdapter(IContractResolver contractResolver)
+        {
+            _contractResolver = contractResolver;
+        }
+
+        public virtual bool TryAdd(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TrySetDynamicObjectProperty(target, contractResolver, segment, value, out errorMessage))
+            if (!TrySetDynamicObjectProperty(target, _contractResolver, segment, value, out errorMessage))
             {
                 return false;
             }
@@ -35,14 +40,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryGet(
-            object target,
+        public virtual bool TryGet(object target,
             string segment,
-            IContractResolver contractResolver,
             out object value,
             out string errorMessage)
         {
-            if (!TryGetDynamicObjectProperty(target, contractResolver, segment, out value, out errorMessage))
+            if (!TryGetDynamicObjectProperty(target, _contractResolver, segment, out value, out errorMessage))
             {
                 value = null;
                 return false;
@@ -52,13 +55,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryRemove(
-            object target,
+        public virtual bool TryRemove(object target,
             string segment,
-            IContractResolver contractResolver,
             out string errorMessage)
         {
-            if (!TryGetDynamicObjectProperty(target, contractResolver, segment, out var property, out errorMessage))
+            if (!TryGetDynamicObjectProperty(target, _contractResolver, segment, out var property, out errorMessage))
             {
                 return false;
             }
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 value = Activator.CreateInstance(property.GetType());
             }
 
-            if (!TrySetDynamicObjectProperty(target, contractResolver, segment, value, out errorMessage))
+            if (!TrySetDynamicObjectProperty(target, _contractResolver, segment, value, out errorMessage))
             {
                 return false;
             }
@@ -82,14 +83,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         }
 
-        public virtual bool TryReplace(
-            object target,
+        public virtual bool TryReplace(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TryGetDynamicObjectProperty(target, contractResolver, segment, out var property, out errorMessage))
+            if (!TryGetDynamicObjectProperty(target, _contractResolver, segment, out var property, out errorMessage))
             {
                 return false;
             }
@@ -100,12 +99,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            if (!TryRemove(target, segment, contractResolver, out errorMessage))
+            if (!TryRemove(target, segment, out errorMessage))
             {
                 return false;
             }
 
-            if (!TrySetDynamicObjectProperty(target, contractResolver, segment, convertedValue, out errorMessage))
+            if (!TrySetDynamicObjectProperty(target, _contractResolver, segment, convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -114,14 +113,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public virtual bool TryTest(
-            object target,
+        public virtual bool TryTest(object target,
             string segment,
-            IContractResolver contractResolver,
             object value,
             out string errorMessage)
         {
-            if (!TryGetDynamicObjectProperty(target, contractResolver, segment, out var property, out errorMessage))
+            if (!TryGetDynamicObjectProperty(target, _contractResolver, segment, out var property, out errorMessage))
             {
                 return false;
             }
@@ -144,14 +141,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public virtual bool TryTraverse(
-            object target,
+        public virtual bool TryTraverse(object target,
             string segment,
-            IContractResolver contractResolver,
             out object nextTarget,
             out string errorMessage)
         {
-            if (!TryGetDynamicObjectProperty(target, contractResolver, segment, out var property, out errorMessage))
+            if (!TryGetDynamicObjectProperty(target, _contractResolver, segment, out var property, out errorMessage))
             {
                 nextTarget = null;
                 return false;
