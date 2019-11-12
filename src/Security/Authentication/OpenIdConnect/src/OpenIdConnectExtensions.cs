@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddOpenIdConnect<THandler>(authenticationScheme, OpenIdConnectDefaults.DisplayName, configureOptions);
 
         public static AuthenticationBuilder AddOpenIdConnect<THandler>(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<OpenIdConnectOptions> configureOptions)
-        : where THandler : OpenIdConnectHandler
+            : where THandler : OpenIdConnectHandler
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<OpenIdConnectOptions>, OpenIdConnectPostConfigureOptions>());
             return builder.AddRemoteScheme<OpenIdConnectOptions, THandler>(authenticationScheme, displayName, configureOptions);
