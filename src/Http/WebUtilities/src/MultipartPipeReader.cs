@@ -17,29 +17,27 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public const int DefaultHeadersCountLimit = 16;
         public const int DefaultHeadersLengthLimit = 1024 * 16;
-        //private const int DefaultBufferSize = 1024 * 4;
         private const int StackAllocThreshold = 128;
 
         private readonly PipeReader _pipeReader;
-        //private ReadOnlySequence<byte> _buffer;
         private long _bytesConsumed = 0;
         private readonly MultipartBoundary _boundary;
         private MultipartPipeReaderStream _currentStream;
-        private readonly bool _canSeek;
+        private readonly bool _trackBaseOffsets;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
 
 
-        public MultipartPipeReader(string boundary, PipeReader pipeReader, bool canSeek)
+        public MultipartPipeReader(string boundary, PipeReader pipeReader, bool trackBaseOffsets)
         {
             _pipeReader = pipeReader ?? throw new ArgumentNullException(nameof(pipeReader));
             _boundary = new MultipartBoundary(boundary ?? throw new ArgumentNullException(nameof(boundary)), false);
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, canSeek);
-            _canSeek = canSeek;
+            _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, trackBaseOffsets);
+            _trackBaseOffsets = trackBaseOffsets;
         }
 
         /// <summary>
@@ -88,8 +86,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
-                        _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, _canSeek);
-                        long? baseStreamOffset = _canSeek ? (long?)_bytesConsumed : null;
+                        _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, _trackBaseOffsets);
+                        long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
                         return new MultipartSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
                     }
                 }
@@ -171,9 +169,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
-                    line = span;
-                    span = default;
-                    consumed += line.Length;
+                    throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
 
                 if (line.Length == 0) // an empty line means it's the end of the headers
@@ -215,44 +211,40 @@ namespace Microsoft.AspNetCore.WebUtilities
             bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
-            var position = sequenceReader.Position;
-            var consumedBytes = default(long);
+            //var position = sequenceReader.Position;
+            //var consumedBytes = default(long);
 
             while (!sequenceReader.End)
             {
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> line, CrlfDelimiter))
                 {
-                    if (!isFinalBlock)
+                    if (isFinalBlock)
                     {
-                        // Don't buffer indefinately
-                        if (headersLength + consumedBytes > HeadersLengthLimit)
-                        {
-                            throw new InvalidDataException($"Line length limit {HeadersLengthLimit - headersLength} exceeded.");
-                        }
-                        break;
+                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                     }
 
-                    // This must be the final key=value pair
-                    line = buffer.Slice(sequenceReader.Position);
-                    consumedBytes = sequenceReader.Consumed;
-                    sequenceReader.Advance(line.Length);
+                    // Don't buffer indefinately
+                    if (headersLength + sequenceReader.Consumed > HeadersLengthLimit)
+                    {
+                        throw new InvalidDataException($"Line length limit {HeadersLengthLimit - headersLength} exceeded.");
+                    }
+
+                    //TODO: keep the sequence and advance the pipeReader in case the sequence length is shorter than the headers limit.
                 }
 
-                if (consumedBytes + headersLength > HeadersLengthLimit)
+                if (sequenceReader.Consumed + headersLength > HeadersLengthLimit)
                 {
                     throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                 }
 
                 if (line.IsSingleSegment)
                 {
-                    var didFinishParsing = ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - consumedBytes - headersLength, out var segmentConsumed);
+                    var didFinishParsing = ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - sequenceReader.Consumed - headersLength, out var segmentConsumed);
                     Debug.Assert(segmentConsumed == line.FirstSpan.Length);
-                    consumedBytes = sequenceReader.Consumed;
-                    position = sequenceReader.Position;
                     if (didFinishParsing)
                     {
-                        buffer = buffer.Slice(position);
-                        headersLength += consumedBytes;
+                        buffer = buffer.Slice(sequenceReader.Position);
+                        headersLength += sequenceReader.Consumed;
                         return true;
                     }
                     continue;
@@ -263,8 +255,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (lineReader.Length == 0)
                 {
-                    buffer = buffer.Slice(position);
-                    headersLength += consumedBytes;
+                    buffer = buffer.Slice(sequenceReader.Position);
+                    headersLength += sequenceReader.Consumed;
                     return true;
                 }
 
@@ -281,13 +273,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var decodedValue = GetDecodedStringFromReadOnlySequence(value);
 
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
-
-                consumedBytes = sequenceReader.Consumed;
-                position = sequenceReader.Position;
             }
 
-            buffer = buffer.Slice(position);
-            headersLength += consumedBytes;
+            buffer = buffer.Slice(sequenceReader.Position);
+            headersLength += sequenceReader.Consumed;
             return false;
         }
 
