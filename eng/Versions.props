@@ -232,6 +232,8 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
     <!-- 3rd party dependencies -->
+    <AzureSecurityKeyVaultKeysPackageVersion>4.0.0</AzureSecurityKeyVaultKeysPackageVersion>
+    <AzureIdentityPackageVersion>1.0.0</AzureIdentityPackageVersion>
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
