@@ -237,28 +237,22 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                 }
 
-                if (line.IsSingleSegment)
-                {
-                    var didFinishParsing = ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - sequenceReader.Consumed - headersLength, out var segmentConsumed);
-                    Debug.Assert(segmentConsumed == line.FirstSpan.Length);
-                    if (didFinishParsing)
-                    {
-                        buffer = buffer.Slice(sequenceReader.Position);
-                        headersLength += sequenceReader.Consumed;
-                        return true;
-                    }
-                    continue;
-                }
-
-                var lineReader = new SequenceReader<byte>(line);
-                ReadOnlySequence<byte> value;
-
-                if (lineReader.Length == 0)
+                if(line.IsEmpty)
                 {
                     buffer = buffer.Slice(sequenceReader.Position);
                     headersLength += sequenceReader.Consumed;
                     return true;
                 }
+
+                if (line.IsSingleSegment)
+                {
+                    ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - sequenceReader.Consumed - headersLength, out var segmentConsumed);
+                    Debug.Assert(segmentConsumed == line.FirstSpan.Length);
+                    continue;
+                }
+
+                var lineReader = new SequenceReader<byte>(line);
+                ReadOnlySequence<byte> value;
 
                 if (lineReader.TryReadTo(out var key, ColonDelimiter))
                 {
