@@ -40,6 +40,7 @@ namespace Microsoft.Extensions.Internal
             context.RegisterOperationAction(
                 AnalyzeOperation,
                 OperationKind.ObjectCreation,
+                OperationKind.Invocation,
                 OperationKind.FieldReference,
                 OperationKind.MethodReference,
                 OperationKind.PropertyReference,
