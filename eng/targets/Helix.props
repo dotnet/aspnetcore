@@ -47,7 +47,7 @@
 
   <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true' AND '$(IsHelixJob)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
-    <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg %25DOTNET_ROOT\shared\Microsoft.AspNetCore.App\$(AppRuntimeVersion) /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg %25DOTNET_ROOT%25\shared\Microsoft.AspNetCore.App\$(AppRuntimeVersion) /b 1" />
   </ItemGroup>
   
 </Project>
