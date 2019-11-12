@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
             if ((firstByte & 0xC0) == 0)
             {
-                consumed = examined = buffer.Slice(1).Start;
+                consumed = examined = buffer.GetPosition(1);
                 return firstByte & 0x3F;
             }
             else if ((firstByte & 0xC0) == 0x40)
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return -1;
                 }
 
-                consumed = examined = buffer.Slice(0, 2).End;
+                consumed = examined = buffer.GetPosition(2);
 
                 return BinaryPrimitives.ReadUInt16BigEndian(span) - TwoByteSubtract;
             }
@@ -78,7 +78,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 {
                     return -1;
                 }
-                consumed = examined = buffer.Slice(0, 4).End;
+
+                consumed = examined = buffer.GetPosition(4);
 
                 return BinaryPrimitives.ReadUInt32BigEndian(span) - FourByteSubtract;
             }
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return -1;
                 }
 
-                consumed = examined = buffer.Slice(0, 8).End;
+                consumed = examined = buffer.GetPosition(8);
 
                 return (long)(BinaryPrimitives.ReadUInt64BigEndian(span) - EightByteSubtract);
             }
