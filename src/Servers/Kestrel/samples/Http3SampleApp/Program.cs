@@ -28,17 +28,12 @@ namespace Http3SampleApp
                  {
                      options.Certificate = cert;
                      options.RegistrationName = "Quic";
-                     options.Alpn = "h3-23";
+                     options.Alpn = "h3-24";
                      options.IdleTimeout = TimeSpan.FromHours(1);
                  })
                  .ConfigureKestrel((context, options) =>
                  {
                      var basePort = 5555;
-
-                     options.Listen(IPAddress.Any, basePort, listenOptions =>
-                     {
-                         listenOptions.UseHttps();
-                     });
 
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
