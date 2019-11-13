@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             var streamListenerFeature = Context.ConnectionFeatures.Get<IQuicStreamListenerFeature>();
 
             // Start other three unidirectional streams here.
-            await CreateSettingsStream(application);
-            await CreateEncoderStream(application);
-            await CreateDecoderStream(application);
+            var settingsStream = CreateSettingsStream(application);
+            var encoderStream = CreateEncoderStream(application);
+            var decoderStream = CreateDecoderStream(application);
 
             try
             {
@@ -109,6 +109,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             }
             finally
             {
+                await settingsStream;
+                await encoderStream;
+                await decoderStream;
                 foreach (var stream in _streams.Values)
                 {
                     stream.Abort(new ConnectionAbortedException(""));
