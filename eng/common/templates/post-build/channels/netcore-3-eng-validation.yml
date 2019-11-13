@@ -91,6 +91,11 @@ stages:
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: 'Channel_Net_3_Tools_Validation'
+          JobLabel: 'AssetPublishing'
+
       - template: ../../steps/promote-build.yml
         parameters:
           ChannelId: ${{ variables.NETCore_3_Tools_Validation_Channel_Id }}
