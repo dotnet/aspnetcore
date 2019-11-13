@@ -532,7 +532,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public static SOCKADDR_INET Convert(IPEndPoint endpoint)
         {
             var socketAddress = new SOCKADDR_INET();
-            // TODO how to use IPv4 vs IPv6 here?
             var buffer = endpoint.Address.GetAddressBytes();
             if (endpoint.Address != IPAddress.Any && endpoint.Address != IPAddress.IPv6Any)
             {
