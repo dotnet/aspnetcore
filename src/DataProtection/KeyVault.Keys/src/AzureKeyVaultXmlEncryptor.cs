@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault
 
                 var element = new XElement("encryptedKey",
                     new XComment(" This key is encrypted with Azure KeyVault. "),
-                    new XElement("kid", _keyId),
+                    new XElement("kid", key.KeyId),
                     new XElement("key", Convert.ToBase64String(wrappedKey)),
                     new XElement("iv", Convert.ToBase64String(symmetricIV)),
                     new XElement("value", Convert.ToBase64String(encryptedValue)));

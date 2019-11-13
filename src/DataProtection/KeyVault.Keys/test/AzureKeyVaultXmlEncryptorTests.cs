@@ -24,6 +24,9 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault.Test
                 .ReturnsAsync((string _, ReadOnlyMemory<byte> data, CancellationToken __) => data.ToArray().Reverse().ToArray())
                 .Verifiable();
 
+
+            keyMock.SetupGet(client => client.KeyId).Returns("KeyId");
+
             var mock = new Mock<IKeyEncryptionKeyResolver>();
             mock.Setup(client => client.ResolveAsync("key", default))
                 .ReturnsAsync((string _, CancellationToken __) => keyMock.Object)
@@ -42,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault.Test
             Assert.Equal("VfLYL2prdymawfucH3Goso0zkPbQ4/GKqUsj2TRtLzsBPz7p7cL1SQaY6I29xSlsPQf6IjxHSz4sDJ427GvlLQ==", encryptedElement.Element("value").Value);
             Assert.Equal("AAECAwQFBgcICQoLDA0ODw==", encryptedElement.Element("iv").Value);
             Assert.Equal("Dw4NDAsKCQgHBgUEAwIBAA==", encryptedElement.Element("key").Value);
-            Assert.Equal("key", encryptedElement.Element("kid").Value);
+            Assert.Equal("KeyId", encryptedElement.Element("kid").Value);
         }
 
         [Fact]
