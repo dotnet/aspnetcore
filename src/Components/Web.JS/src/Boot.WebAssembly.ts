@@ -61,7 +61,7 @@ async function boot(options?: any): Promise<void> {
 
   // Start up the application
   const mainAssemblyName = getAssemblyNameFromUrl(bootConfig.main);
-  platform.callEntryPoint(mainAssemblyName, bootConfig.entryPoint, []);
+  platform.callEntryPoint(mainAssemblyName);
 }
 
 async function fetchBootConfigAsync() {

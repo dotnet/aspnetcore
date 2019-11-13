@@ -9,6 +9,8 @@ declare namespace Module {
   // These should probably be in @types/emscripten
   function FS_createPath(parent, path, canRead, canWrite);
   function FS_createDataFile(parent, name, data, canRead, canWrite, canOwn);
+
+  function mono_call_assembly_entry_point(assemblyName: string, args: any[]): any;
 }
 
 // Emscripten declares these globals

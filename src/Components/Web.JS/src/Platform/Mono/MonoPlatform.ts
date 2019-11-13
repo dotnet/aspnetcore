@@ -11,6 +11,7 @@ let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
 let find_method: (typeHandle: number, methodName: string, unknownArg: number) => MethodHandle;
 let invoke_method: (method: MethodHandle, target: System_Object, argsArrayPtr: number, exceptionFlagIntPtr: number) => System_Object;
+let mono_call_assembly_entry_point: (assemblyName: string, args: System_Object[]) => System_Object;
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
 const appBinDirName = 'appBinDir';
@@ -39,21 +40,8 @@ export const monoPlatform: Platform = {
 
   findMethod: findMethod,
 
-  callEntryPoint: function callEntryPoint(assemblyName: string, entrypointMethod: string, args: System_Object[]): void {
-    // Parse the entrypointMethod, which is of the form MyApp.MyNamespace.MyTypeName::MyMethodName
-    // Note that we don't support specifying a method overload, so it has to be unique
-    const entrypointSegments = entrypointMethod.split('::');
-    if (entrypointSegments.length != 2) {
-      throw new Error('Malformed entry point method name; could not resolve class name and method name.');
-    }
-    const typeFullName = entrypointSegments[0];
-    const methodName = entrypointSegments[1];
-    const lastDot = typeFullName.lastIndexOf('.');
-    const namespace = lastDot > -1 ? typeFullName.substring(0, lastDot) : '';
-    const typeShortName = lastDot > -1 ? typeFullName.substring(lastDot + 1) : typeFullName;
-
-    const entryPointMethodHandle = monoPlatform.findMethod(assemblyName, namespace, typeShortName, methodName);
-    monoPlatform.callMethod(entryPointMethodHandle, null, args);
+  callEntryPoint: function callEntryPoint(assemblyName: string): System_Object {
+    return mono_call_assembly_entry_point(assemblyName, []);
   },
 
   callMethod: function callMethod(method: MethodHandle, target: System_Object, args: System_Object[]): System_Object {
@@ -272,6 +260,8 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
       'number',
       'number',
     ]);
+
+    mono_call_assembly_entry_point = Module.mono_call_assembly_entry_point;
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
