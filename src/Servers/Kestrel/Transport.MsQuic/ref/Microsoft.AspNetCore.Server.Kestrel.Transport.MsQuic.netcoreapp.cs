@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
-    public partial class MsQuicTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
+    public partial class MsQuicTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory, Microsoft.AspNetCore.Connections.IMultiplexedConnectionListenerFactory
     {
         public MsQuicTransportFactory(Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.MsQuicTransportOptions> options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
