@@ -11,6 +11,8 @@ namespace InteropTests.Helpers
     {
         private WebServerProcess _process;
 
+        public string Path { get; set; }
+
         public async Task EnsureStarted(ITestOutputHelper output)
         {
             if (_process != null)
@@ -18,9 +20,12 @@ namespace InteropTests.Helpers
                 return;
             }
 
-            var webPath = @"C:\Development\Source\AspNetCore\src\Grpc\test\testassets\InteropTestsWebsite\";
+            if (string.IsNullOrEmpty(Path))
+            {
+                throw new InvalidOperationException("Path has not been set.");
+            }
 
-            _process = new WebServerProcess(webPath, output);
+            _process = new WebServerProcess(Path, output);
 
             await _process.WaitForReady();
         }

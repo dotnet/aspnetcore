@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using InteropTests.Helpers;
 using Microsoft.AspNetCore.Testing;
@@ -16,11 +17,17 @@ namespace InteropTests
     {
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+        private readonly string _clientPath;
         private readonly InteropTestsFixture _fixture;
         private readonly ITestOutputHelper _output;
 
         public InteropTests(InteropTestsFixture fixture, ITestOutputHelper output)
         {
+            var attributes = typeof(InteropTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().ToList();
+
+            fixture.Path = attributes.Single(a => a.Key == "InteropTestsWebsiteDir").Value;
+            _clientPath = attributes.Single(a => a.Key == "InteropTestsClientDir").Value;
+
             _fixture = fixture;
             _output = output;
         }
@@ -31,9 +38,7 @@ namespace InteropTests
         {
             await _fixture.EnsureStarted(_output).TimeoutAfter(DefaultTimeout);
 
-            var clientPath = @"C:\Development\Source\AspNetCore\src\Grpc\test\testassets\InteropTestsClient\";
-
-            using (var clientProcess = new ClientProcess(_output, clientPath, 50052, name))
+            using (var clientProcess = new ClientProcess(_output, _clientPath, 50052, name))
             {
                 await clientProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
 
