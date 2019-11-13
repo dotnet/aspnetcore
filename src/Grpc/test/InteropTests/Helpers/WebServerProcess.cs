@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
@@ -15,7 +14,6 @@ namespace InteropTests.Helpers
         private readonly Process _process;
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
-        private readonly StringBuilder _output;
 
         public WebServerProcess(string path, ITestOutputHelper output)
         {
@@ -34,7 +32,6 @@ namespace InteropTests.Helpers
             _processEx = new ProcessEx(output, _process);
 
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _output = new StringBuilder();
         }
 
         public Task WaitForReady()
@@ -52,8 +49,6 @@ namespace InteropTests.Helpers
             var data = e.Data;
             if (data != null)
             {
-                _output.AppendLine(data);
-
                 if (data.Contains("Application started."))
                 {
                     _startTcs.TrySetResult(null);

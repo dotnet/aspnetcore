@@ -15,7 +15,7 @@ namespace InteropTests
 {
     public class InteropTests : IClassFixture<InteropTestsFixture>
     {
-        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
         private readonly string _clientPath;
         private readonly InteropTestsFixture _fixture;
