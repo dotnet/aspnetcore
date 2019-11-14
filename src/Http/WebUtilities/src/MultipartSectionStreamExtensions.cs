@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,6 +44,30 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 return await reader.ReadToEndAsync();
             }
-        } 
+        }
+
+        /// <summary>
+        /// Reads the body of the section as a string
+        /// </summary>
+        /// <param name="section">The section to read from</param>
+        /// <returns>The body steam as string</returns>
+        public static async Task<string> ReadAsStringAsync(this MultipartPipeSection section)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            MediaTypeHeaderValue sectionMediaType;
+            MediaTypeHeaderValue.TryParse(section.ContentType, out sectionMediaType);
+
+            Encoding streamEncoding = sectionMediaType?.Encoding;
+            if (streamEncoding == null || streamEncoding == Encoding.UTF7)
+            {
+                streamEncoding = Encoding.UTF8;
+            }
+
+            return await section.Body.ReadToEndAsync(streamEncoding);
+        }
     }
 }

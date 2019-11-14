@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly PipeReader _pipeReader;
         private long _bytesConsumed = 0;
         private readonly MultipartBoundary _boundary;
-        private MultipartPipeReaderStream _currentStream;
+        private MultipartSectionPipeReader _currentStream;
         private readonly bool _trackBaseOffsets;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, trackBaseOffsets);
+            _currentStream = new MultipartSectionPipeReader(_pipeReader, _boundary, trackBaseOffsets);
             _trackBaseOffsets = trackBaseOffsets;
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
-        public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
+        public async Task<MultipartPipeSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentStream.DrainAsync(cancellationToken);
             _bytesConsumed += _currentStream.RawLength;
@@ -84,9 +84,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
-                        _currentStream = new MultipartPipeReaderStream(_pipeReader, _boundary, _trackBaseOffsets);
+                        _currentStream = new MultipartSectionPipeReader(_pipeReader, _boundary, _trackBaseOffsets);
                         long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
-                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
+                        return new MultipartPipeSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
                     }
                 }
 

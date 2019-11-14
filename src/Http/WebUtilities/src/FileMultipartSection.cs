@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FileMultipartSection"/></param>
         /// <remarks>Reparses the content disposition header</remarks>
-        public FileMultipartSection(MultipartSection section)
+        public FileMultipartSection(MultipartPipeSection section)
             :this(section, section.GetContentDispositionHeader())
         {
         }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FileMultipartSection"/></param>
         /// <param name="header">An already parsed content disposition header</param>
-        public FileMultipartSection(MultipartSection section, ContentDispositionHeaderValue header)
+        public FileMultipartSection(MultipartPipeSection section, ContentDispositionHeaderValue header)
         {
             if (!header.IsFileDisposition())
             {
@@ -49,12 +49,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Gets the original section from which this object was created
         /// </summary>
-        public MultipartSection Section { get; }
+        public MultipartPipeSection Section { get; }
 
-        /// <summary>
-        /// Gets the file stream from the section body
-        /// </summary>
-        public Stream FileStream => Section.Body;
+        // <summary>
+        // Gets the file stream from the section body
+        // </summary>
+        //public Stream FileStream => Section.Body;
 
         /// <summary>
         /// Gets the name of the section

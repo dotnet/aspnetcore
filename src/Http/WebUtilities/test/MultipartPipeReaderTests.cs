@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -159,9 +159,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -176,9 +176,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -193,18 +193,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
-            buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            result = await section.ReadAsStringAsync();
+            Assert.Equal("Content of a.txt.\r\n", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -219,18 +219,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a色.txt\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
-            buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            result = await section.ReadAsStringAsync();
+            Assert.Equal("Content of a.txt.\r\n", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -245,27 +245,26 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
-            buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            result = await section.ReadAsStringAsync();
+            Assert.Equal("Content of a.txt.\r\n", result) ;
 
             section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Equal(2, section.Headers.Count);
             Assert.Equal("form-data; name=\"file2\"; filename=\"a.html\"", section.Headers["Content-Disposition"][0]);
             Assert.Equal("text/html", section.Headers["Content-Type"][0]);
-            buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            result = await section.ReadAsStringAsync();
+            Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -340,9 +339,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFD!.txt\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }
@@ -377,9 +376,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(section);
             Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFD\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
-            var buffer = new MemoryStream();
-            await section.Body.CopyToAsync(buffer);
-            Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
+
+            var result = await section.ReadAsStringAsync();
+            Assert.Equal("text default", result);
 
             Assert.Null(await reader.ReadNextSectionAsync());
         }

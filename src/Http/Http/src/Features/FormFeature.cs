@@ -181,27 +181,29 @@ namespace Microsoft.AspNetCore.Http.Features
                         {
                             var fileSection = new FileMultipartSection(section, contentDisposition);
 
-                            // Enable buffering for the file if not already done for the full body
-                            section.EnableRewind(
-                                _request.HttpContext.Response.RegisterForDispose,
-                                _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
-
-                            // Find the end
-                            await section.Body.DrainAsync(cancellationToken);
-
                             var name = fileSection.Name;
                             var fileName = fileSection.FileName;
 
                             FormFile file;
                             if (section.BaseStreamOffset.HasValue)
                             {
+                                await section.Body.DrainAsync(cancellationToken);
+
                                 // Relative reference to buffered request body
                                 file = new FormFile(_request.Body, section.BaseStreamOffset.GetValueOrDefault(), section.Body.Length, name, fileName);
                             }
                             else
                             {
+                                // Enable buffering for the file if not already done for the full body
+                                var stream = section.EnableRewind(
+                                    _request.HttpContext.Response.RegisterForDispose,
+                                    _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
+
+                                // Find the end
+                                await stream.DrainAsync(cancellationToken);
+
                                 // Individually buffered file body
-                                file = new FormFile(section.Body, 0, section.Body.Length, name, fileName);
+                                file = new FormFile(stream, 0, stream.Length, name, fileName);
                             }
                             file.Headers = new HeaderDictionary(section.Headers);
 

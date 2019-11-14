@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -48,6 +49,22 @@ namespace Microsoft.AspNetCore.Http
                 registerForDispose(fileStream);
             }
             return section;
+        }
+
+        public static Stream EnableRewind(this MultipartPipeSection section, Action<IDisposable> registerForDispose,
+          int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+            if (registerForDispose == null)
+            {
+                throw new ArgumentNullException(nameof(registerForDispose));
+            }
+
+            var body = section.Body;
+            return new FileBufferingPipeReaderStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
         }
     }
 }
