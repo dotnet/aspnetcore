@@ -133,6 +133,7 @@ try {
   if (Test-Path $InstallBin) {
     Write-Host "Native tools are available from" (Convert-Path -Path $InstallBin)
     Write-Host "##vso[task.prependpath]$(Convert-Path -Path $InstallBin)"
+    return $InstallBin
   }
   else {
     Write-Error "Native tools install directory does not exist, installation failed"

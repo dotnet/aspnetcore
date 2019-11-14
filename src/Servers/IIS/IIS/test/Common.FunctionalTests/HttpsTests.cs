@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp31)
+                .WithTfms(Tfm.NetCoreApp50)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels();
 
@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
+            deploymentParameters.SetWindowsAuth(false);
             deploymentParameters.AddServerConfigAction(
                 (element, root) => {
                     element.Descendants("site").Single().Element("application").SetAttributeValue("path", "/" + appName);
@@ -88,11 +89,29 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var client = CreateNonValidatingClient(deploymentResult);
-
             Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName, await client.GetStringAsync($"/{appName}/ServerAddresses"));
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win81)]
+        public async Task CheckProtocolIsHttp2()
+        {
+            var port = TestPortHelper.GetNextSSLPort();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
+            deploymentParameters.AddHttpsToServerConfig();
+            deploymentParameters.SetWindowsAuth(false);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var client = CreateNonValidatingClient(deploymentResult);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+
+            Assert.Equal("HTTP/2", await client.GetStringAsync($"/CheckProtocol"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
         [RequiresNewShim]
         public async Task AncmHttpsPortCanBeOverriden()
         {
@@ -186,6 +205,35 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var client = CreateNonValidatingClient(deploymentResult);
 
             Assert.Equal("NOVALUE", await client.GetStringAsync("/ANCM_HTTPS_PORT"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task SetsConnectionCloseHeader()
+        {
+            // Only tests OutOfProcess as the Connection header is removed for out of process and not inprocess. 
+            // This test checks a quirk to allow setting the Connection header.
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            deploymentParameters.HandlerSettings["forwardResponseConnectionHeader"] = "true";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Equal(true, response.Headers.ConnectionClose);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
+        public async Task ConnectionCloseIsNotPropagated()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
+            Assert.Null(response.Headers.ConnectionClose);
         }
 
         private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)

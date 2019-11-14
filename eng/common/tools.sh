@@ -4,6 +4,7 @@
 
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
+disable_configure_toolset_import=${disable_configure_toolset_import:-}
 
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
@@ -152,15 +153,6 @@ function InitializeDotNetCli {
   # build steps from using anything other than what we've downloaded.
   Write-PipelinePrependPath -path "$dotnet_root"
 
-  # Work around issues with Azure Artifacts credential provider
-  # https://github.com/dotnet/arcade/issues/3932
-  if [[ "$ci" == true ]]; then
-    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-  fi
-
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
   Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
 
@@ -200,8 +192,28 @@ function InstallDotNet {
   fi
   bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK (exit code '$exit_code')."
-    ExitWithExitCode $exit_code
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
+
+    if [[ -n "$runtimeArg" ]]; then
+      local runtimeSourceFeed=''
+      if [[ -n "${6:-}" ]]; then
+        runtimeSourceFeed="--azure-feed $6"
+      fi
+
+      local runtimeSourceFeedKey=''
+      if [[ -n "${7:-}" ]]; then
+        decodedFeedKey=`echo $7 | base64 --decode`
+        runtimeSourceFeedKey="--feed-credential $decodedFeedKey"
+      fi
+
+      if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
+        bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey || {
+          local exit_code=$?
+          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from custom location '$runtimeSourceFeed' (exit code '$exit_code')."
+          ExitWithExitCode $exit_code
+        }
+      fi
+    fi
   }
 }
 
@@ -261,6 +273,9 @@ function GetNuGetPackageCachePath {
 }
 
 function InitializeNativeTools() {
+  if [[ -n "${DisableNativeToolsetInstalls:-}" ]]; then
+    return
+  fi
   if grep -Fq "native-tools" $global_json_file
   then
     local nativeArgs=""
@@ -341,7 +356,12 @@ function MSBuild {
     # Work around issues with Azure Artifacts credential provider
     # https://github.com/dotnet/arcade/issues/3932
     if [[ "$ci" == true ]]; then
-      dotnet nuget locals http-cache -c
+      "$_InitializeBuildTool" nuget locals http-cache -c
+
+      export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
+      export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
+      Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
+      Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
@@ -415,3 +435,18 @@ Write-PipelineSetVariable -name "Artifacts.Toolset" -value "$toolset_dir"
 Write-PipelineSetVariable -name "Artifacts.Log" -value "$log_dir"
 Write-PipelineSetVariable -name "Temp" -value "$temp_dir"
 Write-PipelineSetVariable -name "TMP" -value "$temp_dir"
+
+# Import custom tools configuration, if present in the repo.
+if [[ -z "$disable_configure_toolset_import" ]]; then
+  configure_toolset_script="$eng_root/configure-toolset.sh"
+  if [[ -a "$configure_toolset_script" ]]; then
+    . "$configure_toolset_script"
+  fi
+fi
+
+# TODO: https://github.com/dotnet/arcade/issues/1468
+# Temporary workaround to avoid breaking change.
+# Remove once repos are updated.
+if [[ -n "${useInstalledDotNetCli:-}" ]]; then
+  use_installed_dotnet_cli="$useInstalledDotNetCli"
+fi

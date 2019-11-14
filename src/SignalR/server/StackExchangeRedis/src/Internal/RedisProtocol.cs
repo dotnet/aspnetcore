@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         // * Acks are sent to the Acknowledgement channel.
         // * See the Write[type] methods for a description of the protocol for each in-depth.
         // * The "Variable length integer" is the length-prefixing format used by BinaryReader/BinaryWriter:
-        //   * https://docs.microsoft.com/en-us/dotnet/api/system.io.binarywriter.write?view=netstandard-2.0
+        //   * https://docs.microsoft.com/dotnet/api/system.io.binarywriter.write?view=netcore-2.2
         // * The "Length prefixed string" is the string format used by BinaryReader/BinaryWriter:
         //   * A 7-bit variable length integer encodes the length in bytes, followed by the encoded string in UTF-8.
 

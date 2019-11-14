@@ -4,6 +4,8 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   steps:
+    - checkout: none
+
     - task: DownloadBuildArtifacts@0
       displayName: Download Release Configs
       inputs:
@@ -14,5 +16,25 @@ jobs:
       name: setReleaseVars
       displayName: Set Release Configs Vars
       inputs:
-        filePath: $(Build.SourcesDirectory)/eng/common/post-build/setup-maestro-vars.ps1
-        arguments: -ReleaseConfigsPath '$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt'
+        targetType: inline
+        script: |
+          try {
+            $Content = Get-Content $(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt
+
+            $BarId = $Content | Select -Index 0
+
+            $Channels = ""
+            $Content | Select -Index 1 | ForEach-Object { $Channels += "$_ ," }
+
+            $IsStableBuild = $Content | Select -Index 2
+
+            Write-Host "##vso[task.setvariable variable=BARBuildId;isOutput=true]$BarId"
+            Write-Host "##vso[task.setvariable variable=InitialChannels;isOutput=true]$Channels"
+            Write-Host "##vso[task.setvariable variable=IsStableBuild;isOutput=true]$IsStableBuild"
+          }
+          catch {
+            Write-Host $_
+            Write-Host $_.Exception
+            Write-Host $_.ScriptStackTrace
+            exit 1
+          }
