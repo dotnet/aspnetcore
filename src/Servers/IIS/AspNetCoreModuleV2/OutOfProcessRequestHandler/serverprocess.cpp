@@ -1866,13 +1866,12 @@ SERVER_PROCESS::~SERVER_PROCESS()
         m_pProcessManager = NULL;
     }
 
-    if (m_hStdoutHandle != NULL)
+    if (m_hStdErrWritePipe != INVALID_HANDLE_VALUE)
     {
-        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(m_hStdoutHandle);
-        }
-        m_hStdoutHandle = NULL;
+        // Flush the pipe writer before closing to capture all output
+        THROW_LAST_ERROR_IF(!FlushFileBuffers(m_hStdErrWritePipe));
+        CloseHandle(m_hStdErrWritePipe);
+        m_hStdErrWritePipe = INVALID_HANDLE_VALUE;
     }
 
     // Forces ReadFile to cancel, causing the read loop to complete.
@@ -1905,6 +1904,18 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         CloseHandle(m_hReadThread);
         m_hReadThread = nullptr;
+    }
+
+    if (m_hStdoutHandle != NULL)
+    {
+        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        {
+            if (CloseHandle(m_hStdoutHandle))
+            {
+                LOG_INFO(L"Canceling standard stream pipe reader.");
+            }
+        }
+        m_hStdoutHandle = NULL;
     }
 
     if (m_fStdoutLogEnabled)

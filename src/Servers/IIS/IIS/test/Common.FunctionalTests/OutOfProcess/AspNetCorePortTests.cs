@@ -84,6 +84,31 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task ShutdownMultipleTimesWorks(TestVariant variant)
+        {
+            // Must publish to set env vars in web.config
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);    
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
+            response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
+
+            for (var i = 0; i < 5; i++)
+            {
+                // ANCM should eventually recover from being shutdown multiple times.
+                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+
+            Assert.False();
+        }
+
         private static int GetUnusedRandomPort()
         {
             // Large number of retries to prevent test failures due to port collisions, but not infinite
