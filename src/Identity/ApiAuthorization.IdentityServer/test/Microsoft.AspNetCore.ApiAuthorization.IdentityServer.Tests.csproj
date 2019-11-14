@@ -5,6 +5,7 @@
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
