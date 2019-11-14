@@ -379,6 +379,12 @@ REQUESTHANDLER_CONFIG::Populate(
         goto Finished;
     }
 
+    hr = ConfigUtility::FindDisableRedirectionOutOfProcess(pAspNetCoreElement, m_fDisableRedirectionOutOfProcess);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
 Finished:
 
     if (pAspNetCoreElement != NULL)

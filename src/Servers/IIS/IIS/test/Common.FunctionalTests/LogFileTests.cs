@@ -234,6 +234,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
+        public async Task SetDisableRedirectionNoLogs()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.HandlerSettings["disableRedirectionOutOfProcess"] = "true";
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
+        }
+
+        [ConditionalFact]
         public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart30KbMax()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);

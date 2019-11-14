@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [RequiresNewShim]
         public async Task ShutdownMultipleTimesWorks(TestVariant variant)
         {
             // Must publish to set env vars in web.config
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
                 }
             }
 
-            Assert.False();
+            Assert.False(true);
         }
 
         private static int GetUnusedRandomPort()
