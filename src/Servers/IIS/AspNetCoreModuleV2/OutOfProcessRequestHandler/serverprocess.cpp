@@ -25,7 +25,7 @@ SERVER_PROCESS::Initialize(
     BOOL                  fAnonymousAuthEnabled,
     std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
     BOOL                  fStdoutLogEnabled,
-    BOOL                  fDisableRedirection,
+    BOOL                  fEnableOutOfProcessConsoleRedirection,
     BOOL                  fWebSocketSupported,
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
@@ -44,7 +44,7 @@ SERVER_PROCESS::Initialize(
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
     m_fBasicAuthEnabled = fBasicAuthEnabled;
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
-    m_fDisableRedirection = fDisableRedirection;
+    m_fEnableOutOfProcessConsoleRedirection = fEnableOutOfProcessConsoleRedirection;
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
@@ -1032,7 +1032,7 @@ SERVER_PROCESS::SetupStdHandles(
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
 
-    if (m_fDisableRedirection)
+    if (!m_fEnableOutOfProcessConsoleRedirection)
     {
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
@@ -1883,9 +1883,8 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         if (m_hStdErrWritePipe != INVALID_HANDLE_VALUE)
         {
-            THROW_LAST_ERROR_IF(!FlushFileBuffers(m_hStdErrWritePipe));
+            FlushFileBuffers(m_hStdErrWritePipe);
             CloseHandle(m_hStdErrWritePipe);
-            m_hStdErrWritePipe = INVALID_HANDLE_VALUE;
         }
 
         m_hStdErrWritePipe = NULL;

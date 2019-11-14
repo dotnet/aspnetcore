@@ -235,10 +235,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewShim]
-        public async Task SetDisableRedirectionNoLogs()
+        public async Task DisableRedirectionNoLogs()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
-            deploymentParameters.HandlerSettings["disableRedirectionOutOfProcess"] = "true";
+            deploymentParameters.HandlerSettings["enableOutOfProcessConsoleRedirection"] = "false";
             deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
             var deploymentResult = await DeployAsync(deploymentParameters);
 

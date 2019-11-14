@@ -14,7 +14,7 @@ class ConfigUtility
     #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
     #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
     #define CS_ASPNETCORE_DEBUG_FILE                         L"debugFile"
-    #define CS_ASPNETCORE_DISABLE_REDIRECTION_OUT_OF_PROCESS L"disableRedirectionOutOfProcess"
+    #define CS_ASPNETCORE_ENABLE_OUT_OF_PROCESS_CONSOLE_REDIRECTION L"EnableOutOfProcessConsoleRedirection"
     #define CS_ASPNETCORE_DEBUG_LEVEL                        L"debugLevel"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_NAME              L"name"
     #define CS_ASPNETCORE_HANDLER_SETTINGS_VALUE             L"value"
@@ -43,9 +43,9 @@ public:
 
     static
     HRESULT
-    FindDisableRedirectionOutOfProcess(IAppHostElement* pElement, STRU& strForwardResponseConnectionHeader)
+    FindEnableOutOfProcessConsoleRedirection(IAppHostElement* pElement, STRU& strEnableOutOfProcessConsoleRedirection)
     {
-        return FindKeyValuePair(pElement, CS_ASPNETCORE_DISABLE_REDIRECTION_OUT_OF_PROCESS, strForwardResponseConnectionHeader);
+        return FindKeyValuePair(pElement, CS_ASPNETCORE_ENABLE_OUT_OF_PROCESS_CONSOLE_REDIRECTION, strEnableOutOfProcessConsoleRedirection);
     }
 
 private:

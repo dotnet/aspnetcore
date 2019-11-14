@@ -219,9 +219,9 @@ public:
     }
 
     BOOL
-    QueryDisableRedirectionOutOfProcess()
+    QueryEnableOutOfProcessConsoleRedirection()
     {
-        return m_fDisableRedirectionOutOfProcess.Equals(L"true", 1);
+        return !m_fEnableOutOfProcessConsoleRedirection.Equals(L"false", 1);
     }
 
 protected:
@@ -261,7 +261,7 @@ protected:
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
-    STRU                   m_fDisableRedirectionOutOfProcess;
+    STRU                   m_fEnableOutOfProcessConsoleRedirection;
     APP_HOSTING_MODEL      m_hostingModel;
     std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;

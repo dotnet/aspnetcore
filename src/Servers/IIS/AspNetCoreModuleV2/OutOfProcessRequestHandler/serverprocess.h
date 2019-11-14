@@ -254,7 +254,7 @@ private:
     BOOL                    m_fBasicAuthEnabled;
     BOOL                    m_fAnonymousAuthEnabled;
     BOOL                    m_fDebuggerAttached;
-    BOOL                    m_fDisableRedirection;
+    BOOL                    m_fEnableOutOfProcessConsoleRedirection;
 
     STTIMER                 m_Timer;
     SOCKET                  m_socket;
