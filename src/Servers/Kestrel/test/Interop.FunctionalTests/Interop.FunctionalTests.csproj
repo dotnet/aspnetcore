@@ -8,6 +8,7 @@
     <SignAssembly>false</SignAssembly>
     <!-- See: https://github.com/dotnet/aspnetcore/issues/7299 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests>false</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
