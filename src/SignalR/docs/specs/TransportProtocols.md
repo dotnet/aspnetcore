@@ -186,6 +186,32 @@ Long Polling requires that the client poll the server for new messages. Unlike t
 
 A Poll is established by sending an HTTP GET request to `[endpoint-base]` with the following query string parameters
 
+## HTTP Streaming (HTTP/1, HTTP/2, HTTP/3)
+
+HTTP Streaming uses a single bi-directional HTTP request or 2 uni-directional HTTP requests as a single connection (one for input, one for output). If the HTTP client in use supports bi-directional streaming, negotiation can be skipped (if the client knows the server supports the streaming transport), otherwise, it requires a connection already be established using the `POST [endpoint-base]/negotiate` request.
+
+### 1 bi-directional HTTP Request
+
+For clients that support bi-directional streaming, the HTTP Streaming transport is activated by making a POST request `[endpoint-base]` with the content type `application/bedrock-streaming`. The **optional** `id` query string value is used to identify the connection to attach to. 
+
+If there is no `id` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. 
+
+Establishing a second streaming connection when there is already a connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
+
+Errors while establishing the connection are handled by returning a `500 Server Error` status code as the response to the upgrade request. This includes errors initializing EndPoint types. 
+
+### 1 uni-directional HTTP Requests (Server-to-Client only)
+
+For clients that do not support bi-directional streaming (like browser clients), it requires a connection already be established using the POST `[endpoint-base]/negotiate` request. The HTTP Streaming transport running in this mode is activated by making a GET request `[endpoint-base]` with the content type `application/bedrock-streaming`.
+
+If there is no `id` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. 
+
+Establishing a second streaming connection when there is already a connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
+
+Errors while establishing the connection are handled by returning a `500 Server Error` status code as the response to the upgrade request. This includes errors initializing EndPoint types. 
+
+## Versions
+
 #### Version 1
 * `id` (Required) - The Connection Token of the destination connection.
 
