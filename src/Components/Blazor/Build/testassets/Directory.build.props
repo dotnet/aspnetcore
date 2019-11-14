@@ -1,0 +1,13 @@
+<Project>
+    <Import Project="Before.Directory.build.props" Condition="Exists('Before.Directory.build.props')" />
+
+    <PropertyGroup>
+      <RepoRoot Condition="'$(RepoRoot)' ==''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), global.json))\</RepoRoot>
+      <ComponentsRoot>$(RepoRoot)src\Components\</ComponentsRoot>
+      <BlazorBuildRoot>$(ComponentsRoot)Blazor\Build\src\</BlazorBuildRoot>
+      <ReferenceBlazorBuildFromSourceProps>$(BlazorBuildRoot)ReferenceBlazorBuildFromSource.props</ReferenceBlazorBuildFromSourceProps>
+    </PropertyGroup>
+
+    <Import Project="$(RepoRoot)eng\Versions.props" />
+
+</Project>

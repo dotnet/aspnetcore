@@ -9,32 +9,43 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
-    internal class RuntimeDependenciesResolver
+    public class ResolveBlazorRuntimeDependencies : Task
     {
-        public static void ResolveRuntimeDependencies(
-            string entryPoint,
-            string[] applicationDependencies,
-            string[] monoBclDirectories,
-            string outputFile)
+        [Required]
+        public string EntryPoint { get; set; }
+
+        [Required]
+        public ITaskItem[] ApplicationDependencies { get; set; }
+
+        [Required]
+        public ITaskItem[] WebAssemblyBCLAssemblies { get; set; }
+
+        [Output]
+        public ITaskItem[] Dependencies { get; set; }
+
+        public override bool Execute()
         {
-            var paths = ResolveRuntimeDependenciesCore(entryPoint, applicationDependencies, monoBclDirectories);
-            File.WriteAllLines(outputFile, paths);
+            var paths = ResolveRuntimeDependenciesCore(EntryPoint, ApplicationDependencies.Select(c => c.ItemSpec), WebAssemblyBCLAssemblies.Select(c => c.ItemSpec));
+            Dependencies = paths.Select(p => new TaskItem(p)).ToArray();
+
+            return true;
         }
 
         public static IEnumerable<string> ResolveRuntimeDependenciesCore(
             string entryPoint,
-            string[] applicationDependencies,
-            string[] monoBclDirectories)
+            IEnumerable<string> applicationDependencies,
+            IEnumerable<string> monoBclAssemblies)
         {
             var entryAssembly = new AssemblyEntry(entryPoint, GetAssemblyName(entryPoint));
 
             var dependencies = CreateAssemblyLookup(applicationDependencies);
 
-            var bcl = CreateAssemblyLookup(monoBclDirectories
-                .SelectMany(d => Directory.EnumerateFiles(d, "*.dll").Select(f => Path.Combine(d, f))));
+            var bcl = CreateAssemblyLookup(monoBclAssemblies);
 
             var assemblyResolutionContext = new AssemblyResolutionContext(
                 entryAssembly,
@@ -103,8 +114,9 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
                 void ResolveAssembliesCore()
                 {
-                    while (pendingAssemblies.TryPop(out var current))
+                    while (pendingAssemblies.Count > 0)
                     {
+                        var current = pendingAssemblies.Pop();
                         if (visitedAssemblies.Add(current))
                         {
                             // Not all references will be resolvable within the Mono BCL.

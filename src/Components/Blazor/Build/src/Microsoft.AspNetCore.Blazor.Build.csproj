@@ -1,25 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetName>Microsoft.AspNetCore.Blazor.Build.Tasks</TargetName>
+    <AssemblyName>Microsoft.AspNetCore.Blazor.Build</AssemblyName>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
-    <OutputType>Exe</OutputType>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <!-- Pack settings -->
   <PropertyGroup>
     <!-- Producing this package requires building with NodeJS enabled. -->
     <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);Publish</GenerateNuspecDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
     <NuspecProperty Include="configuration=$(Configuration)" />
-    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="taskskDir=$(OutputPath)tools" />
     <NuspecProperty Include="componentsversion=$(ComponentsPackageVersion)" />
     <NuspecProperty Include="razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <NuspecProperty Include="blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
@@ -27,11 +28,30 @@
 
   <ItemGroup>
     <ProjectReference Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssembly="false" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <Reference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
     <Reference Include="System.Reflection.Metadata" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
-  </ItemGroup>
+  <Target Name="CopyBuildTask" BeforeTargets="Build" AfterTargets="PrepareForRun">
+      <!--
+      The task produced by this project is referenced within this solution. When building, Visual Studio will lock up the assembly.
+      Any attempts to overwrite the binary with a newer version will fail. This is particularly grating if a developer "Rebuilds" the project
+      after an initial build since that would always attempt to overwrite the tasks dll
+
+      This target attempts to make this solution more usable at the cost of a more onerous inner-loop build of the Blazor.Build tasks.
+      We'll copy the tasks to a location other that than the build output and use that in the Blazor.Build.targets. In the most common
+      case where these tasks aren't being worked on, everything should work great. However, if you're attemping to modify these tasks,
+      you will need to manaully stop MSBuild.exe processes
+      -->
+
+    <ItemGroup>
+      <_FilesToCopy Include="$(OutputPath)*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(OutputPath)tools" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
 </Project>
