@@ -6,6 +6,11 @@ parameters:
   # This can also be remedied by the caller (post-build.yml) if it does not use a nested parameter
   sdlContinueOnError: false                                    # optional: determines whether to continue the build if the step errors;
   dependsOn: ''                                                # Optional: dependencies of the job
+  artifactNames: ''                                            # Optional: patterns supplied to DownloadBuildArtifacts
+                                                               # Usage:
+                                                               #  artifactNames:
+                                                               #    - 'BlobArtifacts'
+                                                               #    - 'Artifacts_Windows_NT_Release'
 
 jobs:
 - job: Run_SDL
@@ -18,13 +23,22 @@ jobs:
   steps:
   - checkout: self
     clean: true
-  - task: DownloadBuildArtifacts@0
-    displayName: Download Build Artifacts
-    inputs:
-      buildType: current
-      downloadType: specific files
-      matchingPattern: "**"
-      downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
+  - ${{ if ne(parameters.artifactNames, '') }}:
+    - ${{ each artifactName in parameters.artifactNames }}:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Build Artifacts
+        inputs:
+          buildType: current
+          artifactName: ${{ artifactName }}
+          downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
+  - ${{ if eq(parameters.artifactNames, '') }}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Build Artifacts
+      inputs:
+        buildType: current
+        downloadType: specific files
+        itemPattern: "**"
+        downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
       -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
       -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts

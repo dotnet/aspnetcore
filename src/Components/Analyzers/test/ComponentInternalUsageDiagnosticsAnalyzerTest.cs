@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         private ComponentAnalyzerDiagnosticAnalyzerRunner Runner { get; }
 
         [Fact]
-        public async Task InternalUsage_FindsUseOfRenderTreeFrameAsParameter()
+        public async Task InternalUsage_FindsUseOfInternalTypesInDeclarations()
         {
             // Arrange
-            var source = Read("UsesRenderTreeFrameAsParameter");
+            var source = Read("UsesRendererTypesInDeclarations");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -34,15 +34,35 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 diagnostic =>
                 {
                     Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMBaseClass"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMField"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMProperty"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMParameter"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMReturnType"], diagnostic.Location);
                 });
         }
 
         [Fact]
-        public async Task InternalUsage_FindsUseOfRenderTreeType()
+        public async Task InternalUsage_FindsUseOfInternalTypesInMethodBody()
         {
             // Arrange
-            var source = Read("UsesRenderTreeFrameTypeAsLocal");
+            var source = Read("UsersRendererTypesInMethodBody");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -53,7 +73,17 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 diagnostic =>
                 {
                     Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
-                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMField"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMNewObject"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(DiagnosticDescriptors.DoNotUseRenderTreeTypes, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MMProperty"], diagnostic.Location);
                 });
         }
     }

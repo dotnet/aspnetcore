@@ -234,7 +234,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
                         requestContext.Response.Headers.IsReadOnly = false;
+                        requestContext.Response.Trailers.IsReadOnly = false;
                         requestContext.Response.Headers.Clear();
+                        requestContext.Response.Trailers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }
                 }

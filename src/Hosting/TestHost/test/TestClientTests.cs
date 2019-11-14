@@ -823,5 +823,48 @@ namespace Microsoft.AspNetCore.TestHost
 
             Assert.Same(value, capturedValue);
         }
+
+        [Fact]
+        public async Task SendAsync_Default_Protocol11()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(1, 1), message.Version);
+        }
+
+        [Fact]
+        public async Task SendAsync_ExplicitlySet_Protocol20()
+        {
+            // Arrange
+            var expected = "GET Response";
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(expected);
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+            request.Version = new Version(2, 0);
+
+            // Act
+            var message = await client.SendAsync(request);
+            var actual = await message.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(expected, actual);
+            Assert.Equal(new Version(2, 0), message.Version);
+        }
     }
 }
