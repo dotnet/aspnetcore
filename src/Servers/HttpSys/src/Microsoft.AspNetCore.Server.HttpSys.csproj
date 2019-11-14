@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
@@ -13,6 +13,15 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\DiagnosticMemoryPool.cs" Link="Shared\DiagnosticMemoryPool.cs" />
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\DiagnosticPoolBlock.cs" Link="Shared\DiagnosticPoolBlock.cs" />
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolBlock.cs" Link="Shared\MemoryPoolBlock.cs" />
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolSlab.cs" Link="Shared\MemoryPoolSlab.cs" />
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolThrowHelper.cs" Link="Shared\MemoryPoolThrowHelper.cs" />
+    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\SlabMemoryPool.cs" Link="Shared\SlabMemoryPool.cs" />
   </ItemGroup>
 
   <ItemGroup>

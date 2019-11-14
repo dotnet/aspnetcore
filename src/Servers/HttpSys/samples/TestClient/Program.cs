@@ -26,7 +26,7 @@ namespace TestClient
             HttpClient client = new HttpClient(handler);
 
             int completionCount = 0;
-            int iterations = 10000;
+            int iterations = 100000;
             for (int i = 0; i < iterations; i++)
             {
                 client.GetAsync(Address)
