@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".3gp2", "video/3gpp2" },
                 { ".3gp", "video/3gpp" },
                 { ".3gpp", "video/3gpp" },
+                { ".7z", "application/x-7z-compressed" },
                 { ".aac", "audio/aac" },
                 { ".aaf", "application/octet-stream" },
                 { ".aca", "application/octet-stream" },
