@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <SkipTests Condition="'$(IsHelixJob)' == 'true'">true</SkipTests>
+    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
