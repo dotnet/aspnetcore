@@ -156,11 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             CreateHeaderField("x-frame-options", "sameorigin"),
         };
 
-        public const int Authority = 0;
-        public const int PathSlash = 1;
-        public const int SchemeHttps = 23;
-        public const int MethodGet = 17;
-
         private static HeaderField CreateHeaderField(string name, string value)
             => new HeaderField(Encoding.ASCII.GetBytes(name), Encoding.ASCII.GetBytes(value));
     }

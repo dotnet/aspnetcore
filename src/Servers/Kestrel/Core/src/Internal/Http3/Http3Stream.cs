@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private readonly Http3Frame _incomingFrame = new Http3Frame();
 
         private readonly Http3Connection _http3Connection;
-
+        private bool _receivedHeaders;
         public Pipe RequestBodyPipe { get; }
 
         public Http3Stream(Http3Connection http3Connection, HttpConnectionContext context) : base(context)
@@ -170,11 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return ProcessHeadersFrameAsync(application, payload);
                 // need to be on control stream
                 case Http3FrameType.DuplicatePush:
-                    // TODO is nooping correct here?
-                    return ProcessUnknownFrameAsync();
                 case Http3FrameType.PushPromise:
-                    // TODO is nooping correct here?
-                    return ProcessUnknownFrameAsync();
                 case Http3FrameType.Settings:
                 case Http3FrameType.GoAway:
                 case Http3FrameType.CancelPush:
@@ -193,22 +189,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
         {
-            // TODO get this from a shared place
             QPackDecoder.Decode(payload, handler: this);
 
             // start off a request once qpack has decoded
             // Make sure to await this task.
+            if (_receivedHeaders)
+            {
+                // trailers
+                // TODO figure out if there is anything else to do here.
+                return Task.CompletedTask;
+            }
+
+            _receivedHeaders = true;
+
             Task.Run(() => base.ProcessRequestsAsync(application));
             return Task.CompletedTask;
         }
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)
         {
-            var length = payload.Slice(0, _incomingFrame.Length);
-
-            // TODO do we need a data pipe here
-            // Let's start with yes, eventually we dont if we create a wrapper.
-            //RequestBodyStarted = true;
             foreach (var segment in payload)
             {
                 RequestBodyPipe.Writer.Write(segment.Span);
@@ -262,9 +261,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private bool TryValidatePseudoHeaders()
         {
             _httpVersion = Http.HttpVersion.Http3;
-
-            // The initial pseudo header validation takes place in Http2Connection.ValidateHeader and StartStream
-            // They make sure the right fields are at least present (except for Connect requests) exactly once.
 
             if (!TryValidateMethod())
             {

@@ -23,16 +23,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
          */
         public static bool EncodeIndexedHeaderField(int index, Span<byte> destination, out int bytesWritten)
         {
-            if (destination.Length != 0)
+            if (destination.IsEmpty)
             {
-                EncodeHeaderBlockPrefix(destination, out bytesWritten);
-                destination = destination.Slice(bytesWritten);
-
-                return IntegerEncoder.Encode(index, 6, destination, out bytesWritten);
+                bytesWritten = 0;
+                return false;
             }
 
-            bytesWritten = 0;
-            return false;
+            EncodeHeaderBlockPrefix(destination, out bytesWritten);
+            destination = destination.Slice(bytesWritten);
+
+            return IntegerEncoder.Encode(index, 6, destination, out bytesWritten);
         }
 
         public static bool EncodeIndexHeaderFieldWithPostBaseIndex(int index, Span<byte> destination, out int bytesWritten)
@@ -44,16 +44,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         /// <summary>Encodes a "Literal Header Field without Indexing".</summary>
         public static bool EncodeLiteralHeaderFieldWithNameReference(int index, string value, Span<byte> destination, out int bytesWritten)
         {
-            if (destination.Length != 0)
+            if (destination.IsEmpty)
             {
-                EncodeHeaderBlockPrefix(destination, out bytesWritten);
-                destination = destination.Slice(bytesWritten);
-
-                return IntegerEncoder.Encode(index, 6, destination, out bytesWritten);
+                bytesWritten = 0;
+                return false;
             }
 
-            bytesWritten = 0;
-            return false;
+            EncodeHeaderBlockPrefix(destination, out bytesWritten);
+            destination = destination.Slice(bytesWritten);
+
+            return IntegerEncoder.Encode(index, 6, destination, out bytesWritten);
         }
 
         /*
@@ -103,12 +103,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             destination = destination.Slice(length);
 
             // Delta base
-            if (destination.Length == 0)
+            if (destination.IsEmpty)
             {
                 return false;
             }
 
-            destination[0] = 0x00; // zero out as we don't have a signed bit.
+            destination[0] = 0x00;
             if (!IntegerEncoder.Encode(0, 7, destination, out length))
             {
                 return false;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             // |  String Data (Length octets)  |
             // +-------------------------------+
 
-            if (destination.Length != 0)
+            if (!destination.IsEmpty)
             {
                 destination[0] = 0; // TODO: Use Huffman encoding
                 if (IntegerEncoder.Encode(value.Length, 7, destination, out int integerLength))
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             // |  String Data (Length octets)  |
             // +-------------------------------+
 
-            if (destination.Length != 0)
+            if (!destination.IsEmpty)
             {
                 destination[0] = 0; // TODO: Use Huffman encoding
                 if (IntegerEncoder.Encode(value.Length, 7, destination, out int integerLength))
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
                 return EncodeStringLiteral(values[0], destination, out bytesWritten);
             }
 
-            if (destination.Length != 0)
+            if (!destination.IsEmpty)
             {
                 int valueLength = 0;
 
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             var i = 0;
             length = 0;
 
-            if (buffer.Length == 0)
+            if (buffer.IsEmpty)
             {
                 return false;
             }
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             var i = 0;
             length = 0;
 
-            if (buffer.Length == 0)
+            if (buffer.IsEmpty)
             {
                 return false;
             }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Http3SampleApp
@@ -15,34 +16,35 @@ namespace Http3SampleApp
         public static void Main(string[] args)
         {
             var cert = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = new HostBuilder()
                  .ConfigureLogging((_, factory) =>
                  {
                      factory.SetMinimumLevel(LogLevel.Trace);
                      factory.AddConsole();
                  })
-                 .UseKestrel()
-                 // TODO figure out how to make this fluent.
-                 // Things like APLN and cert should be able to be passed from corefx into bedrock
-                 .UseMsQuic(options =>
+                 .ConfigureWebHost(webHost =>
                  {
-                     options.Certificate = cert;
-                     options.RegistrationName = "Quic";
-                     options.Alpn = "h3-24";
-                     options.IdleTimeout = TimeSpan.FromHours(1);
-                 })
-                 .ConfigureKestrel((context, options) =>
-                 {
-                     var basePort = 5555;
-
-                     options.Listen(IPAddress.Any, basePort, listenOptions =>
+                     webHost.UseKestrel()
+                     // Things like APLN and cert should be able to be passed from corefx into bedrock
+                     .UseMsQuic(options =>
                      {
-                         listenOptions.UseHttps();
-                         listenOptions.Protocols = HttpProtocols.Http3;
-                     });
-                 })
-                 .UseContentRoot(Directory.GetCurrentDirectory())
-                 .UseStartup<Startup>();
+                         options.Certificate = cert;
+                         options.RegistrationName = "Quic";
+                         options.Alpn = "h3-24";
+                         options.IdleTimeout = TimeSpan.FromHours(1);
+                     })
+                     .ConfigureKestrel((context, options) =>
+                     {
+                         var basePort = 5555;
+
+                         options.Listen(IPAddress.Any, basePort, listenOptions =>
+                         {
+                             listenOptions.UseHttps();
+                             listenOptions.Protocols = HttpProtocols.Http3;
+                         });
+                     })
+                     .UseStartup<Startup>();
+                 });
 
             hostBuilder.Build().Run();
         }

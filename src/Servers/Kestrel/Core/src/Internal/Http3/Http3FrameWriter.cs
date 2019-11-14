@@ -70,10 +70,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         internal Task WriteSettingsAsync(IList<Http3PeerSettings> settings)
         {
             _outgoingFrame.PrepareSettings();
-            _outgoingFrame.Length = 0;
-            var buffer = _outputWriter.GetSpan(1);
+            var buffer = _outputWriter.GetSpan(2);
+
             buffer[0] = (byte)_outgoingFrame.Type;
             buffer[1] = 0;
+
             _outputWriter.Advance(2);
 
             return _outputWriter.FlushAsync().AsTask();
@@ -98,7 +99,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     return default;
                 }
 
-                // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 WriteDataUnsynchronized(data, dataLength);
                 return TimeFlushUnsynchronizedAsync();
             }
@@ -108,12 +108,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             Debug.Assert(dataLength == data.Length);
 
-            // Note padding is not implemented
             _outgoingFrame.PrepareData();
 
-            if (dataLength > _maxFrameSize) // Minus padding
+            if (dataLength > _maxFrameSize)
             {
-                TrimAndWriteDataUnsynchronized(in data, dataLength);
+                SplitAndWriteDataUnsynchronized(in data, dataLength);
                 return;
             }
 
@@ -126,10 +125,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                 _outputWriter.Write(buffer.Span);
             }
 
-            // Plus padding
             return;
 
-            void TrimAndWriteDataUnsynchronized(in ReadOnlySequence<byte> data, long dataLength)
+            void SplitAndWriteDataUnsynchronized(in ReadOnlySequence<byte> data, long dataLength)
             {
                 Debug.Assert(dataLength == data.Length);
 

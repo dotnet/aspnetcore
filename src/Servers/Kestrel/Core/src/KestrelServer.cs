@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                     else
                     {
-                        factory = _transportFactories.First();
+                        factory = _transportFactories.Single();
                     }
 
                     var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);

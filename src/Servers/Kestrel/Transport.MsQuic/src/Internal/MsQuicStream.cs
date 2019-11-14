@@ -60,8 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
             Features.Set<IQuicStreamFeature>(this);
 
             // TODO populate the ITlsConnectionFeature (requires client certs). 
-            var feature = new FakeTlsConnectionFeature();
-            Features.Set<ITlsConnectionFeature>(feature);
+            Features.Set<ITlsConnectionFeature>(new FakeTlsConnectionFeature());
             if (flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL))
             {
                 IsUnidirectional = true;
@@ -78,7 +77,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
         public override MemoryPool<byte> MemoryPool { get; }
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
+
         public bool IsUnidirectional { get; }
+
         public long StreamId
         {
             get

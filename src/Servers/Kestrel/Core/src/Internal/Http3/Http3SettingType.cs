@@ -5,11 +5,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     enum Http3SettingType : long
     {
-        QPACK_MAX_TABLE_CAPACITY = 0x1,
+        QPackMaxTableCapacity = 0x1,
         /// <summary>
         /// SETTINGS_MAX_HEADER_LIST_SIZE, default is unlimited.
         /// </summary>
         MaxHeaderListSize = 0x6,
-        QPACK_BLOCKED_STREAMS = 0x7
+        QPackBlockedStreams = 0x7
     }
 }

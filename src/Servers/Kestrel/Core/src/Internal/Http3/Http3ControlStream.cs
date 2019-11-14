@@ -300,15 +300,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private void ProcessSetting(long id, long value)
         {
+            // These are client settings, for outbound traffic.
             switch (id)
             {
-                case (long)Http3SettingType.QPACK_MAX_TABLE_CAPACITY:
+                case (long)Http3SettingType.QPackMaxTableCapacity:
                     _http3Connection.ApplyMaxTableCapacity(value);
                     break;
                 case (long)Http3SettingType.MaxHeaderListSize:
                     _http3Connection.ApplyMaxHeaderListSize(value);
                     break;
-                case (long)Http3SettingType.QPACK_BLOCKED_STREAMS:
+                case (long)Http3SettingType.QPackBlockedStreams:
                     _http3Connection.ApplyBlockedStream(value);
                     break;
                 default:

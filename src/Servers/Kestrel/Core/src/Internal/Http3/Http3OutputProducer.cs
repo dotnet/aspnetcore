@@ -229,13 +229,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
                 _completed = true;
 
-                // Complete with an exception to prevent an end of stream data frame from being sent without an
-                // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
-                // message doesn't matter
                 _pipeWriter.Complete(new OperationCanceledException());
 
-                // TODO figure out how to abort the stream.
-                //_frameWriter.AbortPendingStreamDataWrites(_flowControl);
             }
         }
 

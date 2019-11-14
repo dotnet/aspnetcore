@@ -85,16 +85,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             await Task.Yield();
 
             bool certificateRequired;
-            var feature = new Core.Internal.TlsConnectionFeature();
-            context.Features.Set<ITlsConnectionFeature>(feature);
-            context.Features.Set<ITlsHandshakeFeature>(feature);
-
-            if (_options.HttpProtocols == HttpProtocols.Http3)
+            if (context.Features.Get<ITlsConnectionFeature>() != null)
             {
-                // Http3 will always be "secure"
                 await _next(context);
                 return;
             }
+
+            var feature = new Core.Internal.TlsConnectionFeature();
+            context.Features.Set<ITlsConnectionFeature>(feature);
+            context.Features.Set<ITlsHandshakeFeature>(feature);
 
             var memoryPool = context.Features.Get<IMemoryPoolFeature>()?.MemoryPool;
 
