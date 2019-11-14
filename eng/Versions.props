@@ -158,13 +158,13 @@
     <MicrosoftJSInteropPackageVersion>5.0.0-alpha1.19561.10</MicrosoftJSInteropPackageVersion>
     <MonoWebAssemblyInteropPackageVersion>5.0.0-preview3.19561.10</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
-    <dotnetefPackageVersion>5.0.0-alpha.1.19562.8</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-alpha.1.19562.8</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>5.0.0-alpha.1.19563.3</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>5.0.0-alpha.1.19563.3</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-alpha.1.19563.6</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-alpha.1.19563.6</MicrosoftAspNetCoreRazorLanguagePackageVersion>
