@@ -14,7 +14,7 @@ stages:
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - job:
+  - job: publish_symbols
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
     condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.InternalServicing_30_Channel_Id))
@@ -60,6 +60,11 @@ stages:
             /p:Configuration=Release
             /p:PublishToMSDL=false
             ${{ parameters.symbolPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: 'Channel_Net_30_Internal_Servicing'
+          JobLabel: 'SymbolPublishing'
 
   - job: publish_assets
     displayName: Publish Assets
@@ -136,7 +141,13 @@ stages:
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-symbols/nuget/v3/index.json'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:PublishToMSDL=false
             ${{ parameters.artifactsPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: 'Channel_Net_30_Internal_Servicing'
+          JobLabel: 'AssetPublishing'
 
       - template: ../../steps/promote-build.yml
         parameters:

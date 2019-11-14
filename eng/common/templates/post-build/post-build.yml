@@ -79,8 +79,12 @@ stages:
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
               /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-              /p:Configuration=Release 
               ${{ parameters.signingValidationAdditionalParameters }}
+
+        - template: ../steps/publish-logs.yml
+          parameters:
+            StageLabel: 'Validation'
+            JobLabel: 'Signing'
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
     - job:

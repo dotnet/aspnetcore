@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -242,7 +242,9 @@ namespace Microsoft.Extensions.Internal
             // Assert
             var frame = frames[0];
             Assert.Null(frame.FilePath);
-            Assert.Equal($"lambda_method(Closure )", frame.MethodDisplayInfo.ToString());
+            // lambda_method{RandomNumber}(Closure )
+            Assert.StartsWith("lambda_method", frame.MethodDisplayInfo.ToString());
+            Assert.EndsWith("(Closure )", frame.MethodDisplayInfo.ToString());
         }
 
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
