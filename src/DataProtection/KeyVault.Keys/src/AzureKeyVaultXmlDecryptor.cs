@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault
 {
-    internal class AzureKeyVaultXmlDecryptor: IXmlDecryptor
+    internal class AzureKeyVaultXmlDecryptor : IXmlDecryptor
     {
         private readonly IKeyEncryptionKeyResolver _client;
 

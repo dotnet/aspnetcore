@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.DataProtection.AzureKeyVault.Test
                 .ReturnsAsync((string _, ReadOnlyMemory<byte> data, CancellationToken __) => data.ToArray().Reverse().ToArray())
                 .Verifiable();
 
-
             keyMock.SetupGet(client => client.KeyId).Returns("KeyId");
 
             var mock = new Mock<IKeyEncryptionKeyResolver>();

@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.DataProtection
             return ProtectKeysWithAzureKeyVault(builder, new KeyResolver(tokenCredential), keyIdentifier);
         }
 
-
         /// <summary>
         /// Configures the data protection system to protect keys with specified key in Azure KeyVault.
         /// </summary>
