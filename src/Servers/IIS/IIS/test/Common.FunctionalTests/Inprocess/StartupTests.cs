@@ -837,6 +837,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        public async Task CanAddCustomStartupHookWhenIISOneIsDisabled()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.WebConfigBasedEnvironmentVariables["DOTNET_STARTUP_HOOKS"] = "InProcessWebSite";
+            deploymentParameters.HandlerSettings["callStartupHook"] = "false";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/StartupHook");
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Equal("True", content);
+
+            StopServer();
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
         public async Task StackOverflowIsAvoidedBySettingLargerStack()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
