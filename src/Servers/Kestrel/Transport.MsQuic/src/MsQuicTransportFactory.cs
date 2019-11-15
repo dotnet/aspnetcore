@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic
 {
-    public class MsQuicTransportFactory : IConnectionListenerFactory
+    public class MsQuicTransportFactory : IMultiplexedConnectionListenerFactory
     {
         private MsQuicTrace _log;
         private IHostApplicationLifetime _applicationLifetime;

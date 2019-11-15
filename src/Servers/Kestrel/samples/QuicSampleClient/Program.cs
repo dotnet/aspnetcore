@@ -53,6 +53,8 @@ namespace QuicSampleClient
 
             public async Task RunAsync()
             {
+                var start = Console.ReadLine();
+                Console.WriteLine("Starting");
                 var connectionContext = await _connectionFactory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
                 var createStreamFeature = connectionContext.Features.Get<IQuicCreateStreamFeature>();
                 var streamContext = await createStreamFeature.StartBidirectionalStreamAsync();

@@ -163,6 +163,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 Buffer.Buffer);
         }
 
+        internal unsafe uint UnsafeGetParam(
+            IntPtr Handle,
+            uint Level,
+            uint Param,
+            ref MsQuicNativeMethods.QuicBuffer Buffer)
+        {
+            return GetParamDelegate(
+                Handle,
+                Level,
+                Param,
+                out Buffer.Length,
+                out Buffer.Buffer);
+        }
+
         public async ValueTask<QuicSecConfig> CreateSecurityConfig(X509Certificate2 certificate)
         {
             QuicSecConfig secConfig = null;
