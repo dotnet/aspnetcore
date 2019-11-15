@@ -7,6 +7,8 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Mono.Cecil.Pdb;
 
 namespace WsProxy {
 	internal class BreakPointRequest {
@@ -456,24 +458,18 @@ namespace WsProxy {
 			this.assembly = assembly;
 			this.id = id;
 			this.doc = doc;
-			this.DebuggerFileName = doc.Url.Replace ("\\", "/").Replace (":", "");
-
-			this.SourceUri = new Uri ((Path.IsPathRooted (doc.Url) ? "file://" : "") + doc.Url, UriKind.RelativeOrAbsolute);
-			if (SourceUri.IsFile && File.Exists (SourceUri.LocalPath)) {
-				this.Url = this.SourceUri.ToString ();
-			} else {
-				this.Url = DotNetUrl;
-			}
-
-		}
+            this.DebuggerFileName = doc.Url.Replace("\\", "/").Replace(":", "");
+        }
 
 		internal void AddMethod (MethodInfo mi)
 		{
 			this.methods.Add (mi);
 		}
+        public string DebuggerFileName { get; }
         public string AssemblyName => assembly.Name;
 		public string FileName => Path.GetFileName (doc.Url);
         public string Url => LocalPathToFileUrl(doc.Url);
+        public string DotNetUrl => $"dotnet://{assembly.Name}/{DebuggerFileName}";
 
         public string DocHashCode => "abcdee" + id;
 		public SourceId SourceId => new SourceId (assembly.Id, this.id);
@@ -625,7 +621,7 @@ namespace WsProxy {
 		public SourceLocation FindBestBreakpoint (BreakPointRequest req)
 		{
 			var asm = assemblies.FirstOrDefault (a => a.Name.Equals (req.Assembly, StringComparison.OrdinalIgnoreCase));
-			var src = asm?.Sources?.FirstOrDefault (s => s.DebuggerFileName.Equals (req.File, StringComparison.OrdinalIgnoreCase));
+			var src = asm?.Sources?.FirstOrDefault (s => s.FileName == req.File);
 
 			if (src == null)
 				return null;
@@ -643,12 +639,6 @@ namespace WsProxy {
 
 		public string ToUrl (SourceLocation location)
 			=> location != null ? GetFileById (location.Id).Url : "";
-
-		public SourceFile GetFileByUrlRegex (string urlRegex)
-		{
-			var regex = new Regex (urlRegex);
-			return AllSources ().FirstOrDefault (file => regex.IsMatch (file.Url.ToString()));
-		}
 
         public SourceFile GetFileByUrlRegex(string urlRegex)
         {

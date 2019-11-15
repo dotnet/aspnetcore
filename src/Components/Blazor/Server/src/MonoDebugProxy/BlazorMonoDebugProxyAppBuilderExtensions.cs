@@ -265,11 +265,9 @@ namespace Microsoft.AspNetCore.Builder
 
         private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs(string debuggerHost)
         {
-            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
-            {
-                var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
-                return JsonConvert.DeserializeObject<BrowserTab[]>(jsonResponse);
-            }
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
+            return JsonConvert.DeserializeObject<BrowserTab[]>(jsonResponse);
         }
 
         class BrowserTab

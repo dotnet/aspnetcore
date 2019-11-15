@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Chrome",
+      "port": 52015,
+      "webRoot": "${workspaceFolder}"
+    },
+    {
       "type": "PowerShell",
       "request": "launch",
       "name": "ps: Interactive Session",
@@ -12,6 +19,7 @@
       "type": "coreclr",
       "request": "attach",
       "processId": "${command:pickProcess}"
-    }
+    },
+
   ]
 }
