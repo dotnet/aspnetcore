@@ -2,15 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
     internal abstract class RouteConstraint
     {
-        private static readonly IDictionary<string, RouteConstraint> _cachedConstraints
-            = new Dictionary<string, RouteConstraint>();
+        // note: the things that prevent this cache from growing unbounded is that
+        // we're the only caller to this code path, and the fact that there are only
+        // 8 possible instances that we create.
+        //
+        // The values passed in here for parsing are always static text defined in route attributes.
+        private static readonly ConcurrentDictionary<string, RouteConstraint> _cachedConstraints
+            = new ConcurrentDictionary<string, RouteConstraint>();
 
         public abstract bool Match(string pathSegment, out object convertedValue);
 
@@ -30,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 var newInstance = CreateRouteConstraint(constraint);
                 if (newInstance != null)
                 {
-                    _cachedConstraints[constraint] = newInstance;
+                    _cachedConstraints.TryAdd(constraint, newInstance);
                     return newInstance;
                 }
                 else
