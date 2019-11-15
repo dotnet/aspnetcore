@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             var i = 0;
             length = 0;
 
-            if (buffer.Length == 0)
+            if (buffer.IsEmpty)
             {
                 return false;
             }
