@@ -35,8 +35,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                 var newInstance = CreateRouteConstraint(constraint);
                 if (newInstance != null)
                 {
-                    _cachedConstraints.TryAdd(constraint, newInstance);
-                    return newInstance;
+                    // We've done to the work to create the constraint now, but it's possible
+                    // we're competing with another thread. GetOrAdd can ensure only a single
+                    // instance is returned so that any extra ones can be GC'ed.
+                    return _cachedConstraints.GetOrAdd(constraint, newInstance);
                 }
                 else
                 {
