@@ -8,7 +8,6 @@
     <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
     <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
     <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
-    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
