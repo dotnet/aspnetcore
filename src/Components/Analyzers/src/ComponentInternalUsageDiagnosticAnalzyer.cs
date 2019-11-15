@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Internal
                 @namespace = @namespace.ContainingNamespace;
             }
 
-            return true;
+            return @namespace.IsGlobalNamespace;
         }
     }
 }
