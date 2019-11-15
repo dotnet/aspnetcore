@@ -418,6 +418,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Assert
             response.EnsureSuccessStatusCode();
+            Assert.Equal("true", response.Headers.GetValues("test-header").Single());
 
             // Read response
             byte[] buffer = new byte[1024];
