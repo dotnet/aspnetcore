@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
         private Renderer /*MMField*/_field = null;
 
         public UsesRendererTypesInDeclarations()
-            : base(null, null)
+            /*MMInvocation*/: base(null, null)
         {
         }
 
