@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.KeyVault.Keys.Tests" />
+
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Azure.Security.KeyVault.Keys" />
     <Reference Include="Azure.Identity" />

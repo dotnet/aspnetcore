@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.DataProtection
         /// Configures the data protection system to protect keys with specified key in Azure KeyVault.
         /// </summary>
         /// <param name="builder">The builder instance to modify.</param>
-        /// <param name="client">The <see cref="KeyResolver"/> to use for KeyVault access.</param>
+        /// <param name="client">The <see cref="IKeyEncryptionKeyResolver"/> to use for KeyVault access.</param>
         /// <param name="keyIdentifier">The Azure KeyVault key identifier used for key encryption.</param>
         /// <returns>The value <paramref name="builder"/>.</returns>
-        public static IDataProtectionBuilder ProtectKeysWithAzureKeyVault(this IDataProtectionBuilder builder, KeyResolver client, string keyIdentifier)
+        public static IDataProtectionBuilder ProtectKeysWithAzureKeyVault(this IDataProtectionBuilder builder, IKeyEncryptionKeyResolver client, string keyIdentifier)
         {
             if (builder == null)
             {
