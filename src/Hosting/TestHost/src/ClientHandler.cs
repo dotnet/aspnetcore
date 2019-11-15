@@ -86,15 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 else
                 {
-                    try
-                    {
-                        await requestContent.CopyToAsync(writer.AsStream());
-                    }
-                    catch (Exception ex)
-                    {
-
-                        throw ex;
-                    }
+                    await requestContent.CopyToAsync(writer.AsStream());
                 }
 
                 await writer.CompleteAsync();
