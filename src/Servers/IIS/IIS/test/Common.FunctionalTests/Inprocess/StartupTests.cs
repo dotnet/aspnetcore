@@ -817,6 +817,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             VerifyDotnetRuntimeEventLog(deploymentResult);
         }
 
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task CanAddCustomStartupHook()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.WebConfigBasedEnvironmentVariables["DOTNET_STARTUP_HOOKS"] = "InProcessWebSite";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/StartupHook");
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Equal("True", content);
+
+            StopServer();
+        }
+
         [ConditionalFact]
         [RequiresNewHandler]
         public async Task StackOverflowIsAvoidedBySettingLargerStack()
