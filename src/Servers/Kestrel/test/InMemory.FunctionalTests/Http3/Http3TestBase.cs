@@ -6,15 +6,13 @@ using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -26,24 +24,18 @@ using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, IQuicCreateStreamFeature, IQuicStreamListenerFeature
+    public class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable
     {
         internal TestServiceContext _serviceContext;
         internal Http3Connection _connection;
         internal readonly TimeoutControl _timeoutControl;
         internal readonly Mock<IKestrelTrace> _mockKestrelTrace = new Mock<IKestrelTrace>();
-        protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
         internal readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
         protected Task _connectionTask;
         protected readonly RequestDelegate _echoApplication;
-
-        private readonly Channel<ConnectionContext> _acceptConnectionQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
-        {
-            SingleReader = true,
-            SingleWriter = true
-        });
+        private TestMultiplexedConnectionContext _multiplexedContext;
 
         public Http3TestBase()
         {
@@ -100,12 +92,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var limits = _serviceContext.ServerOptions.Limits;
 
             var features = new FeatureCollection();
-            features.Set<IQuicCreateStreamFeature>(this);
-            features.Set<IQuicStreamListenerFeature>(this);
+
+            _multiplexedContext = new TestMultiplexedConnectionContext(this);
 
             var httpConnectionContext = new HttpConnectionContext
             {
-                ConnectionContext = _mockConnectionContext.Object,
+                ConnectionContext = _multiplexedContext,
                 ConnectionFeatures = features,
                 ServiceContext = _serviceContext,
                 MemoryPool = _memoryPool,
@@ -155,30 +147,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return bufferSize ?? 0;
         }
 
-        public ValueTask<ConnectionContext> StartUnidirectionalStreamAsync()
-        {
-            var stream = new Http3ControlStream(this, _connection);
-            // TODO put these somewhere to be read.
-            return new ValueTask<ConnectionContext>(stream.ConnectionContext);
-        }
-
-        public async ValueTask<ConnectionContext> AcceptAsync()
-        {
-            while (await _acceptConnectionQueue.Reader.WaitToReadAsync())
-            {
-                while (_acceptConnectionQueue.Reader.TryRead(out var connection))
-                {
-                    return connection;
-                }
-            }
-
-            return null;
-        }
-
         internal async ValueTask<Http3ControlStream> CreateControlStream(int id)
         {
             var stream = new Http3ControlStream(this, _connection);
-            _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
+            _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             await stream.WriteStreamIdAsync(id);
             return stream;
         }
@@ -186,15 +158,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal ValueTask<Http3RequestStream> CreateRequestStream()
         {
             var stream = new Http3RequestStream(this, _connection);
-            _acceptConnectionQueue.Writer.TryWrite(stream.ConnectionContext);
+            _multiplexedContext.AcceptQueue.Writer.TryWrite(stream.StreamContext);
             return new ValueTask<Http3RequestStream>(stream);
         }
 
-        public ValueTask<ConnectionContext> StartBidirectionalStreamAsync()
+        public ValueTask<StreamContext> StartBidirectionalStreamAsync()
         {
             var stream = new Http3RequestStream(this, _connection);
             // TODO put these somewhere to be read.
-            return new ValueTask<ConnectionContext>(stream.ConnectionContext);
+            return new ValueTask<StreamContext>(stream.StreamContext);
         }
 
         internal class Http3StreamBase
@@ -216,9 +188,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler, IQuicStreamFeature
+        internal class Http3RequestStream : Http3StreamBase, IHttpHeadersHandler
         {
-            internal ConnectionContext ConnectionContext { get; }
+            internal StreamContext StreamContext { get; }
 
             public bool CanRead => true;
             public bool CanWrite => true;
@@ -239,10 +211,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
-
-                ConnectionContext = new DefaultConnectionContext();
-                ConnectionContext.Transport = _pair.Transport;
-                ConnectionContext.Features.Set<IQuicStreamFeature>(this);
+                    
+                StreamContext = new TestStreamContext(Direction.BidirectionalInbound);
+                StreamContext.Transport = _pair.Transport;
             }
 
             public async Task<bool> SendHeadersAsync(IEnumerable<KeyValuePair<string, string>> headers)
@@ -362,28 +333,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
 
-        internal class Http3ControlStream : Http3StreamBase, IQuicStreamFeature
+        internal class Http3ControlStream : Http3StreamBase
         {
-            internal ConnectionContext ConnectionContext { get; }
+            internal StreamContext StreamContext { get; }
 
             public bool CanRead => true;
             public bool CanWrite => false;
 
-            // TODO
             public long StreamId => 0;
 
-            public Http3ControlStream(Http3TestBase testBase, Http3Connection connection)
+            public Http3ControlStream(Http3TestBase testBase)
             {
                 _testBase = testBase;
-                _connection = connection;
                 var inputPipeOptions = GetInputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
                 var outputPipeOptions = GetOutputPipeOptions(_testBase._serviceContext, _testBase._memoryPool, PipeScheduler.ThreadPool);
 
                 _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
-                ConnectionContext = new DefaultConnectionContext();
-                ConnectionContext.Transport = _pair.Transport;
-                ConnectionContext.Features.Set<IQuicStreamFeature>(this);
+                StreamContext = new TestStreamContext(Direction.UnidirectionalInbound);
+
+                StreamContext.Transport = _pair.Transport;
             }
 
             public async Task WriteStreamIdAsync(int id)
@@ -401,6 +370,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await FlushAsync(writableBuffer);
             }
+        }
+
+        private class TestMultiplexedConnectionContext : MultiplexedConnectionContext
+        {
+            public readonly Channel<StreamContext> AcceptQueue = Channel.CreateUnbounded<StreamContext>(new UnboundedChannelOptions
+            {
+                SingleReader = true,
+                SingleWriter = true
+            });
+
+            private readonly Http3TestBase _testBase;
+
+            public TestMultiplexedConnectionContext(Http3TestBase testBase)
+            {
+                _testBase = testBase;
+            }
+
+            public override string ConnectionId { get; set; }
+
+            public override IFeatureCollection Features { get; }
+
+            public override IDictionary<object, object> Items { get; set; }
+
+            public override async ValueTask<StreamContext> AcceptAsync(CancellationToken cancellationToken = default)
+            {
+                while (await AcceptQueue.Reader.WaitToReadAsync())
+                {
+                    while (AcceptQueue.Reader.TryRead(out var connection))
+                    {
+                        return connection;
+                    }
+                }
+
+                return null;
+            }
+
+            public override ValueTask<StreamContext> ConnectAsync(IFeatureCollection features = null, bool unidirectional = false, CancellationToken cancellationToken = default)
+            {
+                var stream = new Http3ControlStream(_testBase);
+                // TODO put these somewhere to be read.
+                return new ValueTask<StreamContext>(stream.StreamContext);
+            }
+        }
+
+        private class TestStreamContext : StreamContext
+        {
+            public TestStreamContext(Direction direction)
+            {
+                Direction = direction;
+            }
+
+            public override long StreamId { get; set; }
+
+            public override Direction Direction { get; }
+
+            public override string ConnectionId { get; set; }
+
+            public override IFeatureCollection Features { get; }
+
+            public override IDictionary<object, object> Items { get; set; }
+
+            public override IDuplexPipe Transport { get; set; }
         }
     }
 }

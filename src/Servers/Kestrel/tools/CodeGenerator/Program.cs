@@ -27,16 +27,26 @@ namespace CodeGenerator
             }
             else if (args.Length < 4)
             {
-                Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
+                Console.Error.WriteLine("Missing path to TransportMultiplexedConnection.Generated.cs");
                 return 1;
             }
             else if (args.Length < 5)
             {
+                Console.Error.WriteLine("Missing path to TransportConnection.Generated.cs");
+                return 1;
+            }
+            else if (args.Length < 6)
+            {
                 Console.Error.WriteLine("Missing path to Http2Connection.Generated.cs");
                 return 1;
             }
+            else if (args.Length < 7)
+            {
+                Console.Error.WriteLine("Missing path to TransportStream.Generated.cs");
+                return 1;
+            }
 
-            Run(args[0], args[1], args[2], args[3], args[4]);
+            Run(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 
             return 0;
         }
@@ -45,37 +55,33 @@ namespace CodeGenerator
             string knownHeadersPath,
             string httpProtocolFeatureCollectionPath,
             string httpUtilitiesPath,
+            string http2ConnectionPath,
+            string transportMultiplexedConnectionFeatureCollectionPath,
             string transportConnectionFeatureCollectionPath,
-            string http2ConnectionPath)
+            string transportStreamFeatureCollectionPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
             var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GenerateFile();
             var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
+            var transportMultiplexedConnectionFeatureCollectionContent = TransportMultiplexedConnectionFeatureCollection.GenerateFile();
             var transportConnectionFeatureCollectionContent = TransportConnectionFeatureCollection.GenerateFile();
             var http2ConnectionContent = Http2Connection.GenerateFile();
+            var transportStreamFeatureCollectionContent = TransportStreamFeatureCollection.GenerateFile();
 
-            var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";
-            if (!string.Equals(knownHeadersContent, existingKnownHeaders))
-            {
-                File.WriteAllText(knownHeadersPath, knownHeadersContent);
-            }
+            UpdateFile(knownHeadersPath, knownHeadersContent);
+            UpdateFile(httpProtocolFeatureCollectionPath, httpProtocolFeatureCollectionContent);
+            UpdateFile(httpUtilitiesPath, httpUtilitiesContent);
+            UpdateFile(transportMultiplexedConnectionFeatureCollectionPath, transportMultiplexedConnectionFeatureCollectionContent);
+            UpdateFile(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
+            UpdateFile(transportStreamFeatureCollectionPath, transportStreamFeatureCollectionContent);
+        }
 
-            var existingHttpProtocolFeatureCollection = File.Exists(httpProtocolFeatureCollectionPath) ? File.ReadAllText(httpProtocolFeatureCollectionPath) : "";
-            if (!string.Equals(httpProtocolFeatureCollectionContent, existingHttpProtocolFeatureCollection))
+        public static void UpdateFile(string path, string content)
+        {
+            var existingContent = File.Exists(path) ? File.ReadAllText(path) : "";
+            if (!string.Equals(content, existingContent))
             {
-                File.WriteAllText(httpProtocolFeatureCollectionPath, httpProtocolFeatureCollectionContent);
-            }
-
-            var existingHttpUtilities = File.Exists(httpUtilitiesPath) ? File.ReadAllText(httpUtilitiesPath) : "";
-            if (!string.Equals(httpUtilitiesContent, existingHttpUtilities))
-            {
-                File.WriteAllText(httpUtilitiesPath, httpUtilitiesContent);
-            }
-
-            var existingTransportConnectionFeatureCollection = File.Exists(transportConnectionFeatureCollectionPath) ? File.ReadAllText(transportConnectionFeatureCollectionPath) : "";
-            if (!string.Equals(transportConnectionFeatureCollectionContent, existingTransportConnectionFeatureCollection))
-            {
-                File.WriteAllText(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
+                File.WriteAllText(path, content);
             }
 
             var existingHttp2Connection = File.Exists(http2ConnectionPath) ? File.ReadAllText(http2ConnectionPath) : "";

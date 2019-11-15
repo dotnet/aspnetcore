@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace CodeGenerator
 {
-    public class TransportConnectionFeatureCollection
+    public class TransportStreamFeatureCollection
     {
         public static string GenerateFile()
         {
-            // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
-            // See also: shared/TransportConnection.FeatureCollection.cs
+            // NOTE: This list MUST always match the set of feature interfaces implemented by TransportStream.
+            // See also: shared/TransportStream.FeatureCollection.cs
             var features = new[]
             {
                 "IConnectionIdFeature",
@@ -27,7 +27,7 @@ using Microsoft.AspNetCore.Http.Features;";
 
             return FeatureCollectionGenerator.GenerateFile(
                 namespaceName: "Microsoft.AspNetCore.Connections",
-                className: "TransportConnection",
+                className: "TransportStream",
                 allFeatures: features,
                 implementedFeatures: features,
                 extraUsings: usings,
