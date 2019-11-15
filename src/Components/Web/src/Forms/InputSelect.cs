@@ -32,12 +32,26 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
         {
+            var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+            
             if (typeof(TValue) == typeof(string))
             {
                 result = (TValue)(object)value;
                 validationErrorMessage = null;
                 return true;
             }
+            else if (targetType == typeof(Guid))
+			{
+				result = (TValue)(object)Guid.Parse(value);
+				validationErrorMessage = null;
+				return true;
+			}
+			else if (targetType == typeof(int))
+			{
+				result = (TValue)(object)int.Parse(value);
+				validationErrorMessage = null;
+				return true;
+			}
             else if (typeof(TValue).IsEnum)
             {
                 var success = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue);
