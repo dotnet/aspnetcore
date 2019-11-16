@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Testing
     public partial class AssemblyFixtureAttribute : System.Attribute
     {
         public AssemblyFixtureAttribute(System.Type fixtureType) { }
-        public System.Type FixtureType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type FixtureType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=false)]
     [Xunit.Sdk.XunitTestCaseDiscovererAttribute("Microsoft.AspNetCore.Testing.ConditionalFactDiscoverer", "Microsoft.AspNetCore.Testing")]
@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Testing
     {
         public DockerOnlyAttribute() { }
         public bool IsMet { get { throw null; } }
-        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=true)]
     public partial class EnvironmentVariableSkipConditionAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
         public EnvironmentVariableSkipConditionAttribute(string variableName, params string[] values) { }
         public bool IsMet { get { throw null; } }
-        public bool RunOnMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RunOnMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string SkipReason { get { throw null; } }
     }
     public static partial class ExceptionAssert
@@ -93,8 +93,8 @@ namespace Microsoft.AspNetCore.Testing
     public sealed partial class FlakyAttribute : System.Attribute, Xunit.Sdk.ITraitAttribute
     {
         public FlakyAttribute(string gitHubIssueUrl, string firstFilter, params string[] additionalFilters) { }
-        public System.Collections.Generic.IReadOnlyList<string> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string GitHubIssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<string> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string GitHubIssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class FlakyOn
     {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public FrameworkSkipConditionAttribute(Microsoft.AspNetCore.Testing.RuntimeFrameworks excludedFrameworks) { }
         public bool IsMet { get { throw null; } }
-        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class HelixQueues
     {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public MinimumOSVersionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, string minVersion) { }
         public bool IsMet { get { throw null; } }
-        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.FlagsAttribute]
     public enum OperatingSystems
@@ -188,29 +188,29 @@ namespace Microsoft.AspNetCore.Testing
     {
         public OSSkipConditionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, params string[] versions) { }
         public bool IsMet { get { throw null; } }
-        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false)]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
     public partial class RepeatAttribute : System.Attribute
     {
         public RepeatAttribute(int runCount = 10) { }
-        public int RunCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int RunCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class RepeatContext
     {
         public RepeatContext(int limit) { }
         public static Microsoft.AspNetCore.Testing.RepeatContext Current { get { throw null; } }
-        public int CurrentIteration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int Limit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int CurrentIteration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int Limit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method)]
     public partial class ReplaceCultureAttribute : Xunit.Sdk.BeforeAfterTestAttribute
     {
         public ReplaceCultureAttribute() { }
         public ReplaceCultureAttribute(string currentCulture, string currentUICulture) { }
-        public System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Globalization.CultureInfo UICulture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Globalization.CultureInfo UICulture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override void After(System.Reflection.MethodInfo methodUnderTest) { }
         public override void Before(System.Reflection.MethodInfo methodUnderTest) { }
     }
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public SkipOnCIAttribute(string issueUrl = "") { }
         public bool IsMet { get { throw null; } }
-        public string IssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string IssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string SkipReason { get { throw null; } }
         public static string GetIfOnAzdo() { throw null; }
         public static string GetTargetHelixQueue() { throw null; }
@@ -245,8 +245,8 @@ namespace Microsoft.AspNetCore.Testing
     {
         public SkipOnHelixAttribute(string issueUrl) { }
         public bool IsMet { get { throw null; } }
-        public string IssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Queues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string IssueUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Queues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string SkipReason { get { throw null; } }
         public static string GetTargetHelixQueue() { throw null; }
         public static bool OnHelix() { throw null; }
@@ -263,27 +263,27 @@ namespace Microsoft.AspNetCore.Testing
     public static partial class TaskExtensions
     {
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task TimeoutAfter(this System.Threading.Tasks.Task task, System.TimeSpan timeout, [System.Runtime.CompilerServices.CallerFilePathAttribute]string filePath = null, [System.Runtime.CompilerServices.CallerLineNumberAttribute]int lineNumber = 0) { throw null; }
+        public static System.Threading.Tasks.Task TimeoutAfter(this System.Threading.Tasks.Task task, System.TimeSpan timeout, [System.Runtime.CompilerServices.CallerFilePathAttribute] string filePath = null, [System.Runtime.CompilerServices.CallerLineNumberAttribute] int lineNumber = 0) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<T> TimeoutAfter<T>(this System.Threading.Tasks.Task<T> task, System.TimeSpan timeout, [System.Runtime.CompilerServices.CallerFilePathAttribute]string filePath = null, [System.Runtime.CompilerServices.CallerLineNumberAttribute]int lineNumber = 0) { throw null; }
+        public static System.Threading.Tasks.Task<T> TimeoutAfter<T>(this System.Threading.Tasks.Task<T> task, System.TimeSpan timeout, [System.Runtime.CompilerServices.CallerFilePathAttribute] string filePath = null, [System.Runtime.CompilerServices.CallerLineNumberAttribute] int lineNumber = 0) { throw null; }
     }
     public sealed partial class TestContext
     {
         public TestContext(System.Type testClass, object[] constructorArguments, System.Reflection.MethodInfo testMethod, object[] methodArguments, Xunit.Abstractions.ITestOutputHelper output) { }
-        public object[] ConstructorArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object[] ConstructorArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Testing.TestFileOutputContext FileOutput { get { throw null; } }
-        public object[] MethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Xunit.Abstractions.ITestOutputHelper Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Type TestClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Reflection.MethodInfo TestMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object[] MethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Xunit.Abstractions.ITestOutputHelper Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type TestClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Reflection.MethodInfo TestMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class TestFileOutputContext
     {
         public TestFileOutputContext(Microsoft.AspNetCore.Testing.TestContext parent) { }
-        public string AssemblyOutputDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TestClassName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TestClassOutputDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TestName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string AssemblyOutputDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TestClassName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TestClassOutputDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TestName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static string GetAssemblyBaseDirectory(System.Reflection.Assembly assembly, string baseDirectory = null) { throw null; }
         public static string GetOutputDirectory(System.Reflection.Assembly assembly) { throw null; }
         public static string GetTestClassName(System.Type type) { throw null; }
@@ -299,8 +299,8 @@ namespace Microsoft.AspNetCore.Testing
     public partial class TestOutputDirectoryAttribute : System.Attribute
     {
         public TestOutputDirectoryAttribute(string targetFramework, string baseDirectory = null) { }
-        public string BaseDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TargetFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string BaseDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TargetFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.ObsoleteAttribute("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/aspnet/Extensions/issues/1697 for details.")]
     public partial class TestPathUtilities
