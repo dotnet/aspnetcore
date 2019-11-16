@@ -160,7 +160,17 @@ namespace Microsoft.AspNetCore.TestHost
 
         private async Task CompleteRequestAsync()
         {
-            if (!_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted)
+            bool requestBodyInProgress;
+            try
+            {
+                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished with a pending read of the request body.", ex);
+            }
+
+            if (requestBodyInProgress)
             {
                 // If request is still in progress then abort it.
                 CancelRequestBody();
