@@ -6,9 +6,9 @@ using Mono.Cecil.Cil;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using Mono.Cecil.Pdb;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace WsProxy {
 	internal class BreakPointRequest {
@@ -26,32 +26,37 @@ namespace WsProxy {
 			if (args == null)
 				return null;
 
-            var line = args?["lineNumber"]?.Value<int>();
-            var column = args?["columnNumber"]?.Value<int>();
+			var url = args? ["url"]?.Value<string> ();
+			if (url == null) {
+				var urlRegex = args?["urlRegex"].Value<string>();
+				var sourceFile = store.GetFileByUrlRegex (urlRegex);
 
-            SourceFile file = null;
+				url = sourceFile?.DotNetUrl;
+			}
 
-            // Requests from VS specify urlRegex
-            var urlRegex = args?["urlRegex"]?.Value<string>();
-            if (urlRegex != null)
-            {
-                file = store.GetFileByUrlRegex(urlRegex);
-            }
+			if (url != null && !url.StartsWith ("dotnet://", StringComparison.InvariantCulture)) {
+				var sourceFile = store.GetFileByUrl (url);
+				url = sourceFile?.DotNetUrl;
+			}
 
-            // Requests from Chromium specify url
-            var url = args?["url"]?.Value<string>();
-            if (url != null)
-            {
-                file = store.GetFileByUrl(url);
-            }
+			if (url == null)
+				return null;
 
-            return file == null ? null : new BreakPointRequest()
-            {
-                Assembly = file.AssemblyName,
-                File = file.FileName,
-                Line = line.Value,
-                Column = column.Value
-            };
+			var parts = ParseDocumentUrl (url);
+			if (parts.Assembly == null)
+				return null;
+
+			var line = args? ["lineNumber"]?.Value<int> ();
+			var column = args? ["columnNumber"]?.Value<int> ();
+			if (line == null || column == null)
+				return null;
+
+			return new BreakPointRequest () {
+				Assembly = parts.Assembly,
+				File = parts.DocumentPath,
+				Line = line.Value,
+				Column = column.Value
+			};
 		}
 
 		static (string Assembly, string DocumentPath) ParseDocumentUrl (string url)
@@ -458,38 +463,32 @@ namespace WsProxy {
 			this.assembly = assembly;
 			this.id = id;
 			this.doc = doc;
-            this.DebuggerFileName = doc.Url.Replace("\\", "/").Replace(":", "");
-        }
+			this.DebuggerFileName = doc.Url.Replace ("\\", "/").Replace (":", "");
+
+			this.SourceUri = new Uri ((Path.IsPathRooted (doc.Url) ? "file://" : "") + doc.Url, UriKind.RelativeOrAbsolute);
+			if (SourceUri.IsFile && File.Exists (SourceUri.LocalPath)) {
+				this.Url = this.SourceUri.ToString ();
+			} else {
+				this.Url = DotNetUrl;
+			}
+
+		}
 
 		internal void AddMethod (MethodInfo mi)
 		{
 			this.methods.Add (mi);
 		}
-        public string DebuggerFileName { get; }
-        public string AssemblyName => assembly.Name;
-		public string FileName => Path.GetFileName (doc.Url);
-        public string Url => LocalPathToFileUrl(doc.Url);
-        public string DotNetUrl => $"dotnet://{assembly.Name}/{DebuggerFileName}";
-
-        public string DocHashCode => "abcdee" + id;
+		public string DebuggerFileName { get; }
+		public string Url { get; }
+		public string AssemblyName => assembly.Name;
+		public string DotNetUrl => $"dotnet://{assembly.Name}/{DebuggerFileName}";
+		public string DocHashCode => "abcdee" + id;
 		public SourceId SourceId => new SourceId (assembly.Id, this.id);
 		public Uri SourceLinkUri { get; }
 		public Uri SourceUri { get; }
 
 		public IEnumerable<MethodInfo> Methods => this.methods;
-
-
-
-        private static string LocalPathToFileUrl(string localPath)
-        {
-            if (!localPath.StartsWith('/'))
-            {
-                localPath = "/" + localPath;
-            }
-
-            return $"file://{localPath.Replace('\\', '/')}";
-        }
-    }
+	}
 
 	internal class DebugStore {
 		List<AssemblyInfo> assemblies = new List<AssemblyInfo> ();
@@ -621,7 +620,7 @@ namespace WsProxy {
 		public SourceLocation FindBestBreakpoint (BreakPointRequest req)
 		{
 			var asm = assemblies.FirstOrDefault (a => a.Name.Equals (req.Assembly, StringComparison.OrdinalIgnoreCase));
-			var src = asm?.Sources?.FirstOrDefault (s => s.FileName == req.File);
+			var src = asm?.Sources?.FirstOrDefault (s => s.DebuggerFileName.Equals (req.File, StringComparison.OrdinalIgnoreCase));
 
 			if (src == null)
 				return null;
@@ -640,15 +639,13 @@ namespace WsProxy {
 		public string ToUrl (SourceLocation location)
 			=> location != null ? GetFileById (location.Id).Url : "";
 
-        public SourceFile GetFileByUrlRegex(string urlRegex)
-        {
-            var regex = new Regex(urlRegex);
-            return AllSources().FirstOrDefault(file => regex.IsMatch(file.Url));
-        }
+		public SourceFile GetFileByUrlRegex (string urlRegex)
+		{
+			var regex = new Regex (urlRegex);
+			return AllSources ().FirstOrDefault (file => regex.IsMatch (file.Url.ToString()));
+		}
 
-        public SourceFile GetFileByUrl(string url)
-        {
-            return AllSources().FirstOrDefault(file => file.Url == url);
-        }
-    }
+		public SourceFile GetFileByUrl (string url)
+			=> AllSources ().FirstOrDefault (file => file.Url.ToString() == url);
+	}
 }
