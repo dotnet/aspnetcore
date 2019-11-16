@@ -11,8 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
   </ItemGroup>
 

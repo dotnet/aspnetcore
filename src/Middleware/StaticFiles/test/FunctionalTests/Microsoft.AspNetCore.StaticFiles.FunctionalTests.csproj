@@ -31,7 +31,6 @@
       Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
       Value="true" />
 
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
