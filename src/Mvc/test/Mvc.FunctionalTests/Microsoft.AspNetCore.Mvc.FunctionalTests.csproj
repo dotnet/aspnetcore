@@ -11,6 +11,7 @@
     <SignAssembly>false</SignAssembly>
     <!-- https://github.com/dotnet/aspnetcore/issues/10423 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <SkipTests>false</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
