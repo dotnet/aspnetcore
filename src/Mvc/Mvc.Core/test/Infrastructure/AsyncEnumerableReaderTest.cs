@@ -83,6 +83,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
+        public void TryGetReader_ReturnsCachedDelegate_WhenTypeImplementsMultipleIAsyncEnumerableContracts()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var readerFactory = new AsyncEnumerableReader(options);
+            var asyncEnumerable1 = new MultiAsyncEnumerable();
+            var asyncEnumerable2 = new MultiAsyncEnumerable();
+
+            // Act
+            Assert.True(readerFactory.TryGetReader(asyncEnumerable1.GetType(), out var reader1));
+            Assert.True(readerFactory.TryGetReader(asyncEnumerable2.GetType(), out var reader2));
+
+            // Assert
+            Assert.Same(reader1, reader2);
+        }
+
+        [Fact]
         public async Task CachedDelegate_CanReadEnumerableInstanceMultipleTimes()
         {
             // Arrange
@@ -154,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
-        public async Task Reader_ThrowsIfBufferimitIsReached()
+        public async Task Reader_ThrowsIfBufferLimitIsReached()
         {
             // Arrange
             var enumerable = TestEnumerable(11);
