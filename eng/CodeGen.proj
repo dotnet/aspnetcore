@@ -3,6 +3,7 @@
   <PropertyGroup>
     <BuildManaged>true</BuildManaged>
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <BuildMainlyReferenceProviders>true</BuildMainlyReferenceProviders>
   </PropertyGroup>
 
   <Import Project="Build.props" />
