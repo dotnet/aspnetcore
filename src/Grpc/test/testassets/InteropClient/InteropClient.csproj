@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>8.0</LangVersion>
+    <IsUnitTestProject>false</IsUnitTestProject>
   </PropertyGroup>
 
   <ItemGroup>
