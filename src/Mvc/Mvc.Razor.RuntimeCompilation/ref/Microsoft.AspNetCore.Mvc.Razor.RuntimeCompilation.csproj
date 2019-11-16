@@ -5,10 +5,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"  />
-    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages"  />
-    <Reference Include="Microsoft.AspNetCore.Razor.Runtime"  />
-    <Reference Include="Microsoft.CodeAnalysis.Razor"  />
-    <Reference Include="Microsoft.Extensions.DependencyModel"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
 </Project>

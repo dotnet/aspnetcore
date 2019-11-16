@@ -5,9 +5,10 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.ConcurrencyLimiter.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
   </ItemGroup>
 </Project>

@@ -2,18 +2,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Common.netstandard2.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
-    <Reference Include="System.Text.Json"  />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Text.Json" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" Key="" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Common.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" Key="" />
   </ItemGroup>
 </Project>

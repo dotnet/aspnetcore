@@ -2,12 +2,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Mvc.Formatters.Json.netcoreapp3.0.cs" />
-    <Compile Include="Microsoft.AspNetCore.Mvc.Formatters.Json.Manual.cs" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 </Project>

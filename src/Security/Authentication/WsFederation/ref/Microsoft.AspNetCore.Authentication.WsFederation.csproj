@@ -5,8 +5,8 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.WsFederation.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Authentication"  />
-    <Reference Include="Microsoft.IdentityModel.Protocols.WsFederation"  />
-    <Reference Include="System.IdentityModel.Tokens.Jwt"  />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
 </Project>

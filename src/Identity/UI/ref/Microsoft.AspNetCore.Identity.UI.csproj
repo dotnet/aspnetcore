@@ -5,11 +5,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Identity.UI.netcoreapp3.0.cs" />
-    <Reference Include="Newtonsoft.Json"  />
-    <Reference Include="Microsoft.AspNetCore.Identity"  />
-    <Reference Include="Microsoft.AspNetCore.Mvc"  />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles"  />
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded"  />
-    <Reference Include="Microsoft.Extensions.Identity.Stores"  />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
 </Project>

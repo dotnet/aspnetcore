@@ -5,9 +5,10 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.AzureAD.UI.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Mvc"  />
-    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer"  />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies"  />
-    <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
   </ItemGroup>
 </Project>

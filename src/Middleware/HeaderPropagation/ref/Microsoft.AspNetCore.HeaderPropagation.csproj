@@ -5,8 +5,9 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.HeaderPropagation.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http"  />
-    <Reference Include="Microsoft.Extensions.Http"  />
-    <Reference Include="Microsoft.Extensions.DependencyInjection"  />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.HeaderPropagation.Tests" Key="" />
   </ItemGroup>
 </Project>

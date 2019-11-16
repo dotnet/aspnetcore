@@ -5,9 +5,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.Extensions.Options"  />
-    <Reference Include="StackExchange.Redis"  />
-    <Reference Include="MessagePack"  />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core"  />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="StackExchange.Redis" />
+    <Reference Include="MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" Key="" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" Key="" />
   </ItemGroup>
 </Project>
