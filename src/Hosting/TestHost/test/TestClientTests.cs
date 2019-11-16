@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.TestHost
                 byte[] buffer = new byte[1024];
                 var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
             });
-            Assert.Equal("An error occurred when completing the request. Request delegate may have finished with a pending read of the request body.", ex.InnerException.Message);
+            Assert.Equal("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex.InnerException.Message);
 
             // Unblock request
             requestStreamTcs.TrySetResult(null);

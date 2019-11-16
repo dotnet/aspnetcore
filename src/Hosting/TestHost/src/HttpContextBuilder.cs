@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished with a pending read of the request body.", ex);
+                throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
             }
 
             if (requestBodyInProgress)
