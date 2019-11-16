@@ -9,13 +9,13 @@ using Xunit.Abstractions;
 
 namespace InteropTests.Helpers
 {
-    public class WebServerProcess : IDisposable
+    public class WebsiteProcess : IDisposable
     {
         private readonly Process _process;
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
 
-        public WebServerProcess(string path, ITestOutputHelper output)
+        public WebsiteProcess(string path, ITestOutputHelper output)
         {
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo

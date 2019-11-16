@@ -16,12 +16,12 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>InteropTestsWebsiteDir</_Parameter1>
-      <_Parameter2>$(InteropTestsAssestsDir)\InteropTestsWebsite</_Parameter2>
+      <_Parameter2>$(InteropTestsAssestsDir)\InteropWebsite</_Parameter2>
     </AssemblyAttribute>
     
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>InteropTestsClientDir</_Parameter1>
-      <_Parameter2>$(InteropTestsAssestsDir)\InteropTestsClient</_Parameter2>
+      <_Parameter2>$(InteropTestsAssestsDir)\InteropClient</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

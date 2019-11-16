@@ -9,7 +9,7 @@ namespace InteropTests.Helpers
 {
     public class InteropTestsFixture : IDisposable
     {
-        private WebServerProcess _process;
+        private WebsiteProcess _process;
 
         public string Path { get; set; }
 
@@ -25,7 +25,7 @@ namespace InteropTests.Helpers
                 throw new InvalidOperationException("Path has not been set.");
             }
 
-            _process = new WebServerProcess(Path, output);
+            _process = new WebsiteProcess(Path, output);
 
             await _process.WaitForReady();
         }
