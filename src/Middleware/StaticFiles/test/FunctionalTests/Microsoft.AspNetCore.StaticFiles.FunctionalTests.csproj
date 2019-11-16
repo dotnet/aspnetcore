@@ -26,11 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Workaround missing entries in deps files. Still under investigation -->
-    <RuntimeHostConfigurationOption
-      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
-      Value="true" />
-
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />

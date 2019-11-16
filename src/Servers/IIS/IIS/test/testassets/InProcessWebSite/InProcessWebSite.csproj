@@ -15,11 +15,6 @@
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
     <None Include="wwwroot\**" CopyToOutputDirectory="Always" />
-
-    <!-- Workaround missing entries in deps files. Still under investigation -->
-    <RuntimeHostConfigurationOption
-      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
-      Value="true" />
   </ItemGroup>
 
   <ItemGroup>

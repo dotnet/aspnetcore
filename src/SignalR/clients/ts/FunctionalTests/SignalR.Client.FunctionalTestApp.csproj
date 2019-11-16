@@ -42,13 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Workaround missing entries in deps files. Still under investigation -->
-    <RuntimeHostConfigurationOption
-      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
-      Value="true" />
-  </ItemGroup>
-
-  <ItemGroup>
     <TypeScriptCompile Include="selenium\run-ci-tests.ts" />
     <TypeScriptCompile Include="selenium\run-tests.ts" />
     <TypeScriptCompile Include="ts\Common.ts" />
