@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var results = _sink.GetLogs().Where(w => w.Write.LogLevel >= LogLevel.Error).ToList();
 
-            #region RemoveIn3_0
+#if NETCOREAPP2_1 || NETCOREAPP2_2 || NET461
             // -- Remove this code after 2.2 --
             // This section of code is resolving test flakiness caused by a race in LongPolling
             // The race has been resolved in version 3.0
@@ -42,24 +42,23 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // We do this because we don't want to hide any actual issues, but we feel confident that looking for DELETE first wont hide any real problems
             var foundDelete = false;
             var allLogs = _sink.GetLogs();
-            for (var i = 0; i < allLogs.Count; i++)
+            foreach (var log in allLogs)
             {
-                if (foundDelete == false && allLogs[i].Write.Message.Contains("Request starting") && allLogs[i].Write.Message.Contains("DELETE"))
+                if (foundDelete == false && log.Write.Message.Contains("Request starting") && log.Write.Message.Contains("DELETE"))
                 {
                     foundDelete = true;
                 }
 
                 if (foundDelete)
                 {
-                    if ((allLogs[i].Write.EventId.Name == "LongPollingTerminated" || allLogs[i].Write.EventId.Name == "ApplicationError" || allLogs[i].Write.EventId.Name == "FailedDispose")
-                        && allLogs[i].Write.Exception?.Message.Contains("Reading is not allowed after reader was completed.") == true)
+                    if ((log.Write.EventId.Name == "LongPollingTerminated" || log.Write.EventId.Name == "ApplicationError" || log.Write.EventId.Name == "FailedDispose")
+                        && log.Write.Exception?.Message.Contains("Reading is not allowed after reader was completed.") == true)
                     {
-                        results.Remove(allLogs[i]);
+                        results.Remove(log);
                     }
                 }
             }
-            // -- Remove this code after 2.2 --
-            #endregion
+#endif
 
             if (_expectedErrorsFilter != null)
             {
