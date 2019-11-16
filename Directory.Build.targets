@@ -59,15 +59,11 @@
 
   <Import Project="eng\Baseline.Designer.props" />
 
-  <PropertyGroup
-      Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' AND '$(DisableServicingFeatures)' != 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Used to distinguish between packages building -->
     <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
-    <!-- Suppress creation of .nupkg for servicing builds. -->
+    <!-- Suppress creation of .nupkg for servicing builds of non-shipping projects. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
 
@@ -89,7 +85,7 @@
     <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
     <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
 
-    <!-- For servicing builds, we want to resolve basline versions of project packages that aren't building, always -->
+    <!-- For servicing builds, we want to resolve baseline versions of project packages that aren't building, always -->
     <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
@@ -168,6 +164,6 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
-  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
+  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" $(HasReferenceAssembly) " />
 
 </Project>

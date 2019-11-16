@@ -29,14 +29,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <GenerateDependencyFile>false</GenerateDependencyFile>
 
-    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
-    <!-- We are ignoring MSB3243 warnings since implemenation and reference assemblies are versioned differently. We need both to compose the targeting pack with reference assemblies and xml docs. -->
+    <!--
+      We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
+      We need both to compose the targeting pack with reference assemblies and xml docs.
+    -->
     <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
     <!-- We are ignoring NU5131 and NU5128 warnings since the dependency group should be kept empty. -->
     <NoWarn>$(NoWarn);NU5131;NU5128</NoWarn>
@@ -207,7 +210,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
           Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
-          Condition="'$(IsPackable)' == 'true' ">
+          Condition=" '$(IsPackable)' == 'true' ">
     <PropertyGroup>
       <_TarCommand>tar</_TarCommand>
       <_TarCommand Condition="Exists('$(RepoRoot).tools\tar.exe')">$(RepoRoot).tools\tar.exe</_TarCommand>

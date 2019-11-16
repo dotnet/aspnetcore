@@ -16,7 +16,6 @@
              BuildInParallel="true"
              SkipNonexistentTargets="true"
              SkipNonexistentProjects="true" >
-
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
     </MSBuild>
 

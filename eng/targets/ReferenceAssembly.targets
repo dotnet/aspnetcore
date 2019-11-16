@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="GenerateReferenceSource" Condition="'$(HasReferenceAssembly)' == 'true'">
+  <Target Name="GenerateReferenceSource" Condition=" $(HasReferenceAssembly) ">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefProjectFileOutputPath>$(_RefSourceOutputPath)$(AssemblyName).csproj</_RefProjectFileOutputPath>
@@ -43,7 +43,10 @@
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
-  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <Target Name="_GenerateProjectSourceInner"
+      Returns="@(ProjectListContent)"
+      DependsOnTargets="Build"
+      Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
     <PropertyGroup>
       <_RefSourceOutputPath>$([System.IO.Directory]::GetParent('$(MSBuildProjectDirectory)'))/ref/</_RefSourceOutputPath>
       <_RefSourceFileName>$(AssemblyName).$(TargetFramework).cs</_RefSourceFileName>
