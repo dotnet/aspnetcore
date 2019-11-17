@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.JsonPatch.netstandard2.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.JsonPatch.Manual.cs" />
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json" />

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Rewrite.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Rewrite.Manual.cs" />
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />

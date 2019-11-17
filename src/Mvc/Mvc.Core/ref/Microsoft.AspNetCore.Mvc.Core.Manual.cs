@@ -554,6 +554,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         public static void SetValue(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object instance, object value) { }
     }
+    public partial class ModelAttributes
+    {
+        internal ModelAttributes(System.Collections.Generic.IEnumerable<object> typeAttributes, System.Collections.Generic.IEnumerable<object> propertyAttributes, System.Collections.Generic.IEnumerable<object> parameterAttributes) { }
+    }
     internal static partial class ModelBindingHelper
     {
         public static bool CanGetCompatibleCollection<T>(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
@@ -573,6 +577,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static System.Threading.Tasks.Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix, Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator objectModelValidator, params System.Linq.Expressions.Expression<System.Func<TModel, object>>[] includeExpressions) where TModel : class { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
+{
+    public partial class ComplexTypeModelBinder : IModelBinder
+    {
+        internal const int NoDataAvailable = 0;
+        internal const int GreedyPropertiesMayHaveData = 1;
+        internal const int ValueProviderDataAvailable = 2;
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     internal partial class DefaultModelValidatorProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IMetadataBasedModelValidatorProvider
@@ -588,7 +601,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
-{internal partial class DefaultBindingMetadataProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IBindingMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider
+{
+    internal partial class DefaultBindingMetadataProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IBindingMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider
     {
         public DefaultBindingMetadataProvider() { }
         public void CreateBindingMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadataProviderContext context) { }

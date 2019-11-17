@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.Net.Http.Headers.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.Net.Http.Headers.Manual.cs" />
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>

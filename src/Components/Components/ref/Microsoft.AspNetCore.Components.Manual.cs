@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
+    public readonly partial struct RenderTreeDiff
+    {
+        internal RenderTreeDiff(int componentId, Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> entries) { throw null; }
+    }
+
     // https://github.com/dotnet/arcade/pull/2033
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
     public readonly partial struct RenderTreeFrame
