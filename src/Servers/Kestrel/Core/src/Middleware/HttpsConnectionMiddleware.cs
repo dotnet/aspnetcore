@@ -224,11 +224,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         !CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
                         CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
                     {
-                        _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                        _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     }
                     else
                     {
-                        _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
                     }
 
                     await sslStream.DisposeAsync();
