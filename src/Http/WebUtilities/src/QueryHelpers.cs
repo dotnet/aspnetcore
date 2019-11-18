@@ -9,6 +9,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
+    /// <summary>
+    /// Provides methods for parsing and manipulating query strings.
+    /// </summary>
     public static class QueryHelpers
     {
         /// <summary>
@@ -18,6 +21,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="name">The name of the query key.</param>
         /// <param name="value">The query value.</param>
         /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
         public static string AddQueryString(string uri, string name, string value)
         {
             if (uri == null)
@@ -45,6 +51,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <param name="uri">The base uri.</param>
         /// <param name="queryString">A collection of name value query pairs to append.</param>
         /// <returns>The combined result.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
         public static string AddQueryString(string uri, IDictionary<string, string> queryString)
         {
             if (uri == null)
@@ -121,7 +129,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return result;
         }
-
 
         /// <summary>
         /// Parse a query string into its component key and value parts.
