@@ -1782,7 +1782,7 @@ SERVER_PROCESS::SERVER_PROCESS() :
     m_hListeningProcessHandle(NULL),
     m_hShutdownHandle(NULL),
     m_hStdErrWritePipe(NULL),
-    m_hReadThread(NULL),
+    m_hReadThread(nullptr),
     m_randomGenerator(std::random_device()())
 {
     //InterlockedIncrement(&g_dwActiveServerProcesses);
