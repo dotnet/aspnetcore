@@ -46,9 +46,14 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true' AND '$(IsHelixJob)' == 'true'">
+  <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true' AND '$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
     <HelixPreCommand Include="call RunPowershell.cmd InstallAppRuntime.ps1 Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg %25DOTNET_ROOT%25\shared\Microsoft.AspNetCore.App\$(AppRuntimeVersion) /b 1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestDependsOnAppRuntime)' == 'true' AND '$(IsHelixJob)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
+    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg" />
+    <HelixPreCommand Include="./installappruntime.sh Microsoft.AspNetCore.App.Runtime.win-x86.$(AppRuntimeVersion).nupkg $DOTNET_ROOT\shared\Microsoft.AspNetCore.App\$(AppRuntimeVersion)" />
   </ItemGroup>
   
 </Project>
