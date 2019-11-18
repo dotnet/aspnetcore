@@ -34,3 +34,4 @@ else {
 }
 
 Write-Host "Expanded App Runtime to $InstallDir"
+exit /b 1
