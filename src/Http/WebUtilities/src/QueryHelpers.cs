@@ -100,7 +100,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             foreach (var parameter in queryString)
             {
                 if (parameter.Value == null)
+                {
                     continue;
+                }
 
                 sb.Append(hasQuery ? '&' : '?');
                 sb.Append(UrlEncoder.Default.Encode(parameter.Key));
