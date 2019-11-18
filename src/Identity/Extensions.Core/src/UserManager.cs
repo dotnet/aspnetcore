@@ -2463,16 +2463,13 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-
         /// <summary>
         /// Generates the token purpose used to change email.
         /// </summary>
         /// <param name="newEmail">The new email address.</param>
         /// <returns>The token purpose.</returns>
-        protected static string GetChangeEmailTokenPurpose(string newEmail)
-        {
-            return "ChangeEmail:" + newEmail;
-        }
+        public static string GetChangeEmailTokenPurpose(string newEmail)
+            => "ChangeEmail:" + newEmail;
 
         /// <summary>
         /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is
