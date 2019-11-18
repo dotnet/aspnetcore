@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             await context.AuthenticateAsync("base");
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.AuthenticateAsync("missing"));
-            Assert.Contains("base", ex.Message);
+            Assert.Contains("baseadf", ex.Message);
         }
 
         [Fact]
