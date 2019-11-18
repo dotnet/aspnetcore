@@ -362,6 +362,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         [Fact]
+        public async Task ObjectResult_NullValue()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+            var result = new ObjectResult(value: null);
+            var formatter = new TestJsonOutputFormatter();
+            result.Formatters.Add(formatter);
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = GetHttpContext(),
+            };
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            var formatterContext = formatter.LastOutputFormatterContext;
+            Assert.Null(formatterContext.Object);
+        }
+
+        [Fact]
         public async Task ObjectResult_ReadsAsyncEnumerables()
         {
             // Arrange
