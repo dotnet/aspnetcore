@@ -67,9 +67,9 @@ namespace Microsoft.AspNetCore.Builder
                 if (requestPath.StartsWithSegments("/json")
                     && !request.Headers.ContainsKey("User-Agent"))
                 {
+                    var debuggerHost = "http://localhost:9222";
                     if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
                     {
-                        var debuggerHost = "http://localhost:9222";
                         var availableTabs = await GetOpenedBrowserTabs(debuggerHost);
 
                         // Filter the list to only include tabs displaying the requested app,
@@ -101,15 +101,10 @@ namespace Microsoft.AspNetCore.Builder
                     }
                     else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
                     {
+                        var browserVersionJson = await GetBrowserVersionInfoAsync(debuggerHost);
+
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(JsonSerializer.Serialize(new Dictionary<string, string>
-                        {
-                            { "Browser", "Chrome/71.0.3578.98" },
-                            { "Protocol-Version", "1.3" },
-                            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36" },
-                            { "V8-Version", "7.1.302.31" },
-                            { "WebKit-Version", "537.36 (@15234034d19b85dcd9a03b164ae89d04145d8368)" },
-                        }));
+                        await context.Response.WriteAsync(browserVersionJson);
                     }
                 }
                 else
@@ -261,6 +256,12 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new InvalidOperationException("Unknown OS platform");
             }
+        }
+
+        private static async Task<string> GetBrowserVersionInfoAsync(string debuggerHost)
+        {
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            return await httpClient.GetStringAsync($"{debuggerHost}/json/version");
         }
 
         private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs(string debuggerHost)
