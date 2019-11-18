@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
