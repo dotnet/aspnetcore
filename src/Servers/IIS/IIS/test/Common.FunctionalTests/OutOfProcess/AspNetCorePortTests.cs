@@ -97,17 +97,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
             var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
             response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
 
-            for (var i = 0; i < 5; i++)
-            {
-                // ANCM should eventually recover from being shutdown multiple times.
-                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-                if (response.IsSuccessStatusCode)
-                {
-                    return;
-                }
-            }
-
-            Assert.False(true);
+            response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.True(response.IsSuccessStatusCode);
         }
 
         private static int GetUnusedRandomPort()
