@@ -9,9 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using WsProxy;
 
 namespace Microsoft.AspNetCore.Builder
@@ -97,12 +97,12 @@ namespace Microsoft.AspNetCore.Builder
                         });
 
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(JsonConvert.SerializeObject(proxiedTabInfos));
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(proxiedTabInfos));
                     }
                     else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
                     {
                         context.Response.ContentType = "application/json";
-                        await context.Response.WriteAsync(JsonConvert.SerializeObject(new Dictionary<string, string>
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(new Dictionary<string, string>
                         {
                             { "Browser", "Chrome/71.0.3578.98" },
                             { "Protocol-Version", "1.3" },
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
-            return JsonConvert.DeserializeObject<BrowserTab[]>(jsonResponse);
+            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse);
         }
 
         class BrowserTab
