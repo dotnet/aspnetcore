@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
                 .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
-                .Returns<EndPoint, CancellationToken>((Func<EndPoint, CancellationToken, ValueTask<IConnectionListener>>)((e, token) =>
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         .Setup(transport => transport.EndPoint).Returns(e);
 
                     return new ValueTask<IConnectionListener>(mockTransport.Object);
-                }));
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
                 .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
-                .Returns<EndPoint, CancellationToken>((Func<EndPoint, CancellationToken, ValueTask<IConnectionListener>>)((e, token) =>
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         .Setup(transport => transport.EndPoint).Returns(e);
 
                     return new ValueTask<IConnectionListener>(mockTransport.Object);
-                }));
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
                 .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
-                .Returns<EndPoint, CancellationToken>((Func<EndPoint, CancellationToken, ValueTask<IConnectionListener>>)((e, token) =>
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         .Setup(transport => transport.EndPoint).Returns(e);
 
                     return new ValueTask<IConnectionListener>(mockTransport.Object);
-                }));
+                });
 
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
