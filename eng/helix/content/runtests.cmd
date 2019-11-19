@@ -21,6 +21,12 @@ set PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Version %sdkVersion% -InstallDir %DOTNET_ROOT%"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %arch% -Runtime dotnet -Version %runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
+if (Test-Path "Microsoft.AspNetCore.App")
+{
+    Write-Host "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App"
+    Copy-Item "Microsoft.AspNetCore.App" -Destination %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App -Recurse
+}
+
 set HELIX=%helixQueue%
 
 if (%targetFrameworkIdentifier%==.NETFramework) (
