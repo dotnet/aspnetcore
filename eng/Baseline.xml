@@ -4,13 +4,12 @@ This file contains a list of all the packages and their versions which were rele
 Update this list when preparing for a new patch.
 
 -->
-
 <Baseline Version="3.0.0">
   <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.0" />
   <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.0" />
   <Package Id="dotnet-sql-cache" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="3.0.0" />
-  <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.0.0" />
+  <Package Id="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.0.1" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Certificate" Version="3.0.0" />
@@ -45,7 +44,7 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="3.0.0" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="3.0.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="3.0.1" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.0.0" />
@@ -53,7 +52,7 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Hosting.WindowsServices" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Http.Connections.Client" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Http.Connections.Common" Version="3.0.0" />
-  <Package Id="Microsoft.AspNetCore.Http.Features" Version="3.0.0" />
+  <Package Id="Microsoft.AspNetCore.Http.Features" Version="3.0.1" />
   <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Identity.Specification.Tests" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Identity.UI" Version="3.0.0" />
@@ -78,14 +77,13 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="3.0.0" />
   <Package Id="Microsoft.dotnet-openapi" Version="3.0.0" />
-  <Package Id="Microsoft.DotNet.Web.Client.ItemTemplates" Version="3.0.0" />
-  <Package Id="Microsoft.DotNet.Web.ItemTemplates" Version="3.0.0" />
-  <Package Id="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="3.0.0" />
-  <Package Id="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" Version="3.0.0" />
+  <Package Id="Microsoft.DotNet.Web.Client.ItemTemplates" Version="3.0.1" />
+  <Package Id="Microsoft.DotNet.Web.ItemTemplates" Version="3.0.1" />
+  <Package Id="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="3.0.1" />
+  <Package Id="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" Version="3.0.1" />
   <Package Id="Microsoft.Extensions.ApiDescription.Client" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.ApiDescription.Server" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.Identity.Core" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.Identity.Stores" Version="3.0.0" />
-
-</Baseline>
+</Baseline>ine>

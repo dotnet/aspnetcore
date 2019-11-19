@@ -35,7 +35,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.App.Runtime.win-x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.App.Runtime.win-x64' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.AzureAD.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
@@ -332,11 +332,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[3.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[3.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[3.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[3.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
@@ -407,14 +407,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Features-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND '$(TargetFramework)' == 'netcoreapp3.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.0.1, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.6.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.0.1, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.6.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
@@ -635,19 +635,19 @@
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.Client.ItemTemplates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.Client.ItemTemplates' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.ItemTemplates-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ItemTemplates' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.ProjectTemplates.3.0-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.ProjectTemplates.3.0' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0' ">
-    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.ApiDescription.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ApiDescription.Client' ">
