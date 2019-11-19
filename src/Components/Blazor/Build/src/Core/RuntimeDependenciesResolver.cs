@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Mono.Cecil;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
@@ -27,19 +29,15 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string[] applicationDependencies,
             string[] monoBclDirectories)
         {
-            var assembly = new AssemblyEntry(entryPoint, AssemblyDefinition.ReadAssembly(entryPoint));
+            var entryAssembly = new AssemblyEntry(entryPoint, GetAssemblyName(entryPoint));
 
-            var dependencies = applicationDependencies
-                .Select(a => new AssemblyEntry(a, AssemblyDefinition.ReadAssembly(a)))
-                .ToArray();
+            var dependencies = CreateAssemblyLookup(applicationDependencies);
 
-            var bcl = monoBclDirectories
-                .SelectMany(d => Directory.EnumerateFiles(d, "*.dll").Select(f => Path.Combine(d, f)))
-                .Select(a => new AssemblyEntry(a, AssemblyDefinition.ReadAssembly(a)))
-                .ToArray();
+            var bcl = CreateAssemblyLookup(monoBclDirectories
+                .SelectMany(d => Directory.EnumerateFiles(d, "*.dll").Select(f => Path.Combine(d, f))));
 
             var assemblyResolutionContext = new AssemblyResolutionContext(
-                assembly,
+                entryAssembly,
                 dependencies,
                 bcl);
 
@@ -47,6 +45,28 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             var paths = assemblyResolutionContext.Results.Select(r => r.Path);
             return paths.Concat(FindPdbs(paths));
+
+            static Dictionary<string, AssemblyEntry> CreateAssemblyLookup(IEnumerable<string> assemblyPaths)
+            {
+                var dictionary = new Dictionary<string, AssemblyEntry>(StringComparer.Ordinal);
+                foreach (var path in assemblyPaths)
+                {
+                    var assemblyName = AssemblyName.GetAssemblyName(path).Name;
+                    if (dictionary.TryGetValue(assemblyName, out var previous))
+                    {
+                        throw new InvalidOperationException($"Multiple assemblies found with the same assembly name '{assemblyName}':" +
+                            Environment.NewLine + string.Join(Environment.NewLine, previous, path));
+                    }
+                    dictionary[assemblyName] = new AssemblyEntry(path, assemblyName);
+                }
+
+                return dictionary;
+            }
+        }
+
+        private static string GetAssemblyName(string assemblyPath)
+        {
+            return AssemblyName.GetAssemblyName(assemblyPath).Name;
         }
 
         private static IEnumerable<string> FindPdbs(IEnumerable<string> dllPaths)
@@ -59,46 +79,40 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public class AssemblyResolutionContext
         {
             public AssemblyResolutionContext(
-                AssemblyEntry assembly,
-                AssemblyEntry[] dependencies,
-                AssemblyEntry[] bcl)
+                AssemblyEntry entryAssembly,
+                Dictionary<string, AssemblyEntry> dependencies,
+                Dictionary<string, AssemblyEntry> bcl)
             {
-                Assembly = assembly;
+                EntryAssembly = entryAssembly;
                 Dependencies = dependencies;
                 Bcl = bcl;
             }
 
-            public AssemblyEntry Assembly { get; }
-            public AssemblyEntry[] Dependencies { get; }
-            public AssemblyEntry[] Bcl { get; }
+            public AssemblyEntry EntryAssembly { get; }
+            public Dictionary<string, AssemblyEntry> Dependencies { get; }
+            public Dictionary<string, AssemblyEntry> Bcl { get; }
 
             public IList<AssemblyEntry> Results { get; } = new List<AssemblyEntry>();
 
             internal void ResolveAssemblies()
             {
                 var visitedAssemblies = new HashSet<string>();
-                var pendingAssemblies = new Stack<AssemblyNameReference>();
-                pendingAssemblies.Push(Assembly.Definition.Name);
+                var pendingAssemblies = new Stack<string>();
+                pendingAssemblies.Push(EntryAssembly.Name);
                 ResolveAssembliesCore();
 
                 void ResolveAssembliesCore()
                 {
                     while (pendingAssemblies.TryPop(out var current))
                     {
-                        if (!visitedAssemblies.Contains(current.Name))
+                        if (visitedAssemblies.Add(current))
                         {
-                            visitedAssemblies.Add(current.Name);
-
-                            // Not all references will be resolvable within the Mono BCL, particularly
-                            // when building for server-side Blazor as you will be running on CoreCLR
-                            // and therefore may depend on System.* BCL assemblies that aren't present
-                            // in Mono WebAssembly. Skipping unresolved assemblies here is equivalent
-                            // to passing "--skip-unresolved true" to the Mono linker.
-                            var resolved = Resolve(current);
-                            if (resolved != null)
+                            // Not all references will be resolvable within the Mono BCL.
+                            // Skipping unresolved assemblies here is equivalent to passing "--skip-unresolved true" to the Mono linker.
+                            if (Resolve(current) is AssemblyEntry resolved)
                             {
                                 Results.Add(resolved);
-                                var references = GetAssemblyReferences(resolved);
+                                var references = GetAssemblyReferences(resolved.Path);
                                 foreach (var reference in references)
                                 {
                                     pendingAssemblies.Push(reference);
@@ -108,58 +122,70 @@ namespace Microsoft.AspNetCore.Blazor.Build
                     }
                 }
 
-                IEnumerable<AssemblyNameReference> GetAssemblyReferences(AssemblyEntry current) =>
-                    current.Definition.Modules.SelectMany(m => m.AssemblyReferences);
-
-                AssemblyEntry Resolve(AssemblyNameReference current)
+                AssemblyEntry? Resolve(string assemblyName)
                 {
-                    if (Assembly.Definition.Name.Name == current.Name)
+                    if (EntryAssembly.Name == assemblyName)
                     {
-                        return Assembly;
+                        return EntryAssembly;
                     }
-
-                    var referencedAssemblyCandidate = FindCandidate(current, Dependencies);
-                    var bclAssemblyCandidate = FindCandidate(current, Bcl);
 
                     // Resolution logic. For right now, we will prefer the mono BCL version of a given
                     // assembly if there is a candidate assembly and an equivalent mono assembly.
-                    if (bclAssemblyCandidate != null)
+                    if (Bcl.TryGetValue(assemblyName, out var assembly) ||
+                        Dependencies.TryGetValue(assemblyName, out assembly))
                     {
-                        return bclAssemblyCandidate;
-                    }
-
-                    return referencedAssemblyCandidate;
-                }
-
-                AssemblyEntry FindCandidate(AssemblyNameReference current, AssemblyEntry[] candidates)
-                {
-                    // Do simple name match. Assume no duplicates.
-                    foreach (var candidate in candidates)
-                    {
-                        if (current.Name == candidate.Definition.Name.Name)
-                        {
-                            return candidate;
-                        }
+                        return assembly;
                     }
 
                     return null;
+                }
+
+                static IReadOnlyList<string> GetAssemblyReferences(string assemblyPath)
+                {
+                    try
+                    {
+                        using var peReader = new PEReader(File.OpenRead(assemblyPath));
+                        if (!peReader.HasMetadata)
+                        {
+                            return Array.Empty<string>(); // not a managed assembly
+                        }
+
+                        var metadataReader = peReader.GetMetadataReader();
+
+                        var references = new List<string>();
+                        foreach (var handle in metadataReader.AssemblyReferences)
+                        {
+                            var reference = metadataReader.GetAssemblyReference(handle);
+                            var referenceName = metadataReader.GetString(reference.Name);
+
+                            references.Add(referenceName);
+                        }
+
+                        return references;
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        // not a PE file, or invalid metadata
+                    }
+
+                    return Array.Empty<string>(); // not a managed assembly
                 }
             }
         }
 
         [DebuggerDisplay("{ToString(),nq}")]
-        public class AssemblyEntry
+        public readonly struct AssemblyEntry
         {
-            public AssemblyEntry(string path, AssemblyDefinition definition)
+            public AssemblyEntry(string path, string name)
             {
                 Path = path;
-                Definition = definition;
+                Name = name;
             }
 
-            public string Path { get; set; }
-            public AssemblyDefinition Definition { get; set; }
+            public string Path { get; }
+            public string Name { get; }
 
-            public override string ToString() => Definition.FullName;
+            public override string ToString() => Name;
         }
     }
 }

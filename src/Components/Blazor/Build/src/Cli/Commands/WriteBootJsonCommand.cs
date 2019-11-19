@@ -15,10 +15,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.DevServer.Commands
                 "The path to a file that lists the paths to given referenced dll files",
                 CommandOptionType.SingleValue);
 
-            var embeddedResourcesFile = command.Option("--embedded-resources",
-                "The path to a file that lists the paths of .NET assemblies that may contain embedded resources (typically, referenced assemblies in their pre-linked states)",
-                CommandOptionType.SingleValue);
-
             var outputPath = command.Option("--output",
                 "Path to the output file",
                 CommandOptionType.SingleValue);
@@ -44,14 +40,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.DevServer.Commands
                         ? File.ReadAllLines(referencesFile.Value())
                         : Array.Empty<string>();
 
-                    var embeddedResourcesSources = embeddedResourcesFile.HasValue()
-                        ? File.ReadAllLines(embeddedResourcesFile.Value())
-                        : Array.Empty<string>();
-
                     BootJsonWriter.WriteFile(
                         mainAssemblyPath.Value,
                         referencesSources,
-                        embeddedResourcesSources,
                         linkerEnabledFlag.HasValue(),
                         outputPath.Value());
                     return 0;
