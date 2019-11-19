@@ -93,11 +93,26 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);    
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-
+            
+            // Shutdown once
             var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
+            
+            // Wait for server to start again.
+            for (var i = 0; i < 10; i++)
+            {
+                // ANCM should eventually recover from being shutdown multiple times.
+                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+                if (response.IsSuccessStatusCode)
+                {
+                    break;
+                }
+            }
+            
+            // Shutdown again
             response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
-
-            for (var i = 0; i < 5; i++)
+            
+            // return if server starts again.
+            for (var i = 0; i < 10; i++)
             {
                 // ANCM should eventually recover from being shutdown multiple times.
                 response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
@@ -106,7 +121,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
                     return;
                 }
             }
-
+            
+            // Test failure if this happens.
             Assert.False(true);
         }
 
