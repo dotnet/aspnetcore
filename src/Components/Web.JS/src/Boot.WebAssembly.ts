@@ -44,7 +44,7 @@ async function boot(options?: any): Promise<void> {
   }
 
   // Determine the URLs of the assemblies we want to load, then begin fetching them all
-  const loadAssemblyUrls = bootConfig.assemblyReferences
+  const loadAssemblyUrls = bootConfig.assemblies
     .map(filename => `_framework/_bin/${filename}`);
 
   try {
@@ -67,7 +67,7 @@ async function fetchBootConfigAsync() {
 // Keep in sync with BootJsonData in Microsoft.AspNetCore.Blazor.Build
 interface BootJsonData {
   entryAssembly: string;
-  assemblyReferences: string[];
+  assemblies: string[];
   linkerEnabled: boolean;
 }
 

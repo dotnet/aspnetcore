@@ -29,19 +29,15 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string[] applicationDependencies,
             string[] monoBclDirectories)
         {
-            var assembly = new AssemblyEntry(entryPoint, GetAssemblyName(entryPoint));
+            var entryAssembly = new AssemblyEntry(entryPoint, GetAssemblyName(entryPoint));
 
-            var dependencies = applicationDependencies
-                .Select(a => new AssemblyEntry(a, GetAssemblyName(a)))
-                .ToArray();
+            var dependencies = CreateAssemblyLookup(applicationDependencies);
 
-            var bcl = monoBclDirectories
-                .SelectMany(d => Directory.EnumerateFiles(d, "*.dll").Select(f => Path.Combine(d, f)))
-                .Select(a => new AssemblyEntry(a, GetAssemblyName(a)))
-                .ToArray();
+            var bcl = CreateAssemblyLookup(monoBclDirectories
+                .SelectMany(d => Directory.EnumerateFiles(d, "*.dll").Select(f => Path.Combine(d, f))));
 
             var assemblyResolutionContext = new AssemblyResolutionContext(
-                assembly,
+                entryAssembly,
                 dependencies,
                 bcl);
 
@@ -49,11 +45,28 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             var paths = assemblyResolutionContext.Results.Select(r => r.Path);
             return paths.Concat(FindPdbs(paths));
+
+            static Dictionary<string, AssemblyEntry> CreateAssemblyLookup(IEnumerable<string> assemblyPaths)
+            {
+                var dictionary = new Dictionary<string, AssemblyEntry>(StringComparer.Ordinal);
+                foreach (var path in assemblyPaths)
+                {
+                    var assemblyName = AssemblyName.GetAssemblyName(path).Name;
+                    if (dictionary.TryGetValue(assemblyName, out var previous))
+                    {
+                        throw new InvalidOperationException($"Multiple assemblies found with the same assembly name '{assemblyName}':" +
+                            Environment.NewLine + string.Join(Environment.NewLine, previous, path));
+                    }
+                    dictionary[assemblyName] = new AssemblyEntry(path, assemblyName);
+                }
+
+                return dictionary;
+            }
         }
 
-        private static string GetAssemblyName(string entryPoint)
+        private static string GetAssemblyName(string assemblyPath)
         {
-            return AssemblyName.GetAssemblyName(entryPoint).Name;
+            return AssemblyName.GetAssemblyName(assemblyPath).Name;
         }
 
         private static IEnumerable<string> FindPdbs(IEnumerable<string> dllPaths)
@@ -66,18 +79,18 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public class AssemblyResolutionContext
         {
             public AssemblyResolutionContext(
-                AssemblyEntry assembly,
-                AssemblyEntry[] dependencies,
-                AssemblyEntry[] bcl)
+                AssemblyEntry entryAssembly,
+                Dictionary<string, AssemblyEntry> dependencies,
+                Dictionary<string, AssemblyEntry> bcl)
             {
-                Assembly = assembly;
+                EntryAssembly = entryAssembly;
                 Dependencies = dependencies;
                 Bcl = bcl;
             }
 
-            public AssemblyEntry Assembly { get; }
-            public AssemblyEntry[] Dependencies { get; }
-            public AssemblyEntry[] Bcl { get; }
+            public AssemblyEntry EntryAssembly { get; }
+            public Dictionary<string, AssemblyEntry> Dependencies { get; }
+            public Dictionary<string, AssemblyEntry> Bcl { get; }
 
             public IList<AssemblyEntry> Results { get; } = new List<AssemblyEntry>();
 
@@ -85,7 +98,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             {
                 var visitedAssemblies = new HashSet<string>();
                 var pendingAssemblies = new Stack<string>();
-                pendingAssemblies.Push(Assembly.Name);
+                pendingAssemblies.Push(EntryAssembly.Name);
                 ResolveAssembliesCore();
 
                 void ResolveAssembliesCore()
@@ -96,8 +109,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                         {
                             // Not all references will be resolvable within the Mono BCL.
                             // Skipping unresolved assemblies here is equivalent to passing "--skip-unresolved true" to the Mono linker.
-                            var resolved = Resolve(current);
-                            if (resolved != null)
+                            if (Resolve(current) is AssemblyEntry resolved)
                             {
                                 Results.Add(resolved);
                                 var references = GetAssemblyReferences(resolved.Path);
@@ -110,17 +122,22 @@ namespace Microsoft.AspNetCore.Blazor.Build
                     }
                 }
 
-                AssemblyEntry Resolve(string assemblyName)
+                AssemblyEntry? Resolve(string assemblyName)
                 {
-                    if (Assembly.Name == assemblyName)
+                    if (EntryAssembly.Name == assemblyName)
                     {
-                        return Assembly;
+                        return EntryAssembly;
                     }
 
                     // Resolution logic. For right now, we will prefer the mono BCL version of a given
                     // assembly if there is a candidate assembly and an equivalent mono assembly.
-                    return Bcl.FirstOrDefault(c => c.Name == assemblyName) ??
-                        Dependencies.FirstOrDefault(c => c.Name == assemblyName);
+                    if (Bcl.TryGetValue(assemblyName, out var assembly) ||
+                        Dependencies.TryGetValue(assemblyName, out assembly))
+                    {
+                        return assembly;
+                    }
+
+                    return null;
                 }
 
                 static IReadOnlyList<string> GetAssemblyReferences(string assemblyPath)
@@ -157,7 +174,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         }
 
         [DebuggerDisplay("{ToString(),nq}")]
-        public class AssemblyEntry
+        public readonly struct AssemblyEntry
         {
             public AssemblyEntry(string path, string name)
             {
@@ -165,8 +182,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 Name = name;
             }
 
-            public string Path { get; set; }
-            public string Name { get; set; }
+            public string Path { get; }
+            public string Name { get; }
 
             public override string ToString() => Name;
         }

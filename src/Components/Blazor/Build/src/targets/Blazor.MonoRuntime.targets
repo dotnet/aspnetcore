@@ -623,7 +623,7 @@
     Inputs="$(BlazorBuildBootJsonInputsCache);@(_BlazorDependencyInput)"
     Outputs="$(BlazorBootJsonIntermediateOutputPath)">
     <ItemGroup>
-      <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->WithMetadataValue('PrimaryOutput','')->'%(FileName)%(Extension)')" />
+      <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Assembly')->'%(FileName)%(Extension)')" />
       <_AppReferences Include="@(BlazorItemOutput->WithMetadataValue('Type','Pdb')->'%(FileName)%(Extension)')" Condition="'$(BlazorEnableDebugging)' == 'true'" />
     </ItemGroup>
     <PropertyGroup>

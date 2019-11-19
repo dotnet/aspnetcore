@@ -41,17 +41,28 @@ namespace Microsoft.AspNetCore.Blazor.Build
         /// </summary>
         readonly struct BootJsonData
         {
+            /// <summary>
+            /// Gets the name of the assembly with the application entry point
+            /// </summary>
             public string EntryAssembly { get; }
-            public IEnumerable<string> AssemblyReferences { get; }
+
+            /// <summary>
+            /// Gets the closure of assemblies to be loaded by Blazor WASM. This includes the application entry assembly.
+            /// </summary>
+            public IEnumerable<string> Assemblies { get; }
+
+            /// <summary>
+            /// Gets a value that determines if the linker is enabled.
+            /// </summary>
             public bool LinkerEnabled { get; }
 
             public BootJsonData(
                 string entryAssembly,
-                IEnumerable<string> assemblyReferences,
+                IEnumerable<string> assemblies,
                 bool linkerEnabled)
             {
                 EntryAssembly = entryAssembly;
-                AssemblyReferences = assemblyReferences;
+                Assemblies = assemblies;
                 LinkerEnabled = linkerEnabled;
             }
         }
