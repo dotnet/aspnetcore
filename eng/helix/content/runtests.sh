@@ -81,6 +81,12 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+# Copy over any local shared fx if found
+if [ -d "Microsoft.AspNetCore.App" ]
+then
+    mv Microsoft.AppNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/
+fi
+
 $DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
 if grep -q "Exception thrown" discovered.txt; then
     echo -e "${RED}Exception thrown during test discovery${RESET}".
