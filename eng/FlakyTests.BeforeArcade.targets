@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup Condition="'$(RunFlakyTests)' == 'true'">
+    <LoggingTestingFileLoggingDirectory>$(LoggingTestingFileLoggingDirectory)Flaky\</LoggingTestingFileLoggingDirectory>
+  </PropertyGroup>
+</Project>
