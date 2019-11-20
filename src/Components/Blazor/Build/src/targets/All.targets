@@ -7,7 +7,9 @@
 
   <PropertyGroup>
     <BlazorToolsDir Condition="'$(BlazorToolsDir)' == ''">$(MSBuildThisFileDirectory)..\tools\</BlazorToolsDir>
-    <BlazorTasksPath>$(BlazorToolsDir)Microsoft.AspNetCore.Blazor.Build.Tasks.dll</BlazorTasksPath>
+    <_BlazorTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_BlazorTasksTFM>
+    <_BlazorTasksTFM Condition=" '$(_BlazorTasksTFM)' == ''">netfx</_BlazorTasksTFM>
+    <BlazorTasksPath>$(BlazorToolsDir)$(_BlazorTasksTFM)\Microsoft.AspNetCore.Blazor.Build.Tasks.dll</BlazorTasksPath>
 
     <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

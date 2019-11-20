@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
     <TargetName>Microsoft.AspNetCore.Blazor.Build.Tasks</TargetName>
     <AssemblyName>Microsoft.AspNetCore.Blazor.Build</AssemblyName>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
 
   <!-- Pack settings -->
@@ -27,13 +27,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssembly="false" />
-    <Reference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <Reference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
-    <Reference Include="System.Reflection.Metadata" />
+    <ProjectReference Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
+      Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
+    <Reference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <Reference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="Runtime" />
+    <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
   </ItemGroup>
 
-  <Target Name="CopyBuildTask" BeforeTargets="Build" AfterTargets="PrepareForRun">
+  <Target Name="CopyBuildTask" BeforeTargets="Build" Condition="'$(IsInnerBuild)' != 'true'">
       <!--
       The task produced by this project is referenced within this solution. When building, Visual Studio will lock up the assembly.
       Any attempts to overwrite the binary with a newer version will fail. This is particularly grating if a developer "Rebuilds" the project
@@ -46,10 +50,15 @@
       -->
 
     <ItemGroup>
-      <_FilesToCopy Include="$(OutputPath)*.*" />
+      <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\*" TargetPath="netcoreapp\" />
+      <_DesktopFilesToCopy Include="$(OutputPath)net46\*.*" TargetPath="netfx\" />
+      <_AllFilesToCopy Include="@(_NetCoreFilesToCopy);@(_DesktopFilesToCopy)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(OutputPath)tools" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
+    <Error Text="No files found in $(OutputPath)$(DefaultNetCoreTargetFramework)" Condition="@(_NetCoreFilesToCopy->Count()) == 0" />
+    <Error Text="No files found in $(OutputPath)net46" Condition="@(_DesktopFilesToCopy->Count()) == 0" />
+
+    <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
