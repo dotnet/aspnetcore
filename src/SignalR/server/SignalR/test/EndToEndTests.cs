@@ -435,6 +435,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch (Exception ex)
                 {
                     Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                    var expectedInnerException = typeof(HttpException);
+                    var innerException  = (HttpException)ex.InnerException;
+                    Assert.IsType(expectedInnerException, ex.InnerException);
+                    Assert.Equal<System.Net.HttpStatusCode>(System.Net.HttpStatusCode.Unauthorized, innerException.StatusCode);
                 }
                 finally
                 {
@@ -609,6 +613,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch (Exception ex)
                 {
                     Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                    var expectedInnerException = typeof(HttpException);
+                    var innerException  = (HttpException)ex.InnerException;
+                    Assert.IsType(expectedInnerException, ex.InnerException);
+                    Assert.Equal<System.Net.HttpStatusCode>(System.Net.HttpStatusCode.Unauthorized, innerException.StatusCode);
                 }
                 finally
                 {
@@ -648,6 +656,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 catch (Exception ex)
                 {
                     Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                    var expectedInnerException = typeof(HttpException);
+                    var innerException  = (HttpException)ex.InnerException;
+                    Assert.IsType(expectedInnerException, ex.InnerException);
+                    Assert.Equal<System.Net.HttpStatusCode>(System.Net.HttpStatusCode.Unauthorized, innerException.StatusCode);
                 }
                 finally
                 {

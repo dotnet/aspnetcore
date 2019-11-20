@@ -1411,6 +1411,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => hubConnection.StartAsync().OrTimeout());
                     Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+
+                    var expectedInnerException = typeof(HttpException);
+                    var innerException  = (HttpException)ex.InnerException;
+                    Assert.IsType(expectedInnerException, ex.InnerException);
+                    Assert.Equal<HttpStatusCode>(HttpStatusCode.Unauthorized, innerException.StatusCode);
                 }
                 finally
                 {
