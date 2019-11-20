@@ -98,7 +98,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
             var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
             
             // Wait for server to start again.
-            for (var i = 0; i < 10; i++)
+            int i;
+            for (i = 0; i < 10; i++)
             {
                 // ANCM should eventually recover from being shutdown multiple times.
                 response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
@@ -108,11 +109,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
                 }
             }
             
+            if (i == 10)
+            {
+                // Didn't restart after 10 retries
+                Assert.False(true);
+            }
+            
             // Shutdown again
             response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
             
             // return if server starts again.
-            for (var i = 0; i < 10; i++)
+            for (i = 0; i < 10; i++)
             {
                 // ANCM should eventually recover from being shutdown multiple times.
                 response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
