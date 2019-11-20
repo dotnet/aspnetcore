@@ -86,4 +86,5 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.Identity.Core" Version="3.0.0" />
   <Package Id="Microsoft.Extensions.Identity.Stores" Version="3.0.0" />
-</Baseline>ine>
+
+</Baseline>
