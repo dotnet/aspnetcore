@@ -7,7 +7,9 @@ appRuntimePath=$1
 output_dir=$2
 
 echo "Installing shared framework from $appRuntimePath"
-cp $appRuntimePath sharedFx.gz 
+cp $appRuntimePath sharedFx.zip
 mkdir -p $output_dir
+echo "Installing unzip"
+apt-get install unzip
 echo "Unpacking to $output_dir"
-tar -xzf sharedFx.gz --no-same-owner --directory "$output_dir"
+unzip sharedFx.zip -d $output_dir
