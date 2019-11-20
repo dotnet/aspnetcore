@@ -23,6 +23,7 @@ Set-StrictMode -Version 1
 Write-Host "Extracting to $InstallDir"
 
 $zipPackage = [io.path]::ChangeExtension($AppRuntimePath, ".zip")
+Write-Host "Renaming to $zipPackage"
 Rename-Item -Path $AppRuntimePath -NewName $zipPackage
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
     # Use built-in commands where possible as they are cross-plat compatible
@@ -36,4 +37,4 @@ else {
 }
 
 Write-Host "Expanded App Runtime to $InstallDir"
-exit /b 1
+Get-ChildItem -Path $InstallDir
