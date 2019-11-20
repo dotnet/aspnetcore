@@ -1,10 +1,10 @@
 ﻿<!--
 
-This file contains a list of all the packages and their versions which were released in ASP.NET Core 3.0.0. 
+This file contains a list of all the packages and their versions which were released in ASP.NET Core 3.0.0.
 Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="3.0.0">
+<Baseline Version="3.0.1">
   <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.0" />
   <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.0" />
   <Package Id="dotnet-sql-cache" Version="3.0.0" />
