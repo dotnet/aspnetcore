@@ -57,8 +57,8 @@
 
     <ItemGroup>
       <MonoWasmFile Include="$(DotNetWebAssemblyRuntimePath)*" />
-      <BlazorJSFile Include="$(BlazorJsPath)" />
-      <BlazorJSFile Include="$(BlazorJSMapPath)" />
+      <BlazorJSFile Include="$(BlazorJSPath)" />
+      <BlazorJSFile Include="$(BlazorJSMapPath)" Condition="Exists('$(BlazorJSMapPath)')" />
 
       <BlazorOutputWithTargetPath Include="@(MonoWasmFile)">
         <TargetOutputPath>$(BlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>

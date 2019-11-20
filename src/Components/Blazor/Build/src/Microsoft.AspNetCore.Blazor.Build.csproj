@@ -27,11 +27,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
+    <!-- Add a project dependency without reference output assemblies to enforce build order -->
+    <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
+    <ProjectReference
       Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      ReferenceOutputAssembly="false"
+      ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework" />
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+
     <Reference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <Reference Include="Microsoft.Build.Utilities.Core"  ExcludeAssets="Runtime" />
     <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
