@@ -3,7 +3,7 @@
     "version": "5.0.100-alpha1-015536"
   },
   "tools": {
-    "dotnet": "5.0.100-alpha1-015536",
+    "dotnet": "5.0.100-alpha1-015752",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCoreAppRuntimeVersion)"
