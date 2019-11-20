@@ -1,21 +1,26 @@
 parameters:
-  symbolPublishingAdditionalParameters: ''
-  artifactsPublishingAdditionalParameters: ''
   publishInstallersAndChecksums: false
+  symbolPublishingAdditionalParameters: ''
+  stageName: ''
+  channelName: ''
+  channelId: ''
+  transportFeed: ''
+  shippingFeed: ''
+  symbolsFeed: ''
 
 stages:
-- stage: NetCore_Release31_Publish
+- stage: ${{ parameters.stageName }}
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: .NET Core 3.1 Release Publishing
+  displayName: ${{ parameters.channelName }} Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
   - job:
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_31_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
@@ -56,7 +61,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', variables.PublicRelease_31_Channel_Id))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -96,7 +101,6 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -111,20 +115,21 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/'
             /p:Configuration=Release
-            /p:PublishInstallersAndChecksums=${{ parameters.publishInstallersAndChecksums }}
-            /p:InstallersTargetStaticFeed=$(InstallersBlobFeedUrl)
-            /p:InstallersAzureAccountKey=$(dotnetcli-storage-key)
-            /p:ChecksumsTargetStaticFeed=$(ChecksumsBlobFeedUrl)
-            /p:ChecksumsAzureAccountKey=$(dotnetclichecksums-storage-key)
+            /p:PublishInstallersAndChecksums=true
+            /p:ChecksumsTargetStaticFeed=$(InternalChecksumsBlobFeedUrl)
+            /p:ChecksumsAzureAccountKey=$(InternalChecksumsBlobFeedKey)
+            /p:InstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
+            /p:InstallersAzureAccountKey=$(InternalInstallersBlobFeedKey)
             /p:PublishToAzureDevOpsNuGetFeeds=true
-            /p:AzureDevOpsStaticShippingFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1/nuget/v3/index.json'
+            /p:AzureDevOpsStaticShippingFeed='${{ parameters.shippingFeed }}'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
-            /p:AzureDevOpsStaticTransportFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-transport/nuget/v3/index.json'
+            /p:AzureDevOpsStaticTransportFeed='${{ parameters.transportFeed }}'
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
-            /p:AzureDevOpsStaticSymbolsFeed='https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet3.1-symbols/nuget/v3/index.json'
+            /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:PublishToMSDL=false
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml
         parameters:
-          ChannelId: ${{ variables.PublicRelease_31_Channel_Id }}
+          ChannelId: ${{ parameters.channelId }}
