@@ -6,7 +6,7 @@ about: Create a report about something that is not working
 <!--
 Please keep in mind that the GitHub issue tracker is not intended as a general support forum, but for reporting non-security bugs and feature requests.
 
-If you believe you have an issue that affects the SECURITY of the platform, please do NOT create an issue and instead email your issue details to secure@microsoft.com. Your report may be eligible for our [bug bounty](https://technet.microsoft.com/en-us/mt764065.aspx) but ONLY if it is reported through email.
+If you believe you have an issue that affects the SECURITY of the platform, please do NOT create an issue and instead email your issue details to secure@microsoft.com. Your report may be eligible for our [bug bounty](https://www.microsoft.com/en-us/msrc/bounty-dot-net-core) but ONLY if it is reported through email.
 For other type of questions, consider using the [StackOverflow](https://stackoverflow.com) forum.
 
 -->
