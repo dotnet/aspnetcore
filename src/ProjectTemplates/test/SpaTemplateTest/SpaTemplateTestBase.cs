@@ -212,7 +212,7 @@ namespace Templates.Test.SpaTemplateTest
                 catch (HttpRequestException ex) when (ex.Message.StartsWith("The SSL connection could not be established"))
                 {
                 }
-                await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
+                await Task.Delay(TimeSpan.FromSeconds(10 * attempt));
             } while (attempt < maxAttempts);
         }
 
