@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal unsafe class NativeRequestContext : IDisposable
     {
-        private const int DefaultBufferSize = 4096;
         private const int AlignmentPadding = 8;
+        private const int DefaultBufferSize = 4096 - AlignmentPadding;
         private IntPtr _originalBufferAddress;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
         private IMemoryOwner<byte> _backingBuffer;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private bool _permanentlyPinned;
 
         // To be used by HttpSys
-        internal NativeRequestContext(uint? bufferSize, MemoryPool<Byte> memoryPool, SafeNativeOverlapped nativeOverlapped, ulong requestId)
+        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped, MemoryPool<Byte> memoryPool, uint? bufferSize, ulong requestId)
         {
             _nativeOverlapped = nativeOverlapped;
 
@@ -40,11 +40,18 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             // alignment to 0 for now.
             // 
             // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
-
             _bufferAlignment = 0;
 
             var newSize = (int)(bufferSize ?? DefaultBufferSize) + AlignmentPadding;
-            _backingBuffer = memoryPool.Rent(newSize);
+            if (newSize <= memoryPool.MaxBufferSize)
+            {
+                _backingBuffer = memoryPool.Rent(newSize);
+            }
+            else
+            {
+                // No size limit
+                _backingBuffer = MemoryPool<byte>.Shared.Rent(newSize);
+            }
             _backingBuffer.Memory.Span.Fill(0);// Zero the buffer
             _memoryHandle = _backingBuffer.Memory.Pin();
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
@@ -115,7 +122,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         // before an object (Request) which closes the RequestContext on demand is returned to the application.
         internal void ReleasePins()
         {
-            Debug.Assert(_nativeRequest != null || _backingBuffer == null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
+            Debug.Assert(_nativeRequest != null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
             _originalBufferAddress = (IntPtr)_nativeRequest;
             _memoryHandle.Dispose();
             _nativeRequest = null;

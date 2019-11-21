@@ -15,7 +15,7 @@ namespace System.Buffers
         /// <summary>
         /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
         /// </summary>
-        private const int _blockSize = 4096 * 4;
+        private const int _blockSize = 4096;
 
         /// <summary>
         /// Allocating 32 contiguous blocks per slab makes the slab size 128k. This is larger than the 85k size which will place the memory

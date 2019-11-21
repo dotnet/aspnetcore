@@ -32,7 +32,7 @@ namespace SelfHostServer
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                // .ConfigureLogging(factory => factory.AddConsole())
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseStartup<Startup>()
                 .UseHttpSys(options =>
                 {

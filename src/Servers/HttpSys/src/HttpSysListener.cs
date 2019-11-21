@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // 0.5 seconds per request.  Respond with a 400 Bad Request.
         private const int UnknownHeaderLimit = 1000;
 
-        internal MemoryPool<byte> MemoryPool { get; } = new SlabMemoryPool();
+        internal MemoryPool<byte> MemoryPool { get; } = SlabMemoryPoolFactory.Create();
 
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 

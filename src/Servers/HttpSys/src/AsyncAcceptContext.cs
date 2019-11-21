@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 boundHandle.AllocateNativeOverlapped(IOCallback, this, pinData: null));
 
             // nativeRequest
-            _nativeRequestContext = new NativeRequestContext(size, Server.MemoryPool, nativeOverlapped, requestId);
+            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, Server.MemoryPool, size, requestId);
         }
 
         public object AsyncState

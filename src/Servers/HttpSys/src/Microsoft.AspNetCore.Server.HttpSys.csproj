@@ -13,15 +13,10 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\DiagnosticMemoryPool.cs" Link="Shared\DiagnosticMemoryPool.cs" />
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\DiagnosticPoolBlock.cs" Link="Shared\DiagnosticPoolBlock.cs" />
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolBlock.cs" Link="Shared\MemoryPoolBlock.cs" />
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolSlab.cs" Link="Shared\MemoryPoolSlab.cs" />
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\MemoryPoolThrowHelper.cs" Link="Shared\MemoryPoolThrowHelper.cs" />
-    <Compile Include="..\..\..\Shared\Buffers.MemoryPool\SlabMemoryPool.cs" Link="Shared\SlabMemoryPool.cs" />
   </ItemGroup>
 
   <ItemGroup>
