@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             };
 
             buildArgumentList.Add($"/t:{target}");
+            buildArgumentList.Add($"/p:Configuration={project.Configuration}");
             buildArgumentList.Add(args);
 
             var buildArguments = string.Join(" ", buildArgumentList);

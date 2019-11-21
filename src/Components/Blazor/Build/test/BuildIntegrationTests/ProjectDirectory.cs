@@ -142,7 +142,13 @@ $@"<Project>
 
         public string TargetFramework { get; set; } = "netstandard2.1";
 
-        public string Configuration { get; set; } = "Debug";
+#if DEBUG
+        public string Configuration => "Debug";
+#elif RELEASE
+        public string Configuration => "Release";
+#else
+#error Configuration not supported
+#endif
 
         public string IntermediateOutputDirectory => Path.Combine("obj", Configuration, TargetFramework);
 
