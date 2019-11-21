@@ -75,7 +75,6 @@
 
     <ItemGroup>
       <NuspecProperty Include="outputPath=$(OutputPath)\sdk-output" />
-      <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
     </ItemGroup>
   </Target>
 </Project>
