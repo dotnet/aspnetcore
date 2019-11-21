@@ -44,4 +44,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.CookiePolicy;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

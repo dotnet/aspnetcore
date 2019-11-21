@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.13</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.14</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -235,7 +235,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.CookiePolicy-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.14</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
@@ -1219,7 +1219,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.14</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
