@@ -450,7 +450,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     // avoid leaving the connection open.
                     using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
-                        response.EnsureSuccessStatusCode();
+                        if (!response.IsSuccessStatusCode)
+                            {
+                            throw new HttpRequestException($"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).",
+                                                    new HttpException(response.StatusCode, response.ReasonPhrase));
+                            }
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
                         var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
