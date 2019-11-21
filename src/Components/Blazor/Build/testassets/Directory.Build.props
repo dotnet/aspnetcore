@@ -1,5 +1,5 @@
 <Project>
-    <Import Project="Before.Directory.build.props" Condition="Exists('Before.Directory.build.props')" />
+    <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
 
     <PropertyGroup>
       <RepoRoot Condition="'$(RepoRoot)' ==''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), global.json))\</RepoRoot>

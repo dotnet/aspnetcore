@@ -42,7 +42,7 @@
     <Reference Include="System.Reflection.Metadata" Condition="'$(TargetFramework)' == 'net46'" />
   </ItemGroup>
 
-  <Target Name="CopyBuildTask" BeforeTargets="Build" Condition="'$(IsInnerBuild)' != 'true'">
+  <Target Name="CopyBuildTask" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(IsInnerBuild)' != 'true'">
       <!--
       The task produced by this project is referenced within this solution. When building, Visual Studio will lock up the assembly.
       Any attempts to overwrite the binary with a newer version will fail. This is particularly grating if a developer "Rebuilds" the project
@@ -55,8 +55,8 @@
       -->
 
     <ItemGroup>
-      <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\$(RuntimeIdentifier)\*" TargetPath="netcoreapp\" />
-      <_DesktopFilesToCopy Include="$(OutputPath)net46\$(RuntimeIdentifier)\*" TargetPath="netfx\" />
+      <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\*" TargetPath="netcoreapp\" />
+      <_DesktopFilesToCopy Include="$(OutputPath)net46\*" TargetPath="netfx\" />
       <_AllFilesToCopy Include="@(_NetCoreFilesToCopy);@(_DesktopFilesToCopy)" />
     </ItemGroup>
 

@@ -33,7 +33,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\testassets\Standalone\Standalone.csproj" Targets="Restore"  ReferenceOutputAssembly="false" />
+    <ProjectReference
+      Include="..\testassets\Standalone\Standalone.csproj"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      ReferenceOutputAssembly="false" />
 
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
@@ -45,7 +49,7 @@
       <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-    
+
   <!-- A bit of msbuild magic to support reference resolver tests -->
   <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
     <ItemGroup>
