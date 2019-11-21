@@ -44,7 +44,7 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="3.0.0" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="3.0.1" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.0.0" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.0.0" />

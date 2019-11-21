@@ -332,11 +332,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' ">
-    <BaselinePackageVersion>3.0.1</BaselinePackageVersion>
+    <BaselinePackageVersion>3.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[3.0.1, )" />
-    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[3.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[3.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore" Version="[3.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
