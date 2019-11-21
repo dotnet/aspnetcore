@@ -102,8 +102,6 @@ namespace Microsoft.AspNetCore.Cryptography
         public unsafe static void BlockCopy(void* from, void* to, int byteCount) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)][System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.Success)]
         public unsafe static void BlockCopy(void* from, void* to, uint byteCount) { }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]private unsafe static void BlockCopyCore(byte* from, byte* to, uint byteCount) { }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]private unsafe static void BlockCopyCore(byte* from, byte* to, ulong byteCount) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)][System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.Success)]
         public unsafe static void SecureZeroMemory(byte* buffer, int byteCount) { }
         [System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.Success)]
@@ -116,12 +114,6 @@ namespace Microsoft.AspNetCore.Cryptography
     [System.Security.SuppressUnmanagedCodeSecurityAttribute]
     internal static partial class UnsafeNativeMethods
     {
-        private const string BCRYPT_LIB = "bcrypt.dll";
-        private const string CRYPT32_LIB = "crypt32.dll";
-        private const string NCRYPT_LIB = "ncrypt.dll";
-        private static readonly System.Lazy<Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle> _lazyBCryptLibHandle;
-        private static readonly System.Lazy<Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle> _lazyCrypt32LibHandle;
-        private static readonly System.Lazy<Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle> _lazyNCryptLibHandle;
         [System.Runtime.InteropServices.DllImport("bcrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern int BCryptCloseAlgorithmProvider(System.IntPtr hAlgorithm, uint dwFlags);
         [System.Runtime.InteropServices.DllImport("bcrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern int BCryptCreateHash(Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle hAlgorithm, out Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHashHandle phHash, System.IntPtr pbHashObject, uint cbHashObject, byte* pbSecret, uint cbSecret, uint dwFlags);
         [System.Runtime.InteropServices.DllImport("bcrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern int BCryptDecrypt(Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptKeyHandle hKey, byte* pbInput, uint cbInput, void* pPaddingInfo, byte* pbIV, uint cbIV, byte* pbOutput, uint cbOutput, out uint pcbResult, Microsoft.AspNetCore.Cryptography.Cng.BCryptEncryptFlags dwFlags);
@@ -145,7 +137,6 @@ namespace Microsoft.AspNetCore.Cryptography
         [System.Runtime.InteropServices.DllImport("crypt32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern bool CryptUnprotectData(Microsoft.AspNetCore.Cryptography.DATA_BLOB* pDataIn, System.IntPtr ppszDataDescr, Microsoft.AspNetCore.Cryptography.DATA_BLOB* pOptionalEntropy, System.IntPtr pvReserved, System.IntPtr pPromptStruct, uint dwFlags, out Microsoft.AspNetCore.Cryptography.DATA_BLOB pDataOut);
         [System.Runtime.InteropServices.DllImport("crypt32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public unsafe static extern bool CryptUnprotectMemory(byte* pData, uint cbData, uint dwFlags);
         [System.Runtime.InteropServices.DllImport("crypt32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern bool CryptUnprotectMemory(System.Runtime.InteropServices.SafeHandle pData, uint cbData, uint dwFlags);
-        private static System.Lazy<Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle> GetLazyLibraryHandle(string libraryName) { throw null; }
         [System.Runtime.InteropServices.DllImport("ncrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)][System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.Success)]
         internal static extern int NCryptCloseProtectionDescriptor(System.IntPtr hDescriptor);
         [System.Runtime.InteropServices.DllImport("ncrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern int NCryptCreateProtectionDescriptor(string pwszDescriptorString, uint dwFlags, out Microsoft.AspNetCore.Cryptography.SafeHandles.NCryptDescriptorHandle phDescriptor);
@@ -154,10 +145,8 @@ namespace Microsoft.AspNetCore.Cryptography
         [System.Runtime.InteropServices.DllImport("ncrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern int NCryptUnprotectSecret(out Microsoft.AspNetCore.Cryptography.SafeHandles.NCryptDescriptorHandle phDescriptor, uint dwFlags, byte* pbProtectedBlob, uint cbProtectedBlob, System.IntPtr pMemPara, System.IntPtr hWnd, out Microsoft.AspNetCore.Cryptography.SafeHandles.LocalAllocHandle ppbData, out uint pcbData);
         [System.Runtime.InteropServices.DllImport("ncrypt.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern int NCryptUnprotectSecret(System.IntPtr phDescriptor, uint dwFlags, byte* pbProtectedBlob, uint cbProtectedBlob, System.IntPtr pMemPara, System.IntPtr hWnd, out Microsoft.AspNetCore.Cryptography.SafeHandles.LocalAllocHandle ppbData, out uint pcbData);
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]internal static void ThrowExceptionForBCryptStatus(int ntstatus) { }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]private static void ThrowExceptionForBCryptStatusImpl(int ntstatus) { }
         public static void ThrowExceptionForLastCrypt32Error() { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]internal static void ThrowExceptionForNCryptStatus(int ntstatus) { }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]private static void ThrowExceptionForNCryptStatusImpl(int ntstatus) { }
     }
     internal static partial class WeakReferenceHelpers
     {
@@ -243,20 +232,9 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
         internal uint dwMaxLength;
         internal uint dwIncrement;
         public void EnsureValidKeyLength(uint keyLengthInBits) { }
-        private bool IsValidKeyLength(uint keyLengthInBits) { throw null; }
     }
     internal static partial class CachedAlgorithmHandles
     {
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _aesCbc;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _aesGcm;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _hmacSha1;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _hmacSha256;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _hmacSha512;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _pbkdf2;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _sha1;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _sha256;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _sha512;
-        private static Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo _sp800_108_ctr_hmac;
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle AES_CBC { get { throw null; } }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle AES_GCM { get { throw null; } }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle HMAC_SHA1 { get { throw null; } }
@@ -267,19 +245,6 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle SHA256 { get { throw null; } }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle SHA512 { get { throw null; } }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle SP800_108_CTR_HMAC { get { throw null; } }
-        private static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetAesAlgorithm(string chainingMode) { throw null; }
-        private static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetHashAlgorithm(string algorithm) { throw null; }
-        private static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetHmacAlgorithm(string algorithm) { throw null; }
-        private static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetPbkdf2Algorithm() { throw null; }
-        private static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetSP800_108_CTR_HMACAlgorithm() { throw null; }
-
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        private partial struct CachedAlgorithmInfo
-        {
-            private object _dummy;
-            public CachedAlgorithmInfo(System.Func<Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle> factory) { throw null; }
-            public static Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle GetAlgorithmHandle(ref Microsoft.AspNetCore.Cryptography.Cng.CachedAlgorithmHandles.CachedAlgorithmInfo cachedAlgorithmInfo) { throw null; }
-        }
     }
     [System.FlagsAttribute]
     internal enum NCryptEncryptFlags
@@ -292,26 +257,14 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
     }
     internal static partial class OSVersionUtil
     {
-        private static readonly Microsoft.AspNetCore.Cryptography.Cng.OSVersionUtil.OSVersion _osVersion;
-        private static Microsoft.AspNetCore.Cryptography.Cng.OSVersionUtil.OSVersion GetOSVersion() { throw null; }
         public static bool IsWindows() { throw null; }
         public static bool IsWindows8OrLater() { throw null; }
-        private enum OSVersion
-        {
-            NotWindows = 0,
-            Win7OrLater = 1,
-            Win8OrLater = 2,
-        }
     }
 }
 namespace Microsoft.AspNetCore.Cryptography.Internal
 {
     internal static partial class Resources
     {
-        private static System.Resources.ResourceManager s_resourceManager;
-        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        private static System.Globalization.CultureInfo _Culture_k__BackingField;
         internal static string BCryptAlgorithmHandle_ProviderNotFound { get { throw null; } }
         internal static string BCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength { get { throw null; } }
         internal static System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -321,16 +274,13 @@ namespace Microsoft.AspNetCore.Cryptography.Internal
         internal static string FormatBCryptAlgorithmHandle_ProviderNotFound(object p0) { throw null; }
         internal static string FormatBCRYPT_KEY_LENGTHS_STRUCT_InvalidKeyLength(object p0, object p1, object p2, object p3) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]internal static string GetResourceString(string resourceKey, string defaultValue = null) { throw null; }
-        private static string GetResourceString(string resourceKey, string[] formatterNames) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     internal sealed partial class BCryptAlgorithmHandle : Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHandle
     {
-        private BCryptAlgorithmHandle() { }
         public Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHashHandle CreateHash() { throw null; }
-        private unsafe Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHashHandle CreateHashCore(byte* pbKey, uint cbKey) { throw null; }
         public unsafe Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHashHandle CreateHmac(byte* pbKey, uint cbKey) { throw null; }
         public unsafe Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptKeyHandle GenerateSymmetricKey(byte* pbSecret, uint cbSecret) { throw null; }
         public string GetAlgorithmName() { throw null; }
@@ -350,8 +300,6 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     }
     internal sealed partial class BCryptHashHandle : Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHandle
     {
-        private Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle _algProviderHandle;
-        private BCryptHashHandle() { }
         public Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHashHandle DuplicateHash() { throw null; }
         public unsafe void HashData(byte* pbInput, uint cbInput, byte* pbHashDigest, uint cbHashDigest) { }
         protected override bool ReleaseHandle() { throw null; }
@@ -359,8 +307,6 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
     }
     internal sealed partial class BCryptKeyHandle : Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptHandle
     {
-        private Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle _algProviderHandle;
-        private BCryptKeyHandle() { }
         protected override bool ReleaseHandle() { throw null; }
         internal void SetAlgorithmProviderHandle(Microsoft.AspNetCore.Cryptography.SafeHandles.BCryptAlgorithmHandle algProviderHandle) { }
     }
@@ -384,26 +330,11 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
         public TDelegate GetProcAddress<TDelegate>(string lpProcName, bool throwIfNotFound = true) where TDelegate : class { throw null; }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle Open(string filename) { throw null; }
         protected override bool ReleaseHandle() { throw null; }
-        [System.Security.SuppressUnmanagedCodeSecurityAttribute]
-        private static partial class UnsafeNativeMethods
-        {
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public static extern int FormatMessage(uint dwFlags, Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle lpSource, uint dwMessageId, uint dwLanguageId, out Microsoft.AspNetCore.Cryptography.SafeHandles.LocalAllocHandle lpBuffer, uint nSize, System.IntPtr Arguments);
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)][System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.Success)]
-            internal static extern bool FreeLibrary(System.IntPtr hModule);
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern bool GetModuleHandleEx(uint dwFlags, Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle lpModuleName, out System.IntPtr phModule);
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern System.IntPtr GetProcAddress(Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle hModule, string lpProcName);
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern Microsoft.AspNetCore.Cryptography.SafeHandles.SafeLibraryHandle LoadLibraryEx(string lpFileName, System.IntPtr hFile, uint dwFlags);
-            internal static void ThrowExceptionForLastWin32Error() { }
-        }
     }
     internal sealed partial class SecureLocalAllocHandle : Microsoft.AspNetCore.Cryptography.SafeHandles.LocalAllocHandle
     {
-        private readonly System.IntPtr _cb;
-        private SecureLocalAllocHandle(System.IntPtr cb) { }
         public System.IntPtr Length { get { throw null; } }
         public static Microsoft.AspNetCore.Cryptography.SafeHandles.SecureLocalAllocHandle Allocate(System.IntPtr cb) { throw null; }
-        [System.Runtime.ConstrainedExecution.ReliabilityContractAttribute(System.Runtime.ConstrainedExecution.Consistency.WillNotCorruptState, System.Runtime.ConstrainedExecution.Cer.MayFail)]
-        private void AllocateImpl(System.IntPtr cb) { }
         public Microsoft.AspNetCore.Cryptography.SafeHandles.SecureLocalAllocHandle Duplicate() { throw null; }
         protected override bool ReleaseHandle() { throw null; }
     }

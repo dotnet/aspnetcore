@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal partial class KestrelServerOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>
     {
-        private System.IServiceProvider _services;
         public KestrelServerOptionsSetup(System.IServiceProvider services) { }
         public void Configure(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions options) { }
     }
