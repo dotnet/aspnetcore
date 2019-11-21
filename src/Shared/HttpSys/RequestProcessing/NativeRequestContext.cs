@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private int _bufferAlignment;
         private SafeNativeOverlapped _nativeOverlapped;
         private bool _permanentlyPinned;
+        private bool _disposed;
 
         // To be used by HttpSys
         internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped, MemoryPool<Byte> memoryPool, uint? bufferSize, ulong requestId)
@@ -125,6 +126,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             Debug.Assert(_nativeRequest != null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
             _originalBufferAddress = (IntPtr)_nativeRequest;
             _memoryHandle.Dispose();
+            _memoryHandle = default;
             _nativeRequest = null;
             _nativeOverlapped?.Dispose();
             _nativeOverlapped = null;
@@ -132,10 +134,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public virtual void Dispose()
         {
-            Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
-            _nativeOverlapped?.Dispose();
-            _memoryHandle.Dispose();
-            _backingBuffer?.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
+                _nativeOverlapped?.Dispose();
+                _memoryHandle.Dispose();
+                _backingBuffer.Dispose();
+            }
         }
 
         // These methods require the HTTP_REQUEST to still be pinned in its original location.
