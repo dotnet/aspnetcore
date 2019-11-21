@@ -55,8 +55,8 @@
       -->
 
     <ItemGroup>
-      <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\*" TargetPath="netcoreapp\" />
-      <_DesktopFilesToCopy Include="$(OutputPath)net46\*.*" TargetPath="netfx\" />
+      <_NetCoreFilesToCopy Include="$(OutputPath)$(DefaultNetCoreTargetFramework)\$(RuntimeIdentifier)\*" TargetPath="netcoreapp\" />
+      <_DesktopFilesToCopy Include="$(OutputPath)net46\$(RuntimeIdentifier)\*" TargetPath="netfx\" />
       <_AllFilesToCopy Include="@(_NetCoreFilesToCopy);@(_DesktopFilesToCopy)" />
     </ItemGroup>
 
