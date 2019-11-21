@@ -34,7 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference
-      Include="..\testassets\Standalone\Standalone.csproj"
+      Include="..\testassets\standalone\standalone.csproj"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
       ReferenceOutputAssembly="false" />
