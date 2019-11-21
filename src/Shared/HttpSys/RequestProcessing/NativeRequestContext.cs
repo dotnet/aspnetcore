@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal unsafe class NativeRequestContext : IDisposable
     {
+        private const int DefaultBufferSize = 4096;
         private const int AlignmentPadding = 8;
         private IntPtr _originalBufferAddress;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
@@ -27,10 +28,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private bool _permanentlyPinned;
 
         // To be used by HttpSys
-        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped,
-            IMemoryOwner<byte> backingBuffer,
-            ulong requestId)
+        internal NativeRequestContext(uint? bufferSize, MemoryPool<Byte> memoryPool, SafeNativeOverlapped nativeOverlapped, ulong requestId)
         {
+            _nativeOverlapped = nativeOverlapped;
+
             // TODO:
             // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
             // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
@@ -42,9 +43,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             _bufferAlignment = 0;
 
-            _nativeOverlapped = nativeOverlapped;
-            _backingBuffer = backingBuffer;
-            _memoryHandle = backingBuffer.Memory.Pin();
+            var newSize = (int)(bufferSize ?? DefaultBufferSize) + AlignmentPadding;
+            _backingBuffer = memoryPool.Rent(newSize);
+            _backingBuffer.Memory.Span.Fill(0);// Zero the buffer
+            _memoryHandle = _backingBuffer.Memory.Pin();
             _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
 
             RequestId = requestId;

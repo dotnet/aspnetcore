@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -19,8 +17,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private TaskCompletionSource<RequestContext> _tcs;
         private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
-        private const int DefaultBufferSize = 4096;
-        private const int AlignmentPadding = 8;
 
         internal AsyncAcceptContext(HttpSysListener server)
         {
@@ -193,19 +189,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             _nativeRequestContext?.ReleasePins();
             _nativeRequestContext?.Dispose();
-            //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
-            var newSize = (int)(size.HasValue ? size.Value : DefaultBufferSize) + AlignmentPadding;
-            var backingBuffer = Server.MemoryPool.Rent(newSize);
-            backingBuffer.Memory.Span.Fill(0);// Zero the buffer
-
             var boundHandle = Server.RequestQueue.BoundHandle;
             var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
                 boundHandle.AllocateNativeOverlapped(IOCallback, this, pinData: null));
 
             // nativeRequest
-            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, backingBuffer, requestId);
+            _nativeRequestContext = new NativeRequestContext(size, Server.MemoryPool, nativeOverlapped, requestId);
         }
 
         public object AsyncState

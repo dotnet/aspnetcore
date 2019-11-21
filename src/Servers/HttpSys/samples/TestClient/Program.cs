@@ -20,6 +20,7 @@ namespace TestClient
             Console.ReadKey();
 
             var handler = new HttpClientHandler();
+            handler.MaxConnectionsPerServer = 500;
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             // handler.UseDefaultCredentials = true;
             // handler.Credentials = new NetworkCredential(@"redmond\chrross", "passwird");

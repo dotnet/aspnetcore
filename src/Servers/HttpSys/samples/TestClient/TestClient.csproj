@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <StartupObject>TestClient.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
