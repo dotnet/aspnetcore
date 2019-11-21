@@ -9,6 +9,9 @@
 
       <!-- Workaround for https://github.com/aspnet/AspNetCore/issues/17308 -->
       <DefaultNetCoreTargetFramework>netcoreapp3.1</DefaultNetCoreTargetFramework>
+
+      <EnableSourceLink>false</EnableSourceLink>
+      <DeterministicSourcePaths>false</DeterministicSourcePaths>
     </PropertyGroup>
 
     <Import Project="$(RepoRoot)eng\Versions.props" />
