@@ -32,6 +32,5 @@
     <NuspecProperty Include="OutputDocumentation=$(OutputPath)**\$(AssemblyName).xml" />
     <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
     <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
-    <NuspecProperty Include="PackageIcon=$(PackageIconFullPath)" />
   </ItemGroup>
 </Project>

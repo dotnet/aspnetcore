@@ -10,16 +10,15 @@
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
-    <icon>packageIcon.png</icon>
   </metadata>
 
   <files>
+    $CommonFileElements$
     <file src="$OutputBinary$" target="lib\" />
     <file src="$OutputSymbol$" target="lib\" />
     <file src="$OutputDocumentation$" target="lib\" />
     <file src="build\**\*" target="build\" />
     <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
-    <file src="$PackageIcon$" target="" />
     <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.dll" />
     <file src="$TaskSymbolNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.pdb" />
   </files>
