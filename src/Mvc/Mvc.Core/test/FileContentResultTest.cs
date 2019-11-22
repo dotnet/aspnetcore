@@ -361,6 +361,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
         }
 
@@ -443,6 +444,7 @@ namespace Microsoft.AspNetCore.Mvc
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
+            Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);

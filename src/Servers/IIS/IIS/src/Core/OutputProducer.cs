@@ -13,25 +13,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class OutputProducer
     {
-        // This locks access to to all of the below fields
+        // This locks access to _completed.
         private readonly object _contextLock = new object();
-
-        private ValueTask<FlushResult> _flushTask;
         private bool _completed = false;
 
         private readonly Pipe _pipe;
 
         // https://github.com/dotnet/corefxlab/issues/1334
-        // Pipelines don't support multiple awaiters on flush
-        // this is temporary until it does
-        private TaskCompletionSource<object> _flushTcs;
+        // https://github.com/aspnet/AspNetCore/issues/8843
+        // Pipelines don't support multiple awaiters on flush. This is temporary until it does.
+        // _lastFlushTask field should only be get or set under the _flushLock.
         private readonly object _flushLock = new object();
-        private Action _flushCompleted;
+        private Task _lastFlushTask = Task.CompletedTask;
 
         public OutputProducer(Pipe pipe)
         {
             _pipe = pipe;
-            _flushCompleted = OnFlushCompleted;
         }
 
         public PipeReader Reader => _pipe.Reader;
@@ -90,35 +87,27 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private Task FlushAsync(PipeWriter pipeWriter, CancellationToken cancellationToken)
         {
-            var awaitable = pipeWriter.FlushAsync(cancellationToken);
-            if (awaitable.IsCompleted)
-            {
-                // The flush task can't fail today
-                return Task.CompletedTask;
-            }
-            return FlushAsyncAwaited(awaitable, cancellationToken);
-        }
-
-        private async Task FlushAsyncAwaited(ValueTask<FlushResult> awaitable, CancellationToken cancellationToken)
-        {
-            // https://github.com/dotnet/corefxlab/issues/1334
-            // Since the flush awaitable doesn't currently support multiple awaiters
-            // we need to use a task to track the callbacks.
-            // All awaiters get the same task
             lock (_flushLock)
             {
-                _flushTask = awaitable;
-                if (_flushTcs == null || _flushTcs.Task.IsCompleted)
-                {
-                    _flushTcs = new TaskCompletionSource<object>();
+                _lastFlushTask = _lastFlushTask.IsCompleted ?
+                    FlushNowAsync(pipeWriter, cancellationToken) :
+                    AwaitLastFlushAndThenFlushAsync(_lastFlushTask, pipeWriter, cancellationToken);
 
-                    _flushTask.GetAwaiter().OnCompleted(_flushCompleted);
-                }
+                return _lastFlushTask;
             }
+        }
 
+        private Task FlushNowAsync(PipeWriter pipeWriter, CancellationToken cancellationToken)
+        {
+            var awaitable = pipeWriter.FlushAsync(cancellationToken);
+            return awaitable.IsCompleted ? Task.CompletedTask : FlushNowAsyncAwaited(awaitable, cancellationToken);
+        }
+
+        private async Task FlushNowAsyncAwaited(ValueTask<FlushResult> awaitable, CancellationToken cancellationToken)
+        {
             try
             {
-                await _flushTcs.Task;
+                await awaitable;
                 cancellationToken.ThrowIfCancellationRequested();
             }
             catch (OperationCanceledException ex)
@@ -132,21 +121,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private void OnFlushCompleted()
+        private async Task AwaitLastFlushAndThenFlushAsync(Task lastFlushTask, PipeWriter pipeWriter, CancellationToken cancellationToken)
         {
-            try
-            {
-                _flushTask.GetAwaiter().GetResult();
-                _flushTcs.TrySetResult(null);
-            }
-            catch (Exception exception)
-            {
-                _flushTcs.TrySetResult(exception);
-            }
-            finally
-            {
-                _flushTask = default;
-            }
+            await lastFlushTask;
+            await FlushNowAsync(pipeWriter, cancellationToken);
         }
     }
 }

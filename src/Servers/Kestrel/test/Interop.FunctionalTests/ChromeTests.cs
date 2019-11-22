@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-#if NETCOREAPP2_2
 
 using System;
 using System.IO;
@@ -13,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium.Chrome;
@@ -102,6 +99,8 @@ namespace Interop.FunctionalTests
                 var chromeOutput = RunHeadlessChrome($"https://localhost:{host.GetPort()}/{requestSuffix}");
 
                 AssertExpectedResponseOrShowDebugInstructions(expectedResponse, chromeOutput);
+
+                await host.StopAsync();
             }
         }
 
@@ -135,8 +134,3 @@ namespace Interop.FunctionalTests
         }
     }
 }
-
-#elif NET461 // No ALPN support
-#else
-#error TFMs need updating
-#endif

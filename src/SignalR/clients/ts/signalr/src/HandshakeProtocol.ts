@@ -13,6 +13,7 @@ export interface HandshakeRequestMessage {
 /** @private */
 export interface HandshakeResponseMessage {
     readonly error: string;
+    readonly minorVersion: number;
 }
 
 /** @private */

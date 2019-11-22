@@ -1,0 +1,55 @@
+@page "/multiple-components"
+@using BasicTestApp.MultipleComponents;
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple component entry points</title>
+    <base href="~/" />
+    @* This page is used to validate the ability to render multiple root components in a blazor server-side application.
+    *@
+</head>
+<body>
+    <div id="test-container">
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Static, new { Name = "John" }))
+        @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+        <div id="container">
+            <p>Some content before</p>
+            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+            <p>Some content between</p>
+            @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+            <p>Some content after</p>
+            <div id="nested-an-extra-level">
+                <p>Some content before</p>
+                @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.Server))
+                @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.ServerPrerendered))
+                <p>Some content after</p>
+            </div>
+        </div>
+    </div>
+
+    @*
+        So that E2E tests can make assertions about both the prerendered and
+        interactive states, we only load the .js file when told to.
+    *@
+    <hr />
+
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        // Used by InteropOnInitializationComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
+    </script>
+</body>
+</html>

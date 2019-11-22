@@ -18,18 +18,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
     {
         private static readonly Assembly _resourcesAssembly = typeof(RazorPagesTest).GetTypeInfo().Assembly;
 
-        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
+        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<RazorPagesWebSite.Startup>();
+            builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
         public HttpClient Client { get; }
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent, responseContent.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -144,23 +144,43 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task Page_Handler_ReturnPartialWithoutModel()
+        public async Task PageWithoutModel_ReturnPartial()
         {
             // Act
-            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithoutModel");
+            using var document = await Client.GetHtmlDocumentAsync("PageWithoutModelRenderPartial");
 
             var element = document.RequiredQuerySelector("#content");
-            Assert.Equal("Welcome, Guest", element.TextContent);
+            Assert.Equal("Hello from Razor Page", element.TextContent);
         }
 
         [Fact]
-        public async Task Page_Handler_ReturnPartialWithModel()
+        public async Task PageWithModel_Works()
         {
             // Act
-            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithModel");
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial");
 
             var element = document.RequiredQuerySelector("#content");
-            Assert.Equal("Welcome, Admin", element.TextContent);
+            Assert.Equal("Hello from RenderPartialModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialUsingPageModelWorks()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/UsePageModelAsPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from RenderPartialWithModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialWithNoModel()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/NoPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello default", element.TextContent);
         }
 
         [Fact]
@@ -784,13 +804,12 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             Assert.Equal(expected, content);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36024")]
         public async Task PolymorphicPropertiesOnPageModelsAreValidated()
         {
             // Arrange
             var name = "TestName";
             var age = 123;
-            var expected = $"Name = {name}, Age = {age}";
             var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PolymorphicBinding")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -919,7 +938,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         {
             // Arrange
             var expected =
-@"Microsoft.AspNetCore.Mvc.Routing.EndpointRoutingUrlHelper
+@"Microsoft.AspNetCore.Mvc.Routing.UrlHelper
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper`1[AspNetCore.InjectedPageProperties]
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPageProperties]";
 
@@ -1190,11 +1209,11 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         public async Task AuthFiltersAppliedToPageModel_AreExecuted()
         {
             // Act
-            var response = await Client.GetAsync("/ModelWithAuthFilter");
+            var response = await Client.GetAsync("/Pages/ModelWithAuthFilter");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/Login?ReturnUrl=%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
+            Assert.Equal("/Login?ReturnUrl=%2FPages%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,8 +12,10 @@ using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
@@ -67,7 +69,13 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                     await ctx.SignOutAsync();
                 }
 
-                return new RedirectResult(result.ValidatedRequest.PostLogOutUri);
+                var postLogOutUri = result.ValidatedRequest.PostLogOutUri;
+                if (result.ValidatedRequest.State != null)
+                {
+                    postLogOutUri = QueryHelpers.AddQueryString(postLogOutUri, OpenIdConnectParameterNames.State, result.ValidatedRequest.State);
+                }
+
+                return new RedirectResult(postLogOutUri);
             }
             else
             {

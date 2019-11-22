@@ -4,10 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -21,20 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IModelBinder _keyBinder;
         private readonly IModelBinder _valueBinder;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.</para>
-        /// </summary>
-        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
-        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
-            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.

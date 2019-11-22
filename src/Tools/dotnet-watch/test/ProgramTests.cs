@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp2.2")
+                .WithTargetFrameworks("netcoreapp3.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();

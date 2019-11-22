@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -46,12 +45,6 @@ namespace Microsoft.AspNetCore.WebSockets
             _logger = loggerFactory.CreateLogger<WebSocketMiddleware>();
 
             // TODO: validate options.
-        }
-
-        [Obsolete("This constructor has been replaced with an equivalent constructor which requires an ILoggerFactory.")]
-        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options)
-            : this(next, options, NullLoggerFactory.Instance)
-        {
         }
 
         public Task Invoke(HttpContext context)
@@ -153,13 +146,13 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[Constants.Headers.SecWebSocketKey]);
+                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
             }
         }
     }

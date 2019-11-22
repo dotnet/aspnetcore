@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,17 +14,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     public class VersionedJsonHubProtocol : IHubProtocol
     {
         private readonly int _version;
-        private readonly JsonHubProtocol _innerProtocol;
+        private readonly NewtonsoftJsonHubProtocol _innerProtocol;
 
         public VersionedJsonHubProtocol(int version)
         {
             _version = version;
-            _innerProtocol = new JsonHubProtocol();
+            _innerProtocol = new NewtonsoftJsonHubProtocol();
         }
 
         public string Name => _innerProtocol.Name;
         public int Version => _version;
         public TransferFormat TransferFormat => _innerProtocol.TransferFormat;
+        public int MinorVersion => 0; // not used in this test class, just for interface conformance
 
         public bool TryParseMessage(ref ReadOnlySequence<byte> input, IInvocationBinder binder, out HubMessage message)
         {

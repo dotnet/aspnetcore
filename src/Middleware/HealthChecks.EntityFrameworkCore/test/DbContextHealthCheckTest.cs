@@ -104,12 +104,15 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
         }
 
+        // used to ensure each test uses a unique in-memory database
+        private static int _testDbCounter;
+
         private static IServiceProvider CreateServices(
             Func<TestDbContext, CancellationToken, Task<bool>> testQuery = null,
             HealthStatus failureStatus = HealthStatus.Unhealthy)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDbContext<TestDbContext>(o => o.UseInMemoryDatabase("Test"));
+            serviceCollection.AddDbContext<TestDbContext>(o => o.UseInMemoryDatabase("Test" + Interlocked.Increment(ref _testDbCounter)));
 
             var builder = serviceCollection.AddHealthChecks();
             builder.AddDbContextCheck<TestDbContext>("test", failureStatus, new[] { "tag1", "tag2", }, testQuery);

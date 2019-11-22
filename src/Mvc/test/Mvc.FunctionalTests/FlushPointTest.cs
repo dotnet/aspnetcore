@@ -3,7 +3,7 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -37,6 +37,33 @@ RenderBody content
         }
 
         [Fact]
+        public async Task FlushFollowedByLargeContent()
+        {
+            // Arrange
+            var expected = new string('a', 1024 * 1024);
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("http://localhost/FlushPoint/FlushFollowedByLargeContent");
+
+            // Assert
+            var largeContent = document.RequiredQuerySelector("#large-content");
+            Assert.StartsWith(expected, largeContent.TextContent);
+        }
+
+        [Fact]
+        public async Task FlushInvokedInComponent()
+        {
+            var expected = new string('a', 1024 * 1024);
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("http://localhost/FlushPoint/FlushInvokedInComponent");
+
+            // Assert
+            var largeContent = document.RequiredQuerySelector("#large-content");
+            Assert.StartsWith(expected, largeContent.TextContent);
+        }
+
+        [Fact]
         public async Task FlushPointsAreExecutedForPagesWithoutLayouts()
         {
             var expected = @"Initial content
@@ -58,7 +85,7 @@ After flush inside partial<form action=""/FlushPoint/PageWithoutLayout"" method=
 
         [Theory]
         [InlineData("PageWithPartialsAndViewComponents", "FlushAsync invoked inside RenderSection")]
-        [InlineData("PageWithRenderSectionAsync", "FlushAsync invoked inside RenderSectionAsync")]
+        [InlineData("PageWithRenderSection", "FlushAsync invoked inside RenderSectionAsync")]
         public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
         {
             var expected = $@"<title>{ title }</title>

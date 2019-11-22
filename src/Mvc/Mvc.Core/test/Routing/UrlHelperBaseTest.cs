@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
@@ -109,7 +108,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             services.AddLogging();
             services.AddRouting();
             services
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(UrlEncoder.Default);
 
             return services.BuildServiceProvider();

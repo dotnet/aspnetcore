@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Xunit.Abstractions;
 
@@ -13,10 +13,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities
     {
         protected string _logFolderPath;
 
-        public LogFileTestBase(ITestOutputHelper output = null) : base(output)
+        public LogFileTestBase(PublishedSitesFixture fixture, ITestOutputHelper output = null) : base(fixture, output)
         {
             _logFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         }
+
         public override void Dispose()
         {
             base.Dispose();

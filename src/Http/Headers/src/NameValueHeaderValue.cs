@@ -226,11 +226,11 @@ namespace Microsoft.Net.Http.Headers
                     destination.Append(separator);
                     destination.Append(' ');
                 }
-                destination.Append(values[i].Name);
+                destination.Append(values[i].Name.AsSpan());
                 if (!StringSegment.IsNullOrEmpty(values[i].Value))
                 {
                     destination.Append('=');
-                    destination.Append(values[i].Value);
+                    destination.Append(values[i].Value.AsSpan());
                 }
             }
         }

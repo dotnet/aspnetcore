@@ -3,5 +3,6 @@
   "appDomain": "denied",
   "methodDisplay": "method",
   "longRunningTestSeconds": 60,
-  "maxParallelThreads": -1
+  "maxParallelThreads": -1,
+  "diagnosticMessages": true
 }

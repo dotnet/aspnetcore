@@ -3,15 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// A <see cref="ProblemDetails"/> for validation errors.
     /// </summary>
+    [JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
     public class ValidationProblemDetails : ProblemDetails
     {
         /// <summary>
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
-        [JsonProperty(PropertyName = "errors")]
+        [JsonPropertyName("errors")]
         public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
     }
 }

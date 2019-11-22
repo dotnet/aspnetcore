@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -24,20 +24,16 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
-            var context = new EndpointSelectorContext()
-            {
-                RouteValues = new RouteValueDictionary(new { action = "Index", })
-            };
             var httpContext = CreateHttpContext();
-            httpContext.Features.Set<IRouteValuesFeature>(context);
+            httpContext.Request.RouteValues = new RouteValueDictionary(new { action = "Index", });
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             // Act
@@ -59,11 +55,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -86,11 +82,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -116,11 +112,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -145,11 +141,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -177,11 +173,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 

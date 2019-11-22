@@ -1,0 +1,32 @@
+<!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
+<Project>
+  <PropertyGroup>
+    <!-- Reset this to the Microsoft.NET.Sdk default to workaround Arcade's defaults, which sets IsPackable=false by default. -->
+    <IsPackable />
+
+    <!-- Ensure symbols type is 'portable'. Arcade attempts to embed symbols in local and CI builds. -->
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- Prevent pdb2pdb.exe from running because it is currently causing build failures in Blazor. -->
+  <PropertyGroup>
+    <PublishWindowsPdb>false</PublishWindowsPdb>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Xunit output is piped into a file anyways, so color codes aren't useful. -->
+    <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) -nocolor</TestRunnerAdditionalArguments>
+  </PropertyGroup>
+
+  <!-- Workaround https://github.com/dotnet/roslyn/issues/27975 -->
+  <PropertyGroup>
+    <!-- We use the compiler toolset that comes from NuGet Packages rather than the SDK built-in.
+    This one sets UseSharedCompilation to false by default. -->
+    <UseSharedCompilation>true</UseSharedCompilation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+  </PropertyGroup>
+</Project>

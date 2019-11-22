@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         private static ImageTagHelper GetHelper(
-            IHostingEnvironment hostingEnvironment = null,
+            IWebHostEnvironment hostingEnvironment = null,
             IUrlHelperFactory urlHelperFactory = null,
             ViewContext viewContext = null)
         {
@@ -264,8 +264,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var fileVersionProvider = new DefaultFileVersionProvider(hostingEnvironment, cacheProvider);
 
             return new ImageTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
                 fileVersionProvider,
                 new HtmlTestEncoder(),
                 urlHelperFactory)
@@ -299,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
         }
 
-        private static IHostingEnvironment MakeHostingEnvironment()
+        private static IWebHostEnvironment MakeHostingEnvironment()
         {
             var emptyDirectoryContents = new Mock<IDirectoryContents>();
             emptyDirectoryContents.Setup(dc => dc.GetEnumerator())
@@ -316,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Returns(mockFile.Object);
             mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
                 .Returns(new TestFileChangeToken());
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;

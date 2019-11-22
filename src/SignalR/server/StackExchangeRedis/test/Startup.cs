@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -26,9 +27,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            app.UseSignalR(options => options.MapHub<EchoHub>("/echo"));
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<EchoHub>("/echo");
+            });
         }
 
         private class UserNameIdProvider : IUserIdProvider

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,23 +23,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _candidates = new Candidate[] { new Candidate(endpoint), };
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public sealed override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var path = httpContext.Request.Path.Value;
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {
-                context.Endpoint = _endpoint;
-                context.RouteValues = new RouteValueDictionary();
+                httpContext.SetEndpoint(_endpoint);
+                httpContext.Request.RouteValues = new RouteValueDictionary();
             }
 
             return Task.CompletedTask;

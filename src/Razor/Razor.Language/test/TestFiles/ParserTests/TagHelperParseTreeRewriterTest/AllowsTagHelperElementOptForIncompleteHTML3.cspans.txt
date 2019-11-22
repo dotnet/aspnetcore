@@ -1,3 +1,0 @@
-Markup span at (0:0,0 [1] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [5] )
-MetaCode span at (1:0,1 [1] ) (Accepts:None) - Parent: Tag block at (0:0,0 [5] )
-Markup span at (2:0,2 [3] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [5] )

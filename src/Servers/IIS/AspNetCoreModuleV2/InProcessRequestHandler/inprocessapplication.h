@@ -6,13 +6,14 @@
 #include <thread>
 #include "InProcessApplicationBase.h"
 #include "InProcessOptions.h"
-#include "BaseOutputManager.h"
+#include "HostFxr.h"
 
 class IN_PROCESS_HANDLER;
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef VOID(WINAPI * PFN_DISCONNECT_HANDLER) (void *pvManagedHttpContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
+typedef void(WINAPI * PFN_REQUESTS_DRAINED_HANDLER) (void* pvShutdownHandlerContext);
 
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
@@ -36,6 +37,7 @@ public:
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
         _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
         _In_ PFN_ASYNC_COMPLETION_HANDLER managed_context_callback,
+        _In_ PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
     );
@@ -47,13 +49,14 @@ public:
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
 
+    void HandleRequestCompletion();
+
     // Executes the .NET Core process
     void
     ExecuteApplication();
 
     HRESULT
-    LoadManagedApplication();
-
+    LoadManagedApplication(ErrorContext& errorContext);
 
     void
     QueueStop();
@@ -62,6 +65,8 @@ public:
     StopIncomingRequests()
     {
         QueueStop();
+
+        LOG_INFOF(L"Waiting for %d requests to drain", m_requestCount.load());
     }
 
     void
@@ -104,26 +109,34 @@ public:
     static
     HRESULT Start(
         IHttpServer& pServer,
+        IHttpSite* pSite,
         IHttpApplication& pHttpApplication,
         APPLICATION_PARAMETER* pParameters,
         DWORD nParameters,
-        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application);
+        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+        ErrorContext& errorContext);
 
 private:
     struct ExecuteClrContext: std::enable_shared_from_this<ExecuteClrContext>
     {
         ExecuteClrContext():
             m_argc(0),
-            m_pProc(nullptr),
+            m_hostFxr(nullptr, nullptr, nullptr),
             m_exitCode(0),
             m_exceptionCode(0)
         {
         }
 
-        DWORD m_argc;
-        std::unique_ptr<PCWSTR[]>   m_argv;
-        hostfxr_main_fn m_pProc;
+        ~ExecuteClrContext()
+        {
+            m_redirectionOutput = nullptr;
+        }
 
+        DWORD m_argc;
+        std::unique_ptr<PCWSTR[]> m_argv;
+
+        HostFxr m_hostFxr;
+        RedirectionOutput* m_redirectionOutput;
         int m_exitCode;
         int m_exceptionCode;
     };
@@ -147,6 +160,7 @@ private:
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
+    std::atomic<PFN_REQUESTS_DRAINED_HANDLER>    m_RequestsDrainedHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 
@@ -154,11 +168,13 @@ private:
     bool                            m_Initialized;
     bool                            m_waitForShutdown;
 
+    std::atomic<int>                m_requestCount;
+
     std::unique_ptr<InProcessOptions> m_pConfig;
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    std::unique_ptr<BaseOutputManager> m_pLoggerProvider;
+    std::shared_ptr<StringStreamRedirectionOutput> m_stringRedirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
 
@@ -170,6 +186,9 @@ private:
 
     void
     StopClr();
+
+    void
+    CallRequestsDrained();
 
     static
     void

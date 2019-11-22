@@ -695,6 +695,40 @@ Hello from /Pages/Shared/";
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
 
+        [Fact]
+        public async Task AuthAttribute_AppliedOnPageWorks()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/AuthFilterOnPage");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPage", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
+        public async Task AuthAttribute_AppliedOnPageWithModelWorks()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/AuthFilterOnPageWithModel");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FFilters%2FAuthFilterOnPageWithModel", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
+        public async Task FiltersAppliedToPageAndPageModelAreExecuted()
+        {
+            // Act
+            using var response = await Client.GetAsync("/Filters/FiltersAppliedToPageAndPageModel");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal(new[] { "PageModelFilterValue" }, response.Headers.GetValues("PageModelFilterKey"));
+            Assert.Equal(new[] { "PageFilterValue" }, response.Headers.GetValues("PageFilterKey"));
+        }
+
         private async Task AddAntiforgeryHeadersAsync(HttpRequestMessage request)
         {
             var response = await Client.GetAsync(request.RequestUri);

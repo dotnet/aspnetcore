@@ -120,9 +120,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, XmlDataContractSerializerMvcOptionsSetup>());
-
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<MvcXmlOptions>, MvcXmlOptionsConfigureCompatibilityOptions>());
         }
 
         // Internal for testing.
@@ -130,9 +127,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, XmlSerializerMvcOptionsSetup>());
-
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<MvcXmlOptions>, MvcXmlOptionsConfigureCompatibilityOptions>());
         }
     }
 }

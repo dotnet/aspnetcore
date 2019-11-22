@@ -25,7 +25,7 @@ namespace SampleStartups
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseFakeServer()
+                .UseKestrel()
                 .UseStartup<StartupConfigureAddresses>()
                 .UseUrls("http://localhost:5000", "http://localhost:5001")
                 .Build();

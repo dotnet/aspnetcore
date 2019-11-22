@@ -1,42 +1,57 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr";
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
+import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
-export let ENDPOINT_BASE_URL: string;
-export let ENDPOINT_BASE_HTTPS_URL: string;
+// On slower CI machines, these tests sometimes take longer than 5s
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;
+
+export let ENDPOINT_BASE_URL: string = "";
+export let ENDPOINT_BASE_HTTPS_URL: string = "";
 
 if (typeof window !== "undefined" && (window as any).__karma__) {
     const args = (window as any).__karma__.config.args as string[];
     let httpsServer = "";
     let httpServer = "";
+    let sauce = false;
 
     for (let i = 0; i < args.length; i += 1) {
         switch (args[i]) {
             case "--server":
                 i += 1;
                 const urls = args[i].split(";");
-                httpsServer = urls[0];
                 httpServer = urls[1];
-                console.log(httpServer);
+                httpsServer = urls[0];
+                break;
+            case "--sauce":
+                sauce = true;
                 break;
         }
+    }
+
+    // Increase test timeout in sauce because of the proxy
+    if (sauce) {
+        // Double the timeout.
+        jasmine.DEFAULT_TIMEOUT_INTERVAL *= 2;
     }
 
     // Running in Karma? Need to use an absolute URL
     ENDPOINT_BASE_URL = httpServer;
     ENDPOINT_BASE_HTTPS_URL = httpsServer;
-    console.log(`Using SignalR Server: ${ENDPOINT_BASE_URL}`);
 } else if (typeof document !== "undefined") {
     ENDPOINT_BASE_URL = `${document.location.protocol}//${document.location.host}`;
 } else if (process && process.env && process.env.SERVER_URL) {
     const urls = process.env.SERVER_URL.split(";");
-    ENDPOINT_BASE_HTTPS_URL = urls[0];
     ENDPOINT_BASE_URL = urls[1];
+    ENDPOINT_BASE_HTTPS_URL = urls[0];
 } else {
     throw new Error("The server could not be found.");
 }
+
+console.log(`Using SignalR HTTP Server: '${ENDPOINT_BASE_URL}'`);
+console.log(`Using SignalR HTTPS Server: '${ENDPOINT_BASE_HTTPS_URL}'`);
+console.log(`Jasmine DEFAULT_TIMEOUT_INTERVAL: ${jasmine.DEFAULT_TIMEOUT_INTERVAL}`);
 
 export const ECHOENDPOINT_URL = ENDPOINT_BASE_URL + "/echo";
 

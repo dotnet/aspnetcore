@@ -48,6 +48,67 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OpenIdConnectParameterNames.VersionTelemetry);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ChallengeIncludesPkceIfRequested(bool include)
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = OpenIdConnectResponseType.Code;
+                    opt.ClientId = "Test Id";
+                    opt.UsePkce = include;
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            if (include)
+            {
+                Assert.Contains("code_challenge=", res.Headers.Location.Query);
+                Assert.Contains("code_challenge_method=S256", res.Headers.Location.Query);
+            }
+            else
+            {
+                Assert.DoesNotContain("code_challenge=", res.Headers.Location.Query);
+                Assert.DoesNotContain("code_challenge_method=", res.Headers.Location.Query);
+            }
+        }
+
+        [Theory]
+        [InlineData(OpenIdConnectResponseType.Token)]
+        [InlineData(OpenIdConnectResponseType.IdToken)]
+        [InlineData(OpenIdConnectResponseType.CodeIdToken)]
+        public async Task ChallengeDoesNotIncludePkceForOtherResponseTypes(string responseType)
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = responseType;
+                    opt.ClientId = "Test Id";
+                    opt.UsePkce = true;
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            Assert.DoesNotContain("code_challenge=", res.Headers.Location.Query);
+            Assert.DoesNotContain("code_challenge_method=", res.Headers.Location.Query);
+        }
+
         [Fact]
         public async Task AuthorizationRequestDoesNotIncludeTelemetryParametersWhenDisabled()
         {

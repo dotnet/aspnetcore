@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Used in tests
         internal Matcher CurrentMatcher => _cache.Value;
 
-        public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public override Task MatchAsync(HttpContext httpContext)
         {
-            return CurrentMatcher.MatchAsync(httpContext, context);
+            return CurrentMatcher.MatchAsync(httpContext);
         }
 
         private Matcher CreateMatcher(IReadOnlyList<Endpoint> endpoints)

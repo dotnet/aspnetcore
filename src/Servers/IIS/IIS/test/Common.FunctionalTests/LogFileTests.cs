@@ -7,26 +7,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class LoggingTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public LoggingTests(PublishedSitesFixture fixture)
+        public LoggingTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -45,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task CheckStdoutToFile(TestVariant variant, string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.EnableLogging(_logFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -64,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task InvalidFilePathForLogs_ServerStillRuns(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
@@ -78,31 +74,32 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
             if (variant.HostingModel == HostingModel.InProcess)
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not start stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070003");
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not stop stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070002");
+                // Error is getting logged twice, from shim and handler
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
             }
         }
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [RequiresNewShim]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
-            deploymentParameters.HandlerSettings["debugFile"] = "debug.txt";
+            deploymentParameters.HandlerSettings["debugFile"] = "subdirectory\\debug.txt";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await deploymentResult.HttpClient.GetAsync("/");
 
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "debug.txt"));
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "subdirectory", "debug.txt"));
         }
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFile(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -117,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFileWhenEnabledWithEnvVar(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG"] = "file";
             // Add empty debugFile handler setting to prevent IIS deployer from overriding debug settings
             deploymentParameters.HandlerSettings["debugFile"] = "";
@@ -138,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             try
             {
-                var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
                 deploymentParameters.AddDebugLogToWebConfig(secondTempFile);
 
@@ -165,20 +162,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task DebugLogsAreWrittenToEventLog(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file,eventlog";
             var deploymentResult = await StartAsync(deploymentParameters);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2", Logger);
         }
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2200", FlakyOn.All)]
         public async Task CheckUTF8File(TestVariant variant)
         {
             var path = "CheckConsoleFunctions";
 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, variant.HostingModel, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite, variant.HostingModel);
             deploymentParameters.TransformArguments((a, _) => $"{a} {path}"); // For standalone this will need to remove space
 
             var logFolderPath = _logFolderPath + "\\彡⾔";
@@ -197,11 +195,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             if (variant.HostingModel == HostingModel.InProcess)
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"));
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
             }
             else
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult));
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
             }
         }
 
@@ -209,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task OnlyOneFileCreatedWithProcessStartTime(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             deploymentParameters.EnableLogging(_logFolderPath);
 
@@ -219,6 +217,34 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             Assert.Single(Directory.GetFiles(_logFolderPath), Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+        }
+
+        [ConditionalFact]
+        public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
+        }
+
+        [ConditionalFact]
+        public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart30KbMax()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWrite30Kb");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
         }
 
         private static string ReadLogs(string logPath)

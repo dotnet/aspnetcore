@@ -6,11 +6,11 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -20,24 +20,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [SkipIfNotAdmin]
     public class ClientCertificateTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
         private readonly ClientCertificateFixture _certFixture;
 
-        public ClientCertificateTests(PublishedSitesFixture fixture, ClientCertificateFixture certFixture)
+        public ClientCertificateTests(PublishedSitesFixture fixture, ClientCertificateFixture certFixture) : base(fixture)
         {
-            _fixture = fixture;
             _certFixture = certFixture;
         }
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
                 .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public Task HttpsNoClientCert_NoClientCert(TestVariant variant)
         {
             return ClientCertTest(variant, sendClientCert: false);
@@ -45,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
         {
             return ClientCertTest(variant, sendClientCert: true);
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private async Task ClientCertTest(TestVariant variant, bool sendClientCert)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 

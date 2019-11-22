@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
                 foreach (var item in provider.CompiledItems)
                 {
-                    var descriptor = new CompiledViewDescriptor(item, attribute: null);
+                    var descriptor = new CompiledViewDescriptor(item);
                     feature.ViewDescriptors.Add(descriptor);
                 }
             }

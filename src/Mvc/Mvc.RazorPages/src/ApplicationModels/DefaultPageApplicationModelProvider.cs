@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
@@ -22,23 +21,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         private readonly PageHandlerPageFilter _pageHandlerPageFilter = new PageHandlerPageFilter();
         private readonly PageHandlerResultFilter _pageHandlerResultFilter = new PageHandlerResultFilter();
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly MvcOptions _mvcOptions;
         private readonly RazorPagesOptions _razorPagesOptions;
-        private readonly Func<ActionContext, bool> _supportsAllRequests;
-        private readonly Func<ActionContext, bool> _supportsNonGetRequests;
+        private readonly IPageApplicationModelPartsProvider _pageApplicationModelPartsProvider;
         private readonly HandleOptionsRequestsPageFilter _handleOptionsRequestsFilter;
 
         public DefaultPageApplicationModelProvider(
             IModelMetadataProvider modelMetadataProvider,
-            IOptions<MvcOptions> options,
-            IOptions<RazorPagesOptions> razorPagesOptions)
+            IOptions<RazorPagesOptions> razorPagesOptions,
+            IPageApplicationModelPartsProvider pageApplicationModelPartsProvider)
         {
             _modelMetadataProvider = modelMetadataProvider;
-            _mvcOptions = options.Value;
             _razorPagesOptions = razorPagesOptions.Value;
+            _pageApplicationModelPartsProvider = pageApplicationModelPartsProvider;
 
-            _supportsAllRequests = _ => true;
-            _supportsNonGetRequests = context => !HttpMethods.IsGet(context.HttpContext.Request.Method);
             _handleOptionsRequestsFilter = new HandleOptionsRequestsPageFilter();
         }
 
@@ -103,16 +98,23 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Now we want figure out which type is the handler type.
             TypeInfo handlerType;
+            var pageTypeAttributes = pageTypeInfo.GetCustomAttributes(inherit: true);
+            object[] handlerTypeAttributes;
             if (modelProperty.PropertyType.IsDefined(typeof(PageModelAttribute), inherit: true))
             {
                 handlerType = modelTypeInfo;
+
+                // If a PageModel is specified, combine the attributes specified on the Page and the Model type.
+                // Attributes that appear earlier in the are more significant. In this case, we'll treat attributes on the model (code)
+                // to be more signficant than the page (code-generated).
+                handlerTypeAttributes = modelTypeInfo.GetCustomAttributes(inherit: true).Concat(pageTypeAttributes).ToArray();
             }
             else
             {
                 handlerType = pageTypeInfo;
+                handlerTypeAttributes = pageTypeInfo.GetCustomAttributes(inherit: true);
             }
 
-            var handlerTypeAttributes = handlerType.GetCustomAttributes(inherit: true);
             var pageModel = new PageApplicationModel(
                 actionDescriptor,
                 declaredModelType,
@@ -137,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             for (var i = 0; i < properties.Length; i++)
             {
-                var propertyModel = CreatePropertyModel(properties[i].Property);
+                var propertyModel = _pageApplicationModelPartsProvider.CreatePropertyModel(properties[i].Property);
                 if (propertyModel != null)
                 {
                     propertyModel.Page = pageModel;
@@ -153,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             for (var i = 0; i < methods.Length; i++)
             {
-                var handler = CreateHandlerModel(methods[i]);
+                var handler = _pageApplicationModelPartsProvider.CreateHandlerModel(methods[i]);
                 if (handler != null)
                 {
                     pageModel.HandlerMethods.Add(handler);
@@ -183,255 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 pageModel.Filters.Add(_pageHandlerResultFilter);
             }
 
-            if (_razorPagesOptions.AllowDefaultHandlingForOptionsRequests)
-            {
-                pageModel.Filters.Add(_handleOptionsRequestsFilter);
-            }
-        }
-
-        /// <summary>
-        /// Creates a <see cref="PageHandlerModel"/> for the specified <paramref name="method"/>.s
-        /// </summary>
-        /// <param name="method">The <see cref="MethodInfo"/>.</param>
-        /// <returns>The <see cref="PageHandlerModel"/>.</returns>
-        protected virtual PageHandlerModel CreateHandlerModel(MethodInfo method)
-        {
-            if (method == null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
-
-            if (!IsHandler(method))
-            {
-                return null;
-            }
-
-            if (!TryParseHandlerMethod(method.Name, out var httpMethod, out var handlerName))
-            {
-                return null;
-            }
-
-            var handlerModel = new PageHandlerModel(
-                method,
-                method.GetCustomAttributes(inherit: true))
-            {
-                Name = method.Name,
-                HandlerName = handlerName,
-                HttpMethod = httpMethod,
-            };
-
-            var methodParameters = handlerModel.MethodInfo.GetParameters();
-
-            for (var i = 0; i < methodParameters.Length; i++)
-            {
-                var parameter = methodParameters[i];
-                var parameterModel = CreateParameterModel(parameter);
-                parameterModel.Handler = handlerModel;
-
-                handlerModel.Parameters.Add(parameterModel);
-            }
-
-            return handlerModel;
-        }
-
-        /// <summary>
-        /// Creates a <see cref="PageParameterModel"/> for the specified <paramref name="parameter"/>.
-        /// </summary>
-        /// <param name="parameter">The <see cref="ParameterInfo"/>.</param>
-        /// <returns>The <see cref="PageParameterModel"/>.</returns>
-        protected virtual PageParameterModel CreateParameterModel(ParameterInfo parameter)
-        {
-            if (parameter == null)
-            {
-                throw new ArgumentNullException(nameof(parameter));
-            }
-
-            var attributes = parameter.GetCustomAttributes(inherit: true);
-
-            BindingInfo bindingInfo;
-            if (_mvcOptions.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
-            {
-                var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameter);
-                bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
-            }
-            else
-            {
-                bindingInfo = BindingInfo.GetBindingInfo(attributes);
-            }
-
-            return new PageParameterModel(parameter, attributes)
-            {
-                BindingInfo = bindingInfo,
-                ParameterName = parameter.Name,
-            };
-        }
-
-        /// <summary>
-        /// Creates a <see cref="PagePropertyModel"/> for the <paramref name="property"/>.
-        /// </summary>
-        /// <param name="property">The <see cref="PropertyInfo"/>.</param>
-        /// <returns>The <see cref="PagePropertyModel"/>.</returns>
-        protected virtual PagePropertyModel CreatePropertyModel(PropertyInfo property)
-        {
-            if (property == null)
-            {
-                throw new ArgumentNullException(nameof(property));
-            }
-
-            var propertyAttributes = property.GetCustomAttributes(inherit: true);
-
-            // BindingInfo for properties can be either specified by decorating the property with binding-specific attributes.
-            // ModelMetadata also adds information from the property's type and any configured IBindingMetadataProvider.
-            var propertyMetadata = _modelMetadataProvider.GetMetadataForProperty(property.DeclaringType, property.Name);
-            var bindingInfo = BindingInfo.GetBindingInfo(propertyAttributes, propertyMetadata);
-
-            if (bindingInfo == null)
-            {
-                // Look for BindPropertiesAttribute on the handler type if no BindingInfo was inferred for the property.
-                // This allows a user to enable model binding on properties by decorating the controller type with BindPropertiesAttribute.
-                var declaringType = property.DeclaringType;
-                var bindPropertiesAttribute = declaringType.GetCustomAttribute<BindPropertiesAttribute>(inherit: true);
-                if (bindPropertiesAttribute != null)
-                {
-                    var requestPredicate = bindPropertiesAttribute.SupportsGet ? _supportsAllRequests : _supportsNonGetRequests;
-                    bindingInfo = new BindingInfo
-                    {
-                        RequestPredicate = requestPredicate,
-                    };
-                }
-            }
-
-            var model = new PagePropertyModel(property, propertyAttributes)
-            {
-                PropertyName = property.Name,
-                BindingInfo = bindingInfo,
-            };
-
-            return model;
-        }
-
-        /// <summary>
-        /// Determines if the specified <paramref name="methodInfo"/> is a handler.
-        /// </summary>
-        /// <param name="methodInfo">The <see cref="MethodInfo"/>.</param>
-        /// <returns><c>true</c> if the <paramref name="methodInfo"/> is a handler. Otherwise <c>false</c>.</returns>
-        /// <remarks>
-        /// Override this method to provide custom logic to determine which methods are considered handlers.
-        /// </remarks>
-        protected virtual bool IsHandler(MethodInfo methodInfo)
-        {
-            // The SpecialName bit is set to flag members that are treated in a special way by some compilers
-            // (such as property accessors and operator overloading methods).
-            if (methodInfo.IsSpecialName)
-            {
-                return false;
-            }
-
-            // Overridden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
-            if (methodInfo.GetBaseDefinition().DeclaringType == typeof(object))
-            {
-                return false;
-            }
-
-            if (methodInfo.IsStatic)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsAbstract)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsConstructor)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsGenericMethod)
-            {
-                return false;
-            }
-
-            if (!methodInfo.IsPublic)
-            {
-                return false;
-            }
-
-            if (methodInfo.IsDefined(typeof(NonHandlerAttribute)))
-            {
-                return false;
-            }
-
-            // Exclude the whole hierarchy of Page.
-            var declaringType = methodInfo.DeclaringType;
-            if (declaringType == typeof(Page) ||
-                declaringType == typeof(PageBase) ||
-                declaringType == typeof(RazorPageBase))
-            {
-                return false;
-            }
-
-            // Exclude methods declared on PageModel
-            if (declaringType == typeof(PageModel))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        internal static bool TryParseHandlerMethod(string methodName, out string httpMethod, out string handler)
-        {
-            httpMethod = null;
-            handler = null;
-
-            // Handler method names always start with "On"
-            if (!methodName.StartsWith("On") || methodName.Length <= "On".Length)
-            {
-                return false;
-            }
-
-            // Now we parse the method name according to our conventions to determine the required HTTP method
-            // and optional 'handler name'.
-            //
-            // Valid names look like:
-            //  - OnGet
-            //  - OnPost
-            //  - OnFooBar
-            //  - OnTraceAsync
-            //  - OnPostEditAsync
-
-            var start = "On".Length;
-            var length = methodName.Length;
-            if (methodName.EndsWith("Async", StringComparison.Ordinal))
-            {
-                length -= "Async".Length;
-            }
-
-            if (start == length)
-            {
-                // There are no additional characters. This is "On" or "OnAsync".
-                return false;
-            }
-
-            // The http method follows "On" and is required to be at least one character. We use casing
-            // to determine where it ends.
-            var handlerNameStart = start + 1;
-            for (; handlerNameStart < length; handlerNameStart++)
-            {
-                if (char.IsUpper(methodName[handlerNameStart]))
-                {
-                    break;
-                }
-            }
-
-            httpMethod = methodName.Substring(start, handlerNameStart - start);
-
-            // The handler name follows the http method and is optional. It includes everything up to the end
-            // excluding the "Async" suffix (if present).
-            handler = handlerNameStart == length ? null : methodName.Substring(handlerNameStart, length - handlerNameStart);
-            return true;
+            pageModel.Filters.Add(_handleOptionsRequestsFilter);
         }
     }
 }

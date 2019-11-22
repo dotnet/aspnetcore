@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,10 +11,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class MockTrace : IKestrelTrace
+    internal class MockTrace : IKestrelTrace
     {
         public void ApplicationError(string connectionId, string requestId, Exception ex) { }
         public IDisposable BeginScope<TState>(TState state) => null;
+        public void ConnectionAccepted(string connectionId) { }
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex) { }
         public void ConnectionDisconnect(string connectionId) { }
         public void ConnectionError(string connectionId, Exception ex) { }

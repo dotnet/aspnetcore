@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -930,7 +929,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         private static LinkTagHelper GetHelper(
-            IHostingEnvironment hostingEnvironment = null,
+            IWebHostEnvironment hostingEnvironment = null,
             IUrlHelperFactory urlHelperFactory = null,
             ViewContext viewContext = null)
         {
@@ -999,7 +998,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
         }
 
-        private static IHostingEnvironment MakeHostingEnvironment()
+        private static IWebHostEnvironment MakeHostingEnvironment()
         {
             var emptyDirectoryContents = new Mock<IDirectoryContents>();
             emptyDirectoryContents.Setup(dc => dc.GetEnumerator())
@@ -1016,7 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Returns(mockFile.Object);
             mockFileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
                 .Returns(new TestFileChangeToken());
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.Setup(h => h.WebRootFileProvider).Returns(mockFileProvider.Object);
 
             return hostingEnvironment.Object;

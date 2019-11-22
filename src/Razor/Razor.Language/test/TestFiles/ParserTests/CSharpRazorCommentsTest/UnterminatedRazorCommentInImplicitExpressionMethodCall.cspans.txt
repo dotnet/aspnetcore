@@ -1,6 +1,0 @@
-Markup span at (0:0,0 [0] ) (Accepts:Any) - Parent: Markup block at (0:0,0 [7] )
-Transition span at (0:0,0 [1] ) (Accepts:None) - Parent: Expression block at (0:0,0 [7] )
-Code span at (1:0,1 [4] ) (Accepts:Any) - Parent: Expression block at (0:0,0 [7] )
-Transition span at (5:0,5 [1] ) (Accepts:None) - Parent: Comment block at (5:0,5 [2] )
-MetaCode span at (6:0,6 [1] ) (Accepts:None) - Parent: Comment block at (5:0,5 [2] )
-Comment span at (7:0,7 [0] ) (Accepts:Any) - Parent: Comment block at (5:0,5 [2] )

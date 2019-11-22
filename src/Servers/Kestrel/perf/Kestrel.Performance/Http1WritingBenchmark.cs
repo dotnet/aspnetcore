@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -29,14 +28,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private TestHttp1Connection _http1Connection;
         private DuplexPipe.DuplexPipePair _pair;
         private MemoryPool<byte> _memoryPool;
+        private Task _consumeResponseBodyTask;
 
         private readonly byte[] _writeData = Encoding.ASCII.GetBytes("Hello, World!");
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             _http1Connection = MakeHttp1Connection();
+            _consumeResponseBodyTask = ConsumeResponseBody();
         }
 
         [Params(true, false)]
@@ -119,20 +120,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             });
 
             http1Connection.Reset();
-            http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
+            http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
             serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             return http1Connection;
         }
 
-        [IterationCleanup]
-        public void Cleanup()
+        private async Task ConsumeResponseBody()
         {
             var reader = _pair.Application.Input;
-            if (reader.TryRead(out var readResult))
+            var readResult = await reader.ReadAsync();
+
+            while (!readResult.IsCompleted)
             {
                 reader.AdvanceTo(readResult.Buffer.End);
+                readResult = await reader.ReadAsync();
             }
+
+            reader.Complete();
         }
 
         public enum Startup
@@ -145,6 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalCleanup]
         public void Dispose()
         {
+            _pair.Transport.Output.Complete();
+            _consumeResponseBodyTask.GetAwaiter().GetResult();
             _memoryPool?.Dispose();
         }
     }

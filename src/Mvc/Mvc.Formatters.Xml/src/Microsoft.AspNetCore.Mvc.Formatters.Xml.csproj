@@ -2,13 +2,17 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC formatters for XML input and output using DataContractSerializer and XmlSerializer.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;xml</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\**\*.cs" />
+
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 </Project>

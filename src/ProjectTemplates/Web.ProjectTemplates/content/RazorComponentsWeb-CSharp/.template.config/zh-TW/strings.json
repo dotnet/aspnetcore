@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor 伺服器應用程式",
+    "description": "用來建立 ASP.NET Core 應用程式內執行伺服器端之 Blazor 應用程式的專案範本。具有豐富動態使用者介面 (UI) 的 Web 應用程式可使用此範本。"
+  }
+}

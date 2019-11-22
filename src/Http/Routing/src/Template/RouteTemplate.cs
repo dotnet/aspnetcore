@@ -16,6 +16,13 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public RouteTemplate(RoutePattern other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            // RequiredValues will be ignored. RouteTemplate doesn't support them.
+
             TemplateText = other.RawText;
             Segments = new List<TemplateSegment>(other.PathSegments.Select(p => new TemplateSegment(p)));
             Parameters = new List<TemplatePart>();

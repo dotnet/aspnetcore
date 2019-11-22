@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -526,6 +525,43 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
+        [Fact]
+        public void OnProvidersExecuting_CombinesFilters_OnPageAndPageModel()
+        {
+            // Arrange
+            var provider = CreateProvider();
+            var typeInfo = typeof(PageWithFilters).GetTypeInfo();
+            var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var pageModel = context.PageApplicationModel;
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<TypeFilterAttribute>(filter),
+                filter => Assert.IsType<ServiceFilterAttribute>(filter),
+                filter => Assert.IsType<PageHandlerPageFilter>(filter),
+                filter => Assert.IsType<HandleOptionsRequestsPageFilter>(filter));
+        }
+
+        [ServiceFilter(typeof(Guid))]
+        private class PageWithFilters : Page
+        {
+            public PageWithFilterModel Model { get; }
+
+            public override Task ExecuteAsync() => throw new NotImplementedException();
+        }
+
+        [TypeFilter(typeof(string))]
+        private class PageWithFilterModel : PageModel
+        {
+        }
+
+        [ServiceFilter(typeof(IServiceProvider))]
+        private class FiltersOnPageAndPageModel : PageModel { }
+
         [Fact] // If the model has handler methods, we prefer those.
         public void CreateDescriptor_FindsHandlerMethod_OnModel()
         {
@@ -882,42 +918,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 });
         }
 
-        [Fact]
-        public void CreateHandlerMethods_WithLegacyValidationBehavior_AddsParameterDescriptors()
-        {
-            // Arrange
-            var provider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false }),
-                Options.Create(new RazorPagesOptions()));
-            var typeInfo = typeof(PageWithHandlerParameters).GetTypeInfo();
-            var expected = typeInfo.GetMethod(nameof(PageWithHandlerParameters.OnPost));
-            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, new object[0]);
-
-            // Act
-            provider.PopulateHandlerMethods(pageModel);
-
-            // Assert
-            var handlerMethods = pageModel.HandlerMethods;
-            var handler = Assert.Single(handlerMethods);
-
-            Assert.Collection(
-                handler.Parameters,
-                p =>
-                {
-                    Assert.NotNull(p.ParameterInfo);
-                    Assert.Equal(typeof(string), p.ParameterInfo.ParameterType);
-                    Assert.Equal("name", p.ParameterName);
-                },
-                p =>
-                {
-                    Assert.NotNull(p.ParameterInfo);
-                    Assert.Equal(typeof(int), p.ParameterInfo.ParameterType);
-                    Assert.Equal("id", p.ParameterName);
-                    Assert.Equal("personId", p.BindingInfo.BinderModelName);
-                });
-        }
-
         private class PageWithHandlerParameters
         {
             public void OnPost(string name, [ModelBinder(Name = "personId")] int id) { }
@@ -1008,7 +1008,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void TryParseHandler_ParsesHandlerNames_InvalidData(string methodName)
         {
             // Act
-            var result = DefaultPageApplicationModelProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
+            var result = DefaultPageApplicationModelPartsProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
 
             // Assert
             Assert.False(result);
@@ -1030,7 +1030,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Arrange
 
             // Act
-            var result = DefaultPageApplicationModelProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
+            var result = DefaultPageApplicationModelPartsProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
 
             // Assert
             Assert.True(result);
@@ -1071,24 +1071,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             public string Property2 { get; set; }
 
             public void OnGetUser() { }
-        }
-
-        [Fact]
-        public void PopulateFilters_With21CompatBehavior_DoesNotAddDisallowOptionsRequestsPageFilter()
-        {
-            // Arrange
-            var provider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions()),
-                Options.Create(new RazorPagesOptions()));
-            var typeInfo = typeof(object).GetTypeInfo();
-            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
-
-            // Act
-            provider.PopulateFilters(pageModel);
-
-            // Assert
-            Assert.Empty(pageModel.Filters);
         }
 
         [Fact]
@@ -1224,10 +1206,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static DefaultPageApplicationModelProvider CreateProvider()
         {
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             return new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }),
-                Options.Create(new RazorPagesOptions {  AllowDefaultHandlingForOptionsRequests = true }));
+                modelMetadataProvider,
+                Options.Create(new RazorPagesOptions()),
+                new DefaultPageApplicationModelPartsProvider(modelMetadataProvider));
         }
     }
 }

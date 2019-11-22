@@ -59,12 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 routeName: "OrdersApi");
             var urlHelper = CreateUrlHelper(new[] { endpoint1, endpoint2 });
 
-            // Set the endpoint feature and current context just as a normal request to MVC app would be
-            var endpointFeature = new EndpointSelectorContext();
-            urlHelper.ActionContext.HttpContext.Features.Set<IEndpointFeature>(endpointFeature);
-            urlHelper.ActionContext.HttpContext.Features.Set<IRouteValuesFeature>(endpointFeature);
-            endpointFeature.Endpoint = endpoint1;
-            endpointFeature.RouteValues = new RouteValueDictionary
+            urlHelper.ActionContext.HttpContext.SetEndpoint(endpoint1);
+            urlHelper.ActionContext.HttpContext.Request.RouteValues = new RouteValueDictionary
             {
                 ["controller"] = "Orders",
                 ["action"] = "GetById",
@@ -114,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 "Home/Index",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Home", action = "Index" },
-                metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
+                metadata: new[] { new SuppressLinkGenerationMetadata() });
             var urlHelper = CreateUrlHelper(new[] { endpoint });
 
             // Act
@@ -142,25 +138,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string template)
         {
             var endpoints = GetDefaultEndpoints();
-            endpoints.Add(new RouteEndpoint(
-                httpContext => Task.CompletedTask,
-                RoutePatternFactory.Parse(template),
-                0,
-                EndpointMetadataCollection.Empty,
-                null));
+            endpoints.Add(CreateEndpoint(template, routeName: routeName));
             return CreateUrlHelper(endpoints, appRoot, host, protocol);
         }
 
         protected override IUrlHelper CreateUrlHelper(ActionContext actionContext)
         {
             var httpContext = actionContext.HttpContext;
-            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
-            {
-                Endpoint = new Endpoint(
-                    context => Task.CompletedTask,
-                    EndpointMetadataCollection.Empty,
-                    null)
-            });
+           httpContext.SetEndpoint(new Endpoint(context => Task.CompletedTask, EndpointMetadataCollection.Empty, null));
 
             var urlHelperFactory = httpContext.RequestServices.GetRequiredService<IUrlHelperFactory>();
             var urlHelper = urlHelperFactory.GetUrlHelper(actionContext);
@@ -181,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string template,
             object defaults)
         {
-            var endpoint = GetEndpoint(routeName, template, new RouteValueDictionary(defaults));
+            var endpoint = CreateEndpoint(template, new RouteValueDictionary(defaults), routeName: routeName);
             var services = CreateServices(new[] { endpoint });
             var httpContext = CreateHttpContext(services, appRoot: "", host: null, protocol: null);
             var actionContext = CreateActionContext(httpContext);
@@ -264,13 +249,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeName: "namedroute"));
             endpoints.Add(
                 CreateEndpoint(
-                    "any/url",
-                    defaults: new { },
-                    requiredValues: new { },
-                    order: 9,
-                    routeName: "MyRouteName"));
-            endpoints.Add(
-                CreateEndpoint(
                     "api/orders/{id}",
                     defaults: new { controller = "Orders", action = "GetById" },
                     requiredValues: new { controller = "Orders", action = "GetById" },
@@ -285,19 +263,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             object requiredValues = null,
             int order = 0,
             string routeName = null,
-            EndpointMetadataCollection metadataCollection = null)
+            IList<object> metadata = null)
         {
-            if (metadataCollection == null)
+            metadata = metadata ?? new List<object>();
+
+            if (routeName != null)
             {
-                metadataCollection = new EndpointMetadataCollection(
-                    new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+                metadata.Add(new RouteNameMetadata(routeName));
             }
 
             return new RouteEndpoint(
                 (httpContext) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues),
                 order,
-                metadataCollection,
+                new EndpointMetadataCollection(metadata),
                 null);
         }
 
@@ -314,16 +293,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ServiceDescriptor.Singleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints)));
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             return services.BuildServiceProvider();
-        }
-
-        private RouteEndpoint GetEndpoint(string name, string template, RouteValueDictionary defaults)
-        {
-            return new RouteEndpoint(
-                c => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                0,
-                EndpointMetadataCollection.Empty,
-                null);
         }
     }
 }

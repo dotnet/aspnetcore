@@ -7,20 +7,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
     {
         private readonly string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
-        private readonly PublishedSitesFixture _fixture;
 
-        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture)
+        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
@@ -29,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // fails due to not modifying the apphost.config file.
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
-                Helpers.GetInProcessTestSitesPath(),
                 "Disabled", HostingModel.InProcess);
         }
 
@@ -38,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
-                Helpers.GetInProcessTestSitesPath(),
                 _isWebsocketsSupported, HostingModel.InProcess);
         }
 
@@ -47,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
-                Helpers.GetOutOfProcessTestSitesPath(),
                 "Disabled", HostingModel.OutOfProcess);
         }
 
@@ -56,13 +51,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
-                Helpers.GetOutOfProcessTestSitesPath(),
                 _isWebsocketsSupported, HostingModel.OutOfProcess);
         }
 
-        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected, HostingModel hostingModel)
+        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string expected, HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
 
             if (disableWebSocket)
             {

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpResponseTrailers : HttpHeaders
+    internal partial class HttpResponseTrailers : HttpHeaders
     {
         public Enumerator GetEnumerator()
         {
@@ -21,17 +22,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
+        {
+            ValidateHeaderNameCharacters(key);
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpResponseTrailers _collection;
             private readonly long _bits;
-            private int _state;
+            private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
@@ -40,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _collection = collection;
                 _bits = collection._bits;
-                _state = 0;
+                _next = 0;
                 _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
@@ -58,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _state = 0;
+                _next = 0;
             }
         }
     }

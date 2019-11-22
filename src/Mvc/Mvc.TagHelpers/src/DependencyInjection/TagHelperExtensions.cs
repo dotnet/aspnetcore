@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -26,13 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.TryAddSingleton<IDistributedCacheTagHelperStorage, DistributedCacheTagHelperStorage>();
-            builder.Services.TryAddSingleton<IDistributedCacheTagHelperFormatter, DistributedCacheTagHelperFormatter>();
-            builder.Services.TryAddSingleton<IDistributedCacheTagHelperService, DistributedCacheTagHelperService>();
-
-            // Required default services for cache tag helpers
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.TryAddSingleton<CacheTagHelperMemoryCacheFactory>();
+            AddCacheTagHelperServices(builder.Services);
 
             return builder;
         }
@@ -81,6 +74,17 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.Configure(configure);
 
             return builder;
+        }
+
+        internal static void AddCacheTagHelperServices(IServiceCollection services)
+        {
+            services.TryAddSingleton<IDistributedCacheTagHelperStorage, DistributedCacheTagHelperStorage>();
+            services.TryAddSingleton<IDistributedCacheTagHelperFormatter, DistributedCacheTagHelperFormatter>();
+            services.TryAddSingleton<IDistributedCacheTagHelperService, DistributedCacheTagHelperService>();
+
+            // Required default services for cache tag helpers
+            services.AddDistributedMemoryCache();
+            services.TryAddSingleton<CacheTagHelperMemoryCacheFactory>();
         }
     }
 }

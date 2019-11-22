@@ -24,16 +24,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.Metadata.ModelType.IsArray)
             {
                 var elementType = context.Metadata.ElementMetadata.ModelType;
+                var binderType = typeof(ArrayModelBinder<>).MakeGenericType(elementType);
                 var elementBinder = context.CreateBinder(context.Metadata.ElementMetadata);
 
-                var binderType = typeof(ArrayModelBinder<>).MakeGenericType(elementType);
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
                 var mvcOptions = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return (IModelBinder)Activator.CreateInstance(
                     binderType,
                     elementBinder,
                     loggerFactory,
-                    mvcOptions.AllowValidatingTopLevelNodes);
+                    true /* allowValidatingTopLevelNodes */,
+                    mvcOptions);
             }
 
             return null;

@@ -43,6 +43,7 @@
 
 #include "stdafx.h"
 #include "environmentvariablehash.h"
+#include "BindingInformation.h"
 
 enum APP_HOSTING_MODEL
 {
@@ -62,11 +63,12 @@ public:
     HRESULT
     CreateRequestHandlerConfig(
         _In_  IHttpServer             *pHttpServer,
+        _In_  IHttpSite               *pSite,
         _In_  IHttpApplication        *pHttpApplication,
         _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
     );
 
-    ENVIRONMENT_VAR_HASH*
+    std::map<std::wstring, std::wstring, ignore_case_comparer>&
     QueryEnvironmentVariables(
         VOID
     )
@@ -112,6 +114,12 @@ public:
     )
     {
         return m_dwRequestTimeoutInMS;
+    }
+
+    STRU*
+    QueryBindings()
+    {
+        return &m_struHttpsPort;
     }
 
     STRU*
@@ -217,7 +225,6 @@ protected:
     //
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
-        m_pEnvironmentVariables(NULL),
         m_hostingModel(HOSTING_UNKNOWN),
         m_ppStrArguments(NULL)
     {
@@ -226,6 +233,7 @@ protected:
     HRESULT
     Populate(
         IHttpServer      *pHttpServer,
+        IHttpSite        *pSite,
         IHttpApplication *pHttpApplication
     );
 
@@ -248,9 +256,9 @@ protected:
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
     APP_HOSTING_MODEL      m_hostingModel;
-    ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
+    std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;
     PWSTR*                 m_ppStrArguments;
     DWORD                  m_dwArgc;
-
+    STRU                   m_struHttpsPort;
 };

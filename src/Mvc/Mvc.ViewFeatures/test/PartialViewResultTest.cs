@@ -43,6 +43,25 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public async Task ExecuteResultAsync_Throws_IfServicesNotRegistered()
+        {
+            // Arrange
+            var actionContext = new ActionContext(new DefaultHttpContext() { RequestServices = Mock.Of<IServiceProvider>(), }, new RouteData(), new ActionDescriptor());
+            var expected =
+                $"Unable to find the required services. Please add all the required services by calling " +
+                $"'IServiceCollection.AddControllersWithViews()' inside the call to 'ConfigureServices(...)' " +
+                $"in the application startup code.";
+
+            var viewResult = new PartialViewResult();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => viewResult.ExecuteResultAsync(actionContext));
+
+            // Assert
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
         {
             // Arrange
@@ -221,7 +240,7 @@ namespace Microsoft.AspNetCore.Mvc
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
-                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
+                Mock.Of<ITempDataDictionaryFactory>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance,
                 new EmptyModelMetadataProvider());

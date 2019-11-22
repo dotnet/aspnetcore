@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
 
             // Override the AllowInputFormatterExceptionMessages setting ModelBindingTestHelper chooses.
-            var options = testContext.GetService<IOptions<MvcJsonOptions>>().Value;
+            var options = testContext.GetService<IOptions<MvcNewtonsoftJsonOptions>>().Value;
             options.AllowInputFormatterExceptionMessages = false;
 
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
 
             // Override the AllowInputFormatterExceptionMessages setting ModelBindingTestHelper chooses.
-            var options = testContext.GetService<IOptions<MvcJsonOptions>>().Value;
+            var options = testContext.GetService<IOptions<MvcNewtonsoftJsonOptions>>().Value;
             options.AllowInputFormatterExceptionMessages = false;
 
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);

@@ -8,8 +8,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FormatterWebSite;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -172,8 +173,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsNotValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var kvps = new List<KeyValuePair<string, string>>();
-            kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
+            var kvps = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Alias", "xyz"),
+            };
             var content = new FormUrlEncodedContent(kvps);
 
             // Act
@@ -258,9 +261,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Content = new StringContent(@"{ ""Id"": ""S-1-5-21-1004336348-1177238915-682003330-512"" }", Encoding.UTF8, "application/json"),
             };
 
-            // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Client.SendAsync(requestMessage));
-            Assert.Equal(expected, ex.Message);
+            // Act
+            var response = await Client.SendAsync(requestMessage);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.InternalServerError);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(expected, content);
         }
 
         [Fact]
@@ -316,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 validationProblemDetails.Errors,
                 error =>
                 {
-                    Assert.Empty(error.Key);
+                    Assert.Equal("isbn", error.Key);
                     Assert.Equal(new[] { "Required property 'isbn' not found in JSON. Path '', line 1, position 44." }, error.Value);
                 });
         }

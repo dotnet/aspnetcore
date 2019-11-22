@@ -37,7 +37,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string ServerName = "Kestrel";
 
         public static readonly TimeSpan RequestBodyDrainTimeout = TimeSpan.FromSeconds(5);
-
-        public static readonly ArraySegment<byte> EmptyData = new ArraySegment<byte>(new byte[0]);
     }
 }

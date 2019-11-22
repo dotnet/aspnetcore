@@ -3,7 +3,7 @@
 
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 #include "requesthandler_config.h"
 #include "environmentvariablehelpers.h"
 #include "exceptions.h"
@@ -12,6 +12,7 @@
 #include "EventLog.h"
 #include "ModuleHelpers.h"
 #include "Environment.h"
+#include "HostFxr.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
@@ -19,13 +20,14 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
     IHttpApplication& pApplication,
     std::unique_ptr<InProcessOptions> pConfig,
-    APPLICATION_PARAMETER *pParameters,
+    APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
-    m_pConfig(std::move(pConfig))
+    m_pConfig(std::move(pConfig)),
+    m_requestCount(0)
 {
     DBG_ASSERT(m_pConfig);
 
@@ -34,6 +36,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     {
         m_dotnetExeKnownLocation = knownLocation;
     }
+
+    m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
@@ -51,6 +55,7 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 VOID
 IN_PROCESS_APPLICATION::StopClr()
 {
+    // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -63,6 +68,15 @@ IN_PROCESS_APPLICATION::StopClr()
         if (!g_fProcessDetach && shutdownHandler != nullptr)
         {
             shutdownHandler(m_ShutdownHandlerContext);
+        }
+
+        SRWSharedLock dataLock(m_dataLock);
+
+        auto requestCount = m_requestCount.load();
+
+        if (requestCount == 0)
+        {
+            CallRequestsDrained();
         }
     }
 
@@ -87,6 +101,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
+    _In_ PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -99,6 +114,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_ShutdownHandler = shutdown_handler;
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
     m_AsyncCompletionHandler = async_completion_handler;
+    m_RequestsDrainedHandler = requestsDrainedHandler;
 
     m_blockManagedCallbacks = false;
     m_Initialized = true;
@@ -114,7 +130,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
 }
 
 HRESULT
-IN_PROCESS_APPLICATION::LoadManagedApplication()
+IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 {
     THROW_LAST_ERROR_IF_NULL(m_pInitializeEvent = CreateEvent(
         nullptr,  // default security attributes
@@ -141,11 +157,17 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
 
     // Wait for shutdown request
     const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryStartupTimeLimitInMS());
+
     THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
 
     if (waitResult == WAIT_TIMEOUT)
     {
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
+        errorContext.statusCode = 500;
+        errorContext.subStatusCode = 37;
+        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
+        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+
         m_waitForShutdown = false;
         StopClr();
         throw InvalidOperationException(format(L"Managed server didn't initialize after %u ms.", m_pConfig->QueryStartupTimeLimitInMS()));
@@ -164,51 +186,35 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
     return S_OK;
 }
 
-
 void
 IN_PROCESS_APPLICATION::ExecuteApplication()
 {
     try
     {
-        std::unique_ptr<HOSTFXR_OPTIONS> hostFxrOptions;
+        std::unique_ptr<HostFxrResolutionResult> hostFxrResolutionResult;
 
         auto context = std::make_shared<ExecuteClrContext>();
 
-        auto pProc = s_fMainCallback;
-        if (pProc == nullptr)
+        ErrorContext errorContext; // unused 
+
+        if (s_fMainCallback == nullptr)
         {
-            HMODULE hModule;
-            // hostfxr should already be loaded by the shim. If not, then we will need
-            // to load it ourselves by finding hostfxr again.
-            THROW_LAST_ERROR_IF_NULL(hModule = GetModuleHandle(L"hostfxr.dll"));
-
-            // Get the entry point for main
-            pProc = reinterpret_cast<hostfxr_main_fn>(GetProcAddress(hModule, "hostfxr_main"));
-            THROW_LAST_ERROR_IF_NULL(pProc);
-
-            THROW_IF_FAILED(HOSTFXR_OPTIONS::Create(
+            THROW_IF_FAILED(HostFxrResolutionResult::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
-                hostFxrOptions
+                errorContext,
+                hostFxrResolutionResult
                 ));
 
-            hostFxrOptions->GetArguments(context->m_argc, context->m_argv);
+            hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
+            context->m_hostFxr.Load(hostFxrResolutionResult->GetHostFxrLocation());
         }
-        context->m_pProc = pProc;
-
-        if (m_pLoggerProvider == nullptr)
+        else
         {
-            THROW_IF_FAILED(LoggingHelpers::CreateLoggingProvider(
-                m_pConfig->QueryStdoutLogEnabled(),
-                !m_pHttpServer.IsCommandLineLaunch(),
-                m_pConfig->QueryStdoutLogFile().c_str(),
-                QueryApplicationPhysicalPath().c_str(),
-                m_pLoggerProvider));
-
-            m_pLoggerProvider->TryStartRedirection();
+            context->m_hostFxr.SetMain(s_fMainCallback);
         }
 
         // There can only ever be a single instance of .NET Core
@@ -238,35 +244,64 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        //Start CLR thread
-        m_clrThread = std::thread(ClrThreadEntryPoint, context);
-
-        // Wait for thread exit or shutdown event
-        const HANDLE waitHandles[2] = { m_pShutdownEvent, m_clrThread.native_handle() };
-
-        // Wait for shutdown request
-        const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
-        THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
-
-        LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
-
-        bool clrThreadExited = waitResult == (WAIT_OBJECT_0 + 1);
-        // shutdown was signaled
-        // only wait for shutdown in case of successful startup
-        if (m_waitForShutdown)
+        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
+        if (startupReturnCode != 0)
         {
-            const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
-            THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
-
-            clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
+            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
         }
 
-        LOG_INFOF(L"Clr thread wait ended: clrThreadExited: %d", clrThreadExited);
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+        }
+
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
+
+        bool clrThreadExited;
+        {
+            auto redirectionOutput = LoggingHelpers::CreateOutputs(
+                    m_pConfig->QueryStdoutLogEnabled(),
+                    m_pConfig->QueryStdoutLogFile(),
+                    QueryApplicationPhysicalPath(),
+                    m_stringRedirectionOutput
+                );
+
+            StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
+
+            context->m_redirectionOutput = redirectionOutput.get();
+
+            //Start CLR thread
+            m_clrThread = std::thread(ClrThreadEntryPoint, context);
+
+            // Wait for thread exit or shutdown event
+            const HANDLE waitHandles[2] = { m_pShutdownEvent, m_clrThread.native_handle() };
+
+            // Wait for shutdown request
+            const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
+
+            // Disconnect output
+            context->m_redirectionOutput = nullptr;
+
+            THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
+
+            LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
+
+            clrThreadExited = waitResult == (WAIT_OBJECT_0 + 1);
+            // shutdown was signaled
+            // only wait for shutdown in case of successful startup
+            if (m_waitForShutdown)
+            {
+                const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
+                THROW_LAST_ERROR_IF(clrWaitResult == WAIT_FAILED);
+
+                clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
+            }
+            LOG_INFOF(L"Clr thread wait ended: clrThreadExited: %d", clrThreadExited);
+        }
 
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
-
-        m_pLoggerProvider->TryStopRedirection();
 
         if (m_fStopCalled)
         {
@@ -302,8 +337,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
     catch (InvalidOperationException& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             ex.as_wstring().c_str());
@@ -313,8 +348,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
     catch (std::runtime_error& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             GetUnexpectedExceptionMessage(ex).c_str());
@@ -344,25 +379,27 @@ void IN_PROCESS_APPLICATION::QueueStop()
 
 HRESULT IN_PROCESS_APPLICATION::Start(
     IHttpServer& pServer,
+    IHttpSite* pSite,
     IHttpApplication& pHttpApplication,
     APPLICATION_PARAMETER* pParameters,
     DWORD nParameters,
-    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application)
+    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+    ErrorContext& errorContext)
 {
     try
     {
         std::unique_ptr<InProcessOptions> options;
-        THROW_IF_FAILED(InProcessOptions::Create(pServer, pHttpApplication, options));
+        THROW_IF_FAILED(InProcessOptions::Create(pServer, pSite, pHttpApplication, options));
         application = std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>(
             new IN_PROCESS_APPLICATION(pServer, pHttpApplication, std::move(options), pParameters, nParameters));
-        THROW_IF_FAILED(application->LoadManagedApplication());
+        THROW_IF_FAILED(application->LoadManagedApplication(errorContext));
         return S_OK;
     }
     catch (InvalidOperationException& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             pHttpApplication.GetApplicationId(),
             pHttpApplication.GetApplicationPhysicalPath(),
             ex.as_wstring().c_str());
@@ -372,8 +409,8 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     catch (std::runtime_error& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             pHttpApplication.GetApplicationId(),
             pHttpApplication.GetApplicationPhysicalPath(),
             GetUnexpectedExceptionMessage(ex).c_str());
@@ -389,11 +426,12 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 {
     __try
     {
-        auto const exitCode = context->m_pProc(context->m_argc, context->m_argv.get());
+        auto const exitCode = context->m_hostFxr.Main(context->m_argc, context->m_argv.get());
 
         LOG_INFOF(L"Managed application exited with code %d", exitCode);
 
         context->m_exitCode = exitCode;
+        context->m_hostFxr.Close();
     }
     __except(GetExceptionCode() != 0)
     {
@@ -411,49 +449,42 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 VOID
 IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrContext> &context)
 {
+    HandleWrapper<ModuleHandleTraits> moduleHandle;
+
     // Keep aspnetcorev2_inprocess.dll loaded while this thread is running
     // this is required because thread might be abandoned
-    HandleWrapper<ModuleHandleTraits> moduleHandle;
     ModuleHelpers::IncrementCurrentModuleRefCount(moduleHandle);
 
-    ExecuteClr(context);
+    // Nested block is required here because FreeLibraryAndExitThread would prevent destructors from running
+    // so we need to do in in a nested scope
+    {
+        // We use forwarder here instead of context->m_errorWriter itself to be able to
+        // disconnect listener before CLR exits
+        ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
+        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
 
+        ExecuteClr(context);
+    }
     FreeLibraryAndExitThread(moduleHandle.release(), 0);
 }
 
 HRESULT
 IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 {
-    auto variables = m_pConfig->QueryEnvironmentVariables();
-
-    auto inputTable = std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER>(new ENVIRONMENT_VAR_HASH());
-    RETURN_IF_FAILED(inputTable->Initialize(37 /*prime*/));
-    // Copy environment variables to old style hash table
-    for (auto & variable : variables)
-    {
-        auto pNewEntry = std::unique_ptr<ENVIRONMENT_VAR_ENTRY, ENVIRONMENT_VAR_ENTRY_DELETER>(new ENVIRONMENT_VAR_ENTRY());
-        RETURN_IF_FAILED(pNewEntry->Initialize((variable.first + L"=").c_str(), variable.second.c_str()));
-        RETURN_IF_FAILED(inputTable->InsertRecord(pNewEntry.get()));
-    }
-
-    ENVIRONMENT_VAR_HASH* pHashTable = NULL;
-    std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER> table;
-    RETURN_IF_FAILED(ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
-        inputTable.get(),
+    auto variables = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+        m_pConfig->QueryEnvironmentVariables(),
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
+        false, // fAddHostingStartup
         QueryApplicationPhysicalPath().c_str(),
-        &pHashTable));
+        nullptr);
 
-    table.reset(pHashTable);
-
-    HRESULT hr = S_OK;
-    table->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
-    RETURN_IF_FAILED(hr);
-
-    table->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
-    RETURN_IF_FAILED(hr);
+    for (const auto & variable : variables)
+    {
+        LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
+        SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
+    }
 
     return S_OK;
 }
@@ -461,7 +492,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 VOID
 IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) const
 {
-    auto content = m_pLoggerProvider->GetStdOutContent();
+    auto content = m_stringRedirectionOutput->GetOutput();
 
     if (context.m_exceptionCode != 0)
     {
@@ -522,9 +553,42 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
+        SRWSharedLock dataLock(m_dataLock);
+
+        DBG_ASSERT(!m_fStopCalled);
+        m_requestCount++;
+
+        LOG_TRACEF(L"Adding request. Total Request Count %d", m_requestCount.load());
+
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
     CATCH_RETURN();
 
     return S_OK;
+}
+
+void
+IN_PROCESS_APPLICATION::HandleRequestCompletion()
+{
+    SRWSharedLock dataLock(m_dataLock);
+
+    auto requestCount = --m_requestCount;
+
+    LOG_TRACEF(L"Removing Request %d", requestCount);
+
+    if (m_fStopCalled && requestCount == 0 && !m_blockManagedCallbacks)
+    {
+        CallRequestsDrained();
+    }
+}
+
+void IN_PROCESS_APPLICATION::CallRequestsDrained()
+{
+    // Atomic swap these.
+    auto handler = m_RequestsDrainedHandler.exchange(nullptr);
+    if (handler != nullptr)
+    {
+        LOG_INFO(L"Drained all requests, notifying managed.");
+        handler(m_ShutdownHandlerContext);
+    }
 }

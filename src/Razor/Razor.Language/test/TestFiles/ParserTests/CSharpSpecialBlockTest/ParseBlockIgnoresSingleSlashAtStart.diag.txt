@@ -1,1 +1,0 @@
-(1,2): Error RZ1005: "/" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{" are valid.

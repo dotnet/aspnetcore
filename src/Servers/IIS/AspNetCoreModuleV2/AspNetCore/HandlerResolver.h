@@ -6,22 +6,30 @@
 #include <memory>
 #include <string>
 #include "ShimOptions.h"
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 #include "HandleWrapper.h"
 #include "ApplicationFactory.h"
-#include "BaseOutputManager.h"
+#include "RedirectionOutput.h"
+#include "HostFxr.h"
 
 class HandlerResolver
 {
 public:
     HandlerResolver(HMODULE hModule, const IHttpServer &pServer);
-    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options);
+    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext);
     void ResetHostingModel();
 
 private:
-    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
+    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& errorContext);
     HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
-    HRESULT FindNativeAssemblyFromHostfxr(const HOSTFXR_OPTIONS& hostfxrOptions, PCWSTR libraryName, std::wstring& handlerDllPath, BaseOutputManager* outputManager);
+    HRESULT FindNativeAssemblyFromHostfxr(
+        const HostFxrResolutionResult& hostfxrOptions,
+        PCWSTR libraryName,
+        std::wstring& handlerDllPath,
+        const IHttpApplication &pApplication,
+        const ShimOptions& pConfiguration,
+        std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
+        ErrorContext& errorContext);
 
     HMODULE m_hModule;
     const IHttpServer &m_pServer;
@@ -29,7 +37,7 @@ private:
     SRWLOCK      m_requestHandlerLoadLock {};
     std::wstring m_loadedApplicationId;
     APP_HOSTING_MODEL m_loadedApplicationHostingModel;
-    HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
+    HostFxr m_hHostFxrDll;
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;

@@ -73,9 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 { "test-key", new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)) },
             });
             var provider = new RouteValueProvider(BindingSource.Query, values, new CultureInfo("de-CH"));
-
-            // de-CH culture is slightly different on Windows versus other platforms.
-            var expected = TestPlatformHelper.IsWindows ? "31.10.2018 07:37:38 -07:00" : "31.10.18 07:37:38 -07:00";
+            // The formatting was changed in netcoreapp3.0 to be consistent across platforms.  
+            var expected = "31.10.2018 07:37:38 -07:00";
 
             // Act
             var result = provider.GetValue("test-key");

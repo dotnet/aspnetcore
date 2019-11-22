@@ -109,15 +109,6 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void parseSingleUnsupportedStreamItemMessage() {
-        String stringifiedMessage = "{\"type\":2,\"Id\":1,\"Item\":42}\u001E";
-        TestBinder binder = new TestBinder(null);
-
-        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
-        assertEquals("The message type STREAM_ITEM is not supported yet.", exception.getMessage());
-    }
-
-    @Test
     public void parseSingleUnsupportedStreamInvocationMessage() {
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new StreamInvocationMessage("1", "test", new Object[] { 42 }));

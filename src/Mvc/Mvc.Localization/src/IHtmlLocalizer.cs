@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
         /// <returns>A culture-specific <see cref="IHtmlLocalizer"/>.</returns>
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
         IHtmlLocalizer WithCulture(CultureInfo culture);
     }
 }

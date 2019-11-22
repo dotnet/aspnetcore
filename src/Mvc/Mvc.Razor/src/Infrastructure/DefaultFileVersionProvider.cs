@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
         private static readonly char[] QueryStringAndFragmentTokens = new [] { '?', '#' };
 
         public DefaultFileVersionProvider(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider)
         {
             if (hostingEnvironment == null)

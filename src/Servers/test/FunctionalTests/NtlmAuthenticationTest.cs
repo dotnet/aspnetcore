@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -21,13 +21,14 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
-                .WithAllAncmVersions()
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        // In theory it could work on these platforms but the client would need non-default credentials.
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task NtlmAuthentication(TestVariant variant)
         {
             var testName = $"NtlmAuthentication_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
@@ -66,7 +67,14 @@ namespace ServerComparison.FunctionalTests
                         response = await httpClient.GetAsync("/Restricted");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                        Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        if (variant.Server == ServerType.Kestrel)
+                        {
+                            Assert.DoesNotContain("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
+                        else
+                        {
+                            Assert.Contains("NTLM", response.Headers.WwwAuthenticate.ToString());
+                        }
                         Assert.Contains("Negotiate", response.Headers.WwwAuthenticate.ToString());
 
                         logger.LogInformation("Testing /Forbidden");

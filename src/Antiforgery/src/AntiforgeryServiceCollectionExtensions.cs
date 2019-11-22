@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -39,6 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
             services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
             services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
+            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+
 
             services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
             {

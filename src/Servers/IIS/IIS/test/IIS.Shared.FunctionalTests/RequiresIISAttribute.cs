@@ -7,10 +7,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class RequiresIISAttribute : Attribute, ITestCondition
@@ -47,21 +47,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
-            if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+            if (!principal.IsInRole(WindowsBuiltInRole.Administrator) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic += "The current console is not running as admin.";
                 return;
             }
 
-            if (!File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "w3wp.exe")))
+            if (!File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "w3wp.exe")) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic += "The machine does not have IIS installed.";
                 return;
             }
 
-            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
+            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema.xml");
 
-            if (!File.Exists(ancmConfigPath))
+            if (!File.Exists(ancmConfigPath) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic = "IIS Schema is not installed.";
                 return;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             foreach (var module in Modules)
             {
-                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)))
+                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)) || SkipInVSTSAttribute.RunningInVSTS)
                 {
                     _modulesAvailable |= module.Capability;
                 }
@@ -122,12 +122,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     SkipReason += "The machine does allow for setting environment variables on application pools.";
                 }
-            }
-
-            if (capabilities.HasFlag(IISCapability.ShutdownToken))
-            {
-                IsMet = false;
-                SkipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
             }
 
             foreach (var module in Modules)

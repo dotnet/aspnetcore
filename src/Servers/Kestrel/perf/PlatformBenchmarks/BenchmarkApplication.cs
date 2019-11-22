@@ -3,9 +3,10 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Utf8Json;
 
 namespace PlatformBenchmarks
 {
@@ -24,6 +25,8 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json\r\n";
 
         private readonly static AsciiString _plainTextBody = "Hello, World!";
+
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions();
 
         public static class Paths
         {
@@ -115,8 +118,8 @@ namespace PlatformBenchmarks
 
             // Content-Length header
             writer.Write(_headerContentLength);
-            var jsonPayload = JsonSerializer.SerializeUnsafe(new { message = "Hello, World!" });
-            writer.WriteNumeric((uint)jsonPayload.Count);
+            var jsonPayload = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions);
+            writer.WriteNumeric((uint)jsonPayload.Length);
 
             // End of headers
             writer.Write(_eoh);
@@ -152,6 +155,11 @@ namespace PlatformBenchmarks
             NotRecognized,
             PlainText,
             Json
+        }
+
+        public struct JsonMessage
+        {
+            public string message { get; set; }
         }
     }
 }

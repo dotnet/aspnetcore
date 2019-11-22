@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -42,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = false);
             var serviceProvider = services.BuildServiceProvider();
@@ -56,41 +54,39 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
+            var endpointDataSource = appBuilder.ApplicationServices
+                .GetRequiredService<EndpointDataSource>();
 
-            Assert.Empty(mvcEndpointDataSource.ConventionalEndpointInfos);
+            Assert.Empty(endpointDataSource.Endpoints);
         }
 
         [Fact]
-        public void UseMvc_EndpointRoutingEnabled_NoEndpointInfos()
+        public void UseMvc_EndpointRoutingEnabled_ThrowsException()
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = true);
             var serviceProvider = services.BuildServiceProvider();
             var appBuilder = new ApplicationBuilder(serviceProvider);
 
             // Act
-            appBuilder.UseMvc(routes =>
+            var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                appBuilder.UseMvc(routes =>
+                {
+                    routes.MapRoute(
+                        name: "default",
+                        template: "{controller=Home}/{action=Index}/{id?}");
+                });
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
-
-            var endpointInfo = Assert.Single(mvcEndpointDataSource.ConventionalEndpointInfos);
-            Assert.Equal("default", endpointInfo.Name);
-            Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern);
+            var expected =
+                "Endpoint Routing does not support 'IApplicationBuilder.UseMvc(...)'. To use " +
+                "'IApplicationBuilder.UseMvc' set 'MvcOptions.EnableEndpointRouting = false' inside " +
+                "'ConfigureServices(...).";
+            Assert.Equal(expected, ex.Message);
         }
     }
 }

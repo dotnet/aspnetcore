@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null, LoggerFactory.CreateLogger("HttpConnectionContext2"));
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 {
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null, LoggerFactory.CreateLogger("HttpConnectionContext2"));
                     connectionContext.ActiveFormat = transferFormat;
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     }
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null, LoggerFactory.CreateLogger("HttpConnectionContext2"));
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(new WebSocketOptions(), connection.Application, connectionContext, LoggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     };
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(options, connection.Application, connectionContext, LoggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     };
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(options, connection.Application, connectionContext, LoggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     };
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(options, connection.Application, connectionContext, LoggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     };
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(options, connection.Application, connectionContext, LoggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     };
 
                     var connectionContext = new HttpConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, LoggerFactory);
+                    var ws = new WebSocketsServerTransport(options, connection.Application, connectionContext, LoggerFactory);
 
                     // Create an HttpContext
                     var context = new DefaultHttpContext();
@@ -394,6 +394,37 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     await transport.OrTimeout();
                 }
+            }
+        }
+
+        [Fact]
+        public async Task MultiSegmentSendWillNotSendEmptyEndOfMessageFrame()
+        {
+            using (var feature = new TestWebSocketConnectionFeature())
+            {
+                var serverSocket = await feature.AcceptAsync();
+                var sequence = ReadOnlySequenceFactory.CreateSegments(new byte[] { 1 }, new byte[] { 15 });
+                Assert.False(sequence.IsSingleSegment);
+
+                await serverSocket.SendAsync(sequence, WebSocketMessageType.Text);
+
+                // Run the client socket
+                var client = feature.Client.ExecuteAndCaptureFramesAsync();
+
+                await serverSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", default);
+
+                var messages = await client.OrTimeout();
+                Assert.Equal(2, messages.Received.Count);
+
+                // First message: 1 byte, endOfMessage false
+                Assert.Single(messages.Received[0].Buffer);
+                Assert.Equal(1, messages.Received[0].Buffer[0]);
+                Assert.False(messages.Received[0].EndOfMessage);
+
+                // Second message: 1 byte, endOfMessage true
+                Assert.Single(messages.Received[1].Buffer);
+                Assert.Equal(15, messages.Received[1].Buffer[0]);
+                Assert.True(messages.Received[1].EndOfMessage);
             }
         }
     }

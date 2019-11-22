@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var context = new DefaultHttpContext();
 
-                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
+                var poll = new LongPollingServerTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
 
                 connection.Transport.Output.Complete();
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var context = new DefaultHttpContext();
 
                 var timeoutToken = new CancellationToken(true);
-                var poll = new LongPollingTransport(timeoutToken, connection.Application.Input, LoggerFactory);
+                var poll = new LongPollingServerTransport(timeoutToken, connection.Application.Input, LoggerFactory);
 
                 using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
                 {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
+                var poll = new LongPollingServerTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
+                var poll = new LongPollingServerTransport(CancellationToken.None, connection.Application.Input, LoggerFactory);
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
 

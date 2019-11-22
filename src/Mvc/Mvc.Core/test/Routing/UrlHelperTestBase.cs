@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -952,6 +951,40 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/b/Store/Checkout", url);
         }
 
+        [Fact]
+        public void ActionLink_ReturnsAbsoluteUrlToAction()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes();
+
+            // Act
+            var url = urlHelper.ActionLink("contact", "home");
+
+            // Assert
+            Assert.Equal("http://localhost/app/home/contact", url);
+        }
+
+        [Fact]
+        public void NoRouter_ErrorsWithFriendlyErrorMessage()
+        {
+            // Arrange
+            var urlHelper = new UrlHelper(new ActionContext
+            {
+                RouteData = new RouteData(new RouteValueDictionary()),
+                HttpContext = new DefaultHttpContext()
+            });
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => urlHelper.ActionLink("contact", "home"));
+
+            // Assert
+            var expectedMessage = "Could not find an IRouter associated with the ActionContext. "
+                + "If your application is using endpoint routing then you can get a IUrlHelperFactory with "
+                + "dependency injection and use it to create a UrlHelper, or use Microsoft.AspNetCore.Routing.LinkGenerator.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         protected abstract IServiceProvider CreateServices();
 
         protected abstract IUrlHelper CreateUrlHelper(ActionContext actionContext);
@@ -1018,7 +1051,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             services.AddLogging();
             services.AddRouting();
             services
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(UrlEncoder.Default);
             return services;
         }

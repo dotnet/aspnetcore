@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Routing;
 
 namespace RoutingWebSite
 {
-    public class ControllerRouteTokenTransformerConvention : IApplicationModelConvention
+    public class ControllerRouteTokenTransformerConvention : RouteTokenTransformerConvention
     {
         private readonly Type _controllerType;
-        private readonly IOutboundParameterTransformer _parameterTransformer;
 
         public ControllerRouteTokenTransformerConvention(Type controllerType, IOutboundParameterTransformer parameterTransformer)
+            : base(parameterTransformer)
         {
             if (parameterTransformer == null)
             {
@@ -21,18 +21,11 @@ namespace RoutingWebSite
             }
 
             _controllerType = controllerType;
-            _parameterTransformer = parameterTransformer;
         }
 
-        public void Apply(ApplicationModel application)
+        protected override bool ShouldApply(ActionModel action)
         {
-            foreach (var controller in application.Controllers.Where(c => c.ControllerType == _controllerType))
-            {
-                foreach (var action in controller.Actions)
-                {
-                    action.Properties[typeof(IOutboundParameterTransformer)] = _parameterTransformer;
-                }
-            }
+            return action.Controller.ControllerType == _controllerType;
         }
     }
 }

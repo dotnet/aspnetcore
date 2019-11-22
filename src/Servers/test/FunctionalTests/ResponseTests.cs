@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -25,9 +25,8 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22)
-                .WithAllAncmVersions()
+            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -53,7 +52,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix SelfhostTestVariants
             => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22);
+                .WithTfms(Tfm.NetCoreApp30);
 
         // Connection Close tests do not work through reverse proxies
         [ConditionalTheory]
@@ -80,7 +79,9 @@ namespace ServerComparison.FunctionalTests
         private async Task ResponseFormats(TestVariant variant, Func<HttpClient, ILogger, Task> scenario, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
-            using (StartLog(out var loggerFactory, testName))
+            using (StartLog(out var loggerFactory,
+                variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
+                testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseFormats");
 

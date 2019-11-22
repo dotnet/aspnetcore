@@ -1,2 +1,0 @@
-(1,20): Error RZ1026: Encountered end tag "text" with no matching start tag.  Are your start/end tags properly balanced?
-(1,20): Error RZ1034: Found a malformed 'text' tag helper. Tag helpers must have a start and end tag or be self closing.

@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id,
             ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id);
 
+        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+
         public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             if (context.Diagnostics.Length == 0)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             void ConfigureTestServices(IServiceCollection services) =>
                 services.SetupTestEmailSender(emails);
 
-            var client = ServerFactory
-                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
-                .CreateClient();
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
@@ -91,21 +91,30 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             // Arrange
             var emails = new ContosoEmailSender();
-            var client = ServerFactory
-                .CreateClient();
+            void ConfigureTestServices(IServiceCollection services) =>
+                services.SetupTestEmailSender(emails);
+
+            var server = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
+            var newClient = server.CreateClient();
+            var failedClient = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
             var newEmail = "updatedEmail@example.com";
 
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var manageIndex = await UserStories.SendUpdateProfileAsync(index, newEmail);
+            var email = await UserStories.SendUpdateEmailAsync(index, newEmail);
 
             // Act & Assert
-            var pageUserName = manageIndex.GetUserName();
-            Assert.Equal(newEmail, pageUserName);
-            var pageEmail = manageIndex.GetEmail();
-            Assert.Equal(newEmail, pageEmail);
+            Assert.Equal(2, emails.SentEmails.Count);
+            await UserStories.ConfirmEmailAsync(emails.SentEmails[1], client);
+
+            // Verify can login with new email, fails with old
+            await UserStories.LoginExistingUserAsync(newClient, newEmail, password);
+            await UserStories.LoginFailsWithWrongPasswordAsync(failedClient, userName, password);
+
         }
 
         [Fact]

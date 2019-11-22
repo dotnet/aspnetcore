@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         // ANCM specific...
         public IList<HostingModel> HostingModels { get; set; } = new List<HostingModel>();
-        public IList<AncmVersion> AncmVersions { get; set; } = new List<AncmVersion>();
 
         private IList<Tuple<Func<TestVariant, bool>, string>> Skips { get; } = new List<Tuple<Func<TestVariant, bool>, string>>();
 
@@ -74,24 +73,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return this;
         }
 
-        public TestMatrix WithAncmVersions(params AncmVersion[] versions)
-        {
-            AncmVersions = versions;
-            return this;
-        }
-
-        public TestMatrix WithAllAncmVersions()
-        {
-            AncmVersions.Add(AncmVersion.AspNetCoreModule);
-            AncmVersions.Add(AncmVersion.AspNetCoreModuleV2);
-            return this;
-        }
-
         /// <summary>
         /// V2 + InProc
         /// </summary>
         /// <returns></returns>
-        public TestMatrix WithAncmV2InProcess() => WithAncmVersions(AncmVersion.AspNetCoreModuleV2).WithHostingModels(HostingModel.InProcess);
+        public TestMatrix WithAncmV2InProcess() => WithHostingModels(HostingModel.InProcess);
 
         public TestMatrix Skip(string message, Func<TestVariant, bool> check)
         {
@@ -117,11 +103,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             if (!ApplicationTypes.Any())
             {
                 ApplicationTypes.Add(ApplicationType.Portable);
-            }
-
-            if (!AncmVersions.Any())
-            {
-                AncmVersions.Add(AncmVersion.AspNetCoreModule);
             }
 
             if (!HostingModels.Any())
@@ -254,9 +235,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                 if (server == ServerType.IISExpress || server == ServerType.IIS)
                 {
-                    VaryByAncmVersion(variants, server, tfm, type, arch, archSkip);
+                    VaryByAncmHostingModel(variants, server, tfm, type, arch, archSkip);
                 }
-                else
+
+                // TODO: remove this workaround: https://github.com/aspnet/AspNetCore/issues/11301
+                else if (string.IsNullOrEmpty(archSkip))
                 {
                     variants.Add(new TestVariant()
                     {
@@ -289,15 +272,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return !(arch == RuntimeArchitecture.x86 && ServerType.Nginx == server);
         }
 
-        private void VaryByAncmVersion(IList<TestVariant> variants, ServerType server, string tfm, ApplicationType type, RuntimeArchitecture arch, string skip)
-        {
-            foreach (var version in AncmVersions)
-            {
-                VaryByAncmHostingModel(variants, server, tfm, type, arch, skip, version);
-            }
-        }
-
-        private void VaryByAncmHostingModel(IList<TestVariant> variants, ServerType server, string tfm, ApplicationType type, RuntimeArchitecture arch, string skip, AncmVersion version)
+        private void VaryByAncmHostingModel(IList<TestVariant> variants, ServerType server, string tfm, ApplicationType type, RuntimeArchitecture arch, string skip)
         {
             foreach (var hostingModel in HostingModels)
             {
@@ -305,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (hostingModel == HostingModel.InProcess)
                 {
                     // Not supported
-                    if (Tfm.Matches(Tfm.Net461, tfm) || Tfm.Matches(Tfm.NetCoreApp20, tfm) || version == AncmVersion.AspNetCoreModule)
+                    if (Tfm.Matches(Tfm.Net461, tfm) || Tfm.Matches(Tfm.NetCoreApp20, tfm))
                     {
                         continue;
                     }
@@ -316,16 +291,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                 }
 
-                variants.Add(new TestVariant()
+                // TODO: remove this workaround: https://github.com/aspnet/AspNetCore/issues/11301
+                if (string.IsNullOrEmpty(skipAncm))
                 {
-                    Server = server,
-                    Tfm = tfm,
-                    ApplicationType = type,
-                    Architecture = arch,
-                    AncmVersion = version,
-                    HostingModel = hostingModel,
-                    Skip = skipAncm,
-                });
+                    variants.Add(new TestVariant()
+                    {
+                        Server = server,
+                        Tfm = tfm,
+                        ApplicationType = type,
+                        Architecture = arch,
+                        HostingModel = hostingModel,
+                        Skip = skipAncm,
+                    });
+                }
             }
         }
 

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <ProjectReference Include="..\..\..\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="..\..\..\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
+  </ItemGroup>
+
+</Project>

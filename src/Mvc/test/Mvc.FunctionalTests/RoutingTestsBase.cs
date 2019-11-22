@@ -26,6 +26,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        [Theory]
+        [InlineData("http://localhost/Login/Index", "Login", "Index", "http://localhost/Login")]
+        [InlineData("http://localhost/Login/Sso", "Login", "Sso", "http://localhost/Login/Sso")]
+        [InlineData("http://localhost/Contact/Index", "Contact", "Index", "http://localhost/Contact")]
+        [InlineData("http://localhost/Contact/Sso", "Contact", "Sso", "http://localhost/Contact/Sso")]
+        public async Task ConventionalRoutedAction_RouteUrl_AmbientValues(string requestUrl, string controller, string action, string expectedUrl)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync(requestUrl);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal(controller, result.Controller);
+            Assert.Equal(action, result.Action);
+
+            Assert.Equal(expectedUrl, Assert.Single(result.ExpectedUrls));
+        }
+
         [Fact]
         public async Task ConventionalRoutedAction_RouteHasNonParameterConstraint_RouteConstraintRun_Allowed()
         {
@@ -69,6 +91,47 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // pagevalue is not used in "page" route value because it is a required value
             Assert.False(result.RouteValues.ContainsKey("page"));
+        }
+
+        [Fact]
+        public async Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/ContosoCorp/Trains")
+                .To(new { action = "Contact", controller = "Home", });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Rail", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Home/Contact", result.Link);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_InArea_StaysInArea()
+        {
+            // Arrange
+            var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
+
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("Flight", result.Controller);
+            Assert.Equal("Index", result.Action);
+
+            Assert.Equal("/Travel/Home/Contact", result.Link);
         }
 
         [Fact]
@@ -1320,8 +1383,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/", result.Link);
         }
 
-
-
         [Fact]
         public virtual async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
         {
@@ -1484,6 +1545,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task RazorPage_WithLinks_GeneratesLinksCorrectly()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageWithLinks");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var document = await response.GetHtmlDocumentAsync();
+
+            var editLink = document.RequiredQuerySelector("#editlink");
+            Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
+
+            var contactLink = document.RequiredQuerySelector("#contactlink");
+            Assert.Equal("/Home/Contact", contactLink.GetAttribute("href"));
+        }
+
+        [Fact]
         public async Task CanRunMiddlewareAfterRouting()
         {
             // Act
@@ -1495,6 +1574,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from middleware after routing", content);
         }
 
+        [Fact]
+        public async Task CanUseLinkGeneration_To_ConventionalActionWithPageParameter()
+        {
+            // Act
+            var response = await Client.GetAsync("/PageParameter/LinkToPageParameter");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("/PageParameter/PageParameter?page=17", content);
+        }
 
         protected static LinkBuilder LinkFrom(string url)
         {

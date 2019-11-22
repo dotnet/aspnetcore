@@ -251,11 +251,12 @@ CreateApplication(
 )
 {
     TraceContextScope traceScope(FindParameter<IHttpTraceContext*>("TraceContext", pParameters, nParameters));
+    auto pSite = FindParameter<IHttpSite*>("Site", pParameters, nParameters);
 
     InitializeGlobalConfiguration(pServer);
 
     REQUESTHANDLER_CONFIG *pConfig = nullptr;
-    RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pHttpApplication, &pConfig));
+    RETURN_IF_FAILED(REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(pServer, pSite, pHttpApplication, &pConfig));
     std::unique_ptr<REQUESTHANDLER_CONFIG> pRequestHandlerConfig(pConfig);
 
     RETURN_IF_FAILED(EnsureOutOfProcessInitializtion(pHttpApplication));

@@ -1,0 +1,22 @@
+<div id="duplicate-on-element">
+    <DuplicateAttributesOnElementChildComponent
+        BoolAttributeBefore="true"
+        StringAttributeBefore="original-text"
+        UnmatchedValues="elementValues"/>
+</div>
+
+<div id="duplicate-on-element-override">
+    <DuplicateAttributesOnElementChildComponent
+        UnmatchedValues="elementValues"
+        BoolAttributeAfter="false"
+        StringAttributeAfter="other-text" />
+</div>
+
+@functions {
+    Dictionary<string, object> elementValues = new Dictionary<string, object>()
+    {
+        { "bool",  true },
+        { "string", "middle-value" },
+        { "unmatched", "unmatched-value" },
+    };
+}

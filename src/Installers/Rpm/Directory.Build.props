@@ -1,0 +1,17 @@
+<!--
+  Common properties for building RPM installers.
+-->
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Output paths -->
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+    <OutputPath>$(InstallersOutputPath)</OutputPath>
+
+    <!-- All installers are shipping assets. -->
+    <IsShipping>true</IsShipping>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+</Project>

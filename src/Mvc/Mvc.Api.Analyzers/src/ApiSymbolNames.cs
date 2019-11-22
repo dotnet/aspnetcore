@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public const string DefaultStatusCodeAttribute = "Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute";
 
-        public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.IApiBehaviorMetadata";
+        public const string IApiBehaviorMetadata = "Microsoft.AspNetCore.Mvc.Infrastructure.IApiBehaviorMetadata";
 
         public const string IActionResult = "Microsoft.AspNetCore.Mvc.IActionResult";
 

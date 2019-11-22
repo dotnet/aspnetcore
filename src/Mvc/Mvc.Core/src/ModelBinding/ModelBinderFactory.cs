@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -27,20 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly IModelBinderProvider[] _providers;
         private readonly ConcurrentDictionary<Key, IModelBinder> _cache;
         private readonly IServiceProvider _serviceProvider;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="IServiceProvider"/>.</para>
-        /// <para>Creates a new <see cref="ModelBinderFactory"/>.</para>
-        /// </summary>
-        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="options">The <see cref="IOptions{TOptions}"/> for <see cref="MvcOptions"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(IServiceProvider) + ".")]
-        public ModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options)
-            : this(metadataProvider, options, GetDefaultServices())
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="ModelBinderFactory"/>.

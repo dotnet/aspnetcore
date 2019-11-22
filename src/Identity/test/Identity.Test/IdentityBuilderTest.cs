@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private class MySignInManager : SignInManager<PocoUser>
         {
-            public MySignInManager(UserManager<PocoUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<PocoUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null) { }
+            public MySignInManager(UserManager<PocoUser> manager, IHttpContextAccessor context, IUserClaimsPrincipalFactory<PocoUser> claimsFactory) : base(manager, context, claimsFactory, null, null, null, null) { }
         }
 
         private class MyUserManager : UserManager<PocoUser>

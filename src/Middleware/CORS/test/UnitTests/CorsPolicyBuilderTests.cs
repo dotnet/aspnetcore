@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -285,7 +285,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(corsPolicy.SupportsCredentials);
         }
 
-
         [Fact]
         public void DisallowCredential_SetsSupportsCredentials_ToFalse()
         {
@@ -298,6 +297,21 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.False(corsPolicy.SupportsCredentials);
+        }
+
+        [Fact]
+        public void Build_ThrowsIfConfiguredToAllowAnyOriginWithCredentials()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder()
+                .AllowAnyOrigin()
+                .AllowCredentials();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            // Assert
+            Assert.Equal(Resources.InsecureConfiguration, ex.Message);
         }
 
         [Theory]
@@ -368,7 +382,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         [InlineData("http://Bücher.example", "http://xn--bcher-kva.example")]
         [InlineData("http://Bücher.example.com:83", "http://xn--bcher-kva.example.com:83")]
         [InlineData("https://example.қаз", "https://example.xn--80ao21a")]
-        [InlineData("http://😉.fm", "http://xn--n28h.fm", Skip = "Fails on Win2k8 R2")]
         // Note that in following case, the default port (443 for HTTPS) is not preserved.
         [InlineData("https://www.example.இந்தியா:443", "https://www.example.xn--xkc2dl3a5ee0h")]
         public void GetNormalizedOrigin_ReturnsPunyCodedOrigin(string origin, string expected)

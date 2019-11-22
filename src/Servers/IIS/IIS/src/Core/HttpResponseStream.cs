@@ -89,17 +89,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _context.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
 
-            return new ValueTask(_httpResponseControl.WriteAsync(source, cancellationToken));
+            return new ValueTask(_context.WriteAsync(source, cancellationToken));
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public void StartAcceptingWrites()
         {

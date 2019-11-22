@@ -333,6 +333,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal HttpApiTypes.HTTP_FLAGS ComputeHeaders(long writeCount, bool endOfRequest = false)
         {
+            Headers.IsReadOnly = false; // Temporarily unlock
             if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
             {
                 RequestContext.Server.Options.Authentication.SetAuthenticationChallenge(RequestContext);
@@ -418,6 +419,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 flags = HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
 
+            Headers.IsReadOnly = true;
             return flags;
         }
 

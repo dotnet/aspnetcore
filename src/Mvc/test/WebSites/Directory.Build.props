@@ -1,4 +1,14 @@
 <Project>
+  <PropertyGroup>
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
   <!-- Skip the parent folder to prevent getting test package references. -->
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
+
+  <ItemGroup>
+    <!-- Workaround missing entries in deps files. Still under investigation -->
+    <RuntimeHostConfigurationOption
+      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
+      Value="true" />
+  </ItemGroup>
 </Project>

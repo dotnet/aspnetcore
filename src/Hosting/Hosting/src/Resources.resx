@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ErrorPageHtml_Title" xml:space="preserve">
-    <value>Internal Server Error</value>
-  </data>
-  <data name="ErrorPageHtml_UnhandledException" xml:space="preserve">
-    <value>An error occurred while starting the application.</value>
-  </data>
-  <data name="ErrorPageHtml_UnknownLocation" xml:space="preserve">
-    <value>Unknown location</value>
-  </data>
   <data name="WebHostBuilder_SingleInstance" xml:space="preserve">
     <value>WebHostBuilder allows creation only of a single instance of WebHost</value>
   </data>

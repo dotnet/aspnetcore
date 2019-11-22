@@ -17,23 +17,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <summary>
         /// Creates a new <see cref="HttpMethodAttribute"/> with the given
         /// set of HTTP methods.
-        /// <param name="httpMethods">The set of supported HTTP methods.</param>
+        /// <param name="httpMethods">The set of supported HTTP methods. May not be null.</param>
         /// </summary>
         public HttpMethodAttribute(IEnumerable<string> httpMethods)
             : this(httpMethods, null)
         {
-            if (httpMethods == null)
-            {
-                throw new ArgumentNullException(nameof(httpMethods));
-            }
         }
 
         /// <summary>
         /// Creates a new <see cref="HttpMethodAttribute"/> with the given
         /// set of HTTP methods an the given route template.
         /// </summary>
-        /// <param name="httpMethods">The set of supported methods.</param>
-        /// <param name="template">The route template. May not be null.</param>
+        /// <param name="httpMethods">The set of supported methods. May not be null.</param>
+        /// <param name="template">The route template.</param>
         public HttpMethodAttribute(IEnumerable<string> httpMethods, string template)
         {
             if (httpMethods == null)

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
+  </PropertyGroup>
+
+  <Import Project="../FunctionalTest.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Common.FunctionalTests\**\*.cs" />
+    <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The versions on these references are hard-coded because we want to ensure we maintain backwards compatibility with ANCM 2.2.0 -->
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+  </ItemGroup>
+
+</Project>

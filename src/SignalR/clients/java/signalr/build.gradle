@@ -35,7 +35,7 @@ dependencies {
     testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-    api 'io.reactivex.rxjava2:rxjava:2.2.2'
+    api 'io.reactivex.rxjava2:rxjava:2.2.3'
     implementation 'org.slf4j:slf4j-api:1.7.25'
 }
 
@@ -83,7 +83,7 @@ task generatePOM {
         project {
             inceptionYear '2018'
             description 'ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/aspnet/SignalR'
+            url 'https://github.com/aspnet/AspNetCore'
             name groupId + ':' + artifactId
             licenses {
                 license {
@@ -93,9 +93,9 @@ task generatePOM {
                 }
             }
             scm {
-                connection 'scm:git:git://github.com/aspnet/SignalR.git'
-                developerConnection 'scm:git:git://github.com/aspnet/SignalR.git'
-                url 'http://github.com/aspnet/SignalR/tree/master'
+                connection 'scm:git:git://github.com/aspnet/AspNetCore.git'
+                developerConnection 'scm:git:git://github.com/aspnet/AspNetCore.git'
+                url 'http://github.com/aspnet/AspNetCore/tree/master'
             }
             developers {
                 developer {

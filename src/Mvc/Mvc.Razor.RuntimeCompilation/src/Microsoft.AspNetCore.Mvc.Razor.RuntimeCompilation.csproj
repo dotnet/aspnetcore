@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Runtime compilation support for Razor views and Razor Pages in ASP.NET Core MVC.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;razor</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Razor\src\ViewPath.cs" />
+    <Compile Include="..\..\Mvc.RazorPages\src\ApplicationModels\PageRouteModelFactory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\netcoreapp3.0\*" Pack="true" PackagePath="build\netcoreapp3.0" />
+  </ItemGroup>
+</Project>

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
@@ -10,6 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods useful for configuring routing in a single-page application (SPA).
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static class SpaRouteExtensions
     {
         private const string ClientRouteTokenName = "clientRoute";

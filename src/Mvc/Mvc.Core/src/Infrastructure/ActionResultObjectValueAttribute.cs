@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// ObjectResult { [ActionResultObjectValueAttribute] public object Value { get; set; } }
     /// </example>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    internal sealed class ActionResultObjectValueAttribute : Attribute
+    public sealed class ActionResultObjectValueAttribute : Attribute
     {
     }
 }

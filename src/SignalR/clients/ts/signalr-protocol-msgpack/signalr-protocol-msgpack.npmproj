@@ -2,9 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
+    <PackageId>@microsoft/signalr-protocol-msgpack</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
+    <IsShippingPackage>true</IsShippingPackage>
+    <PackOnBuild>true</PackOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

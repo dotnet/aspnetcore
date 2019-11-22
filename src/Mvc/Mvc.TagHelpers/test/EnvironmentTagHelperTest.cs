@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
                     { "exclude", excludeAttribute },
                 });
             var output = MakeTagHelperOutput("environment", childContent: content);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName, "Development");
 
             // Act
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
                     { "exclude", excludeAttribute },
                 });
             var output = MakeTagHelperOutput("environment", childContent: content);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName, "Development");
 
             // Act
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
             var content = "content";
             var context = MakeTagHelperContext(attributes: new TagHelperAttributeList { { "names", namesAttribute } });
             var output = MakeTagHelperOutput("environment", childContent: content);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName, environmentName);
 
             // Act
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList { { "names", namesAttribute } });
             var output = MakeTagHelperOutput("environment", childContent: content);
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupProperty(h => h.EnvironmentName, environmentName);
 
             // Act

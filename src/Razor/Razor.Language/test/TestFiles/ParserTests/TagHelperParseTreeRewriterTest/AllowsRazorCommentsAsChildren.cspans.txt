@@ -1,8 +1,0 @@
-Markup span at (3:0,3 [3] ) (Accepts:Any) - Parent: Tag block at (3:0,3 [3] )
-Markup span at (6:0,6 [4] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [26] )
-Markup span at (10:0,10 [4] ) (Accepts:Any) - Parent: Tag block at (10:0,10 [4] )
-Transition span at (14:0,14 [1] ) (Accepts:None) - Parent: Comment block at (14:0,14 [8] )
-MetaCode span at (15:0,15 [1] ) (Accepts:None) - Parent: Comment block at (14:0,14 [8] )
-Comment span at (16:0,16 [4] ) (Accepts:Any) - Parent: Comment block at (14:0,14 [8] )
-MetaCode span at (20:0,20 [1] ) (Accepts:None) - Parent: Comment block at (14:0,14 [8] )
-Transition span at (21:0,21 [1] ) (Accepts:None) - Parent: Comment block at (14:0,14 [8] )

@@ -4,9 +4,6 @@
 import { ECHOENDPOINT_URL } from "./Common";
 import "./LogBannerReporter";
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
-
 describe("WebSockets", () => {
     it("can be used to connect to SignalR", (done) => {
         const message = "message";

@@ -1,2 +1,0 @@
-(1,2): Error RZ1035: Missing close angle for tag helper 'strong'.
-(1,11): Error RZ1035: Missing close angle for tag helper 'strong'.

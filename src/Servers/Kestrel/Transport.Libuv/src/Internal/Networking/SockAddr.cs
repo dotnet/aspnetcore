@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct SockAddr
+    internal struct SockAddr
     {
         // this type represents native memory occupied by sockaddr struct
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms740496(v=vs.85).aspx

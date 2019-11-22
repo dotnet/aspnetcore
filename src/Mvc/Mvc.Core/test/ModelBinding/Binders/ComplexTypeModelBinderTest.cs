@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,11 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private static readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObject(
-            bool isTopLevelObject,
-            bool expectedCanCreate)
+        [InlineData(true, ComplexTypeModelBinder.ValueProviderDataAvailable)]
+        [InlineData(false, ComplexTypeModelBinder.NoDataAvailable)]
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObject(bool isTopLevelObject, int expectedCanCreate)
         {
             var bindingContext = CreateContext(GetMetadataForType(typeof(Person)));
             bindingContext.IsTopLevelObject = isTopLevelObject;
@@ -57,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.False(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.NoDataAvailable, canCreate);
         }
 
         [Fact]
@@ -72,16 +69,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.ValueProviderDataAvailable, canCreate);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanCreateModel_CreatesModel_WithAllGreedyProperties(bool isTopLevelObject)
+        [InlineData(ComplexTypeModelBinder.ValueProviderDataAvailable)]
+        [InlineData(ComplexTypeModelBinder.GreedyPropertiesMayHaveData)]
+        public void CanCreateModel_CreatesModel_WithAllGreedyProperties(int expectedCanCreate)
         {
             var bindingContext = CreateContext(GetMetadataForType(typeof(HasAllGreedyProperties)));
-            bindingContext.IsTopLevelObject = isTopLevelObject;
+            bindingContext.IsTopLevelObject = expectedCanCreate == ComplexTypeModelBinder.ValueProviderDataAvailable;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -89,20 +86,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(
-            bool valueAvailable)
+        [InlineData(ComplexTypeModelBinder.ValueProviderDataAvailable)]
+        [InlineData(ComplexTypeModelBinder.NoDataAvailable)]
+        public void CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(int valueAvailable)
         {
             // Arrange
             var valueProvider = new Mock<IValueProvider>(MockBehavior.Strict);
             valueProvider
                 .Setup(provider => provider.ContainsPrefix("SimpleContainer.Simple.Name"))
-                .Returns(valueAvailable);
+                .Returns(valueAvailable == ComplexTypeModelBinder.ValueProviderDataAvailable);
 
             var modelMetadata = GetMetadataForProperty(typeof(SimpleContainer), nameof(SimpleContainer.Simple));
             var bindingContext = CreateContext(modelMetadata);
@@ -134,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.False(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.NoDataAvailable, canCreate);
         }
 
         [Fact]
@@ -150,20 +146,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.ValueProviderDataAvailable, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithNoBinderMetadata), false)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), true)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), ComplexTypeModelBinder.NoDataAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), ComplexTypeModelBinder.ValueProviderDataAvailable)]
         public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfAValueProviderProvidesValue(
             Type modelType,
-            bool valueProviderProvidesValue)
+            int valueProviderProvidesValue)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(valueProviderProvidesValue);
+                .Returns(valueProviderProvidesValue == ComplexTypeModelBinder.ValueProviderDataAvailable);
 
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
@@ -180,18 +176,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.GreedyPropertiesMayHaveData)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.ValueProviderDataAvailable)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), ComplexTypeModelBinder.GreedyPropertiesMayHaveData)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), ComplexTypeModelBinder.ValueProviderDataAvailable)]
         public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfPropertyHasGreedyBindingSource(
             Type modelType,
-            bool valueProviderProvidesValue)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(valueProviderProvidesValue);
+                .Returns(expectedCanCreate == ComplexTypeModelBinder.ValueProviderDataAvailable);
 
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
@@ -204,15 +200,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.GreedyPropertiesMayHaveData)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.ValueProviderDataAvailable)]
         public void CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(
             Type modelType,
-            bool originalValueProviderProvidesValue)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
@@ -222,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var originalValueProvider = new Mock<IBindingSourceValueProvider>();
             originalValueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(originalValueProviderProvidesValue);
+                .Returns(expectedCanCreate == ComplexTypeModelBinder.ValueProviderDataAvailable);
 
             originalValueProvider
                 .Setup(o => o.Filter(It.IsAny<BindingSource>()))
@@ -239,18 +235,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false, true)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true, true)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), false, false)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), true, true)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false, ComplexTypeModelBinder.GreedyPropertiesMayHaveData)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true, ComplexTypeModelBinder.ValueProviderDataAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), false, ComplexTypeModelBinder.NoDataAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), true, ComplexTypeModelBinder.ValueProviderDataAvailable)]
         public void CanCreateModel_UnmarkedProperties_UsesCurrentValueProvider(
             Type modelType,
             bool valueProviderProvidesValue,
-            bool expectedCanCreate)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
@@ -287,6 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bool isBindingRequired)
         {
             // Arrange
+            var expectedErrorCount = isBindingRequired ? 1 : 0;
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
@@ -306,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = new DefaultModelBindingContext
             {
                 IsTopLevelObject = true,
-                ModelMetadata = GetMetadataForType(typeof(Person)),
+                ModelMetadata = metadata,
                 ModelName = string.Empty,
                 ValueProvider = mockValueProvider.Object,
                 ModelState = new ModelStateDictionary(),
@@ -331,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.True(bindingContext.Result.IsModelSet);
-            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+            Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
 
             var returnedPerson = Assert.IsType<Person>(bindingContext.Result.Model);
             Assert.Same(model, returnedPerson);
@@ -602,8 +599,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var bindingContext = CreateContext(GetMetadataForType(typeof(Person)), new Person());
             var originalModel = bindingContext.Model;
+            var binders = bindingContext.ModelMetadata.Properties.ToDictionary(
+                keySelector: item => item,
+                elementSelector: item => (IModelBinder)null);
 
-            var binder = new Mock<TestableComplexTypeModelBinder>() { CallBase = true };
+            var binder = new Mock<TestableComplexTypeModelBinder>(binders) { CallBase = true };
             binder
                 .Setup(b => b.CreateModelPublic(It.IsAny<ModelBindingContext>()))
                 .Verifiable();
@@ -621,8 +621,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var bindingContext = CreateContext(GetMetadataForType(typeof(Person)), model: null);
+            var binders = bindingContext.ModelMetadata.Properties.ToDictionary(
+                keySelector: item => item,
+                elementSelector: item => (IModelBinder)null);
 
-            var testableBinder = new Mock<TestableComplexTypeModelBinder> { CallBase = true };
+            var testableBinder = new Mock<TestableComplexTypeModelBinder>(binders) { CallBase = true };
             testableBinder
                 .Setup(o => o.CreateModelPublic(bindingContext))
                 .Returns(new Person())
@@ -1116,8 +1119,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = model.GetType();
             var bindingContext = CreateContext(GetMetadataForType(type), model);
             var modelState = bindingContext.ModelState;
-            var metadata = GetMetadataForType(type);
-
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(new Simple { Name = "Hanna" });
 
@@ -1161,8 +1162,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
             var result = ModelBindingResult.Success(new DateTime(2001, 1, 1));
@@ -1187,8 +1186,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
             var result = ModelBindingResult.Success(new DateTime(1800, 1, 1));
@@ -1198,8 +1195,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             binder.SetPropertyPublic(bindingContext, "foo", propertyMetadata, result);
 
             // Assert
-            Assert.Equal("Date of death can't be before date of birth." + Environment.NewLine
-                       + "Parameter name: value",
+            Assert.Equal("Date of death can't be before date of birth. (Parameter 'value')",
                          bindingContext.ModelState["foo"].Errors[0].Exception.Message);
         }
 
@@ -1211,8 +1207,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var model = new ModelWhosePropertySetterThrows();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
             bindingContext.ModelName = "foo";
-
-            var metadata = GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
             var result = ModelBindingResult.Success(model: null);
@@ -1224,8 +1218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Single(bindingContext.ModelState["foo.NameNoAttribute"].Errors);
-            Assert.Equal("This is a different exception." + Environment.NewLine
-                       + "Parameter name: value",
+            Assert.Equal("This is a different exception. (Parameter 'value')",
                          bindingContext.ModelState["foo.NameNoAttribute"].Errors[0].Exception.Message);
         }
 
@@ -1285,13 +1278,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public PointStruct Point { get; set; }
         }
 
-        private struct PointStruct
+        private readonly struct PointStruct
         {
             public PointStruct(double x, double y)
             {
                 X = x;
                 Y = y;
             }
+
             public double X { get; }
             public double Y { get; }
         }

@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
 using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace StartRequestDelegateUrlApp
 {
@@ -20,7 +20,7 @@ namespace StartRequestDelegateUrlApp
             using (var host = WebHost.Start("http://127.0.0.1:0", async context =>
             {
                 // Respond with the ApplicationName.
-                var env = context.RequestServices.GetRequiredService<IHostingEnvironment>();
+                var env = context.RequestServices.GetRequiredService<IHostEnvironment>();
                 await context.Response.WriteAsync(env.ApplicationName);
                 messageSent.Set();
             }))

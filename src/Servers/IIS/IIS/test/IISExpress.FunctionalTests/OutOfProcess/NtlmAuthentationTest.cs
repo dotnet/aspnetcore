@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class NtlmAuthenticationTests : IISFunctionalTestBase
@@ -21,24 +21,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         // TODO either enable windows auth on our CI or use containers to test this
         // behavior
 
-        private readonly PublishedSitesFixture _fixture;
-
-        public NtlmAuthenticationTests(PublishedSitesFixture fixture)
+        public NtlmAuthenticationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
-                .WithAllAncmVersions();
+                .WithTfms(Tfm.NetCoreApp30);
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.WindowsAuthentication)]
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:0/";
 
             deploymentParameters.SetWindowsAuth(enabled: true);
@@ -81,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             response = await httpClient.GetAsync("/Restricted");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.NotEmpty(responseText);
+            Assert.Equal("Windows", responseText);
         }
     }
 }

@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RequestServicesEndpointRoutingTest : RequestServicesTestBase<BasicWebSite.StartupWithEndpointRouting>
+    public class RequestServicesEndpointRoutingTest : RequestServicesTestBase<BasicWebSite.Startup>
     {
-        public RequestServicesEndpointRoutingTest(MvcTestFixture<BasicWebSite.StartupWithEndpointRouting> fixture)
+        public RequestServicesEndpointRoutingTest(MvcTestFixture<BasicWebSite.Startup> fixture)
             : base(fixture)
         {
         }

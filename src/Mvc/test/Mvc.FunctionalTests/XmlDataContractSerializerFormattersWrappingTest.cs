@@ -7,18 +7,19 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using XmlFormattersWebSite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+    public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
     {
-        public XmlDataContractSerializerFormattersWrappingTest(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
+        public XmlDataContractSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
         {
             Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
             Client = Factory.CreateDefaultClient();
@@ -222,20 +223,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                    "<status>404</status>" +
-                    "<title>Not Found</title>" +
-                    "<type>https://tools.ietf.org/html/rfc7231#section-6.5.4</type>" +
-                    $"<traceId>{Activity.Current.Id}</traceId>" +
-                    "</problem>";
-
                 // Act
                 var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningClientErrorStatusCodeResult");
 
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
                 var content = await response.Content.ReadAsStringAsync();
-                XmlAssert.Equal(expected, content);
+                var root = XDocument.Parse(content).Root;
+                Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
             }
         }
 
@@ -261,52 +260,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProblemDetails_With21Behavior()
-        {
-            // Arrange
-                var expected = "<ProblemDetails>" +
-                "<Instance>instance</Instance>" +
-                "<Status>404</Status>" +
-                "<Title>title</Title>" +
-                "<Correlation>correlation</Correlation>" +
-                "<Accounts>Account1 Account2</Accounts>" +
-                "</ProblemDetails>";
-
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.UseStartup<StartupWith21Compat>())
-                .CreateDefaultClient();
-
-            // Act
-            var response = await client.GetAsync("/api/XmlDataContractApi/ActionReturningProblemDetails");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
-        }
-
-        [Fact]
         public async Task ValidationProblemDetails_IsSerialized()
         {
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                "<status>400</status>" +
-                "<title>One or more validation errors occurred.</title>" +
-                $"<traceId>{Activity.Current.Id}</traceId>" +
-                "<MVC-Errors>" +
-                "<State>The State field is required.</State>" +
-                "</MVC-Errors>" +
-                "</problem>";
-
                 // Act
                 var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationProblem");
 
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
                 var content = await response.Content.ReadAsStringAsync();
-                XmlAssert.Equal(expected, content);
+                var root = XDocument.Parse(content).Root;
+
+                Assert.Equal("400", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("One or more validation errors occurred.", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                var mvcErrors = root.Element(root.Name.Namespace.GetName("MVC-Errors"));
+                Assert.NotNull(mvcErrors);
+                Assert.Equal("The State field is required.", mvcErrors.Element(root.Name.Namespace.GetName("State"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
             }
         }
 
@@ -327,34 +300,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationDetailsWithMetadata");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
-        }
-
-        [Fact]
-        public async Task ValidationProblemDetails_With21Behavior()
-        {
-            // Arrange
-            var expected = "<ValidationProblemDetails>" +
-                "<Detail>some detail</Detail>" +
-                "<Status>400</Status>" +
-                "<Title>One or more validation errors occurred.</Title>" +
-                "<Type>some type</Type>" +
-                "<CorrelationId>correlation</CorrelationId>" +
-                "<MVC-Errors>" +
-                "<Error1>ErrorValue</Error1>" +
-                "</MVC-Errors>" +
-                "</ValidationProblemDetails>";
-
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.UseStartup<StartupWith21Compat>())
-                .CreateDefaultClient();
-
-            // Act
-            var response = await client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationDetailsWithMetadata");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);

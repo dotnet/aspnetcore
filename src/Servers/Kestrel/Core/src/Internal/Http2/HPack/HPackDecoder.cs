@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class HPackDecoder
+    internal class HPackDecoder
     {
         private enum State
         {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             _headerValueOctets = new byte[maxRequestHeaderFieldSize];
         }
 
-        public void Decode(ReadOnlySequence<byte> data, bool endHeaders, IHttpHeadersHandler handler)
+        public void Decode(in ReadOnlySequence<byte> data, bool endHeaders, IHttpHeadersHandler handler)
         {
             foreach (var segment in data)
             {

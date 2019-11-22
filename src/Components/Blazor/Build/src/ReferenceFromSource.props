@@ -1,0 +1,56 @@
+<Project>
+
+  <!--
+  Importing this file is equivalent to having:
+    <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
+  ... except it's much more convenient when working in this repo, because it consumes the
+  Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
+
+  This is only intended for use by other projects in this repo.
+  -->
+
+  <PropertyGroup>
+    <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
+    <BlazorJsPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.*.js.*</BlazorJsPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+
+  <!--
+    Debugging support using blazor-devserver serve.
+
+    A few things to note here:
+      - We have to use dotnet exec to avoid launching another process and confusing the debugger.
+      - Since we're doing dotnet exec, it won't automatically rebuild the DevServer project.
+      - $(AdditionalRunArguments) needs to be defined before importing this file.
+   -->
+  <PropertyGroup>
+    <RunCommand>dotnet</RunCommand>
+    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../DevServer/src/bin/$(Configuration)/netcoreapp3.0/blazor-devserver.dll</_BlazorCliLocation>
+    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve --applicationpath &quot;$(MSBuildProjectDirectory)/$(OutputPath)$(TargetFileName)&quot; $(AdditionalRunArguments)</RunArguments>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Mono" />
+  </ItemGroup>
+
+  <!-- This is used as a P2P when building the repo. Normal Blazor projects will get this as a reference through the Blazor.Build package -->
+  <ItemGroup>
+    <!-- Ensures these projects are built before the consuming project, but without
+         adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
+         given that the packed version of this project wouldn't add a .dll reference) -->
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <!-- Optimization. Do not require framework compatibility between these projects. -->
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <UndefineProperties>TargetFramework</UndefineProperties>
+    </ProjectReference>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <!-- Optimization. Do not require framework compatibility between these projects. -->
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <UndefineProperties>TargetFramework</UndefineProperties>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -66,9 +69,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestProtocol.
+        /// Gets or sets the request protocol (e.g. HTTP/1.1).
         /// </summary>
-        /// <returns>The RequestProtocol.</returns>
+        /// <returns>The request protocol.</returns>
         public abstract string Protocol { get; set; }
 
         /// <summary>
@@ -96,10 +99,16 @@ namespace Microsoft.AspNetCore.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestBody Stream.
+        /// Gets or sets the request body <see cref="Stream"/>.
         /// </summary>
-        /// <returns>The RequestBody Stream.</returns>
+        /// <value>The request body <see cref="Stream"/>.</value>
         public abstract Stream Body { get; set; }
+
+        /// <summary>
+        /// Gets the request body <see cref="PipeReader"/>.
+        /// </summary>
+        /// <value>The request body <see cref="PipeReader"/>.</value>
+        public virtual PipeReader BodyReader { get => throw new NotImplementedException();  }
 
         /// <summary>
         /// Checks the Content-Type header for form types.
@@ -117,5 +126,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns></returns>
         public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
+
+        /// <summary>
+        /// Gets the collection of route values for this request.
+        /// </summary>
+        /// <returns>The collection of route values for this request.</returns>
+        public virtual RouteValueDictionary RouteValues { get; set; }
     }
 }

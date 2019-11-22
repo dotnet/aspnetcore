@@ -19,7 +19,8 @@ public:
     std::optional<bool> GetBool(const std::wstring& name) const override;
     std::optional<DWORD> GetLong(const std::wstring& name) const override;
     std::optional<DWORD> GetTimespan(const std::wstring& name) const override;
-    std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const override;
+    std::optional<std::shared_ptr<ConfigurationSection>> GetSection(const std::wstring& name) const override;
+    std::vector<std::shared_ptr<ConfigurationSection>> GetCollection() const override;
 
 private:
     CComPtr<IAppHostElement> m_element;

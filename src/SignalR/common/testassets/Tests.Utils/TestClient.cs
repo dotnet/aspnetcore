@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         private static int _id;
-        private readonly IHubProtocol _protocol;
+        private IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
         private readonly CancellationTokenSource _cts;
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
             Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
 
-            _protocol = protocol ?? new JsonHubProtocol();
+            _protocol = protocol ?? new NewtonsoftJsonHubProtocol();
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();
@@ -95,9 +95,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return connection;
         }
 
-        public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
+        public Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendStreamInvocationAsync(methodName, args);
+            return StreamAsync(methodName, streamIds: null, args);
+        }
+
+        public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streamIds, params object[] args)
+        {
+            var invocationId = await SendStreamInvocationAsync(methodName, streamIds, args);
 
             var messages = new List<HubMessage>();
             while (true)
@@ -174,9 +179,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
         {
-            var invocationId = GetInvocationId();
-            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args));
+            return SendStreamInvocationAsync(methodName, streamIds: null, args);
         }
+
+        public Task<string> SendStreamInvocationAsync(string methodName, string[] streamIds, params object[] args)
+        {
+            var invocationId = GetInvocationId();
+            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args, streamIds));
+        }
+
+        public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, string[] streamIds, params object[] args)
+        {
+            var message = new InvocationMessage(invocationId, methodName, args, streamIds);
+            return SendHubMessageAsync(message);
+        } 
 
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {
@@ -295,6 +311,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
         }
+
         private class DefaultInvocationBinder : IInvocationBinder
         {
             public IReadOnlyList<Type> GetParameterTypes(string methodName)
@@ -306,6 +323,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Type GetReturnType(string invocationId)
             {
                 return typeof(object);
+            }
+
+            public Type GetStreamItemType(string streamId)
+            {
+                throw new NotImplementedException();
             }
         }
     }

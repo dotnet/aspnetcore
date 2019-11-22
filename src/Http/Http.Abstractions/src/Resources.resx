@@ -156,4 +156,10 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="RouteValueDictionary_DuplicateKey" xml:space="preserve">
+    <value>An element with the key '{0}' already exists in the {1}.</value>
+  </data>
+  <data name="RouteValueDictionary_DuplicatePropertyName" xml:space="preserve">
+    <value>The type '{0}' defines properties '{1}' and '{2}' which differ only by casing. This is not supported by {3} which uses case-insensitive comparisons.</value>
+  </data>
 </root>

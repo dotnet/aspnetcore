@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             public IReadOnlyList<RouteEndpoint> Endpoints { get; set; }
 
-            public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+            public override Task MatchAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

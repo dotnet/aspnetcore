@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -158,9 +158,8 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "netcoreapp2.2",
-                HostingModel =  HostingModel.InProcess,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2
+                TargetFramework = "netcoreapp3.0",
+                HostingModel =  HostingModel.InProcess
             };
 
             SetEnvironmentVariables(deploymentParameters, "Development");
@@ -212,7 +211,10 @@ namespace Microsoft.AspNetCore.Tests
             bool setTestEnvVars = false,
             string environment = "Development")
         {
-            var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64);
+            var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+            {
+                TargetFramework = "netcoreapp3.0",
+            };
 
             if (setTestEnvVars)
             {

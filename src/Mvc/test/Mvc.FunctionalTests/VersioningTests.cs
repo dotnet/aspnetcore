@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class VersioningTests : VersioningTestsBase<VersioningWebSite.StartupWith21Compat>
+    public class VersioningTests : VersioningTestsBase<VersioningWebSite.StartupWithoutEndpointRouting>
     {
-        public VersioningTests(MvcTestFixture<VersioningWebSite.StartupWith21Compat> fixture)
+        public VersioningTests(MvcTestFixture<VersioningWebSite.StartupWithoutEndpointRouting> fixture)
             : base(fixture)
         {
         }

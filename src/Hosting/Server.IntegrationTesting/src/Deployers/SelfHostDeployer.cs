@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -130,6 +130,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     RedirectStandardInput = true,
                     WorkingDirectory = workingDirectory
                 };
+
+                Logger.LogInformation($"Working directory {workingDirectory}");
+                Logger.LogInformation($"{Directory.Exists(workingDirectory)}");
+                Logger.LogInformation($"Filename {executableName}");
+                Logger.LogInformation($"{File.Exists(executableName)}");
+                Logger.LogInformation($"Arguments {executableArgs}");
 
                 AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 

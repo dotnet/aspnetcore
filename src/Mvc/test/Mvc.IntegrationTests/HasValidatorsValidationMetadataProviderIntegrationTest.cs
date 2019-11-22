@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging();
-            serviceCollection.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             serviceCollection.AddMvc();
             var services = serviceCollection.BuildServiceProvider();
 
@@ -37,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging();
-            serviceCollection.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             serviceCollection.AddMvc(mvcOptions =>
             {
                 mvcOptions.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IQueryable)));

@@ -1,2 +1,0 @@
-Transition span at (10:0,10 [1] ) (Accepts:None) - Parent: Statement block at (10:0,10 [11] )
-Code span at (11:0,11 [10] ) (Accepts:Any) - Parent: Statement block at (10:0,10 [11] )

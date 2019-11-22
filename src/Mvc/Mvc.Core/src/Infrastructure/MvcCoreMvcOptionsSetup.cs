@@ -8,7 +8,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -26,21 +25,33 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IOptions<JsonOptions> _jsonOptions;
 
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
-            : this(readerFactory, NullLoggerFactory.Instance)
+            : this(readerFactory, NullLoggerFactory.Instance, Options.Create(new JsonOptions()))
         {
         }
 
-        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory)
+        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory, IOptions<JsonOptions> jsonOptions)
         {
             if (readerFactory == null)
             {
                 throw new ArgumentNullException(nameof(readerFactory));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (jsonOptions == null)
+            {
+                throw new ArgumentNullException(nameof(jsonOptions));
+            }
+
             _readerFactory = readerFactory;
             _loggerFactory = loggerFactory;
+            _jsonOptions = jsonOptions;
         }
 
         public void Configure(MvcOptions options)
@@ -66,16 +77,26 @@ namespace Microsoft.AspNetCore.Mvc
             // Set up filters
             options.Filters.Add(new UnsupportedContentTypeFilter());
 
+            // Set up default input formatters.
+            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value, _loggerFactory.CreateLogger<SystemTextJsonInputFormatter>()));
+
+            // Media type formatter mappings for JSON
+            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValues.ApplicationJson);
+
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
+
+            var jsonOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(_jsonOptions.Value);
+            options.OutputFormatters.Add(jsonOutputFormatter);
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
             options.ValueProviderFactories.Add(new RouteValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
+            options.ValueProviderFactories.Add(new FormFileValueProviderFactory());
 
             // Set up metadata providers
             ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders);

@@ -3,44 +3,40 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class EventLogTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public EventLogTests(PublishedSitesFixture fixture)
+        public EventLogTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task CheckStartupEventLogMessage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' started the coreclr in-process successfully.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessStarted(deploymentResult), Logger);
         }
 
         [ConditionalFact]
         public async Task CheckShutdownEventLogMessage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' has shutdown.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' has shutdown.", Logger);
         }
     }
 }

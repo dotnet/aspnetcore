@@ -3,20 +3,19 @@
 
 #pragma once
 
-#include "BaseOutputManager.h"
+#include "NonCopyable.h"
+#include "StandardStreamRedirection.h"
 
 class LoggingHelpers
 {
 public:
 
-    static
-    HRESULT
-    CreateLoggingProvider(
-        bool fLoggingEnabled,
-        bool fEnableNativeLogging,
-        PCWSTR pwzStdOutFileName,
-        PCWSTR pwzApplicationPath,
-        std::unique_ptr<BaseOutputManager>& outputManager
+    static std::shared_ptr<RedirectionOutput>
+    CreateOutputs(
+        bool enableFileLogging,
+        std::wstring outputFileName,
+        std::wstring applicationPath,
+        std::shared_ptr<RedirectionOutput> stringStreamOutput
     );
 };
 

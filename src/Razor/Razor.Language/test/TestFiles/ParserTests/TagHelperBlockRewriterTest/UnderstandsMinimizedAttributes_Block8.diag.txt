@@ -1,2 +1,0 @@
-(1,10): Error RZ2008: Attribute 'int-prefix-' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Int32' cannot be empty or contain only whitespace.
-(1,10): Error RZ1029: The tag helper attribute 'int-prefix-' in element 'input' is missing a key. The syntax is '<input int-prefix-{ key }="value">'.

@@ -9,29 +9,25 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class MultiApplicationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
         private PublishedApplication _publishedApplication;
         private PublishedApplication _rootApplication;
 
-        public MultiApplicationTests(PublishedSitesFixture fixture)
+        public MultiApplicationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task RunsTwoOutOfProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
             var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
@@ -42,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task FailsAndLogsWhenRunningTwoInProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess, publish: true);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
 
             var result = await DeployAsync(parameters);
@@ -51,7 +47,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, "Only one inprocess application is allowed per IIS application pool");
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.35 - ANCM Multiple In-Process Applications in same Process", await result2.Content.ReadAsStringAsync());
+            }
+
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
         }
 
         [ConditionalTheory]
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(HostingModel.InProcess)]
         public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(firstApp, publish: true);
+            var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
 
@@ -72,7 +74,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.");
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.34 - ANCM Mixed Hosting Models Not Supported", await result2.Content.ReadAsStringAsync());
+            }
+
+            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
         }
 
         private void SetHostingModel(string directory, HostingModel model)
@@ -115,18 +123,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             siteElement.Add(newApplication);
 
             // IIS Express requires root application to exist
-            var rootApplicationDirectory = new DirectoryInfo(contentRoot + "rootApp");
-            rootApplicationDirectory.Create();
 
-            _rootApplication = new PublishedApplication(rootApplicationDirectory.FullName, Logger);
-            File.WriteAllText(GetWebConfigLocation(rootApplicationDirectory.FullName), "<configuration></configuration>");
-
-            var rootApplication = new XElement(application);
-            rootApplication.SetAttributeValue("path", "/");
-            rootApplication.RequiredElement("virtualDirectory")
-                .SetAttributeValue("physicalPath", rootApplicationDirectory.FullName);
-
-            siteElement.Add(rootApplication);
+            _rootApplication = new PublishedApplication(Helpers.CreateEmptyApplication(config, contentRoot), Logger);
         }
 
         private static string GetWebConfigLocation(string siteRoot)

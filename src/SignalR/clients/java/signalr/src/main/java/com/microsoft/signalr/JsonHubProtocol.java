@@ -37,7 +37,10 @@ class JsonHubProtocol implements HubProtocol {
 
     @Override
     public HubMessage[] parseMessages(String payload, InvocationBinder binder) {
-        if (payload != null && !payload.substring(payload.length() - 1).equals(RECORD_SEPARATOR)) {
+        if (payload.length() == 0) {
+            return new HubMessage[]{};
+        }
+        if (!(payload.substring(payload.length() - 1).equals(RECORD_SEPARATOR))) {
             throw new RuntimeException("Message is incomplete.");
         }
 
@@ -73,14 +76,12 @@ class JsonHubProtocol implements HubProtocol {
                             error = reader.nextString();
                             break;
                         case "result":
-                            if (invocationId == null) {
+                        case "item":
+                            if (invocationId == null || binder.getReturnType(invocationId) == null) {
                                 resultToken = jsonParser.parse(reader);
                             } else {
                                 result = gson.fromJson(reader, binder.getReturnType(invocationId));
                             }
-                            break;
-                        case "item":
-                            reader.skipValue();
                             break;
                         case "arguments":
                             if (target != null) {
@@ -142,12 +143,19 @@ class JsonHubProtocol implements HubProtocol {
                         break;
                     case COMPLETION:
                         if (resultToken != null) {
-                            result = gson.fromJson(resultToken, binder.getReturnType(invocationId));
+                            Class<?> returnType = binder.getReturnType(invocationId);
+                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
                         hubMessages.add(new CompletionMessage(invocationId, result, error));
                         break;
-                    case STREAM_INVOCATION:
                     case STREAM_ITEM:
+                        if (resultToken != null) {
+                            Class<?> returnType = binder.getReturnType(invocationId);
+                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
+                        }
+                        hubMessages.add(new StreamItem(invocationId, result));
+                        break;
+                    case STREAM_INVOCATION:
                     case CANCEL_INVOCATION:
                         throw new UnsupportedOperationException(String.format("The message type %s is not supported yet.", messageType));
                     case PING:

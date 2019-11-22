@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http
     /// <summary>
     /// Provides correct handling for FragmentString value when needed to generate a URI string
     /// </summary>
-    public struct FragmentString : IEquatable<FragmentString>
+    public readonly struct FragmentString : IEquatable<FragmentString>
     {
         /// <summary>
         /// Represents the empty fragment string. This field is read-only.

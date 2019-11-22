@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class ModelMetadataTest
     {
         // IsComplexType
-        private struct IsComplexTypeModel
+        private readonly struct IsComplexTypeModel
         {
         }
 

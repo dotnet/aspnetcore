@@ -1,1 +1,0 @@
-(1,10): Error RZ2008: Attribute 'int-prefix-value' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Int32' cannot be empty or contain only whitespace.

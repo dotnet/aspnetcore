@@ -10,20 +10,27 @@ Microsoft.AspNetCore.Mvc.FromBodyAttribute
 Microsoft.AspNetCore.Mvc.FromFormAttribute
 Microsoft.AspNetCore.Mvc.RequireHttpsAttribute
 Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyActivator\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Http\Routing\src\DataSourceDependentCache.cs" Link="Routing\DataSourceDependentCache.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,17 +44,15 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" />
+    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
   </ItemGroup>
 
 </Project>

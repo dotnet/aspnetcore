@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     try
                     {
                         await _application.ProcessRequestAsync(context).SupressContext();
-                        await featureContext.OnResponseStart();
+                        await featureContext.CompleteAsync();
                     }
                     finally
                     {
@@ -224,6 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     else
                     {
                         // We haven't sent a response yet, try to send a 500 Internal Server Error
+                        requestContext.Response.Headers.IsReadOnly = false;
                         requestContext.Response.Headers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }

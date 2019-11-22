@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
                     new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
@@ -88,7 +88,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
 
@@ -134,7 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
 
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
@@ -151,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var appRunningTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var exceptionSwallowedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate =
                     new MinDataRate(bytesPerSecond: 1, gracePeriod: gracePeriod);
@@ -208,7 +206,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello, world");
                 }
-                await server.StopAsync();
             }
         }
     }

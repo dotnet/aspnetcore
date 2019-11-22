@@ -30,12 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="type">The <see cref="Type"/> of filter to find.</param>
         public ServiceFilterAttribute(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            ServiceType = type;
+            ServiceType = type ?? throw new ArgumentNullException(nameof(type)); 
         }
 
         /// <inheritdoc />

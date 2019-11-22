@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class HubCallerClients : IHubCallerClients
+    internal class HubCallerClients : IHubCallerClients
     {
         private readonly string _connectionId;
         private readonly IHubClients _hubClients;

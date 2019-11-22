@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     /// Provides an implementation of <see cref="ISpaPrerendererBuilder"/> that can build
     /// an Angular application by invoking the Angular CLI.
     /// </summary>
+    [Obsolete("Prerendering is no longer supported out of box")]
     public class AngularCliBuilder : ISpaPrerendererBuilder
     {
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine

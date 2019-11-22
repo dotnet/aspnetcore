@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
 
-        public BasicTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public BasicTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson_WithNamesUnchanged()
         {
             // Arrange
-            var json = "{\"id\":9000,\"FullName\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"FullName\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};
@@ -280,14 +280,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
         public async Task JsonHelperWithSettings_RendersJson_WithSnakeCaseNames()
         {
             // Arrange
-            var json = "{\"id\":9000,\"full_name\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"full_name\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         public static IEnumerable<object[]> HtmlHelperLinkGenerationData
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ActionMethod_ReturningSequenceOfObjectsWrappedInActionResultOfT()
         {
             // Arrange
-            var url = "ActionResultOfT/GetProductsAsync";
+            var url = "ActionResultOfT/GetProducts";
 
             // Act
             var response = await Client.GetStringAsync(url);
@@ -481,12 +481,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = new[]
             {
                 "BasicWebSite",
+                "Microsoft.AspNetCore.Components.Server",
+                "Microsoft.AspNetCore.SpaServices",
+                "Microsoft.AspNetCore.SpaServices.Extensions",
                 "Microsoft.AspNetCore.Mvc.TagHelpers",
                 "Microsoft.AspNetCore.Mvc.Razor",
             };
 
             // Assert
-            Assert.Equal(expected, assemblyParts);
+            //
+            // We don't keep track the explicit list of assemblies that show up here
+            // because this can change as we work on the product. All we care about is
+            // that BasicWebSite is first, and that everything after it is a Microsoft.
+            Assert.True(assemblyParts.Count > 2);
+            Assert.Equal("BasicWebSite", assemblyParts[0]);
+            for (var i = 1; i < assemblyParts.Count; i++)
+            {
+                Assert.StartsWith("Microsoft.", assemblyParts[i]);
+            }
         }
 
         [Fact]

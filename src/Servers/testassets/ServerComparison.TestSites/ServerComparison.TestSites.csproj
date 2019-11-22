@@ -1,14 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
+  <Import Project="$(RepoRoot)src\Servers\IIS\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFrameworks Condition="">netcoreapp2.2;net461</TargetFrameworks>
-    <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Workaround missing entries in deps files. Still under investigation -->
+    <RuntimeHostConfigurationOption
+      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
+      Value="true" />
+
+    <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class WebSocketsTransport : ITransport
+    internal partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
         private readonly Func<Task<string>> _accessTokenProvider;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _accessTokenProvider = accessTokenProvider;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (url == null)
             {
@@ -119,7 +119,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
-            await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+            try
+            {
+                await _webSocket.ConnectAsync(resolvedUrl, cancellationToken);
+            }
+            catch
+            {
+                _webSocket.Dispose();
+                throw;
+            }
 
             Log.StartedTransport(_logger);
 
@@ -196,7 +204,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
+                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -212,17 +221,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#else
+#elif NETSTANDARD2_0
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+#else
+#error TFMs need to be updated
 #endif
-                    // Need to check again for NetCoreApp2.2 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
@@ -258,10 +269,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!_aborted)
                 {
                     _application.Output.Complete(ex);
-
-                    // We re-throw here so we can communicate that there was an error when sending
-                    // the close frame
-                    throw;
                 }
             }
             finally
@@ -336,8 +343,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (WebSocketCanSend(socket))
                 {
-                    // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    try
+                    {
+                        // We're done sending, send the close frame to the client if the websocket is still open
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.ClosingWebSocketFailed(_logger, ex);
+                    }
                 }
 
                 _application.Input.Complete();

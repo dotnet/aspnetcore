@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
             Assert.Single(section.Headers);
-            Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
+            Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFD\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
             Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));

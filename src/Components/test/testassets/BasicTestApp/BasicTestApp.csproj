@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+
+    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
+    <!-- Must be defined before ReferenceFromSource.props is imported -->
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+
+    <!-- Resx generation on Resources.resx only -->
+    <GenerateResxSource>false</GenerateResxSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+</Project>

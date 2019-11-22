@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 {
-    public readonly struct RedisInvocation
+    internal readonly struct RedisInvocation
     {
         /// <summary>
         /// Gets a list of connections that should be excluded from this invocation.

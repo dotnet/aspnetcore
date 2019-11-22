@@ -1,1 +1,0 @@
-(1,5): Error RZ2010: The <br> tag is not allowed by parent <p> tag helper. Only child tags with name(s) 'strong' are allowed.

@@ -17,6 +17,7 @@ module.exports = function (modulePath, browserBaseName, options) {
             process: false,
             Buffer: false,
         },
+        target: options.target,
         resolveLoader: {
             // Special resolution rules for loaders (which are in the 'common' directory)
             modules: [ path.resolve(__dirname, "common", "node_modules") ],
@@ -46,7 +47,7 @@ module.exports = function (modulePath, browserBaseName, options) {
         },
         output: {
             filename: `${browserBaseName}.js`,
-            path: path.resolve(modulePath, "dist", "browser"),
+            path: path.resolve(modulePath, "dist", options.platformDist || "browser"),
             library: {
                 root: pkg.umd_name.split("."),
                 amd: pkg.umd_name,

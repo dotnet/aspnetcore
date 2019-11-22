@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <UserSecretsId>aspnet-Identity.DefaultUI.WebSite-80C658D8-CED7-467F-9B47-75DA3BC1A16D</UserSecretsId>
+    <IdentityDefaultUIFramework>Bootstrap3</IdentityDefaultUIFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Google" />
@@ -25,9 +27,9 @@
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Rewrite" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
@@ -36,9 +38,28 @@
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+    <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
+      <_Parameter1>$(IdentityDefaultUIFramework)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
+  <Target Name="_SetBootstrapFrameworkVersion">
+    <ItemGroup>
+      <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
+        <AdditionalProperties>IdentityDefaultUIFramework=$(IdentityDefaultUIFramework)</AdditionalProperties>
+      </_StaticWebAssetsProjectReference>
+    </ItemGroup>
+  </Target>
 </Project>

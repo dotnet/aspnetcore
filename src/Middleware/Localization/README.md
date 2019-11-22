@@ -1,6 +1,8 @@
 Localization
 ============
 
+Localization abstractions and implementations for ASP.NET Core applications.
+
 ### Localization Samples
 
 Here are a few samples that demonstrate different localization features including: localized views, localized strings in data annotations, creating custom localization resources ... etc.

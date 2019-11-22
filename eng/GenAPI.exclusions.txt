@@ -1,0 +1,12 @@
+# Manually implemented - https://github.com/dotnet/arcade/pull/2033
+T:Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
+# Manually implemented - https://github.com/dotnet/arcade/issues/2066
+T:Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel
+T:Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel
+# Manually implemented - Need to include internal setter
+T:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider
+F:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.{Cache}k__BackingField
+M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.#ctor
+P:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.Cache
+M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.get_Cache
+M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.set_Cache(Microsoft.Extensions.Caching.Memory.IMemoryCache)

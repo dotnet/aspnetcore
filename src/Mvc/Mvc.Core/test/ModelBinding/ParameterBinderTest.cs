@@ -12,8 +12,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
@@ -29,10 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ParameterBinderTest
     {
-        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(new MvcOptions
-        {
-            AllowValidatingTopLevelNodes = true,
-        });
+        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(new MvcOptions());
 
         public static TheoryData BindModelAsyncData
         {
@@ -42,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var bindingInfoWithName = new BindingInfo
                 {
                     BinderModelName = "bindingInfoName",
-                    BinderType = typeof(Person),
+                    BinderType = typeof(SimpleTypeModelBinder),
                 };
 
                 // parameterBindingInfo, metadataBinderModelName, parameterName, expectedBinderModelName
@@ -59,128 +55,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     { bindingInfoWithName, "modelBinderName", "parameterName", "bindingInfoName" },
                 };
             }
-        }
-
-        [Theory]
-        [MemberData(nameof(BindModelAsyncData))]
-        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixDoesNotMatch(
-            BindingInfo parameterBindingInfo,
-            string metadataBinderModelName,
-            string parameterName,
-            string expectedModelName)
-        {
-            // Arrange
-            var binderExecuted = false;
-            var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<Person>().BindingDetails(binding =>
-            {
-                binding.BinderModelName = metadataBinderModelName;
-            });
-
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
-            var modelBinder = new Mock<IModelBinder>();
-            modelBinder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Callback((ModelBindingContext context) =>
-                {
-                    Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
-                })
-                .Returns(Task.CompletedTask);
-
-            var parameterDescriptor = new ParameterDescriptor
-            {
-                BindingInfo = parameterBindingInfo,
-                Name = parameterName,
-                ParameterType = typeof(Person),
-            };
-
-            var factory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
-            factory
-                .Setup(f => f.CreateBinder(It.IsAny<ModelBinderFactoryContext>()))
-                .Callback((ModelBinderFactoryContext context) =>
-                {
-                    binderExecuted = true;
-                    // Confirm expected data is passed through to ModelBindingFactory.
-                    Assert.Same(parameterDescriptor.BindingInfo, context.BindingInfo);
-                    Assert.Same(parameterDescriptor, context.CacheToken);
-                    Assert.Equal(metadata, context.Metadata);
-                })
-                .Returns(modelBinder.Object);
-
-            var parameterBinder = new ParameterBinder(
-                metadataProvider,
-                factory.Object,
-                Mock.Of<IObjectModelValidator>(),
-                _optionsAccessor,
-                NullLoggerFactory.Instance);
-
-            var controllerContext = GetControllerContext();
-
-            // Act & Assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            await parameterBinder.BindModelAsync(controllerContext, new SimpleValueProvider(), parameterDescriptor);
-#pragma warning restore CS0618 // Type or member is obsolete
-            Assert.True(binderExecuted);
-
-        }
-
-        [Fact]
-        public async Task ObsoleteBindModelAsync_PassesExpectedBindingInfoAndMetadata_IfPrefixMatches()
-        {
-            // Arrange
-            var expectedModelName = "expectedName";
-            var binderExecuted = false;
-
-            var metadataProvider = new TestModelMetadataProvider();
-            var metadata = metadataProvider.GetMetadataForType(typeof(Person));
-            var modelBinder = new Mock<IModelBinder>();
-            modelBinder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Callback((ModelBindingContext context) =>
-                {
-                    Assert.Equal(expectedModelName, context.ModelName, StringComparer.Ordinal);
-                })
-                .Returns(Task.CompletedTask);
-
-            var parameterDescriptor = new ParameterDescriptor
-            {
-                Name = expectedModelName,
-                ParameterType = typeof(Person),
-            };
-
-            var factory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
-            factory
-                .Setup(f => f.CreateBinder(It.IsAny<ModelBinderFactoryContext>()))
-                .Callback((ModelBinderFactoryContext context) =>
-                {
-                    binderExecuted = true;
-                    // Confirm expected data is passed through to ModelBindingFactory.
-                    Assert.Null(context.BindingInfo);
-                    Assert.Same(parameterDescriptor, context.CacheToken);
-                    Assert.Equal(metadata, context.Metadata);
-                })
-                .Returns(modelBinder.Object);
-
-            var argumentBinder = new ParameterBinder(
-                metadataProvider,
-                factory.Object,
-                Mock.Of<IObjectModelValidator>(),
-                _optionsAccessor,
-                NullLoggerFactory.Instance);
-
-            var valueProvider = new SimpleValueProvider
-            {
-                { expectedModelName, new object() },
-            };
-            var valueProviderFactory = new SimpleValueProviderFactory(valueProvider);
-
-            var controllerContext = GetControllerContext();
-
-            // Act & Assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            await argumentBinder.BindModelAsync(controllerContext, valueProvider, parameterDescriptor);
-#pragma warning restore CS0618 // Type or member is obsolete
-            Assert.True(binderExecuted);
         }
 
         [Fact]
@@ -211,37 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(
                 new DefaultModelBindingMessageProvider().MissingBindRequiredValueAccessor("myParam"),
                 actionContext.ModelState.Single().Value.Errors.Single().ErrorMessage);
-        }
-
-        [Fact]
-        public async Task BindModelAsync_DoesNotEnforceTopLevelBindRequired_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var actionContext = GetControllerContext();
-
-            var mockModelMetadata = CreateMockModelMetadata();
-            mockModelMetadata.Setup(o => o.IsBindingRequired).Returns(true);
-
-            // Bind attribute errors are phrased in terms of the model name, not display name
-            mockModelMetadata.Setup(o => o.DisplayName).Returns("Ignored Display Name");
-
-            // Do not set AllowValidatingTopLevelNodes.
-            var optionsAccessor = Options.Create(new MvcOptions());
-            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, optionsAccessor: optionsAccessor);
-            var modelBindingResult = ModelBindingResult.Failed();
-
-            // Act
-            var result = await parameterBinder.BindModelAsync(
-                actionContext,
-                CreateMockModelBinder(modelBindingResult),
-                CreateMockValueProvider(),
-                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
-                mockModelMetadata.Object,
-                "ignoredvalue");
-
-            // Assert
-            Assert.True(actionContext.ModelState.IsValid);
-            Assert.Empty(actionContext.ModelState);
         }
 
         [Fact]
@@ -280,43 +123,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(
                 new RequiredAttribute().FormatErrorMessage("My Display Name"),
                 actionContext.ModelState.Single().Value.Errors.Single().ErrorMessage);
-        }
-
-        [Fact]
-        public async Task BindModelAsync_DoesNotEnforceTopLevelRequired_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var actionContext = GetControllerContext();
-            var mockModelMetadata = CreateMockModelMetadata();
-            mockModelMetadata.Setup(o => o.IsRequired).Returns(true);
-            mockModelMetadata.Setup(o => o.DisplayName).Returns("My Display Name");
-            mockModelMetadata.Setup(o => o.ValidatorMetadata).Returns(new[]
-            {
-                new RequiredAttribute()
-            });
-
-            var validator = new DataAnnotationsModelValidator(
-                new ValidationAttributeAdapterProvider(),
-                new RequiredAttribute(),
-                stringLocalizer: null);
-
-            // Do not set AllowValidatingTopLevelNodes.
-            var optionsAccessor = Options.Create(new MvcOptions());
-            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator, optionsAccessor);
-            var modelBindingResult = ModelBindingResult.Success(null);
-
-            // Act
-            var result = await parameterBinder.BindModelAsync(
-                actionContext,
-                CreateMockModelBinder(modelBindingResult),
-                CreateMockValueProvider(),
-                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
-                mockModelMetadata.Object,
-                "ignoredvalue");
-
-            // Assert
-            Assert.True(actionContext.ModelState.IsValid);
-            Assert.Empty(actionContext.ModelState);
         }
 
         public static TheoryData<RequiredAttribute, ParameterDescriptor, ModelMetadata> EnforcesTopLevelRequiredDataSet
@@ -403,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelBindingResult = ModelBindingResult.Success(null);
 
             // Act
-            var result = await parameterBinder.BindModelAsync(
+            await parameterBinder.BindModelAsync(
                 actionContext,
                 CreateMockModelBinder(modelBindingResult),
                 CreateMockValueProvider(),
@@ -991,12 +797,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(modelMetadata);
 
             var mockModelBinderFactory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
-#pragma warning disable CS0618 // Type or member is obsolete
             return new ParameterBinder(
                 mockModelMetadataProvider.Object,
                 mockModelBinderFactory.Object,
-                validator);
-#pragma warning restore CS0618 // Type or member is obsolete
+                validator,
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
         }
 
         private static IValueProvider CreateMockValueProvider()

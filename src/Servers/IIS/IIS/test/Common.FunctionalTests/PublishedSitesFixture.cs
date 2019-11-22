@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     /// <summary>
     /// This type just maps collection names to available fixtures
@@ -19,46 +19,45 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
     public class PublishedSitesFixture : IDisposable
     {
-        public CachingApplicationPublisher InProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetInProcessTestSitesPath());
-        public CachingApplicationPublisher OutOfProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
+        public PublishedApplicationPublisher InProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName());
+        public PublishedApplicationPublisher OutOfProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName());
 
         public void Dispose()
         {
-            InProcessTestSite.Dispose();
-            OutOfProcessTestSite.Dispose();
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess)
         {
             var publisher = hostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
-            return GetBaseDeploymentParameters(publisher, hostingModel, publish);
-        }
-        public IISDeploymentParameters GetBaseDeploymentParameters(TestVariant variant, bool publish = false)
-        {
-            var publisher = variant.HostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
-            return GetBaseDeploymentParameters(publisher, new DeploymentParameters(variant), publish);
+            return GetBaseDeploymentParameters(publisher, hostingModel);
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(TestVariant variant)
+        {
+            var publisher = variant.HostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
+            return GetBaseDeploymentParameters(publisher, new DeploymentParameters(variant));
+        }
+
+        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, HostingModel hostingModel = HostingModel.InProcess)
         {
             return GetBaseDeploymentParameters(
                 publisher,
-                new DeploymentParameters(publisher.ApplicationPath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                new DeploymentParameters()
                 {
+                    ServerType = DeployerSelector.ServerType,
+                    RuntimeFlavor = RuntimeFlavor.CoreClr,
+                    RuntimeArchitecture = RuntimeArchitecture.x64,
                     HostingModel = hostingModel,
-                    TargetFramework = "netcoreapp2.2",
-                    AncmVersion = AncmVersion.AspNetCoreModuleV2
-                },
-                publish);
+                    TargetFramework = Tfm.NetCoreApp30
+                });
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, DeploymentParameters baseParameters, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, DeploymentParameters baseParameters)
         {
             return new IISDeploymentParameters(baseParameters)
             {
                 ApplicationPublisher = publisher,
-                ApplicationPath =  publisher.ApplicationPath,
-                PublishApplicationBeforeDeployment = publish
+                PublishApplicationBeforeDeployment = true
             };
         }
     }

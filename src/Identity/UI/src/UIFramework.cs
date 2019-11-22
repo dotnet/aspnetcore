@@ -1,21 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Identity.UI
 {
-    /// <summary>
-    /// The list of supported presentation frameworks for the default UI
-    /// </summary>
-    public enum UIFramework
+    internal enum UIFramework
     {
-        /// <summary>
-        /// Bootstrap 3
-        /// </summary>
-        Bootstrap3 = 0,
-
-        /// <summary>
-        /// Bootstrap 4
-        /// </summary>
-        Bootstrap4 = 1
+        // The default framework for a given release must be 0.
+        // So this needs to be updated in the future if we include more frameworks.
+        Bootstrap4 = 0,
+        Bootstrap3 = 1,
     }
 }

@@ -11,29 +11,21 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public static class Helpers
     {
-        private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(10);
         private static readonly int RetryRequestCount = 10;
 
-        public static string GetTestWebSitePath(string name)
+        public static string GetInProcessTestSitesName()
         {
-            return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"IIS", "test", "testassets", name);
+            return DeployerSelector.IsNewShimTest ? "InProcessNewShimWebSite" : "InProcessWebSite";
         }
-
-        public static string GetInProcessTestSitesPath()
-        {
-            return DeployerSelector.IsForwardsCompatibilityTest ? GetTestWebSitePath("InProcessForwardsCompatWebSite") : GetTestWebSitePath("InProcessWebSite");
-        }
-
-        public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
 
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
@@ -112,12 +104,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static async Task<HttpResponseMessage> RetryRequestAsync(this HttpClient client, string uri, Func<HttpResponseMessage, Task<bool>> predicate)
         {
             HttpResponseMessage response = await client.GetAsync(uri);
-
+            var delay = RetryRequestDelay;
             for (var i = 0; i < RetryRequestCount && !await predicate(response); i++)
             {
                 // Keep retrying until app_offline is present.
                 response = await client.GetAsync(uri);
-                await Task.Delay(RetryRequestDelay);
+                await Task.Delay(delay);
+                // This will max out at a 5 second delay
+                delay *= 2;
             }
 
             if (!await predicate(response))
@@ -126,6 +120,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             return response;
+        }
+
+        public static Task Retry(Func<Task> func, TimeSpan maxTime)
+        {
+            return Retry(func, (int)(maxTime.TotalMilliseconds / 200), 200);
         }
 
         public static async Task Retry(Func<Task> func, int attempts, int msDelay)
@@ -236,6 +235,31 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 throw ex;
             }
+        }
+
+        public static string CreateEmptyApplication(XElement config, string contentRoot)
+        {
+            var siteElement = config
+                .RequiredElement("system.applicationHost")
+                .RequiredElement("sites")
+                .RequiredElement("site");
+
+            var application = siteElement
+                .RequiredElement("application");
+
+            var rootApplicationDirectory = new DirectoryInfo(contentRoot + "rootApp");
+            rootApplicationDirectory.Create();
+
+            File.WriteAllText(Path.Combine(rootApplicationDirectory.FullName, "web.config"), "<configuration></configuration>");
+
+            var rootApplication = new XElement(application);
+            rootApplication.SetAttributeValue("path", "/");
+            rootApplication.RequiredElement("virtualDirectory")
+                .SetAttributeValue("physicalPath", rootApplicationDirectory.FullName);
+
+            siteElement.Add(rootApplication);
+
+            return rootApplicationDirectory.FullName;
         }
     }
 }

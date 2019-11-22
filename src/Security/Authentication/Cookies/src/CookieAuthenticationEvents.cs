@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers["Location"] = context.RedirectUri;
+                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
                 context.Response.StatusCode = 401;
             }
             else
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers["Location"] = context.RedirectUri;
+                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
                 context.Response.StatusCode = 403;
             }
             else
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers["Location"] = context.RedirectUri;
+                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
             }
             else
             {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             if (IsAjaxRequest(context.Request))
             {
-                context.Response.Headers["Location"] = context.RedirectUri;
+                context.Response.Headers[HeaderNames.Location] = context.RedirectUri;
             }
             else
             {

@@ -23,32 +23,35 @@
     <ProjectGuid>{55494E58-E061-4C4C-A0A8-837008E72F85}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>NewCommon</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <VCToolsVersion />
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -72,20 +75,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\AspNetCoreModule\src\IISLib;$(IncludePath)</IncludePath>
-    <OutDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -198,8 +196,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorContext.h" />
+    <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="application.h" />
-    <ClInclude Include="baseoutputmanager.h" />
+    <ClInclude Include="BindingInformation.h" />
     <ClInclude Include="ConfigurationSection.h" />
     <ClInclude Include="ConfigurationSource.h" />
     <ClInclude Include="config_utility.h" />
@@ -208,25 +208,25 @@
     <ClInclude Include="EventTracing.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="file_utility.h" />
-    <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="HandleWrapper.h" />
-    <ClInclude Include="hostfxroptions.h" />
-    <ClInclude Include="hostfxr_utility.h" />
+    <ClInclude Include="HostFxr.h" />
+    <ClInclude Include="HostFxrResolutionResult.h" />
+    <ClInclude Include="HostFxrResolver.h" />
     <ClInclude Include="iapplication.h" />
     <ClInclude Include="debugutil.h" />
     <ClInclude Include="InvalidOperationException.h" />
-    <ClInclude Include="IOutputManager.h" />
+    <ClInclude Include="RedirectionOutput.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
-    <ClInclude Include="NullOutputManager.h" />
-    <ClInclude Include="PipeOutputManager.h" />
+    <ClInclude Include="ServerErrorApplication.h" />
+    <ClInclude Include="StandardStreamRedirection.h" />
+    <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
-    <ClInclude Include="ServerErrorApplication.h" />
     <ClInclude Include="ServerErrorHandler.h" />
     <ClInclude Include="SRWExclusiveLock.h" />
     <ClInclude Include="SRWSharedLock.h" />
@@ -244,14 +244,16 @@
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="EventLog.cpp" />
     <ClCompile Include="file_utility.cpp" />
-    <ClCompile Include="FileOutputManager.cpp" />
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
-    <ClCompile Include="HandleWrapper.cpp" />
-    <ClCompile Include="hostfxr_utility.cpp" />
-    <ClCompile Include="hostfxroptions.cpp" />
+    <ClCompile Include="HostFxr.cpp" />
+    <ClCompile Include="HostFxrResolver.cpp" />
+    <ClCompile Include="HostFxrResolutionResult.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
-    <ClCompile Include="PipeOutputManager.cpp" />
+    <ClCompile Include="PollingAppOfflineApplication.cpp" />
+    <ClCompile Include="StandardStreamRedirection.cpp" />
+    <ClCompile Include="RedirectionOutput.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="StdWrapper.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />
     <ClCompile Include="SRWSharedLock.cpp" />
@@ -271,23 +273,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="aspnetcore_msg.mc">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mc %(FullPath)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling Event Messages ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mc %(FullPath)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling Event Messages ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">mc %(FullPath)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling Event Messages ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mc %(FullPath)</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling Event Messages ...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
-    </CustomBuild>
+    <MessageFile Include="aspnetcore_msg.mc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\build\native.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

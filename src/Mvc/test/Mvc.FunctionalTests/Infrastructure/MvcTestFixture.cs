@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -37,6 +38,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 CultureInfo.CurrentCulture = new CultureInfo("en-GB");
                 CultureInfo.CurrentUICulture = new CultureInfo("en-US");
                 return base.CreateServer(builder);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUICulture;
+            }
+        }
+
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUICulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("en-GB");
+                CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+                return base.CreateHost(builder);
             }
             finally
             {

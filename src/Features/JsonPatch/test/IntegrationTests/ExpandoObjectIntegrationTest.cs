@@ -160,6 +160,25 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
         }
 
         [Fact]
+        public void CopyNullStringProperty_ToAnotherStringProperty()
+        {
+            // Arrange
+            dynamic targetObject = new ExpandoObject();
+
+            targetObject.StringProperty = null;
+            targetObject.AnotherStringProperty = "B";
+
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Copy("StringProperty", "AnotherStringProperty");
+
+            // Act
+            patchDocument.ApplyTo(targetObject);
+
+            // Assert
+            Assert.Null(targetObject.AnotherStringProperty);
+        }
+
+        [Fact]
         public void MoveIntegerValue_ToAnotherIntegerProperty()
         {
             // Arrange

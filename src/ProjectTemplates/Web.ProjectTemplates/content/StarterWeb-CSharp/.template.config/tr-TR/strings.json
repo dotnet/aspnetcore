@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Web Uygulaması (Model-View-Controller)",
+    "description": "Örnek ASP.NET Core MVC Görünümleri ve Denetleyicileri içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda RESTful HTTP hizmetleri için de kullanılabilir."
+  }
+}

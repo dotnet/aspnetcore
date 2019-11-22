@@ -10,6 +10,7 @@
 #include "resources.h"
 #include "exceptions.h"
 #include "EventLog.h"
+#include "RegistryKey.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
@@ -88,9 +89,6 @@ HRESULT
 
 --*/
 {
-    HKEY                                hKey {};
-    BOOL                                fDisableANCM = FALSE;
-
     UNREFERENCED_PARAMETER(dwServerVersion);
 
     if (pHttpServer->IsCommandLineLaunch())
@@ -102,38 +100,11 @@ HRESULT
         g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
     }
 
-    // check whether the feature is disabled due to security reason
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
-        0,
-        KEY_READ,
-        &hKey) == NO_ERROR)
+    auto fDisableModule = RegistryKey::TryGetDWORD(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters", L"DisableANCM");
+
+    if (fDisableModule.has_value() && fDisableModule.value() != 0)
     {
-        DWORD dwType = 0;
-        DWORD dwData = 0;
-        DWORD cbData;
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"DisableANCM",
-            nullptr,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            fDisableANCM = (dwData != 0);
-        }
-
-        RegCloseKey(hKey);
-    }
-
-    if (fDisableANCM)
-    {
-        // Logging
-        EventLog::Warn(
-            ASPNETCORE_EVENT_MODULE_DISABLED,
-            ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
+        EventLog::Warn(ASPNETCORE_EVENT_MODULE_DISABLED, ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
         // this will return 500 error to client
         // as we did not register the module
         return S_OK;

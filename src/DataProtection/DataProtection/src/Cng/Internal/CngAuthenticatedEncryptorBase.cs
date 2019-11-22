@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
     /// <summary>
     /// Base class used for all CNG-related authentication encryption operations.
     /// </summary>
-    public unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
+    internal unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
     {
         public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
         {

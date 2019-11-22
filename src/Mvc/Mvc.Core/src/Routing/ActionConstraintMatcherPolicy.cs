@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 
@@ -51,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 if (action?.ActionConstraints?.Count > 0 && HasSignificantActionConstraint(action))
                 {
                     // We need to check for some specific action constraint implementations.
-                    // We've implemented consumes, and HTTP method support inside endpoint routing, so 
+                    // We've implemented consumes, and HTTP method support inside endpoint routing, so
                     // we don't need to run an 'action constraint phase' if those are the only constraints.
                     return true;
                 }
@@ -65,10 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     var actionConstraint = a.ActionConstraints[i];
                     if (actionConstraint.GetType() == typeof(HttpMethodActionConstraint))
-                    {
-                        // This one is OK, we implement this in endpoint routing.
-                    }
-                    else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.Internal.CorsHttpMethodActionConstraint")
                     {
                         // This one is OK, we implement this in endpoint routing.
                     }
@@ -86,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidateSet)
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidateSet)
         {
             var finalMatches = EvaluateActionConstraints(httpContext, candidateSet);
 

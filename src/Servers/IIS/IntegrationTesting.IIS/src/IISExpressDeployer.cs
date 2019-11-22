@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // Start timer
                 StartTimer();
 
-                // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/net461/
+                // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreapp3.0/
                 // and contentRoot points to the project directory so you get things like static assets.
                 // For a published app both point to the publish directory.
                 var dllRoot = CheckIfPublishIsRequired();
@@ -93,10 +94,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 RunWebConfigActions(contentRoot);
 
-                var testUri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
 
                 // Launch the host process.
-                var (actualUri, hostExitToken) = await StartIISExpressAsync(testUri, contentRoot);
+                var (actualUri, hostExitToken) = await StartIISExpressAsync(contentRoot);
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUri);
 
@@ -114,27 +114,30 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private string CheckIfPublishIsRequired()
         {
+            string dllRoot = null;
             var targetFramework = DeploymentParameters.TargetFramework;
-
-            // IISIntegration uses this layout
-            var dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
-                DeploymentParameters.Configuration, targetFramework);
-
-            if (!Directory.Exists(dllRoot))
+            if (!string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
             {
-                // Most repos use this layout
-                dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
+                // IISIntegration uses this layout
+                dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
+                    DeploymentParameters.Configuration, targetFramework);
 
                 if (!Directory.Exists(dllRoot))
                 {
-                    // The bits we need weren't pre-compiled, compile on publish
-                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
-                }
-                else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr
-                    && DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
-                {
-                    // x64 is the default. Publish to rebuild for the right bitness
-                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    // Most repos use this layout
+                    dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
+
+                    if (!Directory.Exists(dllRoot))
+                    {
+                        // The bits we need weren't pre-compiled, compile on publish
+                        DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    }
+                    else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr
+                             && DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
+                    {
+                        // x64 is the default. Publish to rebuild for the right bitness
+                        DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    }
                 }
             }
 
@@ -148,27 +151,28 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             return dllRoot;
         }
 
-        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(Uri uri, string contentRoot)
+        private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(string contentRoot)
         {
             using (Logger.BeginScope("StartIISExpress"))
             {
-                var port = uri.Port;
-                if (port == 0)
-                {
-                    port = (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
-                }
-
-                Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
-                PrepareConfig(contentRoot, port);
-
-                var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
-                                string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
-                                string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
-
                 var iisExpressPath = GetIISExpressPath();
 
                 for (var attempt = 0; attempt < MaximumAttempts; attempt++)
                 {
+                    var uri = TestUriHelper.BuildTestUri(ServerType.IISExpress, DeploymentParameters.ApplicationBaseUriHint);
+                    var port = uri.Port;
+                    if (port == 0)
+                    {
+                        port = (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
+                    }
+
+                    Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
+                    PrepareConfig(contentRoot, port);
+
+                    var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
+                                    string.Format("/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
+                                    string.Format("/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
+
                     Logger.LogInformation("Executing command : {iisExpress} {parameters}", iisExpressPath, parameters);
 
                     var startInfo = new ProcessStartInfo
@@ -270,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void PrepareConfig(string contentRoot, int port)
         {
-            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;;
+            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;
             // Config is required. If not present then fall back to one we carry with us.
             if (string.IsNullOrEmpty(serverConfig))
             {
@@ -289,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .RequiredElement("location")
                 .RequiredElement("system.webServer")
                 .RequiredElement("modules")
-                .GetOrAdd("add", "name", DeploymentParameters.AncmVersion.ToString());
+                .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName);
 
             ConfigureModuleAndBinding(config.Root, contentRoot, port);
 
@@ -329,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             aspNetCoreHandler.SetAttributeValue("path", "*");
             aspNetCoreHandler.SetAttributeValue("verb", "*");
-            aspNetCoreHandler.SetAttributeValue("modules", DeploymentParameters.AncmVersion.ToString());
+            aspNetCoreHandler.SetAttributeValue("modules", AspNetCoreModuleV2ModuleName);
             aspNetCoreHandler.SetAttributeValue("resourceType", "Unspecified");
             // Make aspNetCore handler first
             aspNetCoreHandler.Remove();
@@ -347,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 yield return WebConfigHelpers.AddOrModifyHandlerSection(
                     key: "modules",
-                    value: DeploymentParameters.AncmVersion.ToString());
+                    value: AspNetCoreModuleV2ModuleName);
 
                 // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
                 // Only do it for scenarios that rely on dotnet.exe (Core, portable, etc.).
@@ -443,28 +447,77 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private class WindowsNativeMethods
         {
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+            internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
             [DllImport("user32.dll")]
             internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
             [DllImport("user32.dll")]
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+            [DllImport("user32.dll")]
+            internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
         }
 
-        private static void SendStopMessageToProcess(int pid)
+        private void SendStopMessageToProcess(int pid)
         {
-            for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
+            var found = false;
+            var extraLogging = false;
+            var retryCount = 5;
+
+            while (!found && retryCount > 0)
             {
-                uint num;
-                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out num);
-                if (pid == num)
+                Logger.LogInformation($"Sending shutdown request to {pid}");
+
+                WindowsNativeMethods.EnumWindows((ptr, param) => {
+                    WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
+                    if (extraLogging)
+                    {
+                        Logger.LogDebug($"EnumWindow returned {ptr} belonging to {windowProcessId}");
+                    }
+
+                    if (pid == windowProcessId)
+                    {
+                        // 256 is the max length
+                        var className = new StringBuilder(256);
+
+                        if (WindowsNativeMethods.GetClassName(ptr, className, className.Capacity) == 0)
+                        {
+                            throw new InvalidOperationException($"Unable to get window class name: {Marshal.GetLastWin32Error()}");
+                        }
+
+                        if (!string.Equals(className.ToString(), "IISEXPRESS", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Logger.LogDebug($"Skipping window {ptr} with class name {className}");
+                            // skip windows without IISEXPRESS class
+                            return true;
+                        }
+
+                        var hWnd = new HandleRef(null, ptr);
+                        if (!WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero))
+                        {
+                            throw new InvalidOperationException($"Unable to PostMessage to process {pid}. LastError: {Marshal.GetLastWin32Error()}");
+                        }
+
+                        found = true;
+                        return false;
+                    }
+
+                    return true;
+                }, IntPtr.Zero);
+
+                if (!found)
                 {
-                    var hWnd = new HandleRef(null, ptr);
-                    WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero);
-                    return;
+                    Thread.Sleep(100);
                 }
+
+                // Add extra logging if first try was unsuccessful
+                extraLogging = true;
+                retryCount--;
+            }
+
+            if (!found)
+            {
+                throw new InvalidOperationException($"Unable to find main window for process {pid}");
             }
         }
 
@@ -486,6 +539,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 if (hostProcess.ExitCode != 0)
                 {
                     Logger.LogWarning($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}");
+                    throw new InvalidOperationException($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}.");
                 }
             }
             else

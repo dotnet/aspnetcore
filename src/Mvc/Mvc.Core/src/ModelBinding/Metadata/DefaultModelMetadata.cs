@@ -466,7 +466,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             if (defaultModelMetadata.ValidationMetadata.HasValidators != false)
             {
-                // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null). 
+                // Either the ModelMetadata instance has some validators (HasValidators = true) or it is non-deterministic (HasValidators = null).
                 // In either case, assume it has validators.
                 return true;
             }

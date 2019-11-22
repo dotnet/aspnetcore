@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -236,7 +236,14 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<IValidationKeysStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
-                return new DefaultValidationKeysStore(new[] { options.Value.SigningCredential.Key });
+                return new DefaultValidationKeysStore(new[]
+                {
+                    new SecurityKeyInfo
+                    {
+                        Key = options.Value.SigningCredential.Key,
+                        SigningAlgorithm = options.Value.SigningCredential.Algorithm
+                    }
+                });
             });
 
             return builder;

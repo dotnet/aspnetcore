@@ -1,3 +1,0 @@
-(1,2): Error RZ1035: Missing close angle for tag helper 'p'.
-(1,2): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.
-(1,4): Error RZ2008: Attribute 'bound-int' on tag helper element 'p' requires a value. Tag helper bound attributes of type 'System.Int32' cannot be empty or contain only whitespace.

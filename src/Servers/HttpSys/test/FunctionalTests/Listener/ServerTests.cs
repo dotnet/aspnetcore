@@ -9,7 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
+            var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -36,11 +36,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                     var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-                    ct.Register(() => canceled.Set());
-                    Assert.True(ct.WaitHandle.WaitOne(interval));
+                    ct.Register(() => canceled.SetResult(0));
+                    await canceled.Task.TimeoutAfter(interval);
                     Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-                    Assert.True(canceled.WaitOne(interval), "canceled");
 
                     context.Dispose();
                 }
@@ -51,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         public async Task Server_TokenRegisteredAfterResponseSent_Success()
         {
             var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
+            var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -69,11 +67,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                     var ct = context.DisconnectToken;
                     Assert.False(ct.CanBeCanceled, "CanBeCanceled");
-                    ct.Register(() => canceled.Set());
-                    Assert.False(ct.WaitHandle.WaitOne(interval));
+                    ct.Register(() => canceled.SetResult(0));
                     Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
 
-                    Assert.False(canceled.WaitOne(interval), "canceled");
+                    Assert.False(canceled.Task.IsCompleted, "canceled");
                 }
             }
         }
@@ -82,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
         {
             var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
+            var canceled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -93,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-                ct.Register(() => canceled.Set());
+                ct.Register(() => canceled.SetResult(0));
 
                 context.Response.Headers["Connection"] = "close";
 
@@ -102,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 await writer.WriteAsync("Hello World");
                 await writer.FlushAsync();
 
-                Assert.True(canceled.WaitOne(interval), "Disconnected");
+                await canceled.Task.TimeoutAfter(interval);
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
                 var response = await responseTask;

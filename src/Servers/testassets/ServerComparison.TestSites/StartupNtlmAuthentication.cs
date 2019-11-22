@@ -3,14 +3,27 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace ServerComparison.TestSites
 {
     public class StartupNtlmAuthentication
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddHttpContextAccessor();
+            // https://github.com/aspnet/AspNetCore/issues/11462
+            // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
+
+            // This will deffer to the server implementations when available.
+            services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddNegotiate();
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.Use(async (context, next) =>
@@ -31,6 +44,7 @@ namespace ServerComparison.TestSites
                 }
             });
 
+            app.UseAuthentication();
             app.Use((context, next) => 
             {
                 if (context.Request.Path.Equals("/Anonymous"))
@@ -46,13 +60,13 @@ namespace ServerComparison.TestSites
                     }
                     else
                     {
-                        return context.ChallengeAsync("Windows");
+                        return context.ChallengeAsync();
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.ForbidAsync("Windows");
+                    return context.ForbidAsync();
                 }
 
                 return context.Response.WriteAsync("Hello World");

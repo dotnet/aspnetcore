@@ -1,0 +1,10 @@
+﻿<!--
+    The lack of whitespace between the nested components, and the fact that PassThroughContentComponent
+    renders its child content without any surrounding nodes, triggers a difficult scenario for the
+    logical element insertion logic. It has to recurse upwards through the logical elements hierarchy
+    to determine where to append nested component output nodes because there are no other nodes for
+    the output to be inserted before.
+-->
+First
+<PassThroughContentComponent><PassThroughContentComponent>Second</PassThroughContentComponent></PassThroughContentComponent>
+Third

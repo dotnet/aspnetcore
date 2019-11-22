@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private IWebHost _host;
-        private IApplicationLifetime _lifetime;
+        private IHostApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
 
         private readonly LogSinkProvider _logSinkProvider;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             var t = Task.Run(() => _host.Start());
             _logger.LogInformation("Starting test server...");
-            _lifetime = _host.Services.GetRequiredService<IApplicationLifetime>();
+            _lifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             // This only happens once per fixture, so we can afford to wait a little bit on it.
             if (!_lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(20)))

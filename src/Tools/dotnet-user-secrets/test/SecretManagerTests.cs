@@ -323,5 +323,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             secretManager.RunInternal(args);
             Assert.Contains(Resources.Error_No_Secrets_Found, _output.ToString());
         }
+
+        [Fact]
+        public void Init_When_Project_Has_No_Secrets_Id()
+        {
+            var projectPath = _fixture.CreateProject(null);
+            var project = Path.Combine(projectPath, "TestProject.csproj");
+            var secretManager = new Program(_console, projectPath);
+
+            secretManager.RunInternal("init", "-p", project);
+
+            Assert.DoesNotContain(Resources.FormatError_ProjectMissingId(project), _output.ToString());
+            Assert.DoesNotContain("--help", _output.ToString());
+        }
     }
 }

@@ -9,9 +9,11 @@ import { TransferFormat } from "../src/ITransport";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { NullLogger } from "../src/Loggers";
 import { IStreamSubscriber } from "../src/Stream";
+import { Subject } from "../src/Subject";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { VerifyLogger } from "./Common";
+import { TestConnection } from "./TestConnection";
 import { delayUntil, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
 function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null) {
@@ -21,7 +23,6 @@ function createHubConnection(connection: IConnection, logger?: ILogger | null, p
 registerUnhandledRejectionHandler();
 
 describe("HubConnection", () => {
-
     describe("start", () => {
         it("sends handshake message", async () => {
             await VerifyLogger.run(async (logger) => {
@@ -34,6 +35,58 @@ describe("HubConnection", () => {
                         protocol: "json",
                         version: 1,
                     });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can change url", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+                    await hubConnection.stop();
+                    hubConnection.baseUrl = "http://newurl.com";
+                    expect(hubConnection.baseUrl).toBe("http://newurl.com");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can change url in onclose", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    expect(hubConnection.baseUrl).toBe("http://example.com");
+                    hubConnection.onclose(() => {
+                        hubConnection.baseUrl = "http://newurl.com";
+                    });
+
+                    await hubConnection.stop();
+                    expect(hubConnection.baseUrl).toBe("http://newurl.com");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("changing url while active throws", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    expect(() => {
+                        hubConnection.baseUrl = "http://newurl.com";
+                    }).toThrow("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+
                 } finally {
                     await hubConnection.stop();
                 }
@@ -112,6 +165,36 @@ describe("HubConnection", () => {
                             "arg",
                             42,
                         ],
+                        streamIds: [],
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+                } finally {
+                    // Close the connection
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("works if argument is null", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    // We don't actually care to wait for the send.
+                    // tslint:disable-next-line:no-floating-promises
+                    hubConnection.send("testMethod", "arg", null)
+                        .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
+
+                    // Verify the message is sent
+                    expect(connection.sentData.length).toBe(1);
+                    expect(JSON.parse(connection.sentData[0])).toEqual({
+                        arguments: [
+                            "arg",
+                            null,
+                        ],
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -143,6 +226,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -330,6 +414,124 @@ describe("HubConnection", () => {
             });
         });
 
+        it("is able to send stream items to server with invoke", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const subject = new Subject();
+                    const invokePromise = hubConnection.invoke("testMethod", "arg", subject);
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "1",
+                        streamIds: ["0"],
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
+                        item: "item numero uno",
+                        type: MessageType.StreamItem,
+                    });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: "1", result: "foo" });
+
+                    expect(await invokePromise).toBe("foo");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("is able to send stream items to server with send", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const subject = new Subject();
+                    await hubConnection.send("testMethod", "arg", subject);
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg"],
+                        streamIds: ["0"],
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
+                        item: "item numero uno",
+                        type: MessageType.StreamItem,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("is able to send stream items to server with stream", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    let streamItem = "";
+                    let streamError: any = null;
+                    const subject = new Subject();
+                    hubConnection.stream("testMethod", "arg", subject).subscribe({
+                        complete: () => {
+                        },
+                        error: (e) => {
+                            streamError = e;
+                        },
+                        next: (item) => {
+                            streamItem = item;
+                        },
+                    });
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg"],
+                        invocationId: "1",
+                        streamIds: ["0"],
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
+                        item: "item numero uno",
+                        type: MessageType.StreamItem,
+                    });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "1", item: "foo" });
+                    expect(streamItem).toEqual("foo");
+
+                    expect(streamError).toBe(null);
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("completes pending invocations when stopped", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
@@ -341,7 +543,7 @@ describe("HubConnection", () => {
                 const invokePromise = hubConnection.invoke("testMethod");
                 await hubConnection.stop();
 
-                await expect(invokePromise).rejects.toThrow("Invocation canceled due to connection being closed.");
+                await expect(invokePromise).rejects.toThrow("Invocation canceled due to the underlying connection being closed.");
             });
         });
 
@@ -570,9 +772,9 @@ describe("HubConnection", () => {
                     }
                     await expect(startPromise)
                         .rejects
-                        .toBe("Server returned handshake error: Error!");
+                        .toThrow("Server returned handshake error: Error!");
 
-                    expect(closeError!.message).toEqual("Server returned handshake error: Error!");
+                    expect(closeError).toEqual(undefined);
                 } finally {
                     await hubConnection.stop();
                 }
@@ -775,6 +977,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
+                        streamIds: [],
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });
@@ -840,7 +1043,7 @@ describe("HubConnection", () => {
                         .subscribe(observer);
                     await hubConnection.stop();
 
-                    await expect(observer.completed).rejects.toThrow("Error: Invocation canceled due to connection being closed.");
+                    await expect(observer.completed).rejects.toThrow("Error: Invocation canceled due to the underlying connection being closed.");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -925,7 +1128,7 @@ describe("HubConnection", () => {
                     hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
                     // Send completion to trigger observer.complete()
-                    // Expectation is connection.receive will not to throw
+                    // Expectation is connection.receive will not throw
                     connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
                 } finally {
                     await hubConnection.stop();
@@ -973,6 +1176,8 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let invocations = 0;
                     hubConnection.onclose((e) => invocations++);
@@ -990,6 +1195,8 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let error: Error | undefined;
                     hubConnection.onclose((e) => error = e);
@@ -1011,6 +1218,7 @@ describe("HubConnection", () => {
                     hubConnection.onclose(null!);
                     hubConnection.onclose(undefined!);
                     // Typically this would be called by the transport
+                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!();
                     // expect no errors
                 } finally {
@@ -1023,6 +1231,8 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let state: HubConnectionState | undefined;
                     hubConnection.onclose((e) => state = hubConnection.state);
@@ -1063,18 +1273,22 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    hubConnection.serverTimeoutInMilliseconds = 400;
+                    const timeoutInMilliseconds = 400;
+                    hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
 
-                    for (let i = 0; i < 12; i++) {
-                        await pingAndWait(connection);
-                    }
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 10);
+
+                    await delayUntil(timeoutInMilliseconds * 2);
 
                     await connection.stop();
+                    clearInterval(pingInterval);
 
                     const error = await p.promise;
 
@@ -1107,82 +1321,6 @@ describe("HubConnection", () => {
         });
     });
 });
-
-async function pingAndWait(connection: TestConnection): Promise<void> {
-    await connection.receive({ type: MessageType.Ping });
-    await delayUntil(50);
-}
-
-class TestConnection implements IConnection {
-    public readonly features: any = {};
-
-    public onreceive: ((data: string | ArrayBuffer) => void) | null;
-    public onclose: ((error?: Error) => void) | null;
-    public sentData: any[];
-    public lastInvocationId: string | null;
-
-    private autoHandshake: boolean | null;
-
-    constructor(autoHandshake: boolean = true) {
-        this.onreceive = null;
-        this.onclose = null;
-        this.sentData = [];
-        this.lastInvocationId = null;
-        this.autoHandshake = autoHandshake;
-    }
-
-    public start(): Promise<void> {
-        return Promise.resolve();
-    }
-
-    public send(data: any): Promise<void> {
-        const invocation = TextMessageFormat.parse(data)[0];
-        const parsedInvocation = JSON.parse(invocation);
-        const invocationId = parsedInvocation.invocationId;
-        if (parsedInvocation.protocol && parsedInvocation.version && this.autoHandshake) {
-            this.receiveHandshakeResponse();
-        }
-        if (invocationId) {
-            this.lastInvocationId = invocationId;
-        }
-        if (this.sentData) {
-            this.sentData.push(invocation);
-        } else {
-            this.sentData = [invocation];
-        }
-        return Promise.resolve();
-    }
-
-    public stop(error?: Error): Promise<void> {
-        if (this.onclose) {
-            this.onclose(error);
-        }
-        return Promise.resolve();
-    }
-
-    public receiveHandshakeResponse(error?: string): void {
-        this.receive({ error });
-    }
-
-    public receive(data: any): void {
-        const payload = JSON.stringify(data);
-        this.invokeOnReceive(TextMessageFormat.write(payload));
-    }
-
-    public receiveText(data: string) {
-        this.invokeOnReceive(data);
-    }
-
-    public receiveBinary(data: ArrayBuffer) {
-        this.invokeOnReceive(data);
-    }
-
-    private invokeOnReceive(data: string | ArrayBuffer) {
-        if (this.onreceive) {
-            this.onreceive(data);
-        }
-    }
-}
 
 class TestProtocol implements IHubProtocol {
     public readonly name: string = "TestProtocol";

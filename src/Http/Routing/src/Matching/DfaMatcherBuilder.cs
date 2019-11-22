@@ -143,24 +143,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         var parent = parents[j];
                         var part = segment.Parts[0];
+                        var parameterPart = part as RoutePatternParameterPart;
                         if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
                         {
-                            DfaNode next = null;
-                            var literal = literalPart.Content;
-                            if (parent.Literals == null ||
-                                !parent.Literals.TryGetValue(literal, out next))
-                            {
-                                next = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + literal + "/" : null,
-                                };
-                                parent.AddLiteral(literal, next);
-                            }
-
-                            nextParents.Add(next);
+                            AddLiteralNode(includeLabel, nextParents, parent, literalPart.Content);
                         }
-                        else if (segment.IsSimple && part is RoutePatternParameterPart parameterPart && parameterPart.IsCatchAll)
+                        else if (segment.IsSimple && parameterPart != null && parameterPart.IsCatchAll)
                         {
                             // A catch all should traverse all literal nodes as well as parameter nodes
                             // we don't need to create the parameter node here because of ordering
@@ -194,7 +182,29 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                             parent.CatchAll.AddMatch(endpoint);
                         }
-                        else if (segment.IsSimple && part.IsParameter)
+                        else if (segment.IsSimple && parameterPart != null && TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
+                        {
+                            // If the parameter has a matching required value, replace the parameter with the required value
+                            // as a literal. This should use the parameter's transformer (if present)
+                            // e.g. Template: Home/{action}, Required values: { action = "Index" }, Result: Home/Index
+
+                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                            {
+                                for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                                {
+                                    var reference = parameterPolicyReferences[k];
+                                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                    if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
+                                    {
+                                        requiredValue = parameterTransformer.TransformOutbound(requiredValue);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
+                        }
+                        else if (segment.IsSimple && parameterPart != null)
                         {
                             if (parent.Parameters == null)
                             {
@@ -252,6 +262,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
             root.Visit(ApplyPolicies);
 
             return root;
+        }
+
+        private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
+        {
+            DfaNode next = null;
+            if (parent.Literals == null ||
+                !parent.Literals.TryGetValue(literal, out next))
+            {
+                next = new DfaNode()
+                {
+                    PathDepth = parent.PathDepth + 1,
+                    Label = includeLabel ? parent.Label + literal + "/" : null,
+                };
+                parent.AddLiteral(literal, next);
+            }
+
+            nextParents.Add(next);
         }
 
         private RoutePatternPathSegment GetCurrentSegment(RouteEndpoint endpoint, int depth)
@@ -500,11 +527,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         slotIndex = _assignments.Count;
                         _assignments.Add(parameterPart.Name, slotIndex);
 
-                        var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
-                        _slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                        // A parameter can have a required value, default value/catch all, or be a normal parameter
+                        // Add the required value or default value as the slot's initial value
+                        if (TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out var requiredValue))
+                        {
+                            _slots.Add(new KeyValuePair<string, object>(parameterPart.Name, requiredValue));
+                        }
+                        else
+                        {
+                            var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
+                            _slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                        }
                     }
 
-                    if (parameterPart.IsCatchAll)
+                    if (TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out _))
+                    {
+                        // Don't capture a parameter if it has a required value
+                        // There is no need because a parameter with a required value is matched as a literal
+                    }
+                    else if (parameterPart.IsCatchAll)
                     {
                         catchAll = (parameterPart.Name, i, slotIndex);
                     }
@@ -719,6 +760,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return (nodeBuilderPolicies.ToArray(), endpointComparerPolicies.ToArray(), endpointSelectorPolicies.ToArray());
+        }
+
+        private static bool TryGetRequiredValue(RoutePattern routePattern, RoutePatternParameterPart parameterPart, out object value)
+        {
+            if (!routePattern.RequiredValues.TryGetValue(parameterPart.Name, out value))
+            {
+                return false;
+            }
+
+            return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
         }
     }
 }
