@@ -21,6 +21,13 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class BlazorMonoDebugProxyAppBuilderExtensions
     {
+        private static JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            IgnoreNullValues = true
+        };
+
         /// <summary>
         /// Adds middleware for needed for debugging Blazor applications
         /// inside Chromium dev tools.
@@ -67,7 +74,17 @@ namespace Microsoft.AspNetCore.Builder
                 if (requestPath.StartsWithSegments("/json")
                     && !request.Headers.ContainsKey("User-Agent"))
                 {
-                    var debuggerHost = "http://localhost:9222";
+                    var envVar = Environment.GetEnvironmentVariable("ASPNETCORE_WEBASSEMBLYDEBUGHOST");
+                    string debuggerHost;
+                    if(envVar is null || envVar.Equals(string.Empty))
+                    {
+                        debuggerHost = "http://localhost:9222";
+                    }
+                    else
+                    {
+                        debuggerHost = envVar;
+                    }
+
                     if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
                     {
                         var availableTabs = await GetOpenedBrowserTabs(debuggerHost);
@@ -268,7 +285,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
             var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
-            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse);
+            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
         }
 
         class BrowserTab
