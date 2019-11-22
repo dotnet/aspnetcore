@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.HttpsPolicy
 {
     /// <summary>
-    /// Options for the HttpsRedirection middleware
+    /// Options for the HttpsRedirection middleware.
     /// </summary>
     public class HttpsRedirectionOptions
     {

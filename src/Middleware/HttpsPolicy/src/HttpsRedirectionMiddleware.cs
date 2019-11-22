@@ -13,6 +13,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpsPolicy
 {
+    /// <summary>
+    /// Provides functionality to redirect client requests to an address that uses the HTTPS protocol.
+    /// </summary>
     public class HttpsRedirectionMiddleware
     {
         private const int PortNotFound = -1;
@@ -26,7 +29,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware
+        /// Initializes the HttpsRedirectionMiddleware.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
@@ -56,7 +59,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         }
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware
+        /// Initializes the HttpsRedirectionMiddleware.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>

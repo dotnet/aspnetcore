@@ -9,6 +9,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    /// <summary>
+    /// Provides extensions method to use Http.sys as the server for the web host.
+    /// </summary>    
     public static class WebHostBuilderHttpSysExtensions
     {
         /// <summary>

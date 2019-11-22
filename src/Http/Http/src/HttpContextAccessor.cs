@@ -5,10 +5,16 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Represents the properties and methods used to keep access the current HTTP context. 
+    /// <summary/>
     public class HttpContextAccessor : IHttpContextAccessor
     {
         private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
+        /// <summary>
+        /// Gets or sets the HTTP context. 
+        /// <summary/>
         public HttpContext HttpContext
         {
             get
