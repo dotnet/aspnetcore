@@ -66,17 +66,15 @@ namespace Microsoft.AspNetCore.Builder
         private static string GetDebuggerHost()
         {
             var envVar = Environment.GetEnvironmentVariable("ASPNETCORE_WEBASSEMBLYDEBUGHOST");
-            string debuggerHost;
-            if (envVar is null || envVar.Equals(string.Empty))
+
+            if (string.IsNullOrEmpty(envVar))
             {
-                debuggerHost = DefaultDebuggerHost;
+                return DefaultDebuggerHost;
             }
             else
             {
-                debuggerHost = envVar;
+                return envVar;
             }
-
-            return debuggerHost;
         }
 
         private static int GetDebuggerPort()
@@ -98,11 +96,9 @@ namespace Microsoft.AspNetCore.Builder
                 if (requestPath.StartsWithSegments("/json")
                     && !request.Headers.ContainsKey("User-Agent"))
                 {
-                    var debuggerHost = GetDebuggerHost();
-
                     if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
                     {
-                        var availableTabs = await GetOpenedBrowserTabs(debuggerHost);
+                        var availableTabs = await GetOpenedBrowserTabs();
 
                         // Filter the list to only include tabs displaying the requested app,
                         // but only during the "choose application to debug" phase. We can't apply
@@ -133,7 +129,7 @@ namespace Microsoft.AspNetCore.Builder
                     }
                     else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
                     {
-                        var browserVersionJson = await GetBrowserVersionInfoAsync(debuggerHost);
+                        var browserVersionJson = await GetBrowserVersionInfoAsync();
 
                         context.Response.ContentType = "application/json";
                         await context.Response.WriteAsync(browserVersionJson);
@@ -181,7 +177,7 @@ namespace Microsoft.AspNetCore.Builder
 
             try
             {
-                availableTabs = await GetOpenedBrowserTabs(debuggerHost);
+                availableTabs = await GetOpenedBrowserTabs();
             }
             catch (Exception ex)
             {
@@ -292,15 +288,17 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static async Task<string> GetBrowserVersionInfoAsync(string debuggerHost)
+        private static async Task<string> GetBrowserVersionInfoAsync()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var debuggerHost = GetDebuggerHost();
             return await httpClient.GetStringAsync($"{debuggerHost}/json/version");
         }
 
-        private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs(string debuggerHost)
+        private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var debuggerHost = GetDebuggerHost();
             var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
             return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
         }
