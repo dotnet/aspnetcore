@@ -145,6 +145,7 @@ namespace CodeGenerator
             {
                 "Accept-Ranges",
                 "Age",
+                "Alt-Svc",
                 "ETag",
                 "Location",
                 "Proxy-Authenticate",

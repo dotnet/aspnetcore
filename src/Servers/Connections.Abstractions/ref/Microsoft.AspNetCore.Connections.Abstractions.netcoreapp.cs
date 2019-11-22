@@ -123,6 +123,9 @@ namespace Microsoft.AspNetCore.Connections
     {
         System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
+    public partial interface IMultiplexedConnectionListenerFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
+    {
+    }
     [System.FlagsAttribute]
     public enum TransferFormat
     {
@@ -134,6 +137,14 @@ namespace Microsoft.AspNetCore.Connections
         public UriEndPoint(System.Uri uri) { }
         public System.Uri Uri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override string ToString() { throw null; }
+    }
+}
+namespace Microsoft.AspNetCore.Connections.Abstractions.Features
+{
+    public partial interface IQuicCreateStreamFeature
+    {
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> StartBidirectionalStreamAsync();
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> StartUnidirectionalStreamAsync();
     }
 }
 namespace Microsoft.AspNetCore.Connections.Features
@@ -184,6 +195,15 @@ namespace Microsoft.AspNetCore.Connections.Features
     public partial interface IMemoryPoolFeature
     {
         System.Buffers.MemoryPool<byte> MemoryPool { get; }
+    }
+    public partial interface IQuicStreamFeature
+    {
+        bool IsUnidirectional { get; }
+        long StreamId { get; }
+    }
+    public partial interface IQuicStreamListenerFeature
+    {
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync();
     }
     public partial interface ITlsHandshakeFeature
     {

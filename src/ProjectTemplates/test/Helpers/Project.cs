@@ -242,7 +242,7 @@ namespace Templates.Test.Helpers
             do
             {
                 restoreResult = await RestoreAsync(output, workingDirectory);
-                if (restoreResult.ExitCode == 0)
+                if (restoreResult.HasExited && restoreResult.ExitCode == 0)
                 {
                     return restoreResult;
                 }

@@ -14,7 +14,9 @@ The `server` command runs a web host exposing a single SignalR `Hub` endpoint on
 Usage:  server [options]
 
 Options:
-  --log <LOG_LEVEL>  The LogLevel to use.
+  --log <LOG_LEVEL>                                     The LogLevel to use.
+  --azure-signalr-connectionstring <CONNECTION_STRING>  Azure SignalR Connection string to use
+  
 ```
 
 Notes:
@@ -53,6 +55,12 @@ Run the server:
 
 ```
 dotnet run -- server
+```
+
+Run the server using Azure SignalR:
+
+```
+dotnet run -- server --azure-signalr-connectionstring Endpoint=https://your-url.service.signalr.net;AccessKey=yourAccessKey;Version=1.0;
 ```
 
 Attempt to make 10,000 connections to the server using WebSockets and 10 workers:

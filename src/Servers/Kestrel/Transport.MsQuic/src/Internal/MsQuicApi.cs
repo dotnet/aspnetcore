@@ -3,6 +3,9 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
 {
@@ -158,6 +161,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic.Internal
                 Param,
                 Buffer.Length,
                 Buffer.Buffer);
+        }
+
+        internal unsafe uint UnsafeGetParam(
+            IntPtr Handle,
+            uint Level,
+            uint Param,
+            ref MsQuicNativeMethods.QuicBuffer Buffer)
+        {
+            return GetParamDelegate(
+                Handle,
+                Level,
+                Param,
+                out Buffer.Length,
+                out Buffer.Buffer);
+        }
+
+        public async ValueTask<QuicSecConfig> CreateSecurityConfig(X509Certificate2 certificate)
+        {
+            QuicSecConfig secConfig = null;
+            var tcs = new TaskCompletionSource<object>();
+            var secConfigCreateStatus = MsQuicConstants.InternalError;
+
+            var status = SecConfigCreateDelegate(
+                _registrationContext,
+                (uint)QUIC_SEC_CONFIG_FLAG.CERT_CONTEXT,
+                certificate.Handle,
+                null,
+                IntPtr.Zero,
+                SecCfgCreateCallbackHandler);
+
+            MsQuicStatusException.ThrowIfFailed(status);
+
+            void SecCfgCreateCallbackHandler(
+                IntPtr context,
+                uint status,
+                IntPtr securityConfig)
+            {
+                secConfig = new QuicSecConfig(this, securityConfig);
+                secConfigCreateStatus = status;
+                tcs.SetResult(null);
+            }
+
+            await tcs.Task;
+
+            MsQuicStatusException.ThrowIfFailed(secConfigCreateStatus);
+
+            return secConfig;
+        }
+
+        public QuicSession SessionOpen(
+           string alpn)
+        {
+            var sessionPtr = IntPtr.Zero;
+
+            var status = SessionOpenDelegate(
+                _registrationContext,
+                Encoding.UTF8.GetBytes(alpn),
+                IntPtr.Zero,
+                ref sessionPtr);
+            MsQuicStatusException.ThrowIfFailed(status);
+
+            return new QuicSession(this, sessionPtr);
         }
 
         public void Dispose()
