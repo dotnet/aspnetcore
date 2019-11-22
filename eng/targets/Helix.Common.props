@@ -12,6 +12,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true' AND '$(IsRequiredCheck)' == 'true'">
+    <HelixAvailablePlatform Include="Windows" />
+    
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.Open" Platform="Windows" />
     
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
@@ -45,6 +47,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true' AND '$(IsHelixDaily)' == 'true'">
+    <HelixAvailablePlatform Include="Windows" />
+
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     
