@@ -10,7 +10,4 @@
     <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 </Project>
