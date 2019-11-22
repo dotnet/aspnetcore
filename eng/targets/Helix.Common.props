@@ -51,13 +51,13 @@
 
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
-    
+
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
-    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />    
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 </Project>
