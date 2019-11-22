@@ -340,7 +340,7 @@ namespace http2cat
             await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
         }
 
-        public Task SendPreambleAsync() => SendAsync(new ArraySegment<byte>(Http2Connection.ClientPreface));
+        public Task SendPreambleAsync() => SendAsync(Http2Connection.ClientPreface);
 
         public async Task SendSettingsAsync()
         {
