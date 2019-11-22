@@ -463,6 +463,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.0.4, )" />
@@ -472,6 +473,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' ">

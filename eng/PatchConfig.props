@@ -46,6 +46,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Http.Connections;
+      Microsoft.AspNetCore.SignalR.Core;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

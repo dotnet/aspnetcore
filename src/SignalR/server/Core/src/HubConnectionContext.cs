@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
         private ReadOnlyMemory<byte> _cachedPingMessage;
+        private volatile bool _connectionAborted;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -96,11 +97,17 @@ namespace Microsoft.AspNetCore.SignalR
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
-                return new ValueTask(WriteSlowAsync(message));
+                return new ValueTask(WriteSlowAsync(message, cancellationToken));
+            }
+
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
             }
 
             // This method should never throw synchronously
-            var task = WriteCore(message);
+            var task = WriteCore(message, cancellationToken);
 
             // The write didn't complete synchronously so await completion
             if (!task.IsCompletedSuccessfully)
@@ -126,11 +133,17 @@ namespace Microsoft.AspNetCore.SignalR
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
-                return new ValueTask(WriteSlowAsync(message));
+                return new ValueTask(WriteSlowAsync(message, cancellationToken));
+            }
+
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
             }
 
             // This method should never throw synchronously
-            var task = WriteCore(message);
+            var task = WriteCore(message, cancellationToken);
 
             // The write didn't complete synchronously so await completion
             if (!task.IsCompletedSuccessfully)
@@ -144,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR
             return default;
         }
 
-        private ValueTask<FlushResult> WriteCore(HubMessage message)
+        private ValueTask<FlushResult> WriteCore(HubMessage message, CancellationToken cancellationToken)
         {
             try
             {
@@ -152,28 +165,32 @@ namespace Microsoft.AspNetCore.SignalR
                 // write it without caching.
                 Protocol.WriteMessage(message, _connectionContext.Transport.Output);
 
-                return _connectionContext.Transport.Output.FlushAsync();
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
             }
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
 
+                Abort();
+
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
         }
 
-        private ValueTask<FlushResult> WriteCore(SerializedHubMessage message)
+        private ValueTask<FlushResult> WriteCore(SerializedHubMessage message, CancellationToken cancellationToken)
         {
             try
             {
                 // Grab a preserialized buffer for this protocol.
                 var buffer = message.GetSerializedMessage(Protocol);
 
-                return _connectionContext.Transport.Output.WriteAsync(buffer);
+                return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
             }
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
 
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
             }
@@ -188,6 +205,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -196,18 +215,25 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task WriteSlowAsync(HubMessage message)
+        private async Task WriteSlowAsync(HubMessage message, CancellationToken cancellationToken)
         {
-            await _writeLock.WaitAsync();
+            // Failed to get the lock immediately when entering WriteAsync so await until it is available
+            await _writeLock.WaitAsync(cancellationToken);
+
             try
             {
-                // Failed to get the lock immediately when entering WriteAsync so await until it is available
+                if (_connectionAborted)
+                {
+                    return;
+                }
 
-                await WriteCore(message);
+                await WriteCore(message, cancellationToken);
             }
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -215,18 +241,25 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task WriteSlowAsync(SerializedHubMessage message)
+        private async Task WriteSlowAsync(SerializedHubMessage message, CancellationToken cancellationToken)
         {
+            // Failed to get the lock immediately when entering WriteAsync so await until it is available
+            await _writeLock.WaitAsync(cancellationToken);
+
             try
             {
-                // Failed to get the lock immediately when entering WriteAsync so await until it is available
-                await _writeLock.WaitAsync();
+                if (_connectionAborted)
+                {
+                    return;
+                }
 
-                await WriteCore(message);
+                await WriteCore(message, cancellationToken);
             }
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -243,6 +276,7 @@ namespace Microsoft.AspNetCore.SignalR
                 return default;
             }
 
+            // TODO: cancel?
             return new ValueTask(TryWritePingSlowAsync());
         }
 
@@ -250,6 +284,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
                 await _connectionContext.Transport.Output.WriteAsync(_cachedPingMessage);
 
                 Log.SentPing(_logger);
@@ -257,6 +296,8 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+
+                Abort();
             }
             finally
             {
@@ -293,6 +334,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public virtual void Abort()
         {
+            _connectionAborted = true;
+
+            // Cancel any current writes or writes that are about to happen and have already gone past the _connectionAborted bool
+            // We have to do this outside of the lock otherwise it could hang if the write is observing backpressure
+            _connectionContext.Transport.Output.CancelPendingFlush();
+
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
             // to avoid spawning a new task in the most common cases
             if (_connectionAbortedTokenSource.IsCancellationRequested)
@@ -423,7 +470,22 @@ namespace Microsoft.AspNetCore.SignalR
         internal Task AbortAsync()
         {
             Abort();
+
+            // Acquire lock to make sure all writes are completed
+            if (!_writeLock.Wait(0))
+            {
+                return AbortAsyncSlow();
+            }
+
+            _writeLock.Release();
             return _abortCompletedTcs.Task;
+        }
+
+        private async Task AbortAsyncSlow()
+        {
+            await _writeLock.WaitAsync();
+            _writeLock.Release();
+            await _abortCompletedTcs.Task;
         }
 
         private void KeepAliveTick()
@@ -449,18 +511,36 @@ namespace Microsoft.AspNetCore.SignalR
         private static void AbortConnection(object state)
         {
             var connection = (HubConnectionContext)state;
+
             try
             {
                 connection._connectionAbortedTokenSource.Cancel();
-
-                // Communicate the fact that we're finished triggering abort callbacks
-                connection._abortCompletedTcs.TrySetResult(null);
             }
             catch (Exception ex)
             {
                 // TODO: Should we log if the cancellation callback fails? This is more preventative to make sure
                 // we don't end up with an unobserved task
                 connection._abortCompletedTcs.TrySetException(ex);
+            }
+            finally
+            {
+                _ = InnerAbortConnection(connection);
+            }
+        }
+
+        private static async Task InnerAbortConnection(HubConnectionContext connection)
+        {
+            // We lock to make sure all writes are done before triggering the completion of the pipe
+            await connection._writeLock.WaitAsync();
+            try
+            {
+                // Communicate the fact that we're finished triggering abort callbacks
+                // HubOnDisconnectedAsync is waiting on this to complete the Pipe
+                connection._abortCompletedTcs.TrySetResult(null);
+            }
+            finally
+            {
+                connection._writeLock.Release();
             }
         }
 
