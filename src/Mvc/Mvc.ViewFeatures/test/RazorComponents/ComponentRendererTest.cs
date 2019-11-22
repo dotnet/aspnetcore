@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -473,8 +473,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }));
 
             Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
-                "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
                 exception.Message);
         }
 

@@ -3,8 +3,10 @@
 
 using System;
 using System.Buffers;
+using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
             handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
             handler.OnHeader(new Span<byte>(_connectionHeaderName), new Span<byte>(_connectionHeaderValue));
-            handler.OnHeadersComplete();
+            handler.OnHeadersComplete(endStream: false);
 
             return true;
         }

@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
         public const string Http2Version = "HTTP/2";
+        public const string Http3Version = "HTTP/3";
 
         public const string HttpUriScheme = "http://";
         public const string HttpsUriScheme = "https://";
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         // The same as GetAsciiStringNonNullCharacters but throws BadRequest
-        public static unsafe string GetHeaderName(this Span<byte> span)
+        public static unsafe string GetHeaderName(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -108,7 +109,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return asciiString;
         }
 
-        public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
+        public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
+            => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -131,6 +135,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {

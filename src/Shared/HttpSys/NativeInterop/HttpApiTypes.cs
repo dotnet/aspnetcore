@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             [FieldOffset(8)]
             internal FromFileHandle fromFile;
+
+            [FieldOffset(8)]
+            internal Trailers trailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -104,6 +107,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal ulong offset;
             internal ulong count;
             internal IntPtr fileHandle;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct Trailers
+        {
+            internal ushort trailerCount;
+            internal IntPtr pTrailers;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -362,10 +372,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal enum HTTP_DATA_CHUNK_TYPE : int
         {
-            HttpDataChunkFromMemory = 0,
-            HttpDataChunkFromFileHandle = 1,
-            HttpDataChunkFromFragmentCache = 2,
-            HttpDataChunkMaximum = 3,
+            HttpDataChunkFromMemory,
+            HttpDataChunkFromFileHandle,
+            HttpDataChunkFromFragmentCache,
+            HttpDataChunkFromFragmentCacheEx,
+            HttpDataChunkTrailers,
+            HttpDataChunkMaximum,
         }
 
         [StructLayout(LayoutKind.Sequential)]

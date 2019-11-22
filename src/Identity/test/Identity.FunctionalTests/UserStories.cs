@@ -194,6 +194,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .WithConfirmedEmail());
         }
 
+        internal static async Task ResendConfirmEmailAsync(HttpClient client, string email)
+        {
+            var index = await Index.CreateAsync(client);
+            var login = await index.ClickLoginLinkAsync();
+            var reconfirm = await login.ClickReconfirmEmailLinkAsync();
+            var response = await reconfirm.ResendAsync(email);
+            ResponseAssert.IsOK(response);
+            Assert.Contains("Verification email sent.", await response.Content.ReadAsStringAsync());
+        }
+
         internal static async Task<ForgotPasswordConfirmation> ForgotPasswordAsync(HttpClient client, string userName)
         {
             var index = await Index.CreateAsync(client);

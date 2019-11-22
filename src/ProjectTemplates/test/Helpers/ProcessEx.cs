@@ -164,7 +164,7 @@ namespace Templates.Test.Helpers
         {
             if (!_process.HasExited)
             {
-                throw new InvalidOperationException("Process has not finished running.");
+                throw new InvalidOperationException($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
             }
 
             return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
@@ -174,12 +174,16 @@ namespace Templates.Test.Helpers
         {
             if(!timeSpan.HasValue)
             {
-                timeSpan = TimeSpan.FromSeconds(480);
+                timeSpan = TimeSpan.FromSeconds(600);
             }
 
-            Exited.Wait(timeSpan.Value);
-
-            if (assertSuccess && _process.ExitCode != 0)
+            var exited = Exited.Wait(timeSpan.Value);
+            if (!exited)
+            {
+                _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                _process.Dispose();
+            }
+            else if (assertSuccess && _process.ExitCode != 0)
             {
                 throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
             }

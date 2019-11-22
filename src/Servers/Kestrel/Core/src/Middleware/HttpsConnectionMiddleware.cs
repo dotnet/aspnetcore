@@ -77,16 +77,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger<HttpsConnectionMiddleware>();
-        }
-        public Task OnConnectionAsync(ConnectionContext context)
-        {
-            return Task.Run(() => InnerOnConnectionAsync(context));
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
 
-        private async Task InnerOnConnectionAsync(ConnectionContext context)
+        public async Task OnConnectionAsync(ConnectionContext context)
         {
+            await Task.Yield();
+
             bool certificateRequired;
+            if (context.Features.Get<ITlsConnectionFeature>() != null)
+            {
+                await _next(context);
+                return;
+            }
+
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
@@ -156,7 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslStream = sslDuplexPipe.Stream;
 
             using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
-            using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
             {
                 try
                 {
@@ -201,17 +204,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
-                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                     await sslStream.DisposeAsync();
                     return;
                 }
                 catch (IOException ex)
                 {
-                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     await sslStream.DisposeAsync();
                     return;
                 }
@@ -221,11 +224,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         !CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
                         CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
                     {
-                        _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                        _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                     }
                     else
                     {
-                        _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
                     }
 
                     await sslStream.DisposeAsync();

@@ -133,17 +133,18 @@ namespace Microsoft.AspNetCore.Authentication
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
         /// </summary>
         /// <param name="scheme">The scheme.</param>
-        public virtual void AddScheme(AuthenticationScheme scheme)
+        /// <returns>true if the scheme was added successfully.</returns>
+        public virtual bool TryAddScheme(AuthenticationScheme scheme)
         {
             if (_schemes.ContainsKey(scheme.Name))
             {
-                throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
+                return false;
             }
             lock (_lock)
             {
                 if (_schemes.ContainsKey(scheme.Name))
                 {
-                    throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
+                    return false;
                 }
                 if (typeof(IAuthenticationRequestHandler).IsAssignableFrom(scheme.HandlerType))
                 {
@@ -152,6 +153,26 @@ namespace Microsoft.AspNetCore.Authentication
                 }
                 _schemes[scheme.Name] = scheme;
                 _schemesCopy = _schemes.Values.ToArray();
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
+        /// </summary>
+        /// <param name="scheme">The scheme.</param>
+        public virtual void AddScheme(AuthenticationScheme scheme)
+        {
+            if (_schemes.ContainsKey(scheme.Name))
+            {
+                throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
+            }
+            lock (_lock)
+            {
+                if (!TryAddScheme(scheme))
+                {
+                    throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
+                }
             }
         }
 
