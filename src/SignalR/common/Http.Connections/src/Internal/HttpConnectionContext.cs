@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature
     {
+        private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
+
         private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
@@ -35,6 +37,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+
+        private CancellationTokenSource _sendCts;
+        private bool _activeSend;
+        private long _startedSendTime;
+        private readonly object _sendingLock = new object();
+        internal CancellationToken SendingToken { get; private set; }
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -240,8 +248,26 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     }
                     else
                     {
-                        // The other transports don't close their own output, so we can do it here safely
-                        Application?.Output.Complete();
+                        // Normally it isn't safe to try and acquire this lock because the Send can hold onto it for a long time if there is backpressure
+                        // It is safe to wait for this lock now because the Send will be in one of 4 states
+                        // 1. In the middle of a write which is in the middle of being canceled by the CancelPendingFlush above, when it throws
+                        //    an OperationCanceledException it will complete the PipeWriter which will make any other Send waiting on the lock
+                        //    throw an InvalidOperationException if they call Write
+                        // 2. About to write and see that there is a pending cancel from the CancelPendingFlush, go to 1 to see what happens
+                        // 3. Enters the Send and sees the Dispose state from DisposeAndRemoveAsync and releases the lock
+                        // 4. No Send in progress
+                        await WriteLock.WaitAsync();
+                        try
+                        {
+                            // Complete the applications read loop
+                            Application?.Output.Complete();
+                        }
+                        finally
+                        {
+                            WriteLock.Release();
+                        }
+
+                        Application?.Input.CancelPendingRead();
                     }
                 }
 
@@ -306,6 +332,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 _disposeTcs.TrySetException(ex);
 
                 throw;
+            }
+        }
+
+        internal void StartSendCancellation()
+        {
+            lock (_sendingLock)
+            {
+                if (_sendCts == null || _sendCts.IsCancellationRequested)
+                {
+                    _sendCts = new CancellationTokenSource();
+                    SendingToken = _sendCts.Token;
+                }
+                _startedSendTime = DateTime.UtcNow.Ticks;
+                _activeSend = true;
+            }
+        }
+        internal void TryCancelSend(long currentTicks)
+        {
+            lock (_sendingLock)
+            {
+                if (_activeSend)
+                {
+                    if (currentTicks - _startedSendTime > _tenSeconds)
+                    {
+                        _sendCts.Cancel();
+                    }
+                }
+            }
+        }
+        internal void StopSendCancellation()
+        {
+            lock (_sendingLock)
+            {
+                _activeSend = false;
             }
         }
 

@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
-            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval; 
+            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval;
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
@@ -186,10 +186,13 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var input = connection.Input;
             var protocol = connection.Protocol;
+            connection.BeginClientTimeout();
             while (true)
             {
                 var result = await input.ReadAsync();
                 var buffer = result.Buffer;
+
+                connection.ResetClientTimeout();
 
                 try
                 {
@@ -200,11 +203,17 @@ namespace Microsoft.AspNetCore.SignalR
 
                     if (!buffer.IsEmpty)
                     {
-                        connection.ResetClientTimeout();
-
+                        bool messageReceived = false;
                         while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
                         {
+                            messageReceived = true;
+                            connection.StopClientTimeout();
                             await _dispatcher.DispatchMessageAsync(connection, message);
+                        }
+
+                        if (messageReceived)
+                        {
+                            connection.BeginClientTimeout();
                         }
                     }
 

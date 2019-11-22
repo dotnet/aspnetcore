@@ -30,6 +30,7 @@
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Security.Principal.Windows" />
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
 
   </ItemGroup>
 
