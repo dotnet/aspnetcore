@@ -15,6 +15,7 @@
     <ProjectReferenceProvider Include="GetDocument.Insider" ProjectPath="$(RepoRoot)src\Tools\GetDocumentInsider\src\GetDocumentInsider.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepoRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
+    <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\Components\Blazor\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" ProjectPath="$(RepoRoot)src\Components\Blazor\Validation\src\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj"  />
     <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj"  />
     <ProjectReferenceProvider Include="BlazorServerApp" ProjectPath="$(RepoRoot)src\Components\Samples\BlazorServerApp\BlazorServerApp.csproj"  />

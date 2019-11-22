@@ -17,6 +17,7 @@
       "Blazor\\Templates\\src\\Microsoft.AspNetCore.Blazor.Templates.csproj",
       "Blazor\\Validation\\src\\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.csproj",
       "Blazor\\Validation\\test\\Microsoft.AspNetCore.Blazor.DataAnnotations.Validation.Tests.csproj",
+      "Blazor\\Mono.WebAssembly.Interop\\src\\Mono.WebAssembly.Interop.csproj",
       "Blazor\\testassets\\HostedInAspNet.Client\\HostedInAspNet.Client.csproj",
       "Blazor\\testassets\\HostedInAspNet.Server\\HostedInAspNet.Server.csproj",
       "Blazor\\testassets\\Microsoft.AspNetCore.Blazor.E2EPerformance\\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj",

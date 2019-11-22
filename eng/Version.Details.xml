@@ -289,10 +289,6 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>4ebd75b961136c7ca331866eed3403becda75681</Sha>
     </Dependency>
-    <Dependency Name="Mono.WebAssembly.Interop" Version="3.1.0-preview4.19568.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>4ebd75b961136c7ca331866eed3403becda75681</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
