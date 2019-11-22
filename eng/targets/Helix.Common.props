@@ -6,7 +6,7 @@
     <HelixAvailablePlatform Include="Linux" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'>
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
     <HelixAvailablePlatform Include="Windows" />
     
     <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
