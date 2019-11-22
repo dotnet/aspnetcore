@@ -73,5 +73,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             visitor.VisitTagHelperBlock(this, block);
         }
+
+        public override string ToString()
+        {
+            return "TagHelper";
+        }
     }
 }

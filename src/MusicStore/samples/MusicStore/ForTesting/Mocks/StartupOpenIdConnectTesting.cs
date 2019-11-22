@@ -36,9 +36,11 @@ namespace MusicStore
 
             Configuration = builder.Build();
             _platform = new Platform();
+            Env = env;
         }
 
         public IConfiguration Configuration { get; private set; }
+        public IHostingEnvironment Env { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -66,7 +68,7 @@ namespace MusicStore
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
-                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler();
+                options.BackchannelHttpHandler = new OpenIdConnectBackChannelHttpHandler(Env);
                 options.StringDataFormat = new CustomStringDataFormat();
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.ResponseType = OpenIdConnectResponseType.CodeIdToken;

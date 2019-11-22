@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = "ConventionalRoute - Hello from mypage";
 
             // Act
-            var response = await Client.GetStringAsync("/PageRoute/ConventionalRoute/mypage");
+            var response = await Client.GetStringAsync("/PageRoute/ConventionalRouteView/mypage");
 
             // Assert
             Assert.Equal(expected, response.Trim());
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = "AttributeRoute - Hello from test-page";
 
             // Act
-            var response = await Client.GetStringAsync("/PageRoute/Attribute/test-page");
+            var response = await Client.GetStringAsync("/PageRoute/AttributeView/test-page");
 
             // Assert
             Assert.Equal(expected, response.Trim());

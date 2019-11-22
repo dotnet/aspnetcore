@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
-        private struct BinderItem
+        private readonly struct BinderItem
         {
             public BinderItem(IModelBinder modelBinder, ModelMetadata modelMetadata)
             {

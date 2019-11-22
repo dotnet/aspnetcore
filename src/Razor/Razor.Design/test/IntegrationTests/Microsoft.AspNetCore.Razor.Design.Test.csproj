@@ -7,7 +7,7 @@
       This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
       has netcoreapp2.0 dependencies that need to be built first.
     -->
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->
@@ -29,7 +29,15 @@
 
   <ItemGroup>
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
-    <Reference Include="Microsoft.AspNetCore.Razor.Design" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Design">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="Microsoft.NET.Sdk.Razor">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </Reference>
     <Reference Include="rzc" />
     <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
   </ItemGroup>

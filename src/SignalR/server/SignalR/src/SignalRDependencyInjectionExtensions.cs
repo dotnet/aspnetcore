@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -35,8 +37,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
         {
             services.AddConnections();
-            services.AddSingleton<SignalRMarkerService>();
-            services.AddSingleton<IConfigureOptions<HubOptions>, HubOptionsSetup>();
+            // Disable the WebSocket keep alive since SignalR has it's own
+            services.Configure<WebSocketOptions>(o => o.KeepAliveInterval = TimeSpan.Zero);
+            services.TryAddSingleton<SignalRMarkerService>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<HubOptions>, HubOptionsSetup>());
             return services.AddSignalRCore();
         }
 

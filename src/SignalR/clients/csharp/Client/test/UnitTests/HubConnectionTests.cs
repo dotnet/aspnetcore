@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,17 +13,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HubConnectionTests : VerifiableLoggedTest
     {
-        public HubConnectionTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         [Fact]
         public async Task InvokeThrowsIfSerializingMessageFails()
         {
@@ -114,10 +109,40 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.StartAsync().OrTimeout();
 
             var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
-            Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", exception.Message);
+
+            // We use an interpolated string so the tests are accurate on non-US machines.
+            Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
         }
 
         [Fact]
+        public async Task ServerTimeoutIsDisabledWhenUsingTransportWithInherentKeepAlive()
+        {
+            using (StartVerifiableLog())
+            {
+                var testConnection = new TestConnection();
+                testConnection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestKeepAliveFeature() { HasInherentKeepAlive = true });
+                var hubConnection = CreateHubConnection(testConnection, loggerFactory: LoggerFactory);
+                hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(1);
+
+                await hubConnection.StartAsync().OrTimeout();
+
+                var closeTcs = new TaskCompletionSource<Exception>();
+                hubConnection.Closed += ex =>
+                {
+                    closeTcs.TrySetResult(ex);
+                    return Task.CompletedTask;
+                };
+
+                await hubConnection.RunTimerActions().OrTimeout();
+
+                Assert.False(closeTcs.Task.IsCompleted);
+
+                await hubConnection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -126,9 +151,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        writeContext.EventId.Name == "ShutdownWithError";
             }
 
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
-                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);
 
                 await hubConnection.StartAsync().OrTimeout();
@@ -137,8 +162,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var invokeTask = hubConnection.InvokeAsync("Method").OrTimeout();
 
                 var exception = await Assert.ThrowsAsync<TimeoutException>(() => invokeTask);
-                Assert.Equal("Server timeout (2000.00ms) elapsed without receiving a message from the server.", exception.Message);
+
+                // We use an interpolated string so the tests are accurate on non-US machines.
+                Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
             }
+        }
+
+        private struct TestKeepAliveFeature : IConnectionInherentKeepAliveFeature
+        {
+            public bool HasInherentKeepAlive { get; set; }
         }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse

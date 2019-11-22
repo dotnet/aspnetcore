@@ -14,6 +14,7 @@ namespace Http2SampleApp
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseTimingMiddleware();
             app.Run(context =>
             {
                 return context.Response.WriteAsync("Hello World! " + context.Request.Protocol);

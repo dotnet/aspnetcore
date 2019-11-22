@@ -4,6 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +17,9 @@ namespace HtmlGenerationWebSite
         {
             // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
             // null which is interpreted as true unless element includes an action attribute.
-            services.AddMvc().InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);
+            services.AddMvc()
+                .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
             services.AddSingleton<ProductsService>();

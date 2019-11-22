@@ -22,5 +22,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitTagHelperHtmlAttribute(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(AttributeName);
+
+            formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(AttributeStructure), AttributeStructure.ToString());
+        }
     }
 }

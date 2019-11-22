@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An action result which formats the given object as JSON.
     /// </summary>
-    public class JsonResult : ActionResult
+    public class JsonResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.

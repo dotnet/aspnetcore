@@ -1,0 +1,4438 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.ClientProxyExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "clientProxy",
+              "Type": "Microsoft.AspNetCore.SignalR.IClientProxy"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg10",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.HubLifetimeManager<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddToGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveFromGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAllAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendConnectionAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupAsync",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupsAsync",
+          "Parameters": [
+            {
+              "Name": "groupNames",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupExceptAsync",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendUserAsync",
+          "Parameters": [
+            {
+              "Name": "userId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnConnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnDisconnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAllExceptAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendConnectionsAsync",
+          "Parameters": [
+            {
+              "Name": "connectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendUsersAsync",
+          "Parameters": [
+            {
+              "Name": "userIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<T0>>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.DefaultUserIdProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.IUserIdProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetUserId",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.IUserIdProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.DynamicHub",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.SignalR.Hub",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Clients",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.DynamicHubClients",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Clients",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SignalR.DynamicHubClients"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.DynamicHubClients",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_All",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept",
+          "Parameters": [
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Caller",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Client",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients",
+          "Parameters": [
+            {
+              "Name": "connectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Group",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups",
+          "Parameters": [
+            {
+              "Name": "groupNames",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OthersInGroup",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Others",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "User",
+          "Parameters": [
+            {
+              "Name": "userId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users",
+          "Parameters": [
+            {
+              "Name": "userIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "clients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubCallerClients"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Hub",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Clients",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IHubCallerClients",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Clients",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubCallerClients"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.HubCallerContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Context",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SignalR.HubCallerContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Groups",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IGroupManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Groups",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SignalR.IGroupManager"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnConnectedAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnDisconnectedAsync",
+          "Parameters": [
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [
+            {
+              "Name": "disposing",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubCallerContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserIdentifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_User",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionAborted",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Abort",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubClientsExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId7",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId7",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId8",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection4",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection5",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection6",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection7",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "connection1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection7",
+              "Type": "System.String"
+            },
+            {
+              "Name": "connection8",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group4",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group5",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group6",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group7",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "group1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group7",
+              "Type": "System.String"
+            },
+            {
+              "Name": "group8",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId7",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId7",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionId8",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user4",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user5",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user6",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user7",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users<T0>",
+          "Parameters": [
+            {
+              "Name": "hubClients",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+            },
+            {
+              "Name": "user1",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user2",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user3",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user4",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user5",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user6",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user7",
+              "Type": "System.String"
+            },
+            {
+              "Name": "user8",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubConnectionContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionAborted",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_User",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserIdentifier",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserIdentifier",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Protocol",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.ValueTask",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.SerializedHubMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.ValueTask",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Abort",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "connectionContext",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            },
+            {
+              "Name": "keepAliveInterval",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubConnectionHandler<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Connections.ConnectionHandler",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnConnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "lifetimeManager",
+              "Type": "Microsoft.AspNetCore.SignalR.HubLifetimeManager<T0>"
+            },
+            {
+              "Name": "protocolResolver",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubProtocolResolver"
+            },
+            {
+              "Name": "globalHubOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions>"
+            },
+            {
+              "Name": "hubOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<T0>>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "userIdProvider",
+              "Type": "Microsoft.AspNetCore.SignalR.IUserIdProvider"
+            },
+            {
+              "Name": "dispatcher",
+              "Type": "Microsoft.AspNetCore.SignalR.Internal.HubDispatcher<T0>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubConnectionStore",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.HubConnectionContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.HubConnectionStore+Enumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubLifetimeManager<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnConnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnDisconnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAllAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAllExceptAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendConnectionAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendConnectionsAsync",
+          "Parameters": [
+            {
+              "Name": "connectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupAsync",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupsAsync",
+          "Parameters": [
+            {
+              "Name": "groupNames",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendGroupExceptAsync",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendUserAsync",
+          "Parameters": [
+            {
+              "Name": "userId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendUsersAsync",
+          "Parameters": [
+            {
+              "Name": "userIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddToGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveFromGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubMethodNameAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HandshakeTimeout",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandshakeTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KeepAliveInterval",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_KeepAliveInterval",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SupportedProtocols",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SupportedProtocols",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EnableDetailedErrors",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EnableDetailedErrors",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubOptions<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.SignalR.HubOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Hub<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.SignalR.Hub",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Clients",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IHubCallerClients<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Clients",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.SignalR.IHubCallerClients<T0>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IClientProxy",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SendCoreAsync",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IGroupManager",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddToGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveFromGroupAsync",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubActivator<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Release",
+          "Parameters": [
+            {
+              "Name": "hub",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubCallerClients",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.IHubCallerClients<Microsoft.AspNetCore.SignalR.IClientProxy>"
+      ],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubCallerClients<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.IHubClients<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Caller",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Others",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OthersInGroup",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubClients",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.IHubClients<Microsoft.AspNetCore.SignalR.IClientProxy>"
+      ],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubClients<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_All",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AllExcept",
+          "Parameters": [
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Client",
+          "Parameters": [
+            {
+              "Name": "connectionId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clients",
+          "Parameters": [
+            {
+              "Name": "connectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Group",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Groups",
+          "Parameters": [
+            {
+              "Name": "groupNames",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GroupExcept",
+          "Parameters": [
+            {
+              "Name": "groupName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "excludedConnectionIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "User",
+          "Parameters": [
+            {
+              "Name": "userId",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Users",
+          "Parameters": [
+            {
+              "Name": "userIds",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Clients",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IHubClients",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Groups",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IGroupManager",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubContext<T0, T1>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Clients",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IHubClients<T1>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Groups",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.IGroupManager",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "THub",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.SignalR.Hub<T1>"
+          ]
+        },
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 1,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IHubProtocolResolver",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AllProtocols",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetProtocol",
+          "Parameters": [
+            {
+              "Name": "protocolName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "supportedProtocols",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.ISignalRBuilder"
+      ],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.IUserIdProvider",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetUserId",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.SerializedHubMessage",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Message",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetSerializedMessage",
+          "Parameters": [
+            {
+              "Name": "protocol",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol"
+            }
+          ],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "messages",
+              "Type": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.SignalR.SerializedMessage>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.SerializedMessage",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ProtocolName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Serialized",
+          "Parameters": [],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protocolName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "serialized",
+              "Type": "System.ReadOnlyMemory<System.Byte>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.SignalRConnectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseHub<T0>",
+          "Parameters": [
+            {
+              "Name": "connectionBuilder",
+              "Type": "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "THub",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.Hub"
+              ]
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddSignalRCore",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubConnectionStore+Enumerator",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.SignalR.HubConnectionContext>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveNext",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Reset",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.HubConnectionContext",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.SignalR.HubConnectionContext>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "hubConnectionList",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionStore"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

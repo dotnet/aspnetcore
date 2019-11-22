@@ -1,0 +1,6 @@
+Code span at (0:0,0 [9] ) (Accepts:Any) - Parent: Statement block at (0:0,0 [25] )
+Markup span at (9:0,9 [1] ) (Accepts:Any) - Parent: Markup block at (9:0,9 [15] )
+Transition span at (10:0,10 [1] ) (Accepts:None) - Parent: Markup block at (9:0,9 [15] )
+MetaCode span at (11:0,11 [1] ) (Accepts:Any) - Parent: Markup block at (9:0,9 [15] )
+Markup span at (12:0,12 [12] ) (Accepts:None) - Parent: Markup block at (9:0,9 [15] )
+Code span at (24:1,0 [1] ) (Accepts:Any) - Parent: Statement block at (0:0,0 [25] )

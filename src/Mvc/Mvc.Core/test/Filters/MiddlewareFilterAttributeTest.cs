@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Pipeline1.ConfigurePipeline = (ab) =>
             {
                 configureCallCount++;
-                ab.Use((httpCtxt, next) =>
+                ab.Use((httpContext, next) =>
                 {
                     return next();
                 });

@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 {
                     if (_internalBuffer.Buffer == null || _internalBuffer.Buffer.Length == 0)
                     {
-                        await _input.WaitToReadAsync();
+                        await _input.WaitToReadAsync(cancellationToken);
 
                         if (_input.TryRead(out var message))
                         {

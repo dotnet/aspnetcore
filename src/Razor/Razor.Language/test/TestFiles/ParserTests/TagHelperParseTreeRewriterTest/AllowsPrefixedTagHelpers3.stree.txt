@@ -1,0 +1,3 @@
+Markup block - Gen<None> - 11 - (0:0,0)
+    Tag block - Gen<TagHelper> - 11 - (0:0,0) - th:myth - mythTagHelper
+        SelfClosing - <th:myth />

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(NullLoggerFactory.Instance);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             requestSizeLimitResourceFilter.Bytes = 12345;
             var requestSizeLimitResourceFilterFinal = new RequestSizeLimitFilter(NullLoggerFactory.Instance);
             requestSizeLimitResourceFilterFinal.Bytes = 0;
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { requestSizeLimitResourceFilter, requestSizeLimitResourceFilterFinal });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             // Act
             requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             httpMaxRequestBodySize.IsReadOnly = true;
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal($"The maximum request body size has been set to 12345.", write.State.ToString());
         }
 
-        private static AuthorizationFilterContext CreateauthorizationFilterContext(IFilterMetadata[] filters)
+        private static AuthorizationFilterContext CreateAuthorizationFilterContext(IFilterMetadata[] filters)
         {
             return new AuthorizationFilterContext(CreateActionContext(), filters);
         }

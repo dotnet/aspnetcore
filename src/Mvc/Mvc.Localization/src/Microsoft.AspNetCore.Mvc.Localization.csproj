@@ -12,10 +12,6 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
 
     <Reference Include="Microsoft.AspNetCore.Localization" />

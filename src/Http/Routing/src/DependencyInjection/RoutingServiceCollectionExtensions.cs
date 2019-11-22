@@ -4,10 +4,12 @@
 using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -47,6 +49,35 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 
+            // Collect all data sources from DI.
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<EndpointOptions>, ConfigureEndpointOptions>());
+
+            // Allow global access to the list of endpoints.
+            services.TryAddSingleton<CompositeEndpointDataSource>(s =>
+            {
+                var options = s.GetRequiredService<IOptions<EndpointOptions>>();
+                return new CompositeEndpointDataSource(options.Value.DataSources);
+            });
+
+            //
+            // Default matcher implementation
+            //
+            services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
+            services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
+            services.TryAddTransient<DfaMatcherBuilder>();
+            services.TryAddSingleton<DfaGraphWriter>();
+            services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
+
+            // Link generation related services
+            services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+            services.TryAddSingleton<IEndpointAddressScheme<string>, EndpointNameAddressScheme>();
+            services.TryAddSingleton<IEndpointAddressScheme<RouteValuesAddress>, RouteValuesAddressScheme>();
+
+            //
+            // Endpoint Selection
+            //
+            services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
             return services;
         }
 

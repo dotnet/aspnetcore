@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 if (!_doingWork)
                 {
-                    System.Threading.ThreadPool.QueueUserWorkItem(_doWorkCallback, this);
+                    System.Threading.ThreadPool.UnsafeQueueUserWorkItem(_doWorkCallback, this);
                     _doingWork = true;
                 }
             }

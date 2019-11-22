@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -50,6 +51,33 @@ namespace Microsoft.AspNetCore.Mvc.DependencyInjection
             // Assert
             Assert.Same(result, builder);
             Assert.Equal(new ApplicationPart[] { part }, builder.PartManager.ApplicationParts.ToArray());
+        }
+
+        [Fact]
+        public void ConfigureApiBehaviorOptions_InvokesSetupAction()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection()
+                .AddOptions();
+
+            var builder = new MvcCoreBuilder(
+                serviceCollection,
+                new ApplicationPartManager());
+
+            var part = new TestApplicationPart();
+
+            // Act
+            var result = builder.ConfigureApiBehaviorOptions(o =>
+            {
+                o.SuppressMapClientErrors = true;
+            });
+
+            // Assert
+            var options = serviceCollection.
+                BuildServiceProvider()
+                .GetRequiredService<IOptions<ApiBehaviorOptions>>()
+                .Value;
+            Assert.True(options.SuppressMapClientErrors);
         }
     }
 }

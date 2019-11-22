@@ -64,7 +64,7 @@ namespace SystemdTestApp
 
                     options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps();
                         listenOptions.UseConnectionLogging();
                     });
 

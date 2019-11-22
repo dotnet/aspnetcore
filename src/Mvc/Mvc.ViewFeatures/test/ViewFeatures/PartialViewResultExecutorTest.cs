@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -60,6 +62,30 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Arrange
             var viewName = "some-view-name";
             var context = GetActionContext(viewName);
+            var executor = GetViewExecutor();
+
+            var viewResult = new PartialViewResult
+            {
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var viewEngineResult = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.Equal(viewName, viewEngineResult.ViewName);
+        }
+
+        [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void FindView_UsesActionDescriptorName_IfViewNameIsNull_UsesInvariantCulture()
+        {
+            // Arrange
+            var viewName = "10/31/2018 07:37:38 -07:00";
+            var context = GetActionContext(viewName);
+            context.RouteData.Values["action"] = new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7));
+
             var executor = GetViewExecutor();
 
             var viewResult = new PartialViewResult

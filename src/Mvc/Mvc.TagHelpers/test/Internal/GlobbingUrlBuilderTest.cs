@@ -411,6 +411,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             Assert.Collection(excludePatterns, pattern => Assert.Equal($"{prefix}**/*.min.css", pattern));
         }
 
+        [Fact]
+        public void BuildUrlList_AddsToMemoryCache_WithSizeLimit()
+        {
+            // Arrange
+            var cacheEntry = Mock.Of<ICacheEntry>(m => m.ExpirationTokens == new List<IChangeToken>());
+            var cache = Mock.Of<IMemoryCache>(m => m.CreateEntry(It.IsAny<object>()) == cacheEntry);
+
+            var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
+            var requestPathBase = PathString.Empty;
+            var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
+
+            // Act
+            var urlList = globbingUrlBuilder.BuildUrlList("/site.css", "**/*.css", excludePattern: null);
+
+            // Assert
+            Assert.Equal(38, cacheEntry.Size);
+        }
+
         public class FileNode
         {
             public FileNode(string name)

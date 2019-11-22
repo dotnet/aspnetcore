@@ -1,0 +1,13 @@
+Markup block - Gen<None> - 34 - (0:0,0)
+    Tag block - Gen<TagHelper> - 34 - (0:0,0) - th:myth2 - mythTagHelper2
+        SelfClosing - <th:myth2 bound="@DateTime.Now" />
+        bound - DoubleQuotes
+            Markup block - Gen<None> - 13 - (17:0,17)
+                Markup block - Gen<None> - 13 - (17:0,17)
+                    Expression block - Gen<Expr> - 13 - (17:0,17)
+                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:1
+                            CSharpTokenType.Transition;[@];
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Tokens:3
+                            CSharpTokenType.Identifier;[DateTime];
+                            CSharpTokenType.Dot;[.];
+                            CSharpTokenType.Identifier;[Now];

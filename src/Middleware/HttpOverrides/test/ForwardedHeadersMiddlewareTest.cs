@@ -822,5 +822,48 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("localhost", context.Request.Host.ToString());
             Assert.Equal("Protocol", context.Request.Scheme);
         }
+
+        [Theory]
+        [InlineData("22.33.44.55,::ffff:127.0.0.1", "", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121", "172.123.142.121", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121", "::ffff:172.123.142.121", "", "22.33.44.55")]
+        [InlineData("22.33.44.55,::ffff:172.123.142.121,172.32.24.23", "", "172.0.0.0/8", "22.33.44.55")]
+        [InlineData("2a00:1450:4009:802::200e,2a02:26f0:2d:183::356e,::ffff:172.123.142.121,172.32.24.23", "", "172.0.0.0/8,2a02:26f0:2d:183::1/64", "2a00:1450:4009:802::200e")]
+        [InlineData("22.33.44.55,2a02:26f0:2d:183::356e,::ffff:127.0.0.1", "2a02:26f0:2d:183::356e", "", "22.33.44.55")]
+        public async Task XForwardForIPv4ToIPv6Mapping(string forHeader, string knownProxies, string knownNetworks, string expectedRemoteIp)
+        {
+            var options = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor,
+                ForwardLimit = null,
+            };
+
+            foreach (var knownProxy in knownProxies.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var proxy = IPAddress.Parse(knownProxy);
+                options.KnownProxies.Add(proxy);
+            }
+            foreach (var knownNetwork in knownNetworks.Split(new string[] { "," }, options:StringSplitOptions.RemoveEmptyEntries))
+            {
+                var knownNetworkParts = knownNetwork.Split('/');
+                var networkIp = IPAddress.Parse(knownNetworkParts[0]);
+                var prefixLength = int.Parse(knownNetworkParts[1]);
+                options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
+            }
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(options);
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = forHeader;
+            });
+
+            Assert.Equal(expectedRemoteIp, context.Connection.RemoteIpAddress.ToString());
+        }
     }
 }

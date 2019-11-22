@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public abstract class CSharpTokenizerTestBase : TokenizerTestBase
     {
-        private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown);
+        private static CSharpToken _ignoreRemaining = new CSharpToken(string.Empty, CSharpTokenType.Unknown);
 
         internal override object IgnoreRemaining
         {
@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CSharpTokenizer(source);
         }
 
-        internal void TestSingleToken(string text, CSharpSymbolType expectedSymbolType)
+        internal void TestSingleToken(string text, CSharpTokenType expectedTokenType)
         {
-            TestTokenizer(text, new CSharpSymbol(text, expectedSymbolType));
+            TestTokenizer(text, new CSharpToken(text, expectedTokenType));
         }
 
-        internal void TestTokenizer(string input, params CSharpSymbol[] expectedSymbols)
+        internal void TestTokenizer(string input, params CSharpToken[] expectedTokens)
         {
-            base.TestTokenizer<CSharpSymbol, CSharpSymbolType>(input, expectedSymbols);
+            base.TestTokenizer<CSharpToken, CSharpTokenType>(input, expectedTokens);
         }
     }
 }

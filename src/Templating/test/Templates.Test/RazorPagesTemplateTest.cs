@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Testing.xunit;
@@ -57,8 +57,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/About");
-                    aspNetProcess.AssertOk("/Contact");
+                    aspNetProcess.AssertOk("/Privacy");
                 }
             }
         }
@@ -108,8 +107,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/About");
-                    aspNetProcess.AssertOk("/Contact");
+                    aspNetProcess.AssertOk("/Privacy");
                 }
             }
         }

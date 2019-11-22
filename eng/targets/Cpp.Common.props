@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />

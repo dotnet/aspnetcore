@@ -18,7 +18,7 @@ TEST(logger_write, entry_added_if_trace_level_set)
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
-    ASSERT_EQ(1, log_entries.size());
+    ASSERT_EQ(1U, log_entries.size());
 }
 
 TEST(logger_write, entry_not_added_if_trace_level_not_set)
@@ -46,7 +46,7 @@ TEST(logger_write, entries_added_for_combined_trace_level)
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
-    ASSERT_EQ(5, log_entries.size());
+    ASSERT_EQ(5U, log_entries.size());
 }
 
 TEST(logger_write, entries_formatted_correctly)

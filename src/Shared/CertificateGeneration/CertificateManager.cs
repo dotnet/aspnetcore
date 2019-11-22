@@ -19,16 +19,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
         public const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
-        public const string AspNetIdentityOid = "1.3.6.1.4.1.311.84.1.2";
-        public const string AspNetIdentityOidFriendlyName = "ASP.NET Core Identity Json Web Token signing development certificate";
-
         private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
         private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
 
         private const string LocalhostHttpsDnsName = "localhost";
         private const string LocalhostHttpsDistinguishedName = "CN=" + LocalhostHttpsDnsName;
-
-        private const string IdentityDistinguishedName = "CN=Microsoft.AspNetCore.Identity.Signing";
 
         public const int RSAMinimumKeySizeInBits = 2048;
 
@@ -37,7 +32,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
         private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSFindCertificateCommandLine = "security";
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2
         private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
 #endif
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
@@ -46,7 +41,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSDeleteCertificateCommandLine = "sudo";
         private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
         private const string MacOSTrustCertificateCommandLine = "sudo";
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
 #endif
         private const int UserCancelledErrorCode = 1223;
@@ -56,8 +51,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             StoreName storeName,
             StoreLocation location,
             bool isValid,
-            bool requireExportable = true)
+            bool requireExportable = true,
+            DiagnosticInformation diagnostics = null)
         {
+            diagnostics?.Debug($"Listing '{purpose.ToString()}' certificates on '{location}\\{storeName}'.");
             var certificates = new List<X509Certificate2>();
             try
             {
@@ -70,28 +67,37 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     {
                         case CertificatePurpose.All:
                             matchingCertificates = matchingCertificates
-                                .Where(c => HasOid(c, AspNetHttpsOid) || HasOid(c, AspNetIdentityOid));
+                                .Where(c => HasOid(c, AspNetHttpsOid));
                             break;
                         case CertificatePurpose.HTTPS:
                             matchingCertificates = matchingCertificates
                                 .Where(c => HasOid(c, AspNetHttpsOid));
                             break;
-                        case CertificatePurpose.Signing:
-                            matchingCertificates = matchingCertificates
-                                .Where(c => HasOid(c, AspNetIdentityOid));
-                            break;
                         default:
                             break;
                     }
+
+                    diagnostics?.Debug(diagnostics.DescribeCertificates(matchingCertificates));
                     if (isValid)
                     {
                         // Ensure the certificate hasn't expired, has a private key and its exportable
                         // (for container/unix scenarios).
+                        diagnostics?.Debug("Checking certificates for validity.");
                         var now = DateTimeOffset.Now;
-                        matchingCertificates = matchingCertificates
+                        var validCertificates = matchingCertificates
                             .Where(c => c.NotBefore <= now &&
                                 now <= c.NotAfter &&
-                                (!requireExportable || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || IsExportable(c)));
+                                (!requireExportable || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || IsExportable(c)))
+                            .ToArray();
+
+                        var invalidCertificates = matchingCertificates.Except(validCertificates);
+
+                        diagnostics?.Debug("Listing valid certificates");
+                        diagnostics?.Debug(diagnostics.DescribeCertificates(validCertificates));
+                        diagnostics?.Debug("Listing invalid certificates");
+                        diagnostics?.Debug(diagnostics.DescribeCertificates(invalidCertificates));
+
+                        matchingCertificates = validCertificates;
                     }
 
                     // We need to enumerate the certificates early to prevent dispoisng issues.
@@ -123,7 +129,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport));
 #else
             // Only check for RSA CryptoServiceProvider and do not fail in XPlat tooling as
-            // System.Security.Cryptography.Cng is not pat of the shared framework and we don't
+            // System.Security.Cryptography.Cng is not part of the shared framework and we don't
             // want to bring the dependency in on CLI scenarios. This functionality will be used
             // on CLI scenarios as part of the first run experience, so checking the exportability
             // of the certificate is not important.
@@ -133,7 +139,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 #endif
         }
 
-        private void DisposeCertificates(IEnumerable<X509Certificate2> disposables)
+        private static void DisposeCertificates(IEnumerable<X509Certificate2> disposables)
         {
             foreach (var disposable in disposables)
             {
@@ -147,9 +153,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2
 
-        public X509Certificate2 CreateAspNetCoreHttpsDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
+        public X509Certificate2 CreateAspNetCoreHttpsDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride, DiagnosticInformation diagnostics = null)
         {
             var subject = new X500DistinguishedName(subjectOverride ?? LocalhostHttpsDistinguishedName);
             var extensions = new List<X509Extension>();
@@ -192,46 +198,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return certificate;
         }
 
-        public X509Certificate2 CreateApplicationTokenSigningDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
-        {
-            var subject = new X500DistinguishedName(subjectOverride ?? IdentityDistinguishedName);
-            var extensions = new List<X509Extension>();
-
-            var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, critical: true);
-            var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(
-                new OidCollection() {
-                    new Oid(
-                        ServerAuthenticationEnhancedKeyUsageOid,
-                        ServerAuthenticationEnhancedKeyUsageOidFriendlyName)
-                },
-                critical: true);
-
-            var basicConstraints = new X509BasicConstraintsExtension(
-                certificateAuthority: false,
-                hasPathLengthConstraint: false,
-                pathLengthConstraint: 0,
-                critical: true);
-
-            var aspNetIdentityExtension = new X509Extension(
-                new AsnEncodedData(
-                    new Oid(AspNetIdentityOid, AspNetIdentityOidFriendlyName),
-                    Encoding.ASCII.GetBytes(AspNetIdentityOidFriendlyName)),
-                critical: false);
-
-            extensions.Add(basicConstraints);
-            extensions.Add(keyUsage);
-            extensions.Add(enhancedKeyUsage);
-            extensions.Add(aspNetIdentityExtension);
-
-            var certificate = CreateSelfSignedCertificate(subject, extensions, notBefore, notAfter);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                certificate.FriendlyName = AspNetIdentityOidFriendlyName;
-            }
-
-            return certificate;
-        }
-
         public X509Certificate2 CreateSelfSignedCertificate(
             X500DistinguishedName subject,
             IEnumerable<X509Extension> extensions,
@@ -260,8 +226,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        public X509Certificate2 SaveCertificateInStore(X509Certificate2 certificate, StoreName name, StoreLocation location)
+        public X509Certificate2 SaveCertificateInStore(X509Certificate2 certificate, StoreName name, StoreLocation location, DiagnosticInformation diagnostics = null)
         {
+            diagnostics?.Debug("Saving the certificate into the certificate store.");
             var imported = certificate;
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -287,33 +254,67 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return imported;
         }
 
-        public void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password)
+        public void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password, DiagnosticInformation diagnostics = null)
         {
-            if (Path.GetDirectoryName(path) != "")
+            diagnostics?.Debug(
+                $"Exporting certificate to '{path}'",
+                includePrivateKey ? "The certificate will contain the private key" : "The certificate will not contain the private key");
+            if (includePrivateKey && password == null)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                diagnostics?.Debug("No password was provided for the certificate.");
             }
 
+            var targetDirectoryPath = Path.GetDirectoryName(path);
+            if (targetDirectoryPath != "")
+            {
+                diagnostics?.Debug($"Ensuring that the directory for the target exported certificate path exists '{targetDirectoryPath}'");
+                Directory.CreateDirectory(targetDirectoryPath);
+            }
+
+            byte[] bytes;
             if (includePrivateKey)
             {
-                var bytes = certificate.Export(X509ContentType.Pkcs12, password);
                 try
                 {
-                    File.WriteAllBytes(path, bytes);
+                    diagnostics?.Debug($"Exporting the certificate including the private key.");
+                    bytes = certificate.Export(X509ContentType.Pkcs12, password);
                 }
-                finally
+                catch (Exception e)
                 {
-                    Array.Clear(bytes, 0, bytes.Length);
+                    diagnostics?.Error($"Failed to export the certificate with the private key", e);
+                    throw;
                 }
             }
             else
             {
-                var bytes = certificate.Export(X509ContentType.Cert);
+                try
+                {
+                    diagnostics?.Debug($"Exporting the certificate without the private key.");
+                    bytes = certificate.Export(X509ContentType.Cert);
+                }
+                catch (Exception ex)
+                {
+                    diagnostics?.Error($"Failed to export the certificate without the private key", ex);
+                    throw;
+                }
+            }
+            try
+            {
+                diagnostics?.Debug($"Writing exported certificate to path '{path}'.");
                 File.WriteAllBytes(path, bytes);
+            }
+            catch (Exception ex)
+            {
+                diagnostics?.Error("Failed writing the certificate to the target path", ex);
+                throw;
+            }
+            finally
+            {
+                Array.Clear(bytes, 0, bytes.Length);
             }
         }
 
-        public void TrustCertificate(X509Certificate2 certificate)
+        public void TrustCertificate(X509Certificate2 certificate, DiagnosticInformation diagnostics = null)
         {
             // Strip certificate of the private key if any.
             var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
@@ -322,21 +323,24 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    TrustCertificateOnWindows(certificate, publicCertificate);
+                    diagnostics?.Debug("Trusting the certificate on Windows.");
+                    TrustCertificateOnWindows(certificate, publicCertificate, diagnostics);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    TrustCertificateOnMac(publicCertificate);
+                    diagnostics?.Debug("Trusting the certificate on MAC.");
+                    TrustCertificateOnMac(publicCertificate, diagnostics);
                 }
             }
         }
 
-        private void TrustCertificateOnMac(X509Certificate2 publicCertificate)
+        private void TrustCertificateOnMac(X509Certificate2 publicCertificate, DiagnosticInformation diagnostics)
         {
             var tmpFile = Path.GetTempFileName();
             try
             {
                 ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
+                diagnostics?.Debug("Running the trust command on Mac OS");
                 using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {
                     process.WaitForExit();
@@ -362,19 +366,29 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        private static void TrustCertificateOnWindows(X509Certificate2 certificate, X509Certificate2 publicCertificate)
+        private static void TrustCertificateOnWindows(X509Certificate2 certificate, X509Certificate2 publicCertificate, DiagnosticInformation diagnostics = null)
         {
             publicCertificate.FriendlyName = certificate.FriendlyName;
 
             using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadWrite);
+                var existing = store.Certificates.Find(X509FindType.FindByThumbprint, publicCertificate.Thumbprint, validOnly: false);
+                if (existing.Count > 0)
+                {
+                    diagnostics?.Debug("Certificate already trusted. Skipping trust step.");
+                    DisposeCertificates(existing.OfType<X509Certificate2>());
+                    return;
+                }
+
                 try
                 {
+                    diagnostics?.Debug("Adding certificate to the store.");
                     store.Add(publicCertificate);
                 }
                 catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
                 {
+                    diagnostics?.Debug("User cancelled the trust prompt.");
                     throw new UserCancelledTrustException();
                 }
                 store.Close();
@@ -437,6 +451,30 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
+        public DiagnosticInformation CleanupHttpsCertificates2(string subject = LocalhostHttpsDistinguishedName)
+        {
+            return CleanupCertificates2(CertificatePurpose.HTTPS, subject);
+        }
+
+        public DiagnosticInformation CleanupCertificates2(CertificatePurpose purpose, string subject)
+        {
+            var diagnostics = new DiagnosticInformation();
+            // On OS X we don't have a good way to manage trusted certificates in the system keychain
+            // so we do everything by invoking the native toolchain.
+            // This has some limitations, like for example not being able to identify our custom OID extension. For that
+            // matter, when we are cleaning up certificates on the machine, we start by removing the trusted certificates.
+            // To do this, we list the certificates that we can identify on the current user personal store and we invoke
+            // the native toolchain to remove them from the sytem keychain. Once we have removed the trusted certificates,
+            // we remove the certificates from the local user store to finish up the cleanup.
+            var certificates = ListCertificates(purpose, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true, diagnostics);
+            foreach (var certificate in certificates)
+            {
+                RemoveCertificate(certificate, RemoveLocations.All, diagnostics);
+            }
+
+            return diagnostics;
+        }
+
         public void RemoveAllCertificates(CertificatePurpose purpose, StoreName storeName, StoreLocation storeLocation, string subject = null)
         {
             var certificates = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
@@ -454,32 +492,33 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             DisposeCertificates(certificates);
         }
 
-        private void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations)
+        private void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations, DiagnosticInformation diagnostics = null)
         {
             switch (locations)
             {
                 case RemoveLocations.Undefined:
                     throw new InvalidOperationException($"'{nameof(RemoveLocations.Undefined)}' is not a valid location.");
                 case RemoveLocations.Local:
-                    RemoveCertificateFromUserStore(certificate);
+                    RemoveCertificateFromUserStore(certificate, diagnostics);
                     break;
                 case RemoveLocations.Trusted when !RuntimeInformation.IsOSPlatform(OSPlatform.Linux):
-                    RemoveCertificateFromTrustedRoots(certificate);
+                    RemoveCertificateFromTrustedRoots(certificate, diagnostics);
                     break;
                 case RemoveLocations.All:
                     if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
-                        RemoveCertificateFromTrustedRoots(certificate);
+                        RemoveCertificateFromTrustedRoots(certificate, diagnostics);
                     }
-                    RemoveCertificateFromUserStore(certificate);
+                    RemoveCertificateFromUserStore(certificate, diagnostics);
                     break;
                 default:
                     throw new InvalidOperationException("Invalid location.");
             }
         }
 
-        private static void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+        private static void RemoveCertificateFromUserStore(X509Certificate2 certificate, DiagnosticInformation diagnostics)
         {
+            diagnostics?.Debug($"Trying to remove certificate with thumbprint '{certificate.Thumbprint}' from certificate store '{StoreLocation.CurrentUser}\\{StoreName.My}'.");
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadWrite);
@@ -492,8 +531,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        private void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
+        private void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate, DiagnosticInformation diagnostics)
         {
+            diagnostics?.Debug($"Trying to remove certificate with thumbprint '{certificate.Thumbprint}' from certificate store '{StoreLocation.CurrentUser}\\{StoreName.Root}'.");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
@@ -501,9 +541,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     store.Open(OpenFlags.ReadWrite);
                     var matching = store.Certificates
                         .OfType<X509Certificate2>()
-                        .Single(c => c.SerialNumber == certificate.SerialNumber);
+                        .SingleOrDefault(c => c.SerialNumber == certificate.SerialNumber);
 
-                    store.Remove(matching);
+                    if (matching != null)
+                    {
+                        store.Remove(matching);
+                    }
+
                     store.Close();
                 }
             }
@@ -513,16 +557,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     try
                     {
+                        diagnostics?.Debug("Trying to remove the certificate trust rule.");
                         RemoveCertificateTrustRule(certificate);
                     }
                     catch
                     {
+                        diagnostics?.Debug("Failed to remove the certificate trust rule.");
                         // We don't care if we fail to remove the trust rule if
                         // for some reason the certificate became untrusted.
                         // The delete command will fail if the certificate is
                         // trusted.
                     }
                     RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
+                }
+                else
+                {
+                    diagnostics?.Debug("The certificate was not trusted.");
                 }
             }
         }
@@ -601,18 +651,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject);
         }
 
-        public EnsureCertificateResult EnsureAspNetCoreApplicationTokensDevelopmentCertificate(
-            DateTimeOffset notBefore,
-            DateTimeOffset notAfter,
-            string path = null,
-            bool trust = false,
-            bool includePrivateKey = false,
-            string password = null,
-            string subject = IdentityDistinguishedName)
-        {
-            return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.Signing, path, trust, includePrivateKey, password, subject);
-        }
-
         public EnsureCertificateResult EnsureValidCertificateExists(
             DateTimeOffset notBefore,
             DateTimeOffset notAfter,
@@ -651,9 +689,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                             throw new InvalidOperationException("The certificate must have a specific purpose.");
                         case CertificatePurpose.HTTPS:
                             certificate = CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, subjectOverride);
-                            break;
-                        case CertificatePurpose.Signing:
-                            certificate = CreateApplicationTokenSigningDevelopmentCertificate(notBefore, notAfter, subjectOverride);
                             break;
                         default:
                             throw new InvalidOperationException("The certificate must have a purpose.");
@@ -704,6 +739,143 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return result;
         }
 
+        // This is just to avoid breaking changes across repos. 
+        // Will be renamed back to EnsureAspNetCoreHttpsDevelopmentCertificate once updates are made elsewhere.
+        public DetailedEnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate2(
+            DateTimeOffset notBefore,
+            DateTimeOffset notAfter,
+            string path = null,
+            bool trust = false,
+            bool includePrivateKey = false,
+            string password = null,
+            string subject = LocalhostHttpsDistinguishedName)
+        {
+            return EnsureValidCertificateExists2(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject);
+        }
+
+        public DetailedEnsureCertificateResult EnsureValidCertificateExists2(
+            DateTimeOffset notBefore,
+            DateTimeOffset notAfter,
+            CertificatePurpose purpose,
+            string path,
+            bool trust,
+            bool includePrivateKey,
+            string password,
+            string subject)
+        {
+            if (purpose == CertificatePurpose.All)
+            {
+                throw new ArgumentException("The certificate must have a specific purpose.");
+            }
+
+            var result = new DetailedEnsureCertificateResult();
+
+            var certificates = ListCertificates(purpose, StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true, result.Diagnostics).Concat(
+                ListCertificates(purpose, StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true, result.Diagnostics));
+
+            var filteredCertificates = subject == null ? certificates : certificates.Where(c => c.Subject == subject);
+            if (subject != null)
+            {
+                var excludedCertificates = certificates.Except(filteredCertificates);
+
+                result.Diagnostics.Debug($"Filtering found certificates to those with a subject equal to '{subject}'");
+                result.Diagnostics.Debug(result.Diagnostics.DescribeCertificates(filteredCertificates));
+                result.Diagnostics.Debug($"Listing certificates excluded from consideration.");
+                result.Diagnostics.Debug(result.Diagnostics.DescribeCertificates(excludedCertificates));
+            }
+            else
+            {
+                result.Diagnostics.Debug("Skipped filtering certificates by subject.");
+            }
+
+            certificates = filteredCertificates;
+
+            result.ResultCode = EnsureCertificateResult.Succeeded;
+
+            X509Certificate2 certificate = null;
+            if (certificates.Count() > 0)
+            {
+                result.Diagnostics.Debug("Found valid certificates present on the machine.");
+                result.Diagnostics.Debug(result.Diagnostics.DescribeCertificates(certificates));
+                certificate = certificates.First();
+                result.Diagnostics.Debug("Selected certificate");
+                result.Diagnostics.Debug(result.Diagnostics.DescribeCertificates(certificate));
+                result.ResultCode = EnsureCertificateResult.ValidCertificatePresent;
+            }
+            else
+            {
+                result.Diagnostics.Debug("No valid certificates present on this machine. Trying to create one.");
+                try
+                {
+                    switch (purpose)
+                    {
+                        case CertificatePurpose.All:
+                            throw new InvalidOperationException("The certificate must have a specific purpose.");
+                        case CertificatePurpose.HTTPS:
+                            certificate = CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, subject, result.Diagnostics);
+                            break;
+                        default:
+                            throw new InvalidOperationException("The certificate must have a purpose.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    result.Diagnostics.Error("Error creating the certificate.", e);
+                    result.ResultCode = EnsureCertificateResult.ErrorCreatingTheCertificate;
+                    return result;
+                }
+
+                try
+                {
+                    certificate = SaveCertificateInStore(certificate, StoreName.My, StoreLocation.CurrentUser, result.Diagnostics);
+                }
+                catch (Exception e)
+                {
+                    result.Diagnostics.Error($"Error saving the certificate in the certificate store '{StoreLocation.CurrentUser}\\{StoreName.My}'.", e);
+                    result.ResultCode = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+                    return result;
+                }
+            }
+            if (path != null)
+            {
+                result.Diagnostics.Debug("Trying to export the certificate.");
+                result.Diagnostics.Debug(result.Diagnostics.DescribeCertificates(certificate));
+                try
+                {
+                    ExportCertificate(certificate, path, includePrivateKey, password, result.Diagnostics);
+                }
+                catch (Exception e)
+                {
+                    result.Diagnostics.Error("An error ocurred exporting the certificate.", e);
+                    result.ResultCode = EnsureCertificateResult.ErrorExportingTheCertificate;
+                    return result;
+                }
+            }
+
+            if ((RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && trust)
+            {
+                try
+                {
+                    result.Diagnostics.Debug("Trying to export the certificate.");
+                    TrustCertificate(certificate, result.Diagnostics);
+                }
+                catch (UserCancelledTrustException)
+                {
+                    result.Diagnostics.Error("The user cancelled trusting the certificate.", null);
+                    result.ResultCode = EnsureCertificateResult.UserCancelledTrustStep;
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    result.Diagnostics.Error("There was an error trusting the certificate.", e);
+                    result.ResultCode = EnsureCertificateResult.FailedToTrustTheCertificate;
+                    return result;
+                }
+            }
+
+            return result;
+        }
+
         private class UserCancelledTrustException : Exception
         {
         }
@@ -715,6 +887,65 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             Trusted,
             All
         }
+
+        internal class DetailedEnsureCertificateResult
+        {
+            public EnsureCertificateResult ResultCode { get; set; }
+            public DiagnosticInformation Diagnostics { get; set; } = new DiagnosticInformation();
+        }
 #endif
+
+        internal class DiagnosticInformation
+        {
+            public IList<string> Messages { get; } = new List<string>();
+
+            public IList<Exception> Exceptions { get; } = new List<Exception>();
+
+            internal void Debug(params string[] messages)
+            {
+                foreach (var message in messages)
+                {
+                    Messages.Add(message);
+                }
+            }
+
+            internal string[] DescribeCertificates(params X509Certificate2[] certificates)
+            {
+                return DescribeCertificates(certificates.AsEnumerable());
+            }
+
+            internal string[] DescribeCertificates(IEnumerable<X509Certificate2> certificates)
+            {
+                var result = new List<string>();
+                result.Add($"'{certificates.Count()}' found matching the criteria.");
+                result.Add($"SUBJECT - THUMBPRINT - NOT BEFORE - EXPIRES - HAS PRIVATE KEY");
+                foreach (var certificate in certificates)
+                {
+                    result.Add(DescribeCertificate(certificate));
+                }
+
+                return result.ToArray();
+            }
+
+            private static string DescribeCertificate(X509Certificate2 certificate) =>
+                $"{certificate.Subject} - {certificate.Thumbprint} - {certificate.NotBefore} - {certificate.NotAfter} - {certificate.HasPrivateKey}";
+
+            internal void Error(string preamble, Exception e)
+            {
+                Messages.Add(preamble);
+                if (Exceptions.Count > 0 && Exceptions[Exceptions.Count - 1] == e)
+                {
+                    return;
+                }
+
+                var ex = e;
+                while (ex != null)
+                {
+                    Messages.Add("Exception message: " + ex.Message);
+                    ex = ex.InnerException;
+                }
+
+            }
+        }
     }
 }

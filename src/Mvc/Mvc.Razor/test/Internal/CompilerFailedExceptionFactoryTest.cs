@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
@@ -41,6 +43,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 message => Assert.StartsWith(
                     @"The explicit expression block is missing a closing "")"" character.",
                     message.Message));
+        }
+
+        [Fact]
+        public void GetCompilationFailedResult_WithMissingReferences()
+        {
+            // Arrange
+            var expected = "One or more compilation references may be missing. If you're seeing this in a published application, set 'CopyRefAssembliesToPublishDirectory' to true in your project file to ensure files in the refs directory are published.";
+            var compilation = CSharpCompilation.Create("Test", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var syntaxTree = CSharpSyntaxTree.ParseText("@class Test { public string Test { get; set; } }");
+            compilation = compilation.AddSyntaxTrees(syntaxTree);
+            var emitResult = compilation.Emit(new MemoryStream());
+
+            // Act
+            var exception = CompilationFailedExceptionFactory.Create(
+                RazorCodeDocument.Create(RazorSourceDocument.Create("Test", "Index.cshtml"), Enumerable.Empty<RazorSourceDocument>()),
+                syntaxTree.ToString(),
+                "Test",
+                emitResult.Diagnostics);
+
+            // Assert
+            Assert.Collection(
+                exception.CompilationFailures,
+                failure => Assert.Equal(expected, failure.FailureSummary));
         }
 
         [Fact]

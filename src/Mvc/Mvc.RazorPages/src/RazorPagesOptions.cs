@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         private readonly CompatibilitySwitch<bool> _allowAreas;
         private readonly CompatibilitySwitch<bool> _allowMappingHeadRequestsToGetHandler;
+        private readonly CompatibilitySwitch<bool> _allowsDefaultHandlingForOptionsRequests;
         private readonly ICompatibilitySwitch[] _switches;
 
         private string _root = "/Pages";
@@ -24,11 +25,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             _allowAreas = new CompatibilitySwitch<bool>(nameof(AllowAreas));
             _allowMappingHeadRequestsToGetHandler = new CompatibilitySwitch<bool>(nameof(AllowMappingHeadRequestsToGetHandler));
+            _allowsDefaultHandlingForOptionsRequests = new CompatibilitySwitch<bool>(nameof(AllowDefaultHandlingForOptionsRequests));
 
             _switches = new ICompatibilitySwitch[]
             {
                 _allowAreas,
                 _allowMappingHeadRequestsToGetHandler,
+                _allowsDefaultHandlingForOptionsRequests,
             };
         }
 
@@ -132,6 +135,45 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             get => _allowMappingHeadRequestsToGetHandler.Value;
             set => _allowMappingHeadRequestsToGetHandler.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if HTTP requests with the OPTIONS method are handled by default, if
+        /// no handler is available.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/> if the version is
+        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// </value>
+        /// <remarks>
+        /// <para>
+        /// Razor Pages uses the current request's HTTP method to select a handler method. When no handler is available or selected,
+        /// the page is immediately executed. This may cause runtime errors if the page relies on the handler method to execute
+        /// and initialize some state. This setting attempts to avoid this class of error for HTTP <c>OPTIONS</c> requests by
+        /// returning a <c>200 OK</c> response.
+        /// </para>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired of the value compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> then
+        /// this setting will have value <c>true</c> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// lower then this setting will have value <c>true</c> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowDefaultHandlingForOptionsRequests
+        {
+            get => _allowsDefaultHandlingForOptionsRequests.Value;
+            set => _allowsDefaultHandlingForOptionsRequests.Value = value;
         }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()

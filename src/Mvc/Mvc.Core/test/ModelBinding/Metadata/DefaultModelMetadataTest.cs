@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -909,6 +910,351 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             metadataProvider.VerifyAll();
         }
 
+        [Fact]
+        public void CalculateHasValidators_ParameterMetadata_TypeHasNoValidators()
+        {
+            // Arrange
+            var parameter = GetType()
+                .GetMethod(nameof(CalculateHasValidators_ParameterMetadata_TypeHasNoValidatorsMethod), BindingFlags.Static | BindingFlags.NonPublic)
+                .GetParameters()[0];
+            var modelIdentity = ModelMetadataIdentity.ForParameter(parameter);
+            var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), false);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        private static void CalculateHasValidators_ParameterMetadata_TypeHasNoValidatorsMethod(string model) { }
+
+        [Fact]
+        public void CalculateHasValidators_PropertyMetadata_TypeHasNoValidators()
+        {
+            // Arrange
+            var property = GetType()
+                .GetProperty(nameof(CalculateHasValidators_PropertyMetadata_TypeHasNoValidatorsProperty), BindingFlags.Static | BindingFlags.NonPublic);
+            var modelIdentity = ModelMetadataIdentity.ForProperty(property.PropertyType, property.Name, GetType());
+            var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), false);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        private static int CalculateHasValidators_PropertyMetadata_TypeHasNoValidatorsProperty { get; set; }
+
+        [Fact]
+        public void CalculateHasValidators_TypeWithoutProperties_TypeHasNoValidators()
+        {
+            // Arrange
+            var modelIdentity = ModelMetadataIdentity.ForType(typeof(string));
+            var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), false);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_SimpleType_TypeHasValidators()
+        {
+            // Arrange
+            var modelIdentity = ModelMetadataIdentity.ForType(typeof(string));
+            var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), true);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_ReturnsTrue_SimpleType_TypeHasNonDeterministicValidators()
+        {
+            // Arrange
+            var modelIdentity = ModelMetadataIdentity.ForType(typeof(string));
+            var modelMetadata = CreateModelMetadata(modelIdentity, Mock.Of<IModelMetadataProvider>(), null);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_TypeWithProperties_PropertyIsNotDefaultModelMetadata()
+        {
+            // Arrange
+            var modelType = typeof(TypeWithProperties);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var propertyIdentity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var propertyMetadata = new Mock<ModelMetadata>(propertyIdentity);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { propertyMetadata.Object, })
+                .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_TypeWithProperties_HasValidatorForAnyPropertyIsTrue()
+        {
+            // Arrange
+            var modelType = typeof(TypeWithProperties);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var property1Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var property1Metadata = CreateModelMetadata(property1Identity, metadataProvider.Object, false);
+
+            var property2Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetProtectedSetProperty), typeof(string));
+            var property2Metadata = CreateModelMetadata(property2Identity, metadataProvider.Object, true);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { property1Metadata, property2Metadata })
+                .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_TypeWithProperties_HasValidatorsForPropertyIsNotDeterminstic()
+        {
+            // Arrange
+            var modelType = typeof(TypeWithProperties);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var propertyIdentity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), typeof(string));
+            var propertyMetadata = CreateModelMetadata(propertyIdentity, metadataProvider.Object, null);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { propertyMetadata, })
+                .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_TypeWithProperties_HasValidatorForAllPropertiesIsFalse()
+        {
+            // Arrange
+            var modelType = typeof(TypeWithProperties);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var property1Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetPublicSetProperty), modelType);
+            var property1Metadata = CreateModelMetadata(property1Identity, metadataProvider.Object, false);
+
+            var property2Identity = ModelMetadataIdentity.ForProperty(typeof(int), nameof(TypeWithProperties.PublicGetProtectedSetProperty), modelType);
+            var property2Metadata = CreateModelMetadata(property2Identity, metadataProvider.Object, false);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { property1Metadata, property2Metadata })
+                .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_SelfReferencingType_HasValidatorOnNestedProperty()
+        {
+            // Arrange
+            var modelType = typeof(Employee);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
+            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
+
+            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, false);
+            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, true); // BusinessUnit.Id has validators.
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { employeeIdMetadata, employeeUnitMetadata, employeeManagerMetadata, employeeEmployeesMetadata, })
+                .Verifiable();
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(typeof(BusinessUnit)))
+                .Returns(new[] { unitHeadMetadata, unitIdMetadata, })
+                .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_SelfReferencingType_HasValidatorOnSelfReferencedProperty()
+        {
+            // Arrange
+            var modelType = typeof(Employee);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
+            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
+
+            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, true); // BusinessUnit.Head has validators
+            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false); 
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { employeeIdMetadata, employeeUnitMetadata, employeeManagerMetadata, employeeEmployeesMetadata, });
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(typeof(BusinessUnit)))
+                .Returns(new[] { unitHeadMetadata, unitIdMetadata, });
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForType(modelType))
+                .Returns(modelMetadata);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_CollectionElementHasValidators()
+        {
+            // Arrange
+            var modelType = typeof(Employee);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            var employeeEmployees = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployeesMetadata = CreateModelMetadata(employeeEmployees, metadataProvider.Object, false);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { employeeIdMetadata, employeeEmployeesMetadata, });
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForType(modelType))
+                .Returns(CreateModelMetadata(modelIdentity, metadataProvider.Object, true)); // Employees.Employee has validators
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_SelfReferencingType_NoValidatorsInGraph()
+        {
+            // Arrange
+            var modelType = typeof(Employee);
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+
+            var employeeId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(Employee.Id), modelType);
+            var employeeIdMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            var employeeUnit = ModelMetadataIdentity.ForProperty(typeof(BusinessUnit), nameof(Employee.Unit), modelType);
+            var employeeUnitMetadata = CreateModelMetadata(employeeUnit, metadataProvider.Object, false);
+            var employeeManager = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(Employee.Unit), modelType);
+            var employeeManagerMetadata = CreateModelMetadata(employeeManager, metadataProvider.Object, false);
+            var employeeEmployeesId = ModelMetadataIdentity.ForProperty(typeof(List<Employee>), nameof(Employee.Employees), modelType);
+            var employeeEmployeesIdMetadata = CreateModelMetadata(employeeEmployeesId, metadataProvider.Object, false);
+
+            var unitHead = ModelMetadataIdentity.ForProperty(typeof(Employee), nameof(BusinessUnit.Head), modelType);
+            var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, false);
+            var unitId = ModelMetadataIdentity.ForProperty(typeof(int), nameof(BusinessUnit.Id), modelType);
+            var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false);
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(modelType))
+                .Returns(new[] { employeeIdMetadata, employeeUnitMetadata, employeeManagerMetadata, employeeEmployeesIdMetadata, });
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(typeof(BusinessUnit)))
+                .Returns(new[] { unitHeadMetadata, unitIdMetadata, });
+
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForType(modelType))
+                .Returns(modelMetadata);
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        private static DefaultModelMetadata CreateModelMetadata(
+            ModelMetadataIdentity modelIdentity, 
+            IModelMetadataProvider metadataProvider,
+            bool? hasValidators)
+        {
+            return new DefaultModelMetadata(
+                metadataProvider,
+                new SetHasValidatorsCompositeMetadataDetailsProvider { HasValidators = hasValidators },
+                new DefaultMetadataDetails(modelIdentity, new ModelAttributes(new object[0], new object[0], new object[0])));
+        }
+
         private void ActionMethod(string input)
         {
         }
@@ -920,6 +1266,42 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             public int PublicGetProtectedSetProperty { get; protected set; }
 
             public int PublicGetPublicSetProperty { get; set; }
+        }
+
+        public class Employee
+        {
+            public int Id { get; set; }
+
+            public BusinessUnit Unit { get; set; }
+
+            public Employee Manager { get; set; }
+
+            public List<Employee> Employees { get; set; }
+        }
+
+        public class BusinessUnit
+        {
+            public Employee Head { get; set; }
+
+            public int Id { get; set; }
+        }
+
+        private class SetHasValidatorsCompositeMetadataDetailsProvider : ICompositeMetadataDetailsProvider
+        {
+            public bool? HasValidators { get; set; }
+
+            public void CreateBindingMetadata(BindingMetadataProviderContext context)
+            {
+            }
+
+            public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
+            {
+            }
+
+            public void CreateValidationMetadata(ValidationMetadataProviderContext context)
+            {
+                context.ValidationMetadata.HasValidators = HasValidators;
+            }
         }
     }
 }

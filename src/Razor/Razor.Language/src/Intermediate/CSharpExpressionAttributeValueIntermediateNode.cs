@@ -20,5 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitCSharpExpressionAttributeValue(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteChildren(Children);
+
+            formatter.WriteProperty(nameof(Prefix), Prefix);
+        }
     }
 }

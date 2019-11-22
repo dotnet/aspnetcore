@@ -97,8 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             }
 
             var parameters = new List<OverloadedParameter>();
-            object optionalParametersObject;
-            candidate.Action.Properties.TryGetValue("OptionalParameters", out optionalParametersObject);
+            candidate.Action.Properties.TryGetValue("OptionalParameters", out var optionalParametersObject);
             var optionalParameters = (HashSet<string>)optionalParametersObject;
             foreach (var parameter in candidate.Action.Parameters)
             {

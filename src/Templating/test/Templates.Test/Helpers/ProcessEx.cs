@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
@@ -17,6 +18,7 @@ namespace Templates.Test.Helpers
         private readonly StringBuilder _stdoutCapture;
         private readonly object _pipeCaptureLock = new object();
         private BlockingCollection<string> _stdoutLines;
+        private TaskCompletionSource<int> _exited;
 
         public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
         {
@@ -66,7 +68,11 @@ namespace Templates.Test.Helpers
             proc.Exited += OnProcessExited;
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
+
+            _exited = new TaskCompletionSource<int>();
         }
+
+        public Task Exited => _exited.Task;
 
         public string Error
         {
@@ -129,13 +135,15 @@ namespace Templates.Test.Helpers
 
         private void OnProcessExited(object sender, EventArgs e)
         {
+            _process.WaitForExit();
             _stdoutLines.CompleteAdding();
             _stdoutLines = null;
+            _exited.TrySetResult(_process.ExitCode);
         }
 
         public void WaitForExit(bool assertSuccess)
         {
-            _process.WaitForExit();
+            Exited.Wait();
 
             if (assertSuccess && _process.ExitCode != 0)
             {
@@ -149,6 +157,14 @@ namespace Templates.Test.Helpers
             {
                 _process.KillTree();
             }
+
+            _process.CancelOutputRead();
+            _process.CancelErrorRead();
+
+            _process.ErrorDataReceived -= OnErrorData;
+            _process.OutputDataReceived -= OnOutputData;
+            _process.Exited -= OnProcessExited;
+            _process.Dispose();
         }
 
         public IEnumerable<string> OutputLinesAsEnumerable => _stdoutLines.GetConsumingEnumerable();

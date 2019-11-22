@@ -9,11 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class FileThumbPrint : IEquatable<FileThumbPrint>
     {
-        private FileThumbPrint(DateTime lastWriteTimeUtc, string hash)
+        private FileThumbPrint(string path, DateTime lastWriteTimeUtc, string hash)
         {
+            Path = path;
             LastWriteTimeUtc = lastWriteTimeUtc;
             Hash = hash;
         }
+
+        public string Path { get; }
 
         public DateTime LastWriteTimeUtc { get; }
 
@@ -30,12 +33,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var hash = Convert.ToBase64String(hashBytes);
             var lastWriteTimeUtc = File.GetLastWriteTimeUtc(path);
-            return new FileThumbPrint(lastWriteTimeUtc, hash);
+            return new FileThumbPrint(path, lastWriteTimeUtc, hash);
         }
 
         public bool Equals(FileThumbPrint other)
         {
-            return LastWriteTimeUtc == other.LastWriteTimeUtc &&
+            return 
+                string.Equals(Path, other.Path, StringComparison.Ordinal) &&
+                LastWriteTimeUtc == other.LastWriteTimeUtc &&
                 string.Equals(Hash, other.Hash, StringComparison.Ordinal);
         }
 

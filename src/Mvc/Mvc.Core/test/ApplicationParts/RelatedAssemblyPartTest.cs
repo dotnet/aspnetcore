@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         {
             // Arrange
             var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
-            var codeBase = "file://x/file/Assembly.dll";
+            var codeBase = "file://x:/file/Assembly.dll";
             var expected = new Uri(codeBase).LocalPath;
             var assembly = new TestAssembly
             {
@@ -101,6 +101,54 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var assembly = new TestAssembly
             {
                 CodeBaseSettable = "https://www.microsoft.com/test.dll",
+                LocationSettable = expected,
+            };
+
+            // Act
+            var actual = RelatedAssemblyAttribute.GetAssemblyLocation(assembly);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetAssemblyLocation_CodeBase_HasPoundCharacterUnixPath()
+        {
+            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var expected = @"/etc/#NIN/dotnetcore/tryx/try1.dll";
+            var assembly = new TestAssembly
+            {
+                CodeBaseSettable = "file:///etc/#NIN/dotnetcore/tryx/try1.dll",
+                LocationSettable = expected,
+            };
+
+            // Act
+            var actual = RelatedAssemblyAttribute.GetAssemblyLocation(assembly);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetAssemblyLocation_CodeBase_HasPoundCharacterUNCPath()
+        {
+            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var expected = @"\\server\#NIN\dotnetcore\tryx\try1.dll";
+            var assembly = new TestAssembly
+            {
+                CodeBaseSettable = "file://server/#NIN/dotnetcore/tryx/try1.dll",
+                LocationSettable = expected,
+            };
+
+            // Act
+            var actual = RelatedAssemblyAttribute.GetAssemblyLocation(assembly);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetAssemblyLocation_CodeBase_HasPoundCharacterDOSPath()
+        {
+            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var expected = @"C:\#NIN\dotnetcore\tryx\try1.dll";
+            var assembly = new TestAssembly
+            {
+                CodeBaseSettable = "file:///C:/#NIN/dotnetcore/tryx/try1.dll",
                 LocationSettable = expected,
             };
 

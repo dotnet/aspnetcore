@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
         private readonly string _value;
 
         /// <summary>
-        /// Initalize the path string with a given value. This value must be in unescaped format. Use
+        /// Initialize the path string with a given value. This value must be in unescaped format. Use
         /// PathString.FromUriComponent(value) if you have a path value which is in an escaped format.
         /// </summary>
         /// <param name="value">The unescaped path to be assigned to the Value property.</param>
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
                 {
                     if (!requiresEscaping)
                     {
-                        // the current segument doesn't require escape
+                        // the current segment doesn't require escape
                         if (buffer == null)
                         {
                             buffer = new StringBuilder(_value.Length * 3);

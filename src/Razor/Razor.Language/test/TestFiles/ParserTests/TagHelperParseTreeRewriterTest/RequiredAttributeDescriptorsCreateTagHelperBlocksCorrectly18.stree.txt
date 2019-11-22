@@ -1,0 +1,15 @@
+Markup block - Gen<None> - 51 - (0:0,0)
+    Tag block - Gen<TagHelper> - 51 - (0:0,0) - p - pTagHelper
+        StartTagAndEndTag - <p notRequired="a" class="btn"> ... </p>
+        notRequired - DoubleQuotes
+            Markup span - Gen<Markup> - [a] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
+                HtmlTokenType.Text;[a];
+        class - DoubleQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:1
+                HtmlTokenType.Text;[btn];
+        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:5
+            HtmlTokenType.Text;[words];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[and];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[spaces];

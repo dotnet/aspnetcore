@@ -1,0 +1,25 @@
+Markup block - Gen<None> - 30 - (0:0,0)
+    Markup span - Gen<Markup> - [Foo Baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
+        HtmlTokenType.Text;[Foo];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.Text;[Baz];
+    HtmlComment block - Gen<None> - 10 - (7:0,7)
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (7:0,7) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:WhiteSpace - (11:0,11) - Tokens:1
+            HtmlTokenType.Text;[Foo];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
+        HtmlTokenType.Text;[Bar];
+    Markup span - Gen<Markup> - [<!--F> Qux] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:7
+        HtmlTokenType.OpenAngle;[<];
+        HtmlTokenType.Bang;[!];
+        HtmlTokenType.DoubleHyphen;[--];
+        HtmlTokenType.Text;[F];
+        HtmlTokenType.CloseAngle;[>];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.Text;[Qux];

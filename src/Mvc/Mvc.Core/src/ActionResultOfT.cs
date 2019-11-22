@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -18,15 +19,27 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="value">The value.</param>
         public ActionResult(TValue value)
         {
+            if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)))
+            {
+                var error = Resources.FormatInvalidTypeTForActionResultOfT(typeof(TValue), "ActionResult<T>");
+                throw new ArgumentException(error);
+            }
+
             Value = value;
         }
 
         /// <summary>
-        /// Intializes a new instance of <see cref="ActionResult{TValue}"/> using the specified <see cref="ActionResult"/>.
+        /// Initializes a new instance of <see cref="ActionResult{TValue}"/> using the specified <see cref="ActionResult"/>.
         /// </summary>
         /// <param name="result">The <see cref="ActionResult"/>.</param>
         public ActionResult(ActionResult result)
         {
+            if (typeof(IActionResult).IsAssignableFrom(typeof(TValue)))
+            {
+                var error = Resources.FormatInvalidTypeTForActionResultOfT(typeof(TValue), "ActionResult<T>");
+                throw new ArgumentException(error);
+            }
+
             Result = result ?? throw new ArgumentNullException(nameof(result));
         }
 

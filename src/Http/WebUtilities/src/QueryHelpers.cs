@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var anchorIndex = uri.IndexOf('#');
             var uriToBeAppended = uri;
             var anchorText = "";
-            // If there is an anchor, then the query string must be inserted before its first occurance.
+            // If there is an anchor, then the query string must be inserted before its first occurence.
             if (anchorIndex != -1)
             {
                 anchorText = uri.Substring(anchorIndex);

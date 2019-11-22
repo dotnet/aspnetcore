@@ -1,0 +1,218 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddHubOptions<T0>",
+          "Parameters": [
+            {
+              "Name": "signalrBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.SignalR.HubOptions<T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "THub",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.Hub"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddSignalR",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddSignalR",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.SignalR.HubOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.ISignalRServerBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SignalRAppBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSignalR",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.SignalR.HubRouteBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.GetHttpContextExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetHttpContext",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubCallerContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHttpContext",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.SignalR.HubConnectionContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.HubRouteBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "MapHub<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "THub",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.Hub"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapHub<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "THub",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.Hub"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "routes",
+              "Type": "Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

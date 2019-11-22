@@ -58,22 +58,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedErrors)
-        {
-            var b = CreateSimpleBlockAndSpan(spanContent, blockKind, spanType, acceptedCharacters);
-            ParseBlockTest(document, b, expectedErrors ?? new RazorDiagnostic[0]);
-        }
-
         internal void ImplicitExpressionTest(string input, string expected, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] errors)
         {
-            var factory = CreateSpanFactory();
-            ParseBlockTest(SyntaxConstants.TransitionString + input,
-                           new ExpressionBlock(
-                               factory.CodeTransition(),
-                               factory.Code(expected)
-                                   .AsImplicitExpression(KeywordSet)
-                                   .Accepts(acceptedCharacters)),
-                           errors);
+            ParseBlockTest(SyntaxConstants.TransitionString + input);
         }
     }
 }

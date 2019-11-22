@@ -1,0 +1,25 @@
+Statement block - Gen<None> - 37 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [ using Foo.Bar.Baz; var foo = bar; ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:19
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[using];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Foo];
+        CSharpTokenType.Dot;[.];
+        CSharpTokenType.Identifier;[Bar];
+        CSharpTokenType.Dot;[.];
+        CSharpTokenType.Identifier;[Baz];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

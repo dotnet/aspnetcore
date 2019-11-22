@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 await client.CreateAndStartConnectionAsync(targetAddress, transportType);
             }
 
-            Log("Connections connected succesfully");
+            Log("Connections connected successfully");
         }
 
         public Task StartTestAsync(TimeSpan sendInterval, int sendBytes)
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 client.StartTest(sendBytes, sendInterval);
             }
 
-            Log("Test started succesfully");
+            Log("Test started successfully");
             return Task.CompletedTask;
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             }
 
             _sendStatusCts.Cancel();
-            Log("Connections stopped succesfully");
+            Log("Connections stopped successfully");
             _targetConnectionCount = 0;
 
             return Task.CompletedTask;

@@ -113,8 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             }
 
             var cacheKey = new GlobbingUrlKey(include, exclude);
-            List<string> files;
-            if (Cache.TryGetValue(cacheKey, out files))
+            if (Cache.TryGetValue(cacheKey, out List<string> files))
             {
                 return files;
             }
@@ -148,16 +147,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 matcher.AddExcludePatterns(trimmedExcludePatterns);
             }
 
+            var (matchedUrls, sizeInBytes) = FindFiles(matcher);
+            options.SetSize(sizeInBytes);
+
             return Cache.Set(
                 cacheKey,
-                FindFiles(matcher),
+                matchedUrls,
                 options);
         }
 
-        private List<string> FindFiles(Matcher matcher)
+        private (List<string> matchedUrls, long sizeInBytes) FindFiles(Matcher matcher)
         {
             var matches = matcher.Execute(_baseGlobbingDirectory);
             var matchedUrls = new List<string>();
+            var sizeInBytes = 0L;
+
             foreach (var matchedPath in matches.Files)
             {
                 // Resolve the path to site root
@@ -168,10 +172,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 {
                     // Item doesn't already exist. Insert it.
                     matchedUrls.Insert(~index, matchedUrl);
+                    sizeInBytes += matchedUrl.Length * sizeof(char);
                 }
             }
 
-            return matchedUrls;
+            return (matchedUrls, sizeInBytes);
         }
 
         private class PathComparer : IComparer<string>
@@ -231,9 +236,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 var result = 0;
                 var xEnumerator = new StringTokenizer(xNoExt, PathSeparator).GetEnumerator();
                 var yEnumerator = new StringTokenizer(yNoExt, PathSeparator).GetEnumerator();
-                StringSegment xSegment;
                 StringSegment ySegment;
-                while (TryGetNextSegment(ref xEnumerator, out xSegment))
+                while (TryGetNextSegment(ref xEnumerator, out var xSegment))
                 {
                     if (!TryGetNextSegment(ref yEnumerator, out ySegment))
                     {
@@ -348,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             return new StringSegment(value.Buffer, offset, trimmedEnd - offset + 1);
         }
 
-        private struct GlobbingUrlKey : IEquatable<GlobbingUrlKey>
+        private readonly struct GlobbingUrlKey : IEquatable<GlobbingUrlKey>
         {
             public GlobbingUrlKey(string include, string exclude)
             {

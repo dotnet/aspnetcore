@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -28,6 +29,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
 
             visitor.VisitClassDeclaration(this);
+        }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(ClassName);
+
+            formatter.WriteProperty(nameof(BaseType), BaseType);
+            formatter.WriteProperty(nameof(ClassName), ClassName);
+            formatter.WriteProperty(nameof(Interfaces), string.Join(", ", Interfaces));
+            formatter.WriteProperty(nameof(Modifiers), string.Join(", ", Modifiers));
+            formatter.WriteProperty(nameof(TypeParameters), string.Join(", ", TypeParameters.Select(t => t.ParameterName)));
         }
     }
 }

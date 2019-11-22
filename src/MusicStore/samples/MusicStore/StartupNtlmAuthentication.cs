@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Builder;
@@ -114,6 +115,12 @@ namespace MusicStore
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
             app.UseDatabaseErrorPage();
+
+            app.Use((context, next) =>
+            {
+                context.Response.Headers["Arch"] = RuntimeInformation.ProcessArchitecture.ToString();
+                return next();
+            });
 
             app.Use(async (context, next) =>
             {

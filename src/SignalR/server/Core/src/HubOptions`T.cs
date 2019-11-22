@@ -7,5 +7,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// Options used to configure the specified hub type instances. These options override globally set options.
     /// </summary>
     /// <typeparam name="THub">The hub type to configure.</typeparam>
-    public class HubOptions<THub> : HubOptions where THub : Hub { }
+    public class HubOptions<THub> : HubOptions where THub : Hub
+    {
+    }
 }

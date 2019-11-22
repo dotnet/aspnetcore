@@ -5,14 +5,20 @@ using OpenQA.Selenium;
 using System.IO;
 using System.Net;
 using Templates.Test.Helpers;
+using Templates.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
+// Turn off parallel test run for Edge as the driver does not support multiple Selenium tests at the same time
+#if EDGE
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+#endif
+[assembly: TestFramework("Templates.Test.Helpers.XunitExtensions.XunitTestFrameworkWithAssemblyFixture", "Templates.Test")]
 namespace Templates.Test.SpaTemplateTest
 {
-    public class SpaTemplateTestBase : TemplateTestBase
+    public class SpaTemplateTestBase : BrowserTestBase
     {
-        public SpaTemplateTestBase(ITestOutputHelper output) : base(output)
+        public SpaTemplateTestBase(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
         {
         }
 
@@ -30,14 +36,10 @@ namespace Templates.Test.SpaTemplateTest
             // installs run concurrently which otherwise causes errors when tests run
             // in parallel.
             var clientAppSubdirPath = Path.Combine(TemplateOutputDir, "ClientApp");
-            if (File.Exists(Path.Combine(clientAppSubdirPath, "package.json")))
-            {
-                Npm.RestoreWithRetry(Output, clientAppSubdirPath);
-            }
-            else if (File.Exists(Path.Combine(TemplateOutputDir, "package.json")))
-            {
-                Npm.RestoreWithRetry(Output, TemplateOutputDir);
-            }
+            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+
+            Npm.RestoreWithRetry(Output, clientAppSubdirPath);
+            Npm.Test(Output, clientAppSubdirPath);
 
             TestApplication(targetFrameworkOverride, publish: false);
             TestApplication(targetFrameworkOverride, publish: true);
@@ -51,39 +53,42 @@ namespace Templates.Test.SpaTemplateTest
 
                 if (WebDriverFactory.HostSupportsBrowserAutomation)
                 {
-                    using (var browser = aspNetProcess.VisitInBrowser())
-                    {
-                        TestBasicNavigation(browser);
-                    }
+                    aspNetProcess.VisitInBrowser(Browser);
+                    TestBasicNavigation();
                 }
             }
         }
 
-        private void TestBasicNavigation(IWebDriver browser)
+        private void TestBasicNavigation()
         {
+            Browser.WaitForElement("ul");
             // <title> element gets project ID injected into it during template execution
-            Assert.Contains(ProjectGuid, browser.Title);
+            Assert.Contains(ProjectGuid, Browser.Title);
 
             // Initially displays the home page
-            Assert.Equal("Hello, world!", browser.GetText("h1"));
+            Assert.Equal("Hello, world!", Browser.GetText("h1"));
 
             // Can navigate to the counter page
-            browser.Click(By.PartialLinkText("Counter"));
-            Assert.Equal("Counter", browser.GetText("h1"));
+            Browser.Click(By.PartialLinkText("Counter"));
+            Browser.WaitForUrl("counter");
+
+            Assert.Equal("Counter", Browser.GetText("h1"));
 
             // Clicking the counter button works
-            var counterComponent = browser.FindElement("h1").Parent();
+            var counterComponent = Browser.FindElement("h1").Parent();
             Assert.Equal("0", counterComponent.GetText("strong"));
-            browser.Click(counterComponent, "button");
+            Browser.Click(counterComponent, "button");
             Assert.Equal("1", counterComponent.GetText("strong"));
 
             // Can navigate to the 'fetch data' page
-            browser.Click(By.PartialLinkText("Fetch data"));
-            Assert.Equal("Weather forecast", browser.GetText("h1"));
+            Browser.Click(By.PartialLinkText("Fetch data"));
+            Browser.WaitForUrl("fetch-data");
+            Assert.Equal("Weather forecast", Browser.GetText("h1"));
 
             // Asynchronously loads and displays the table of weather forecasts
-            var fetchDataComponent = browser.FindElement("h1").Parent();
-            var table = browser.FindElement(fetchDataComponent, "table", timeoutSeconds: 5);
+            var fetchDataComponent = Browser.FindElement("h1").Parent();
+            Browser.WaitForElement("table>tbody>tr");
+            var table = Browser.FindElement(fetchDataComponent, "table", timeoutSeconds: 5);
             Assert.Equal(5, table.FindElements(By.CssSelector("tbody tr")).Count);
         }
     }

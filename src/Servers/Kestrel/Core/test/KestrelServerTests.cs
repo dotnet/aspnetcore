@@ -9,11 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var exception = Assert.Throws<FormatException>(() => StartDummyApplication(server));
 
-                Assert.Contains("Invalid URL", exception.Message);
+                Assert.Contains("Invalid url", exception.Message);
                 Assert.Equal(1, testLogger.CriticalErrorsLogged);
             }
         }
@@ -325,6 +328,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask3.TimeoutAfter(timeout)));
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task StopAsyncDispatchesSubsequentStopAsyncContinuations()
+        {
+            var options = new KestrelServerOptions
+            {
+                ListenOptions =
+                {
+                    new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                }
+            };
+
+            var unbindTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var mockTransport = new Mock<ITransport>();
+            mockTransport
+                .Setup(transport => transport.BindAsync())
+                .Returns(Task.CompletedTask);
+            mockTransport
+                .Setup(transport => transport.UnbindAsync())
+                .Returns(unbindTcs.Task);
+            mockTransport
+                .Setup(transport => transport.StopAsync())
+                .Returns(Task.CompletedTask);
+
+            var mockTransportFactory = new Mock<ITransportFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionDispatcher>()))
+                .Returns(mockTransport.Object);
+
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            var mockLogger = new Mock<ILogger>();
+            mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
+            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, mockLoggerFactory.Object);
+            await server.StartAsync(new DummyApplication(), default);
+
+            var stopTask1 = server.StopAsync(default);
+            var stopTask2 = server.StopAsync(default);
+
+            Assert.False(stopTask1.IsCompleted);
+            Assert.False(stopTask2.IsCompleted);
+
+            var continuationTask = Task.Run(async () =>
+            {
+                await stopTask2;
+                stopTask1.Wait();
+            });
+
+            unbindTcs.SetResult(null);
+
+            // If stopTask2 is completed inline by the first call to StopAsync, stopTask1 will never complete.
+            await stopTask1.DefaultTimeout();
+            await stopTask2.DefaultTimeout();
+            await continuationTask.DefaultTimeout();
+
+            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+        }
+
+        [Fact]
+        public void StartingServerInitializesHeartbeat()
+        {
+            var testContext = new TestServiceContext
+            {
+                ServerOptions =
+                {
+                    ListenOptions =
+                    {
+                        new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                    }
+                },
+                DateHeaderValueManager = new DateHeaderValueManager()
+            };
+
+            testContext.Heartbeat = new Heartbeat(
+                new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
+                testContext.MockSystemClock,
+                DebuggerWrapper.Singleton,
+                testContext.Log);
+
+            using (var server = new KestrelServer(new MockTransportFactory(), testContext))
+            {
+                Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
+
+                // Ensure KestrelServer is started at a different time than when it was constructed, since we're
+                // verifying the heartbeat is initialized during KestrelServer.StartAsync().
+                testContext.MockSystemClock.UtcNow += TimeSpan.FromDays(1);
+
+                StartDummyApplication(server);
+
+                Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
+                             testContext.DateHeaderValueManager.GetDateHeaderValues().String);
+            }
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)

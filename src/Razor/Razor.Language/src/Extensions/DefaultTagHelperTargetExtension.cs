@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 var uniqueId = (string)context.Items[CodeRenderingContext.SuppressUniqueIds];
                 if (uniqueId == null)
                 {
-                    uniqueId = Guid.NewGuid().ToString("N");
+                    uniqueId = GetDeterministicId(context);
                 }
 
                 context.CodeWriter.WriteStringLiteral(node.TagName)
@@ -635,6 +635,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
 
             return builder.ToString();
+        }
+
+        // Internal for testing
+        internal static string GetDeterministicId(CodeRenderingContext context)
+        {
+            // Use the file checksum along with the absolute position in the generated code to create a unique id for each tag helper call site.
+            var checksum = Checksum.BytesToString(context.SourceDocument.GetChecksum());
+            var uniqueId = checksum + context.CodeWriter.Location.AbsoluteIndex;
+
+            return uniqueId;
         }
 
         private static string GetPropertyAccessor(DefaultTagHelperPropertyIntermediateNode node)

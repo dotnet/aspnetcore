@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 typeof(TestModel),
-                new TestModelMetadataProvider(),
+                new EmptyModelMetadataProvider(),
                 propertyValueAccessors: null);
             var viewContext = new ViewContext();
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: null,
-                metadataProvider: new TestModelMetadataProvider(),
+                metadataProvider: new EmptyModelMetadataProvider(),
                 propertyValueAccessors: null);
             var viewContext = new ViewContext();
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_CreatesNestedViewDataDictionary_WhenContextInstanceIsNonGeneric()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: typeof(TestModel),
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_UsesDeclaredTypeOverModelType_WhenCreatingTheViewDataDictionary()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: typeof(TestModel),
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_CreatesNestedViewDataDictionary_WhenModelTypeDoesNotMatch()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: typeof(TestModel),
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_CreatesNestedViewDataDictionary_WhenNullModelTypeDoesNotMatch()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: null,
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_ReturnsInstanceOnContext_IfModelTypeMatches()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: typeof(TestModel),
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public void CreateViewDataDictionary_ReturnsInstanceOnContext_WithNullModelType()
         {
             // Arrange
-            var modelMetadataProvider = new TestModelMetadataProvider();
+            var modelMetadataProvider = new EmptyModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
                 declaredModelType: null,

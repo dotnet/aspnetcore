@@ -11,8 +11,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// <summary>
     /// A key type which identifies a <see cref="ModelMetadata"/>.
     /// </summary>
-    public struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
+    public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     {
+        private ModelMetadataIdentity(
+            Type modelType,
+            string name = null,
+            Type containerType = null,
+            ParameterInfo parameterInfo = null)
+        {
+            ModelType = modelType;
+            Name = name;
+            ContainerType = containerType;
+            ParameterInfo = parameterInfo;
+        }
+
         /// <summary>
         /// Creates a <see cref="ModelMetadataIdentity"/> for the provided model <see cref="Type"/>.
         /// </summary>
@@ -25,10 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            return new ModelMetadataIdentity()
-            {
-                ModelType = modelType,
-            };
+            return new ModelMetadataIdentity(modelType);
         }
 
         /// <summary>
@@ -58,12 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
             }
 
-            return new ModelMetadataIdentity()
-            {
-                ModelType = modelType,
-                Name = name,
-                ContainerType = containerType,
-            };
+            return new ModelMetadataIdentity(modelType, name, containerType);
         }
 
         /// <summary>
@@ -81,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="parameter">The <see cref="ParameterInfo" />.</param>
         /// <param name="modelType">The model type.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
-        private static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
+        public static ModelMetadataIdentity ForParameter(ParameterInfo parameter, Type modelType)
         {
             if (parameter == null)
             {
@@ -93,24 +97,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            return new ModelMetadataIdentity()
-            {
-                Name = parameter.Name,
-                ModelType = modelType,
-                ParameterInfo = parameter,
-            };
+            return new ModelMetadataIdentity(modelType, parameter.Name, parameterInfo: parameter);
         }
 
         /// <summary>
         /// Gets the <see cref="Type"/> defining the model property represented by the current
         /// instance, or <c>null</c> if the current instance does not represent a property.
         /// </summary>
-        public Type ContainerType { get; private set; }
+        public Type ContainerType { get; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> represented by the current instance.
         /// </summary>
-        public Type ModelType { get; private set; }
+        public Type ModelType { get; }
 
         /// <summary>
         /// Gets a value indicating the kind of metadata represented by the current instance.
@@ -138,13 +137,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the name of the current instance if it represents a parameter or property, or <c>null</c> if
         /// the current instance represents a type.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets a descriptor for the parameter, or <c>null</c> if this instance
         /// does not represent a parameter.
         /// </summary>
-        public ParameterInfo ParameterInfo { get; private set; }
+        public ParameterInfo ParameterInfo { get; }
 
         /// <inheritdoc />
         public bool Equals(ModelMetadataIdentity other)

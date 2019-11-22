@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 23 - (0:0,0)
+    Tag block - Gen<TagHelper> - 23 - (0:0,0) - th:myth - mythTagHelper
+        SelfClosing - <th:myth class="btn" />
+        class - DoubleQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
+                HtmlTokenType.Text;[btn];

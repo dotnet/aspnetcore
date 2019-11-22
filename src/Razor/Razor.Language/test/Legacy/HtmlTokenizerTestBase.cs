@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public abstract class HtmlTokenizerTestBase : TokenizerTestBase
     {
-        private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
+        private static HtmlToken _ignoreRemaining = new HtmlToken(string.Empty, HtmlTokenType.Unknown);
 
         internal override object IgnoreRemaining
         {
@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new HtmlTokenizer(source);
         }
 
-        internal void TestSingleToken(string text, HtmlSymbolType expectedSymbolType)
+        internal void TestSingleToken(string text, HtmlTokenType expectedTokenType)
         {
-            TestTokenizer(text, new HtmlSymbol(text, expectedSymbolType));
+            TestTokenizer(text, new HtmlToken(text, expectedTokenType));
         }
 
-        internal void TestTokenizer(string input, params HtmlSymbol[] expectedSymbols)
+        internal void TestTokenizer(string input, params HtmlToken[] expectedTokens)
         {
-            base.TestTokenizer<HtmlSymbol, HtmlSymbolType>(input, expectedSymbols);
+            base.TestTokenizer<HtmlToken, HtmlTokenType>(input, expectedTokens);
         }
     }
 }

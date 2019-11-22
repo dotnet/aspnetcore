@@ -10,8 +10,8 @@ namespace BasicWebSite
     {
         // This only matches a specific requestId value
         [HttpGet]
-        [RequestScopedActionConstraint("b40f6ec1-8a6b-41c1-b3fe-928f581ebaf5")]
-        public string FromActionConstraint()
+        [RequestScopedConstraint("b40f6ec1-8a6b-41c1-b3fe-928f581ebaf5")]
+        public string FromConstraint()
         {
             return "b40f6ec1-8a6b-41c1-b3fe-928f581ebaf5";
         }

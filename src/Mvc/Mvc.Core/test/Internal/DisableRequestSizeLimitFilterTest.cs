@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var disableRequestSizeLimitResourceFilter = new DisableRequestSizeLimitFilter(NullLoggerFactory.Instance);
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var disableRequestSizeLimitResourceFilter = new DisableRequestSizeLimitFilter(NullLoggerFactory.Instance);
             var disableRequestSizeLimitResourceFilterFinal = new DisableRequestSizeLimitFilter(NullLoggerFactory.Instance);
-            var authorizationFilterContext = CreateauthorizationFilterContext(
+            var authorizationFilterContext = CreateAuthorizationFilterContext(
                 new IFilterMetadata[] { disableRequestSizeLimitResourceFilter, disableRequestSizeLimitResourceFilterFinal });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var disableRequestSizeLimitResourceFilter = new DisableRequestSizeLimitFilter(loggerFactory);
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
 
             // Act
             disableRequestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var disableRequestSizeLimitResourceFilter = new DisableRequestSizeLimitFilter(loggerFactory);
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             httpMaxRequestBodySize.IsReadOnly = true;
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var disableRequestSizeLimitResourceFilter = new DisableRequestSizeLimitFilter(loggerFactory);
-            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateAuthorizationFilterContext(new IFilterMetadata[] { disableRequestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal($"The request body size limit has been disabled.", write.State.ToString());
         }
 
-        private static AuthorizationFilterContext CreateauthorizationFilterContext(IFilterMetadata[] filters)
+        private static AuthorizationFilterContext CreateAuthorizationFilterContext(IFilterMetadata[] filters)
         {
             return new AuthorizationFilterContext(CreateActionContext(), filters);
         }

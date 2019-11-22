@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (context.RouteData.Values.TryGetValue("format", out var obj))
             {
                 // null and string.Empty are equivalent for route values.
-                var routeValue = obj?.ToString();
+                var routeValue = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 return string.IsNullOrEmpty(routeValue) ? null : routeValue;
             }
 
@@ -166,8 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return;
             }
 
-            var objectResult = context.Result as ObjectResult;
-            if (objectResult == null)
+            if (!(context.Result is ObjectResult objectResult))
             {
                 return;
             }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 builder.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken()));
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = engine.ProcessDesignTime(projectItem);

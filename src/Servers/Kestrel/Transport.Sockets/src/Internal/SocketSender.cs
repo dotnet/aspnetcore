@@ -11,23 +11,15 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class SocketSender : IDisposable
+    public sealed class SocketSender : SocketSenderReceiverBase
     {
-        private readonly Socket _socket;
-        private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
-        private readonly SocketAwaitable _awaitable;
-
         private List<ArraySegment<byte>> _bufferList;
 
-        public SocketSender(Socket socket, PipeScheduler scheduler)
+        public SocketSender(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
         {
-            _socket = socket;
-            _awaitable = new SocketAwaitable(scheduler);
-            _eventArgs.UserToken = _awaitable;
-            _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable SendAsync(ReadOnlySequence<byte> buffers)
+        public SocketAwaitableEventArgs SendAsync(ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
@@ -35,45 +27,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
 #if NETCOREAPP2_1
-            if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
+            if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
+#elif NETSTANDARD2_0
+            if (_awaitableEventArgs.Buffer != null)
 #else
-            if (_eventArgs.Buffer != null)
+#error TFMs need to be updated
 #endif
             {
-                _eventArgs.SetBuffer(null, 0, 0);
+                _awaitableEventArgs.SetBuffer(null, 0, 0);
             }
 
-            _eventArgs.BufferList = GetBufferList(buffers);
+            _awaitableEventArgs.BufferList = GetBufferList(buffers);
 
-            if (!_socket.SendAsync(_eventArgs))
+            if (!_socket.SendAsync(_awaitableEventArgs))
             {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
+                _awaitableEventArgs.Complete();
             }
 
-            return _awaitable;
+            return _awaitableEventArgs;
         }
 
-        private SocketAwaitable SendAsync(ReadOnlyMemory<byte> memory)
+        private SocketAwaitableEventArgs SendAsync(ReadOnlyMemory<byte> memory)
         {
             // The BufferList getter is much less expensive then the setter.
-            if (_eventArgs.BufferList != null)
+            if (_awaitableEventArgs.BufferList != null)
             {
-                _eventArgs.BufferList = null;
+                _awaitableEventArgs.BufferList = null;
             }
 
 #if NETCOREAPP2_1
-            _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-#else
+            _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
+#elif NETSTANDARD2_0
             var segment = memory.GetArray();
 
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+            _awaitableEventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+#else
+#error TFMs need to be updated
 #endif
-            if (!_socket.SendAsync(_eventArgs))
+            if (!_socket.SendAsync(_awaitableEventArgs))
             {
-                _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
+                _awaitableEventArgs.Complete();
             }
 
-            return _awaitable;
+            return _awaitableEventArgs;
         }
 
         private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
@@ -97,11 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
             return _bufferList;
-        }
-
-        public void Dispose()
-        {
-            _eventArgs.Dispose();
         }
     }
 }

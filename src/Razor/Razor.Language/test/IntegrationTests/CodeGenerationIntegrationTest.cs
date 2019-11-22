@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
+
         #region Runtime
         [Fact]
         public void IncompleteDirectives_Runtime()
@@ -18,12 +20,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         [Fact]
         public void CSharp7_Runtime()
-        {
-            RunTimeTest();
-        }
-
-        [Fact]
-        public void BasicImports_Runtime()
         {
             RunTimeTest();
         }
@@ -460,12 +456,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
-        public void BasicImports_DesignTime()
-        {
-            DesignTimeTest();
-        }
-
-        [Fact]
         public void UnfinishedExpressionInCode_DesignTime()
         {
             DesignTimeTest();
@@ -895,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.ProcessDesignTime(projectItem);
@@ -921,7 +911,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);
@@ -937,7 +927,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var projectEngine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
-                builder.AddTagHelpers(descriptors);
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
@@ -947,10 +936,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
+            var imports = GetImports(projectEngine, projectItem);
 
             // Act
-            var codeDocument = projectEngine.Process(projectItem);
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), imports, descriptors.ToList());
 
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
@@ -963,7 +953,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var projectEngine = CreateProjectEngine(builder =>
             {
                 builder.ConfigureDocumentClassifier();
-                builder.AddTagHelpers(descriptors);
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
@@ -973,15 +962,25 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 SectionDirective.Register(builder);
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
+            var imports = GetImports(projectEngine, projectItem);
 
             // Act
-            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), imports, descriptors.ToList());
 
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
             AssertSourceMappingsMatchBaseline(codeDocument);
+        }
+
+        private static IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectEngine projectEngine, RazorProjectItem projectItem)
+        {
+            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
+            var importItems = importFeature.GetImports(projectItem);
+            var importSourceDocuments = importItems.Where(i => i.Exists).Select(i => RazorSourceDocument.ReadFrom(i)).ToList();
+
+            return importSourceDocuments;
         }
     }
 }

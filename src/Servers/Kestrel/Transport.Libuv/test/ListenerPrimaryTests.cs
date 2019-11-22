@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContextPrimary = new TestServiceContext();
             var builderPrimary = new ConnectionBuilder();
             builderPrimary.UseHttpServer(serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")), HttpProtocols.Http1);
-            var transportContextPrimary = new TestLibuvTransportContext() { Log = new LibuvTrace(logger) };
+            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
             transportContextPrimary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextPrimary, builderPrimary.Build());
 
             var serviceContextSecondary = new TestServiceContext
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContextPrimary = new TestServiceContext();
             var builderPrimary = new ConnectionBuilder();
             builderPrimary.UseHttpServer(serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")), HttpProtocols.Http1);
-            var transportContextPrimary = new TestLibuvTransportContext() { Log = new LibuvTrace(logger) };
+            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
             transportContextPrimary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextPrimary, builderPrimary.Build());
 
             var serviceContextSecondary = new TestServiceContext

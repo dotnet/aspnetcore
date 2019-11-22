@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var headerName = bindingContext.FieldName;
 
             // Do not set ModelBindingResult to Failed on not finding the value in the header as we want the inner 
-            // modelbinder to do that. This would give a chance to the inner binder to add more useful information.
+            // ModelBinder to do that. This would give a chance to the inner binder to add more useful information.
             // For example, SimpleTypeModelBinder adds a model error when binding to let's say an integer and the
             // model is null.
             var request = bindingContext.HttpContext.Request;

@@ -16,20 +16,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly IFileProvider _provider;
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public FileProviderRazorProjectFileSystem(IRazorViewEngineFileProviderAccessor accessor, IHostingEnvironment hostingEnviroment)
+        public FileProviderRazorProjectFileSystem(IRazorViewEngineFileProviderAccessor accessor, IHostingEnvironment hostingEnvironment)
         {
             if (accessor == null)
             {
                 throw new ArgumentNullException(nameof(accessor));
             }
 
-            if (hostingEnviroment == null)
+            if (hostingEnvironment == null)
             {
-                throw new ArgumentNullException(nameof(hostingEnviroment));
+                throw new ArgumentNullException(nameof(hostingEnvironment));
             }
 
             _provider = accessor.FileProvider;
-            _hostingEnvironment = hostingEnviroment;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public override RazorProjectItem GetItem(string path)

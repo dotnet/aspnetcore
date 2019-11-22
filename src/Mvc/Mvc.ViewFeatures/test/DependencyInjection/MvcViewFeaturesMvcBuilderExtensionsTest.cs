@@ -20,20 +20,20 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddViewComponentsAsServices_ReplacesViewComponentActivator()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services
-                .AddMvc()
-                .ConfigureApplicationPartManager(manager =>
-                {
-                    manager.ApplicationParts.Add(new TestApplicationPart());
-                    manager.FeatureProviders.Add(new ViewComponentFeatureProvider());
-                });
+            var builder = CreateBuilder();
+
+            MvcViewFeaturesMvcCoreBuilderExtensions.AddViewServices(builder.Services);
+            builder.ConfigureApplicationPartManager(manager =>
+            {
+                manager.ApplicationParts.Add(new TestApplicationPart());
+                manager.FeatureProviders.Add(new ViewComponentFeatureProvider());
+            });
 
             // Act
             builder.AddViewComponentsAsServices();
 
             // Assert
-            var descriptor = Assert.Single(services.ToList(), d => d.ServiceType == typeof(IViewComponentActivator));
+            var descriptor = Assert.Single(builder.Services.ToList(), d => d.ServiceType == typeof(IViewComponentActivator));
             Assert.Equal(typeof(ServiceBasedViewComponentActivator), descriptor.ImplementationType);
         }
 
@@ -41,14 +41,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider();
 
             // Assert
-            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            var descriptor = Assert.Single(builder.Services, item => item.ServiceType == typeof(ITempDataProvider));
             Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
@@ -56,15 +55,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProvider_DoesNotRegisterOptionsConfiguration()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider();
 
             // Assert
             Assert.DoesNotContain(
-                services,
+                builder.Services,
                 item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
         }
 
@@ -72,14 +70,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider(options => { });
 
             // Assert
-            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            var descriptor = Assert.Single(builder.Services, item => item.ServiceType == typeof(ITempDataProvider));
             Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
@@ -87,15 +84,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProviderWithSetupAction_RegistersOptionsConfiguration()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider(options => { });
 
             // Assert
             Assert.Single(
-                services,
+                builder.Services,
                 item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
         }
 
@@ -103,15 +99,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider_IfCalledTwice()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider();
             builder.AddCookieTempDataProvider();
 
             // Assert
-            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            var descriptor = Assert.Single(builder.Services, item => item.ServiceType == typeof(ITempDataProvider));
             Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
@@ -119,15 +114,14 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider_IfCalledTwice()
         {
             // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvc();
+            var builder = CreateBuilder();
 
             // Act
             builder.AddCookieTempDataProvider(options => { });
             builder.AddCookieTempDataProvider(options => { });
 
             // Assert
-            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            var descriptor = Assert.Single(builder.Services, item => item.ServiceType == typeof(ITempDataProvider));
             Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
@@ -164,6 +158,14 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal(typeof(IViewComponentActivator), collection[2].ServiceType);
             Assert.Equal(typeof(ServiceBasedViewComponentActivator), collection[2].ImplementationType);
             Assert.Equal(ServiceLifetime.Singleton, collection[2].Lifetime);
+        }
+
+        private static MvcBuilder CreateBuilder()
+        {
+            var services = new ServiceCollection();
+            var manager = new ApplicationPartManager();
+            var builder = new MvcBuilder(services, manager);
+            return builder;
         }
 
         public class ConventionsViewComponent

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -58,26 +57,21 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            return descriptorX != null &&
+            return
                 descriptorX.NameComparison == descriptorY.NameComparison &&
                 descriptorX.ValueComparison == descriptorY.ValueComparison &&
                 string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
                 string.Equals(descriptorX.Value, descriptorY.Value, StringComparison.Ordinal) &&
-                string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(descriptorX.Diagnostics, descriptorY.Diagnostics);
+                string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
         public virtual int GetHashCode(RequiredAttributeDescriptor descriptor)
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.NameComparison);
-            hashCodeCombiner.Add(descriptor.ValueComparison);
-            hashCodeCombiner.Add(descriptor.Name, _stringComparer);
-            hashCodeCombiner.Add(descriptor.Value, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Name, _stringComparer);
 
-            return hashCodeCombiner.CombinedHash;
+            return hash.CombinedHash;
         }
     }
 }

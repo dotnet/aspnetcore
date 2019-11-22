@@ -1,14 +1,23 @@
 <!--
+
 The targets in this file resolve References to ANCM into ProjectReferences,
 with the right MSBuild incantations to get output copied to the right place.
+
 -->
 <Project>
   <Choose>
     <!-- IIS native projects only build on Windows with MSBuild.exe -->
     <When Condition="'$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' ">
-      <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModuleV1'))' == 'true' ">
-        <Reference Remove="AspNetCoreModuleV1" />
+      <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModule'))' == 'true' ">
+        <Reference Remove="AspNetCoreModule" />
         <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+      </ItemGroup>
+
+      <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModuleV2'))' == 'true' ">
+        <Reference Remove="AspNetCoreModuleV2" />
+        <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
+        <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
+        <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
       </ItemGroup>
 
       <ItemGroup Condition="@(NativeProjectReference->Count()) != 0">
@@ -37,7 +46,7 @@ with the right MSBuild incantations to get output copied to the right place.
 
         <ProjectReference Include="@(NativeProjectReference)">
           <!-- Set the arch-->
-          <SetPlatform>Platform=x86</SetPlatform>
+          <SetPlatform>Platform=Win32</SetPlatform>
           <!-- The base path for the output. -->
           <LinkBase>x86\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->

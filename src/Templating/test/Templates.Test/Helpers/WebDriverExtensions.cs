@@ -66,5 +66,17 @@ namespace Templates.Test.Helpers
             return new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutSeconds))
                 .Until(drv => searchContext.FindElement(by));
         }
+
+        public static void WaitForUrl(this IWebDriver browser, string expectedUrl)
+        {
+            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+                .Until(driver => driver.Url.Contains(expectedUrl, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static void WaitForElement(this IWebDriver browser, string expectedElementCss)
+        {
+            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+                .Until(driver => driver.FindElements(By.CssSelector(expectedElementCss)).Count > 0);
+        }
     }
 }

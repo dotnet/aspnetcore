@@ -10,21 +10,12 @@ namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class ConstraintsTestHelper
     {
-        public static bool TestConstraint(IRouteConstraint constraint, object value, Action<IRouter> routeConfig = null)
+        public static bool TestConstraint(IRouteConstraint constraint, object value)
         {
-            var context = new Mock<HttpContext>();
-
-            var route = new RouteCollection();
-
-            if (routeConfig != null)
-            {
-                routeConfig(route);
-            }
-
             var parameterName = "fake";
             var values = new RouteValueDictionary() { { parameterName, value } };
             var routeDirection = RouteDirection.IncomingRequest;
-            return constraint.Match(context.Object, route, parameterName, values, routeDirection);
+            return constraint.Match(httpContext: null, route: null, parameterName, values, routeDirection);
         }
     }
 }

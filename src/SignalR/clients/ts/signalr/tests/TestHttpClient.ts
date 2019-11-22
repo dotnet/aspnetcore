@@ -49,8 +49,8 @@ export class TestHttpClient extends HttpClient {
 
         const oldHandler = this.handler;
         const newHandler = async (request: HttpRequest) => {
-            if (matches(method, request.method) && matches(url, request.url)) {
-                const promise = handler(request, oldHandler);
+            if (matches(method, request.method!) && matches(url, request.url!)) {
+                const promise = handler!(request, oldHandler);
 
                 let val: TestHttpHandlerResult;
                 if (promise instanceof Promise) {

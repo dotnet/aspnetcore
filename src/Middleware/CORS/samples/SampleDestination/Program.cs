@@ -13,7 +13,7 @@ namespace SampleDestination
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://*:5000")
+                .UseUrls("http://+:9000")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(factory => factory.AddConsole())
                 .UseStartup<Startup>()

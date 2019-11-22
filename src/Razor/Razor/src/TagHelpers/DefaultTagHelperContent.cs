@@ -221,8 +221,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return;
             }
 
-            var stringValue = entry as string;
-            if (stringValue != null)
+            if (entry is string stringValue)
             {
                 encoder.Encode(writer, stringValue);
             }
@@ -239,13 +238,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return;
             }
 
-            string entryAsString;
-            IHtmlContentContainer entryAsContainer;
-            if ((entryAsString = entry as string) != null)
+            if (entry is string entryAsString)
             {
                 destination.Append(entryAsString);
             }
-            else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+            else if (entry is IHtmlContentContainer entryAsContainer)
             {
                 entryAsContainer.CopyTo(destination);
             }
@@ -262,13 +259,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return;
             }
 
-            string entryAsString;
-            IHtmlContentContainer entryAsContainer;
-            if ((entryAsString = entry as string) != null)
+            if (entry is string entryAsString)
             {
                 destination.Append(entryAsString);
             }
-            else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+            else if (entry is IHtmlContentContainer entryAsContainer)
             {
                 entryAsContainer.MoveTo(destination);
             }
@@ -282,29 +277,19 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             if (entry == null)
             {
-                return false;
+                return true;
             }
 
-            var stringValue = entry as string;
-            if (stringValue != null)
+            if (entry is string stringValue)
             {
                 // Do not encode the string because encoded value remains whitespace from user's POV.
-                if (!string.IsNullOrWhiteSpace(stringValue))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // Use NullHtmlEncoder to avoid treating encoded whitespace as non-whitespace e.g. "\t" as "&#x9;".
-                ((IHtmlContent)entry).WriteTo(writer, NullHtmlEncoder.Default);
-                if (!writer.IsEmptyOrWhiteSpace)
-                {
-                    return false;
-                }
+                return string.IsNullOrWhiteSpace(stringValue);
             }
 
-            return true;
+            // Use NullHtmlEncoder to avoid treating encoded whitespace as non-whitespace e.g. "\t" as "&#x9;".
+            ((IHtmlContent)entry).WriteTo(writer, NullHtmlEncoder.Default);
+
+            return writer.IsEmptyOrWhiteSpace;
         }
 
         private TagHelperContent AppendCore(object entry)
@@ -329,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             return GetContent();
         }
-        
+
         // Overrides Write(string) to find if the content written is empty/whitespace.
         private class EmptyOrWhiteSpaceWriter : TextWriter
         {

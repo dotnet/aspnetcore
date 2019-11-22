@@ -1,0 +1,14 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
+    <!-- Name = aspnet-runtime-internal for files are only produced so we can hand them off to the dotnet/cli repo. -->
+    <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
+
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$(SharedFxRid.StartsWith('win'))">.zip</ArchiveExtension>
+  </PropertyGroup>
+
+</Project>

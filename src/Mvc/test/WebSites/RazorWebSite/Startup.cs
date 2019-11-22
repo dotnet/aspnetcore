@@ -3,11 +3,10 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +42,8 @@ namespace RazorWebSite
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
                 })
-                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();
@@ -72,21 +72,5 @@ namespace RazorWebSite
 
             app.UseMvcWithDefaultRoute();
         }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
     }
 }
-

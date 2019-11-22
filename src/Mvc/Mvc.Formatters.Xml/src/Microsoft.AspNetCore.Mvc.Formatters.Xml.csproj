@@ -9,11 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 </Project>

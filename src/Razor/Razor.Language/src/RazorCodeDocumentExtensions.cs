@@ -29,6 +29,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             document.Items[typeof(TagHelperDocumentContext)] = context;
         }
 
+        internal static IReadOnlyList<TagHelperDescriptor> GetTagHelpers(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (document.Items[typeof(TagHelpersHolder)] as TagHelpersHolder)?.TagHelpers;
+        }
+
+        internal static void SetTagHelpers(this RazorCodeDocument document, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[typeof(TagHelpersHolder)] = new TagHelpersHolder(tagHelpers);
+        }
+
         public static RazorSyntaxTree GetSyntaxTree(this RazorCodeDocument document)
         {
             if (document == null)
@@ -167,6 +187,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             public IReadOnlyList<RazorSyntaxTree> SyntaxTrees { get; }
+        }
+
+        private class TagHelpersHolder
+        {
+            public TagHelpersHolder(IReadOnlyList<TagHelperDescriptor> tagHelpers)
+            {
+                TagHelpers = tagHelpers;
+            }
+
+            public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
         }
     }
 }

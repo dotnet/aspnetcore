@@ -4,6 +4,7 @@
 import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport } from "./ITransport";
+import { EventSourceConstructor, WebSocketConstructor } from "./Polyfills";
 
 /** Options provided to the 'withUrl' method on {@link @aspnet/signalr.HubConnectionBuilder} to configure options for the HTTP-based transports. */
 export interface IHttpConnectionOptions {
@@ -38,4 +39,18 @@ export interface IHttpConnectionOptions {
      * Negotiation can only be skipped when the {@link @aspnet/signalr.IHttpConnectionOptions.transport} property is set to 'HttpTransportType.WebSockets'.
      */
     skipNegotiation?: boolean;
+
+    // Used for unit testing and code spelunkers
+    /** A constructor that can be used to create a WebSocket.
+     *
+     * @internal
+     */
+    WebSocket?: WebSocketConstructor;
+
+    // Used for unit testing and code spelunkers
+    /** A constructor that can be used to create an EventSource.
+     *
+     * @internal
+     */
+    EventSource?: EventSourceConstructor;
 }
