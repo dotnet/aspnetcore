@@ -83,4 +83,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.9' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
