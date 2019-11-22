@@ -13,8 +13,8 @@ cp $appRuntimePath sharedFx.zip
 mkdir -p $tmpDir
 echo "Unpacking to $tmpDir"
 unzip sharedFx.zip -d $tmpDir
-ls -la $tmpDir/runtimes
 mkdir -p $output_dir
 echo "Copying to $output_dir"
 cp $tmpDir/runtimes/win-x86/lib/netcoreapp5.0/* $output_dir
 cp $tmpDir/runtimes/win-x86/native/* $output_dir
+ls -la $output_dir
