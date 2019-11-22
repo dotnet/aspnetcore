@@ -42,8 +42,7 @@ namespace Microsoft.Extensions.ObjectPool
 
         public override T Get()
         {
-            T item = _firstItem;
-
+            var item = _firstItem;
             if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
                 item = GetViaScan();
@@ -55,12 +54,10 @@ namespace Microsoft.Extensions.ObjectPool
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T GetViaScan()
         {
-            ObjectWrapper[] items = _items;
-
+            var items = _items;
             for (var i = 0; i < items.Length; i++)
             {
-                T item = items[i];
-
+                var item = items[i].Element;
                 if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
                 {
                     return item;
@@ -88,21 +85,17 @@ namespace Microsoft.Extensions.ObjectPool
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReturnViaScan(T obj)
         {
-            ObjectWrapper[] items = _items;
-
+            var items = _items;
             for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
             {
             }
         }
 
+        // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
         [DebuggerDisplay("{Element}")]
         private struct ObjectWrapper
         {
             public T Element;
-
-            public ObjectWrapper(T item) => Element = item;
-
-            public static implicit operator T(ObjectWrapper wrapper) => wrapper.Element;
         }
     }
 }

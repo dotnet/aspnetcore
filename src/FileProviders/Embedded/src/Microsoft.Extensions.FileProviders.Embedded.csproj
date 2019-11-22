@@ -12,6 +12,11 @@
     <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
 
     <PropertyGroup>
