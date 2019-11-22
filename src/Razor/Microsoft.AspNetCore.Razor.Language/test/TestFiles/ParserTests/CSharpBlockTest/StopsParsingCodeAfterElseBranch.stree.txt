@@ -159,14 +159,14 @@ RazorDocument - [0..314)::314 - [@if(int i = 0; i < 10; new Foo { Bar = "baz" })
                     MarkupTextLiteral - [262..263)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     Equals;[=];
-                    MarkupTextLiteral - [264..266)::2 - [ "] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [264..266)::2 - [ "] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                         DoubleQuote;["];
                     GenericBlock - [266..269)::3
                         MarkupLiteralAttributeValue - [266..269)::3 - [baz]
                             MarkupTextLiteral - [266..269)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[baz];
-                    MarkupTextLiteral - [269..270)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [269..270)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMinimizedAttributeBlock - [270..273)::3 - [ })]
                     MarkupTextLiteral - [270..271)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -12,7 +12,7 @@ RazorDocument - [0..117)::117 - [<p class=foo dynamic=@DateTime.Now style=color:
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [9..12)::3
                         MarkupLiteralAttributeValue - [9..12)::3 - [foo]
-                            MarkupTextLiteral - [9..12)::3 - [foo] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [9..12)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[foo];
                 MarkupTagHelperAttribute - [12..34)::22 - dynamic - DoubleQuotes - Unbound - [ dynamic=@DateTime.Now]
                     MarkupTextLiteral - [12..13)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -41,7 +41,7 @@ RazorDocument - [0..117)::117 - [<p class=foo dynamic=@DateTime.Now style=color:
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [41..51)::10
                         MarkupLiteralAttributeValue - [41..51)::10 - [color:red;]
-                            MarkupTextLiteral - [41..51)::10 - [color:red;] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [41..51)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[color:red;];
                 CloseAngle;[>];
             MarkupTextLiteral - [52..64)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -59,13 +59,13 @@ RazorDocument - [0..117)::117 - [<p class=foo dynamic=@DateTime.Now style=color:
                         MarkupTextLiteral - [72..77)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Text;[class];
                         Equals;[=];
-                        MarkupTextLiteral - [78..79)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [78..79)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                         GenericBlock - [79..82)::3
                             MarkupLiteralAttributeValue - [79..82)::3 - [foo]
                                 MarkupTextLiteral - [79..82)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[foo];
-                        MarkupTextLiteral - [82..83)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [82..83)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
                     CloseAngle;[>];
                 MarkupTextLiteral - [84..104)::20 - [inside of strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -1149,8 +1149,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var nameContent = string.Concat(name.LiteralTokens.Nodes.Select(s => s.Content));
             if (IsConditionalAttributeName(nameContent))
             {
-                SpanContext.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
-
                 // We now have the value prefix which is usually whitespace and/or a quote
                 valuePrefix = OutputAsMarkupLiteral();
 
@@ -1178,8 +1176,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (quote != SyntaxKind.Marker && At(quote))
                 {
                     AcceptAndMoveNext();
-                    // Again, block chunk generator will render the suffix
-                    SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                     valueSuffix = OutputAsMarkupLiteral();
                 }
             }

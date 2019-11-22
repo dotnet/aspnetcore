@@ -7,7 +7,7 @@
       This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
       has netcoreapp dependencies that need to be built first.
     -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->
@@ -41,6 +41,16 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
       <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\TestPackageRestoreSource</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsLogDir</_Parameter1>
+      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ProcDumpToolPath</_Parameter1>
+      <_Parameter2>$(ProcDumpPath)</_Parameter2>
     </AssemblyAttribute>
 
   </ItemGroup>
@@ -86,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         static partial void InitializeVariables()
         {
             _msBuildPath = @"$(_DesktopMSBuildPath)";
-            _microsoftNETCoreApp30PackageVersion = "$(MicrosoftNETCoreApp30PackageVersion)";
+            _microsoftNETCoreApp31PackageVersion = "$(MicrosoftNETCoreApp31PackageVersion)";
             _microsoftNetCompilersToolsetPackageVersion = "$(MicrosoftNetCompilersToolsetPackageVersion)";
         }
     }
@@ -110,6 +120,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion)" />
+  </Target>
+
+  <Target Name="EnsureLogFolder" AfterTargets="Build">
+    <MakeDir Directories="$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))" />
   </Target>
 
 </Project>

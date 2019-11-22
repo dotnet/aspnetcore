@@ -28,8 +28,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true' ">
     <!-- Publish everything under wwwroot, all JSON files, all config files and all Razor files -->
     <Content Include="wwwroot\**" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Content Include="**\*.config" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
-    <Content Include="**\*.json" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+
+    <Content Include="**\*.config" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" />
+    <Content Include="**\*.json" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'!='true'" />
+
+    <!-- When ExcludeConfigFilesFromBuildOutput is set, do not copy .,config, .json files to the build output directory. -->
+    <Content Include="**\*.config" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'=='true'" />
+    <Content Include="**\*.json" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" Condition="'$(ExcludeConfigFilesFromBuildOutput)'=='true'" />
 
     <!-- Set CopyToPublishDirectory to Never for items under AppDesignerFolder ("Properties", by default) to avoid publishing launchSettings.json -->
     <Content Update="$(AppDesignerFolder)\**" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>

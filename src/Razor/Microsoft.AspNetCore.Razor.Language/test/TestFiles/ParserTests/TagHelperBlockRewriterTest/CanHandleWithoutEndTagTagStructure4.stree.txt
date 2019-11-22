@@ -10,13 +10,13 @@ RazorDocument - [0..26)::26 - [<input type='text'><input>]
                     MarkupTextLiteral - [7..11)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [13..17)::4
                         MarkupLiteralAttributeValue - [13..17)::4 - [text]
                             MarkupTextLiteral - [13..17)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[text];
-                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
         MarkupTagHelperElement - [19..26)::7 - input[StartTagOnly] - InputTagHelper

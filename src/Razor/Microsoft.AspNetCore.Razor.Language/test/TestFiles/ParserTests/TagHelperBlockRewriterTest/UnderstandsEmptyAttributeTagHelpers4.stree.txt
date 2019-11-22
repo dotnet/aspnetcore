@@ -10,11 +10,11 @@ RazorDocument - [0..33)::33 - [<p class1='' class2= class3="" />]
                     MarkupTextLiteral - [3..9)::6 - [class1] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class1];
                     Equals;[=];
-                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [10..11)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [11..11)::0
                         MarkupTextLiteral - [11..11)::0 - []
-                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupTagHelperAttribute - [12..20)::8 - class2 - DoubleQuotes - Unbound - [ class2=]
                     MarkupTextLiteral - [12..13)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -25,16 +25,16 @@ RazorDocument - [0..33)::33 - [<p class1='' class2= class3="" />]
                     MarkupTagHelperAttributeValue - [20..20)::0
                         MarkupTextLiteral - [20..20)::0 - []
                 MarkupTagHelperAttribute - [20..30)::10 - class3 - DoubleQuotes - Unbound - [ class3=""]
-                    MarkupTextLiteral - [20..21)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [20..21)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     MarkupTextLiteral - [21..27)::6 - [class3] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class3];
                     Equals;[=];
-                    MarkupTextLiteral - [28..29)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [28..29)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [29..29)::0
                         MarkupTextLiteral - [29..29)::0 - []
-                    MarkupTextLiteral - [29..30)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [29..30)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [30..31)::1
                     MarkupTextLiteral - [30..31)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

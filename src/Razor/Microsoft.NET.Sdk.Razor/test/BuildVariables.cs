@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     internal static partial class BuildVariables
     {
         private static string _msBuildPath = string.Empty;
-        private static string _microsoftNETCoreApp30PackageVersion = string.Empty;
+        private static string _microsoftNETCoreApp31PackageVersion = string.Empty;
         private static string _microsoftNetCompilersToolsetPackageVersion = string.Empty;
 
         static partial void InitializeVariables();
@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static string MicrosoftNETCoreApp30PackageVersion
+        public static string MicrosoftNETCoreApp31PackageVersion
         {
             get
             {
                 InitializeVariables();
-                return _microsoftNETCoreApp30PackageVersion;
+                return _microsoftNETCoreApp31PackageVersion;
             }
         }
 

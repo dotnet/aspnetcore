@@ -5,7 +5,7 @@ Document -
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -15,13 +15,13 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)
-                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueExpression - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueExpression - ValueExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
                 HtmlContent - (41:0,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)

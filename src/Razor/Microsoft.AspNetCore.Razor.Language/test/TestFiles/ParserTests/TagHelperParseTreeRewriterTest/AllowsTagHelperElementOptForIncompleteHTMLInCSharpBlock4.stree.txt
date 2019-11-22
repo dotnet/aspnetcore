@@ -24,7 +24,7 @@ RazorDocument - [0..13)::13 - [@{<!p class=}]
                                         Equals;[=];
                                         GenericBlock - [12..13)::1
                                             MarkupLiteralAttributeValue - [12..13)::1 - [}]
-                                                MarkupTextLiteral - [12..13)::1 - [}] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [12..13)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[}];
                                     CloseAngle;[<Missing>];
                     RazorMetaCode - [13..13)::0 - Gen<None> - SpanEditHandler;Accepts:Any

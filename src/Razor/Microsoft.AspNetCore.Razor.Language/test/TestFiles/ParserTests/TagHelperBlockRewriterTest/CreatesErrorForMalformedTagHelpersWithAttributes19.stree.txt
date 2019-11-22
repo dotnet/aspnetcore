@@ -12,7 +12,7 @@ RazorDocument - [0..38)::38 - [<p class=some=thing attr="@value"></p>]
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [9..13)::4
                         MarkupLiteralAttributeValue - [9..13)::4 - [some]
-                            MarkupTextLiteral - [9..13)::4 - [some] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [9..13)::4 - [some] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[some];
                 MarkupMiscAttributeContent - [13..33)::20
                     MarkupTextLiteral - [13..26)::13 - [=thing attr="] - Gen<Markup> - SpanEditHandler;Accepts:Any

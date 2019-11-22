@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Components.Web;
 #line default
 #line hidden
 #nullable disable
-    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
@@ -42,7 +42,7 @@ using Microsoft.AspNetCore.Components.Web;
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    Task OnClick() 
+    Task OnClick()
     {
         return Task.CompletedTask;
     }

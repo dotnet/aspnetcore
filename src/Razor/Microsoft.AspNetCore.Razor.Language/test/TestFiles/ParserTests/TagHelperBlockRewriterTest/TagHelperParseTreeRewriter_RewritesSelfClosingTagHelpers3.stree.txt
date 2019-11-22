@@ -12,13 +12,13 @@ RazorDocument - [0..52)::52 - [Hello<p class="foo" /> <p style="color:red;" />Wo
                     MarkupTextLiteral - [8..13)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [14..15)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [14..15)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [15..18)::3
                         MarkupLiteralAttributeValue - [15..18)::3 - [foo]
                             MarkupTextLiteral - [15..18)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[foo];
-                    MarkupTextLiteral - [18..19)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [18..19)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [19..20)::1
                     MarkupTextLiteral - [19..20)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -37,13 +37,13 @@ RazorDocument - [0..52)::52 - [Hello<p class="foo" /> <p style="color:red;" />Wo
                     MarkupTextLiteral - [26..31)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[style];
                     Equals;[=];
-                    MarkupTextLiteral - [32..33)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [32..33)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [33..43)::10
                         MarkupLiteralAttributeValue - [33..43)::10 - [color:red;]
                             MarkupTextLiteral - [33..43)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[color:red;];
-                    MarkupTextLiteral - [43..44)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [43..44)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [44..45)::1
                     MarkupTextLiteral - [44..45)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

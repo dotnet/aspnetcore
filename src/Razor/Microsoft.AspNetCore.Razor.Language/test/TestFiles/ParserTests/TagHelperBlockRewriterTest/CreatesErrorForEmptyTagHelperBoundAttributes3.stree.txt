@@ -10,12 +10,12 @@ RazorDocument - [0..21)::21 - [<myth bound='    ' />]
                     MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [13..17)::4
                         CSharpExpressionLiteral - [13..17)::4 - [    ] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Whitespace;[    ];
-                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [18..19)::1
                     MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -10,7 +10,7 @@ RazorDocument - [0..58)::58 - [<strong catchAll="@DateTime.Now">words and spaces
                     MarkupTextLiteral - [8..16)::8 - [catchAll] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[catchAll];
                     Equals;[=];
-                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [18..31)::13
                         MarkupDynamicAttributeValue - [18..31)::13 - [@DateTime.Now]
@@ -25,7 +25,7 @@ RazorDocument - [0..58)::58 - [<strong catchAll="@DateTime.Now">words and spaces
                                                     Identifier;[DateTime];
                                                     Dot;[.];
                                                     Identifier;[Now];
-                    MarkupTextLiteral - [31..32)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [31..32)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 CloseAngle;[>];
             MarkupTextLiteral - [33..49)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any

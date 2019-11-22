@@ -5,7 +5,7 @@ Document -
         UsingDirective - (53:3,1 [19] ) - System.Linq
         UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [164] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent - (30:1,2 [118] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent - item
@@ -19,6 +19,6 @@ Document -
                                 IntermediateToken - (93:2,32 [23] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - item.ToLowerInvariant()
                         HtmlContent - (129:2,68 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (129:2,68 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
-                    ComponentAttribute - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - MyAttr - AttributeStructure.DoubleQuotes
                         HtmlContent - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc

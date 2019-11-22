@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitComponentAttribute(ComponentAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, string.Format("AttributeStructure.{0}", node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("AttributeStructure.{0}", node.AttributeStructure));
         }
 
         public override void VisitComponentChildContent(ComponentChildContentIntermediateNode node)

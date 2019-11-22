@@ -191,6 +191,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     context.RenderNode(attribute);
                 }
+                else if (child is ComponentAttributeIntermediateNode componentAttribute)
+                {
+                    context.RenderNode(componentAttribute);
+                }
                 else if (child is SplatIntermediateNode splat)
                 {
                     context.RenderNode(splat);
@@ -233,7 +237,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Debug.Assert(_currentAttributeValues.Count == 0);
             context.RenderChildren(node);
 
-            WriteAttribute(context, node.AttributeName, _currentAttributeValues);
+            if (node.AttributeNameExpression == null)
+            {
+                WriteAttribute(context, node.AttributeName, _currentAttributeValues);
+            }
+            else
+            {
+                WriteAttribute(context, node.AttributeNameExpression, _currentAttributeValues);
+            }
             _currentAttributeValues.Clear();
 
             if (!string.IsNullOrEmpty(node.EventUpdatesAttributeName))
@@ -502,10 +513,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
+            var addAttributeMethod = node.Annotations[ComponentMetadata.Common.AddAttributeMethodName] as string ?? ComponentsApi.RenderTreeBuilder.AddAttribute;
+
             // _builder.AddAttribute(1, "Foo", 42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
-            context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.AddAttribute);
+            context.CodeWriter.Write(addAttributeMethod);
             context.CodeWriter.Write("(");
             context.CodeWriter.Write((_sourceSequence++).ToString());
             context.CodeWriter.Write(", ");
@@ -659,7 +672,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // _builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
             // OR
             // _builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
-            BeginWriteAttribute(context.CodeWriter, node.AttributeName);
+            BeginWriteAttribute(context, node.AttributeName);
             context.CodeWriter.Write($"({node.TypeName})(");
 
             WriteComponentChildContentInnards(context, node);
@@ -837,19 +850,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private void WriteAttribute(CodeRenderingContext context, string key, IList<IntermediateToken> value)
         {
-            BeginWriteAttribute(context.CodeWriter, key);
+            BeginWriteAttribute(context, key);
             WriteAttributeValue(context, value);
             context.CodeWriter.WriteEndMethodInvocation();
         }
 
-        protected override void BeginWriteAttribute(CodeWriter codeWriter, string key)
+        private void WriteAttribute(CodeRenderingContext context, IntermediateNode nameExpression, IList<IntermediateToken> value)
         {
-            codeWriter
+            BeginWriteAttribute(context, nameExpression);
+            WriteAttributeValue(context, value);
+            context.CodeWriter.WriteEndMethodInvocation();
+        }
+
+        protected override void BeginWriteAttribute(CodeRenderingContext context, string key)
+        {
+            context.CodeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
+        }
+
+        protected override void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode nameExpression)
+        {
+            context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}");
+            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.WriteParameterSeparator();
+
+            var tokens = GetCSharpTokens(nameExpression);
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                WriteCSharpToken(context, tokens[i]);
+            }
+
+            context.CodeWriter.WriteParameterSeparator();
         }
 
         private static string GetHtmlContent(HtmlContentIntermediateNode node)

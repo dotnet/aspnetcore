@@ -1,13 +1,13 @@
-Source Location: (112:3,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (112:3,7 [72] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    Task OnClick() 
+    Task OnClick()
     {
         return Task.CompletedTask;
     }
 |
-Generated Location: (1332:43,7 [73] )
+Generated Location: (1340:43,7 [72] )
 |
-    Task OnClick() 
+    Task OnClick()
     {
         return Task.CompletedTask;
     }

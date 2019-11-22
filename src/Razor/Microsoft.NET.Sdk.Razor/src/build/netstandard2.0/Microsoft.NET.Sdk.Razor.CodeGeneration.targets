@@ -174,8 +174,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ResolveGeneratedRazorCompileInputs">
     <ItemGroup>
-      <RazorCompile 
-        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)" 
+      <RazorCompile
+        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)"
         Condition="'%(RazorGenerateWithTargetPath.DocumentKind)'=='mvc'" />
     </ItemGroup>
   </Target>

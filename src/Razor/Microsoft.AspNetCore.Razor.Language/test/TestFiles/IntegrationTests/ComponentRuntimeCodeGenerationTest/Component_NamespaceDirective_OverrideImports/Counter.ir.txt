@@ -7,6 +7,6 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         UsingDirective - (1:0,1 [19] x:\dir\subdir\Test\_Imports.razor) - System.Text
         UsingDirective - (21:1,1 [25] x:\dir\subdir\Test\_Imports.razor) - System.Reflection
-        ClassDeclaration -  - public - Counter - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - Counter - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (21:1,0 [12] Counter.razor) - Counter2

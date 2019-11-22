@@ -10,7 +10,7 @@ RazorDocument - [0..43)::43 - [<p attr="@if (true) <p attr='@foo'> }"></p>]
                     MarkupTextLiteral - [3..7)::4 - [attr] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[attr];
                     Equals;[=];
-                    MarkupTextLiteral - [8..9)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [8..9)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [9..43)::34
                         MarkupDynamicAttributeValue - [9..43)::34 - [@if (true) <p attr='@foo'> }"></p>]
@@ -36,7 +36,7 @@ RazorDocument - [0..43)::43 - [<p attr="@if (true) <p attr='@foo'> }"></p>]
                                                     MarkupTextLiteral - [23..27)::4 - [attr] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                         Text;[attr];
                                                     Equals;[=];
-                                                    MarkupTextLiteral - [28..29)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                    MarkupTextLiteral - [28..29)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                         SingleQuote;['];
                                                     GenericBlock - [29..33)::4
                                                         MarkupDynamicAttributeValue - [29..33)::4 - [@foo]
@@ -49,7 +49,7 @@ RazorDocument - [0..43)::43 - [<p attr="@if (true) <p attr='@foo'> }"></p>]
                                                                             CSharpCodeBlock - [30..33)::3
                                                                                 CSharpExpressionLiteral - [30..33)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                                                                     Identifier;[foo];
-                                                    MarkupTextLiteral - [33..34)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                    MarkupTextLiteral - [33..34)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                         SingleQuote;['];
                                                 CloseAngle;[>];
                                             MarkupTextLiteral - [35..39)::4 - [ }">] - Gen<Markup> - SpanEditHandler;Accepts:Any

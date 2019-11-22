@@ -9,7 +9,7 @@ Source Location: (56:2,2 [138] x:\dir\subdir\Test\TestComponent.cshtml)
     if (__builder == null) output = "Builder is null!";
     else output = "Builder is not null!";
     |
-Generated Location: (1017:31,2 [138] )
+Generated Location: (1025:31,2 [138] )
 |
     var output = string.Empty;
     if (__builder == null) output = "Builder is null!";
@@ -18,13 +18,13 @@ Generated Location: (1017:31,2 [138] )
 
 Source Location: (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |output|
-Generated Location: (1293:42,16 [6] )
+Generated Location: (1301:42,16 [6] )
 |output|
 
 Source Location: (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml)
 |
 |
-Generated Location: (1390:47,38 [2] )
+Generated Location: (1398:47,38 [2] )
 |
 |
 

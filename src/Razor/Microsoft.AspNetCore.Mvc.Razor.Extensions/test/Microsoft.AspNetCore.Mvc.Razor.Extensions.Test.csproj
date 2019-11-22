@@ -4,7 +4,7 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
-
+    
     <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>

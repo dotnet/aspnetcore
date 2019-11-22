@@ -8,7 +8,14 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Microsoft.AspNetCore.Components.Web;
+
+#line default
+#line hidden
+#nullable disable
+    public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -20,6 +27,15 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                 x => { }
+
+#line default
+#line hidden
+#nullable disable
+            );
         }
         #pragma warning restore 1998
     }

@@ -162,6 +162,12 @@
   <data name="EventHandlerTagHelper_Documentation" xml:space="preserve">
     <value>Sets the '{0}' attribute to the provided string or delegate value. A delegate value should be of type '{1}'.</value>
   </data>
+  <data name="EventHandlerTagHelper_PreventDefault_Documentation" xml:space="preserve">
+    <value>Specifies whether to cancel (if cancelable) the default action that belongs to the '{0}' event.</value>
+  </data>
+  <data name="EventHandlerTagHelper_StopPropagation_Documentation" xml:space="preserve">
+    <value>Specifies whether to prevent further propagation of the '{0}' event in the capturing and bubbling phases.</value>
+  </data>
   <data name="ImplementsDirective_Description" xml:space="preserve">
     <value>Declares an interface implementation for the current class.</value>
   </data>

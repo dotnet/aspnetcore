@@ -10,7 +10,7 @@ RazorDocument - [0..34)::34 - [<th:myth2 bound="@DateTime.Now" />]
                     MarkupTextLiteral - [10..15)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound];
                     Equals;[=];
-                    MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [16..17)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [17..30)::13
                         MarkupBlock - [17..30)::13
@@ -24,7 +24,7 @@ RazorDocument - [0..34)::34 - [<th:myth2 bound="@DateTime.Now" />]
                                                 Identifier;[DateTime];
                                                 Dot;[.];
                                                 Identifier;[Now];
-                    MarkupTextLiteral - [30..31)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [30..31)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [31..32)::1
                     MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

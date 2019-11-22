@@ -7,6 +7,6 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         RouteAttributeExtensionNode -  - /MyPage
         RouteAttributeExtensionNode -  - /AnotherRoute/{id}
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (45:2,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent

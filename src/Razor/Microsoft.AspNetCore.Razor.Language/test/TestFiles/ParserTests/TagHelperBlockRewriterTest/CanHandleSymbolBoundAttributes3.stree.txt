@@ -15,12 +15,12 @@ RazorDocument - [0..55)::55 - [<button bound (click)='doSomething()'>Click Me</b
                     MarkupTextLiteral - [14..21)::7 - [(click)] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[(click)];
                     Equals;[=];
-                    MarkupTextLiteral - [22..23)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [22..23)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [23..36)::13
                         CSharpExpressionLiteral - [23..36)::13 - [doSomething()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Text;[doSomething()];
-                    MarkupTextLiteral - [36..37)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [36..37)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTextLiteral - [38..46)::8 - [Click Me] - Gen<Markup> - SpanEditHandler;Accepts:Any

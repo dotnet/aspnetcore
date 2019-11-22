@@ -21,11 +21,11 @@ RazorDocument - [0..32)::32 - [@{<input int-prefix-value='' />}]
                                         MarkupTextLiteral - [9..25)::16 - [int-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[int-prefix-value];
                                         Equals;[=];
-                                        MarkupTextLiteral - [26..27)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [26..27)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         MarkupTagHelperAttributeValue - [27..27)::0
                                             CSharpExpressionLiteral - [27..27)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
-                                        MarkupTextLiteral - [27..28)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [27..28)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [28..29)::1
                                         MarkupTextLiteral - [28..29)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -23,7 +23,7 @@ RazorDocument - [0..25)::25 - [@{<a href=Foo Bar Baz />}]
                                         Equals;[=];
                                         GenericBlock - [10..13)::3
                                             MarkupLiteralAttributeValue - [10..13)::3 - [Foo]
-                                                MarkupTextLiteral - [10..13)::3 - [Foo] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [10..13)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[Foo];
                                     MarkupMinimizedAttributeBlock - [13..17)::4 - [ Bar]
                                         MarkupTextLiteral - [13..14)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

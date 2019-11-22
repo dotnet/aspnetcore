@@ -5,7 +5,7 @@ Document -
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -15,19 +15,19 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 Component - (33:1,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (64:1,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)

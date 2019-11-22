@@ -184,7 +184,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent 
+<MyComponent
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""
@@ -317,7 +317,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@myValue"" />");
@@ -335,7 +335,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@(myValue)"" />");
@@ -353,7 +353,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <div>@myValue <!-- @myValue --> </div>");
@@ -471,7 +471,7 @@ namespace Test
             var generated = CompileToCSharp(@"
 <InputText @bind-Value=""person.Name"" />
 
-@functions 
+@functions
 {
     Person person = new Person();
 }");
@@ -897,6 +897,37 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElement_WithoutCloseTag()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", null, ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <input @bind=""@ParentValue"">
+</div>
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BindToElement_WithStringAttribute_WritesAttributes()
         {
             // Arrange
@@ -970,6 +1001,64 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElement_WithEventAsExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var x = ""anotherevent""; }
+<div @bind-value=""@ParentValue"" @bind-value:event=""@x"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElement_WithEventAsExplicitExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@{ var x = ""anotherevent""; }
+<div @bind-value=""@ParentValue"" @bind-value:event=""@(x.ToString())"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -1698,6 +1787,44 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void MultipleChildContentMatchingComponentName()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment Header { get; set; }
+
+        [Parameter]
+        public RenderFragment Footer { get; set; }
+    }
+
+    public class Header : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent>
+  <Header>Hi!</Header>
+  <Footer>Bye!</Footer>
+</MyComponent>
+<Header>Hello!</Header>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Directives
@@ -1804,7 +1931,7 @@ namespace Test3
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            var result = CompileToAssembly(generated, throwOnFailure: !DesignTime);
+            var result = CompileToAssembly(generated, throwOnFailure: false);
 
             if (DesignTime)
             {
@@ -2571,6 +2698,28 @@ namespace Test
         }
 
         [Fact]
+        public void EventHandler_OnElement_WithoutCloseTag()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<div>
+  <input @onclick=""OnClick"">
+</div>
+@code {
+    void OnClick() {
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void EventHandler_OnElement_WithEventArgsMethodGroup()
         {
             // Arrange
@@ -2621,7 +2770,7 @@ namespace Test
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    Task OnClick() 
+    Task OnClick()
     {
         return Task.CompletedTask;
     }
@@ -2644,7 +2793,7 @@ namespace Test
 @using Microsoft.AspNetCore.Components.Web
 <input @onclick=""OnClick"" />
 @code {
-    Task OnClick(MouseEventArgs e) 
+    Task OnClick(MouseEventArgs e)
     {
         return Task.CompletedTask;
     }
@@ -2699,6 +2848,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input @onclick=""x => { }"" />");
 
             // Assert
@@ -2740,6 +2890,78 @@ namespace Test
     void OnClick(MouseEventArgs e) {
     }
 }");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_StopPropagation_Minimized()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<button @onclick:preventDefault @onclick:stopPropagation>Click Me</button>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_StopPropagation()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<button @onclick=""() => Foo = false"" @onfocus:preventDefault=""true"" @onclick:stopPropagation=""Foo"" @onfocus:stopPropagation=""false"">Click Me</button>
+@code {
+    bool Foo { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_WithDelegate_PreventDefault()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onfocus=""OnFocus"" @onfocus:preventDefault=""ShouldPreventDefault()"" />
+@code {
+    void OnFocus(FocusEventArgs e) { }
+
+    bool ShouldPreventDefault() { return false; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void EventHandler_PreventDefault_Duplicates()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+<input @onclick:preventDefault=""true"" @onclick:preventDefault />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -4262,7 +4484,7 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-   
+
 @(""My value"")
 
 <h1>Hello</h1>");

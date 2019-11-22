@@ -21,13 +21,13 @@ RazorDocument - [0..25)::25 - [@{<a *something='Foo' />}]
                                         MarkupTextLiteral - [5..15)::10 - [*something] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[*something];
                                         Equals;[=];
-                                        MarkupTextLiteral - [16..17)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [16..17)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [17..20)::3
                                             MarkupLiteralAttributeValue - [17..20)::3 - [Foo]
                                                 MarkupTextLiteral - [17..20)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[Foo];
-                                        MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [21..22)::1
                                         MarkupTextLiteral - [21..22)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

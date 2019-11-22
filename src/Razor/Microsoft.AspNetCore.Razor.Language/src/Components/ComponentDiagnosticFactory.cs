@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static readonly RazorDiagnosticDescriptor EventHandler_Duplicates =
             new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9990",
-            () => "The attribute '{0}' was matched by multiple event handlers attributes. Duplicates:{1}",
+            () => "The attribute '{0}' was matched by multiple event handler attributes. Duplicates:{1}",
             RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, TagHelperDirectiveAttributeIntermediateNode[] attributes)
@@ -437,6 +437,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 source ?? SourceSpan.Undefined,
                 startTagName,
                 endTagName);
+        }
+
+        public static readonly RazorDiagnosticDescriptor EventHandlerParameter_Duplicates =
+            new RazorDiagnosticDescriptor(
+            $"{DiagnosticPrefix}10014",
+            () => "The attribute '{0}' was matched by multiple event handlers parameter attributes. Duplicates:{1}",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreateEventHandlerParameter_Duplicates(SourceSpan? source, string attribute, TagHelperDirectiveAttributeParameterIntermediateNode[] attributes)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                EventHandlerParameter_Duplicates,
+                source ?? SourceSpan.Undefined,
+                attribute,
+                Environment.NewLine + string.Join(Environment.NewLine, attributes.Select(p => p.TagHelper.DisplayName)));
+            return diagnostic;
         }
     }
 }

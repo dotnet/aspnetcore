@@ -12,7 +12,7 @@ RazorDocument - [0..44)::44 - [{<span foo='abc@def.com abc@@def.com @@' />}]
                     MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[foo];
                     Equals;[=];
-                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [12..39)::27
                         MarkupLiteralAttributeValue - [12..23)::11 - [abc@def.com]
@@ -37,7 +37,7 @@ RazorDocument - [0..44)::44 - [{<span foo='abc@def.com abc@@def.com @@' />}]
                                 Transition;[@];
                             MarkupEphemeralTextLiteral - [38..39)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                 Transition;[@];
-                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [40..41)::1
                     MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

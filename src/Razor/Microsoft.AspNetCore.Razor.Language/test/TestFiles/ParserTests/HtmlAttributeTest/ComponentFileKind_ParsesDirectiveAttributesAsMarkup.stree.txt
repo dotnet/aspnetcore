@@ -11,7 +11,7 @@ RazorDocument - [0..27)::27 - [<span @class='@foo'></span>]
                         Transition;[@];
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [14..18)::4
                         MarkupDynamicAttributeValue - [14..18)::4 - [@foo]
@@ -24,7 +24,7 @@ RazorDocument - [0..27)::27 - [<span @class='@foo'></span>]
                                             CSharpCodeBlock - [15..18)::3
                                                 CSharpExpressionLiteral - [15..18)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                                     Identifier;[foo];
-                    MarkupTextLiteral - [18..19)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [18..19)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupEndTag - [20..27)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:Any

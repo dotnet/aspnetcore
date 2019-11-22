@@ -207,5 +207,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task IntrospectJsonContentFiles_WithExcludeConfigFilesFromBuildOutputSet()
+        {
+            // Verifies that the fix for https://github.com/aspnet/AspNetCore/issues/14017 works.
+            var result = await DotnetMSBuild("_IntrospectContentItems", "/p:ExcludeConfigFilesFromBuildOutput=true");
+
+            Assert.BuildPassed(result);
+            var launchSettingsPath = Path.Combine("Properties", "launchSettings.json");
+            Assert.BuildOutputContainsLine(result, $"Content: {launchSettingsPath} CopyToOutputDirectory= CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
+            Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory= CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
+            Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory= CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
+        }
     }
 }

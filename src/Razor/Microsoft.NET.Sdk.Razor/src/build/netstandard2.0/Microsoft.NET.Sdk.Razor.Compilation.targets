@@ -35,7 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove comment above ^
 
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
-    
+
     Remove Returns="@(CscCommandLineArgs)"
     Remove <Import Project="Microsoft.Managed.Core.targets"/>
     Remove Returns="@(CscCommandLineArgs)"
@@ -60,7 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Remove additional steps after calling CSC
 
     Add our FileWrites after the call to CSC
-    
+
     Add Condition="'@(RazorCompile)'!=''" as a condition to the RazorCoreCompile target.
   -->
   <Target Name="RazorCoreCompile"
@@ -111,12 +111,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
-    <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' != '.NETCoreApp' OR '$(TargetFrameworkVersion)' != 'v3.0') AND
-                            ('$(TargetFrameworkIdentifier)' != '.NETStandard' OR '$(TargetFrameworkVersion)' != 'v2.1')">
-      <MaxSupportedLangVersion Condition="'$(MaxSupportedLangVersion)' == ''">7.3</MaxSupportedLangVersion>
-      <LangVersion Condition="'$(LangVersion)' == ''">$(MaxSupportedLangVersion)</LangVersion>
-    </PropertyGroup>
-
     <Csc
          AdditionalLibPaths="$(AdditionalLibPaths)"
          AddModules="@(AddModules)"
@@ -137,7 +131,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          EmitDebugInformation="$(DebugSymbols)"
          EnvironmentVariables="$(CscEnvironment)"
          ErrorEndLocation="$(ErrorEndLocation)"
-         ErrorLog="$(ErrorLog)"
+         ErrorLog="$(RazorCompilationErrorLog)"
          ErrorReport="$(ErrorReport)"
          Features="$(Features)"
          FileAlignment="$(FileAlignment)"

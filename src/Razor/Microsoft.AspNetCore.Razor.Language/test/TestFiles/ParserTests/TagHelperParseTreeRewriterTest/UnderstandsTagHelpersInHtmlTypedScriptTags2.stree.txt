@@ -10,13 +10,13 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                     MarkupTextLiteral - [8..10)::2 - [id] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[id];
                     Equals;[=];
-                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [12..21)::9
                         MarkupLiteralAttributeValue - [12..21)::9 - [scriptTag]
                             MarkupTextLiteral - [12..21)::9 - [scriptTag] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[scriptTag];
-                    MarkupTextLiteral - [21..22)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [21..22)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [22..39)::17 - [ type='text/html']
                     MarkupTextLiteral - [22..23)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -24,7 +24,7 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                     MarkupTextLiteral - [23..27)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [28..29)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [28..29)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [29..38)::9
                         MarkupLiteralAttributeValue - [29..38)::9 - [text/html]
@@ -32,7 +32,7 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                                 Text;[text];
                                 ForwardSlash;[/];
                                 Text;[html];
-                    MarkupTextLiteral - [38..39)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [38..39)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [39..57)::18 - [ class='something']
                     MarkupTextLiteral - [39..40)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -40,13 +40,13 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                     MarkupTextLiteral - [40..45)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[class];
                     Equals;[=];
-                    MarkupTextLiteral - [46..47)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [46..47)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [47..56)::9
                         MarkupLiteralAttributeValue - [47..56)::9 - [something]
                             MarkupTextLiteral - [47..56)::9 - [something] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[something];
-                    MarkupTextLiteral - [56..57)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [56..57)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTagHelperElement - [58..67)::9 - input[SelfClosing] - inputtaghelper

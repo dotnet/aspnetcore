@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-    <TargetFrameworks>netcoreapp3.0;net46</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
 
     <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
@@ -10,7 +10,9 @@
     <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks since they need to be backwards compatible. -->
 
     <!-- Allow assemblies outside of lib in the package -->
-    <NoWarn>$(NoWarn);NU5100;NU5129</NoWarn>
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- It is intentional to not include build/netstandard2.0/Microsoft.NET.Sdk.Razor.targets -->
+    <NoWarn>$(NoWarn);NU5129</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +21,8 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" Condition="'$(TargetFramework)'=='net46'" />
 
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp3.0'" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp3.0'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +59,7 @@
 
     <ItemGroup>
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
-      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\netcoreapp3.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\$(DefaultNetCoreTargetFramework)*\Microsoft.NET.Sdk.Razor.Tasks.*" />
 
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\System.Collections.Immutable.dll" />
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\System.Reflection.Metadata.dll" />

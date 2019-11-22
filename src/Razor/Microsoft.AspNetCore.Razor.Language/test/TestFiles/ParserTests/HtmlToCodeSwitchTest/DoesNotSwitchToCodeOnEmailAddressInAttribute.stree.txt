@@ -21,13 +21,13 @@ RazorDocument - [0..53)::53 - [@{<a href="mailto:anurse@microsoft.com">Email me<
                                         MarkupTextLiteral - [5..9)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[href];
                                         Equals;[=];
-                                        MarkupTextLiteral - [10..11)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [10..11)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                         GenericBlock - [11..38)::27
                                             MarkupLiteralAttributeValue - [11..38)::27 - [mailto:anurse@microsoft.com]
                                                 MarkupTextLiteral - [11..38)::27 - [mailto:anurse@microsoft.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[mailto:anurse@microsoft.com];
-                                        MarkupTextLiteral - [38..39)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [38..39)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                     CloseAngle;[>];
                                 MarkupTextLiteral - [40..48)::8 - [Email me] - Gen<Markup> - SpanEditHandler;Accepts:Any

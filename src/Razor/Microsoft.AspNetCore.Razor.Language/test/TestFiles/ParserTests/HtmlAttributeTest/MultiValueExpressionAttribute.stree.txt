@@ -21,7 +21,7 @@ RazorDocument - [0..29)::29 - [@{<a href='@foo bar @baz' />}]
                                         MarkupTextLiteral - [5..9)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[href];
                                         Equals;[=];
-                                        MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [10..11)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [11..24)::13
                                             MarkupDynamicAttributeValue - [11..15)::4 - [@foo]
@@ -51,7 +51,7 @@ RazorDocument - [0..29)::29 - [@{<a href='@foo bar @baz' />}]
                                                                 CSharpCodeBlock - [21..24)::3
                                                                     CSharpExpressionLiteral - [21..24)::3 - [baz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                                                         Identifier;[baz];
-                                        MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [24..25)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     MarkupMiscAttributeContent - [25..26)::1
                                         MarkupTextLiteral - [25..26)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

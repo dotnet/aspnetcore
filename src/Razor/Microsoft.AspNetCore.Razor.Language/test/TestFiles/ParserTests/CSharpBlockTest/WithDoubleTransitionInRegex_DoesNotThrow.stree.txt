@@ -21,7 +21,7 @@ RazorDocument - [0..118)::118 - [@{<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@
                                         MarkupTextLiteral - [8..11)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[foo];
                                         Equals;[=];
-                                        MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                         GenericBlock - [13..113)::100
                                             MarkupLiteralAttributeValue - [13..45)::32 - [/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+]
@@ -77,7 +77,7 @@ RazorDocument - [0..118)::118 - [@{<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@
                                                     Text;[)*$];
                                                     ForwardSlash;[/];
                                                     Text;[i];
-                                        MarkupTextLiteral - [113..114)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [113..114)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
                                     MarkupMiscAttributeContent - [114..115)::1
                                         MarkupTextLiteral - [114..115)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

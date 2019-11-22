@@ -12,7 +12,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                     MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[foo];
                     Equals;[=];
-                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [11..12)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [12..20)::8
                         MarkupBlock - [12..14)::2
@@ -38,7 +38,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                                                     IntegerLiteral;[3];
                                             RazorMetaCode - [19..20)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                                 RightParenthesis;[)];
-                    MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [21..49)::28 - [ bar='@(2+3)@@@DateTime.Now']
                     MarkupTextLiteral - [21..22)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -46,7 +46,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                     MarkupTextLiteral - [22..25)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bar];
                     Equals;[=];
-                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [27..48)::21
                         MarkupDynamicAttributeValue - [27..33)::6 - [@(2+3)]
@@ -84,7 +84,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                                                     Identifier;[DateTime];
                                                     Dot;[.];
                                                     Identifier;[Now];
-                    MarkupTextLiteral - [48..49)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [48..49)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [49..71)::22 - [ baz='@DateTime.Now@@']
                     MarkupTextLiteral - [49..50)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -92,7 +92,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                     MarkupTextLiteral - [50..53)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[baz];
                     Equals;[=];
-                    MarkupTextLiteral - [54..55)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [54..55)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [55..70)::15
                         MarkupDynamicAttributeValue - [55..68)::13 - [@DateTime.Now]
@@ -112,7 +112,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                                 Transition;[@];
                             MarkupEphemeralTextLiteral - [69..70)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                 Transition;[@];
-                    MarkupTextLiteral - [70..71)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [70..71)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [71..94)::23 - [ bat='@DateTime.Now @@']
                     MarkupTextLiteral - [71..72)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -120,7 +120,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                     MarkupTextLiteral - [72..75)::3 - [bat] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bat];
                     Equals;[=];
-                    MarkupTextLiteral - [76..77)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [76..77)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [77..93)::16
                         MarkupDynamicAttributeValue - [77..90)::13 - [@DateTime.Now]
@@ -141,7 +141,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                                 Transition;[@];
                             MarkupEphemeralTextLiteral - [92..93)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                 Transition;[@];
-                    MarkupTextLiteral - [93..94)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [93..94)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [94..116)::22 - [ zoo='@@@DateTime.Now']
                     MarkupTextLiteral - [94..95)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -149,7 +149,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                     MarkupTextLiteral - [95..98)::3 - [zoo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[zoo];
                     Equals;[=];
-                    MarkupTextLiteral - [99..100)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [99..100)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [100..115)::15
                         MarkupBlock - [100..102)::2
@@ -171,7 +171,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                                                     Identifier;[DateTime];
                                                     Dot;[.];
                                                     Identifier;[Now];
-                    MarkupTextLiteral - [115..116)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [115..116)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [116..117)::1
                     MarkupTextLiteral - [116..117)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

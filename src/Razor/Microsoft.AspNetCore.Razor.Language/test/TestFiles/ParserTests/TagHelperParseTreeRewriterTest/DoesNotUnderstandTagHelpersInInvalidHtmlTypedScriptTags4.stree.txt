@@ -10,7 +10,7 @@ RazorDocument - [0..60)::60 - [<script type='text/ng-*' type='text/html'><input 
                     MarkupTextLiteral - [8..12)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [14..23)::9
                         MarkupLiteralAttributeValue - [14..23)::9 - [text/ng-*]
@@ -18,7 +18,7 @@ RazorDocument - [0..60)::60 - [<script type='text/ng-*' type='text/html'><input 
                                 Text;[text];
                                 ForwardSlash;[/];
                                 Text;[ng-*];
-                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupAttributeBlock - [24..41)::17 - [ type='text/html']
                     MarkupTextLiteral - [24..25)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -26,7 +26,7 @@ RazorDocument - [0..60)::60 - [<script type='text/ng-*' type='text/html'><input 
                     MarkupTextLiteral - [25..29)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[type];
                     Equals;[=];
-                    MarkupTextLiteral - [30..31)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [30..31)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     GenericBlock - [31..40)::9
                         MarkupLiteralAttributeValue - [31..40)::9 - [text/html]
@@ -34,7 +34,7 @@ RazorDocument - [0..60)::60 - [<script type='text/ng-*' type='text/html'><input 
                                 Text;[text];
                                 ForwardSlash;[/];
                                 Text;[html];
-                    MarkupTextLiteral - [40..41)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [40..41)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 CloseAngle;[>];
             MarkupTextLiteral - [42..51)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any

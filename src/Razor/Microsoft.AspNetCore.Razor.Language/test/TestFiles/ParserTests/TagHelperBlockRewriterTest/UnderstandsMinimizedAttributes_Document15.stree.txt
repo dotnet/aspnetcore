@@ -10,7 +10,7 @@ RazorDocument - [0..43)::43 - [<input string-prefix-value='some string' />]
                     MarkupTextLiteral - [7..26)::19 - [string-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[string-prefix-value];
                     Equals;[=];
-                    MarkupTextLiteral - [27..28)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [27..28)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [28..39)::11
                         MarkupTextLiteral - [28..32)::4 - [some] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -18,7 +18,7 @@ RazorDocument - [0..43)::43 - [<input string-prefix-value='some string' />]
                         MarkupTextLiteral - [32..39)::7 - [ string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
                             Text;[string];
-                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [40..41)::1
                     MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

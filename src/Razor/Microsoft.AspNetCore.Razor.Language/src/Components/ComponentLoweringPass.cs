@@ -34,7 +34,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 var reference = references[i];
                 var node = (TagHelperIntermediateNode)reference.Node;
+                if (node.TagHelpers.Any(t => t.IsChildContentTagHelper()))
+                {
+                    // This is a child content tag helper. This will be rewritten when we visit its parent.
+                    continue;
+                }
 
+                // The element didn't match any child content descriptors. Look for any matching component descriptors.
                 var count = 0;
                 for (var j = 0; j < node.TagHelpers.Count; j++)
                 {
@@ -42,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     {
                         // Only allow a single component tag helper per element. If there are multiple, we'll just consider
                         // the first one and ignore the others.
-                        if (count++ > 1)
+                        if (++count > 1)
                         {
                             node.Diagnostics.Add(ComponentDiagnosticFactory.Create_MultipleComponents(node.Source, node.TagName, node.TagHelpers));
                             break;
@@ -53,10 +59,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 if (count >= 1)
                 {
                     reference.Replace(RewriteAsComponent(node, node.TagHelpers.First(t => t.IsComponentTagHelper())));
-                }
-                else if (node.TagHelpers.Any(t => t.IsChildContentTagHelper()))
-                {
-                    // Ignore, this will be handled when we rewrite the parent.
                 }
                 else
                 {

@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
     <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp3.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">$(DefaultNetCoreTargetFramework)</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
   </PropertyGroup>
@@ -307,7 +307,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Add all cshtml files to UpToDateCheckInput - a collection of files used by FastUpToDateCheck to determine
       if any of the the project inputs have changed.
     -->
-    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" Set="RazorViews" />
 
     <!--
       Add all .razor files to UpToDateCheckInput. Component compilation is not controlled by RazorCompileOnBuild,
@@ -320,7 +320,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       if any of the project's outputs have changed.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
-      Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" />
+      Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" Set="RazorViews" />
 
     <!-- Set up watchers for dotnet-watch -->
     <Watch Include="@(Content->WithMetadataValue('Extension', '.razor'))" />

@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_originalProjectName, _testProjectName, _baseDirectory, _additionalProjects, _language);
-#if NETCOREAPP3_0
-            MSBuildIntegrationTestBase.TargetFramework = "netcoreapp3.0";
+#if NETCOREAPP
+            MSBuildIntegrationTestBase.TargetFramework = "netcoreapp3.1";
 #else
 #error Target frameworks need to be updated
 #endif

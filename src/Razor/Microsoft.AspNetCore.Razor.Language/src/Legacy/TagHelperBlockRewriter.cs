@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -11,11 +12,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal static class TagHelperBlockRewriter
     {
         public static TagMode GetTagMode(
-            MarkupStartTagSyntax tagBlock,
-            TagHelperBinding bindingResult,
-            ErrorSink errorSink)
+            MarkupStartTagSyntax startTag,
+            MarkupEndTagSyntax endTag,
+            TagHelperBinding bindingResult)
         {
-            var childSpan = tagBlock.GetLastToken()?.Parent;
+            var childSpan = startTag.GetLastToken()?.Parent;
 
             // Self-closing tags are always valid despite descriptors[X].TagStructure.
             if (childSpan?.GetContent().EndsWith("/>", StringComparison.Ordinal) ?? false)
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return TagMode.SelfClosing;
             }
 
+            var hasDirectiveAttribute = false;
             foreach (var descriptor in bindingResult.Descriptors)
             {
                 var boundRules = bindingResult.Mappings[descriptor];
@@ -32,6 +34,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     return TagMode.StartTagOnly;
                 }
+
+                // Directive attribute will tolerate forms that don't work for tag helpers. For instance:
+                //
+                // <input @onclick="..."> vs <input onclick="..." />
+                //
+                // We don't want this to become an error just because you added a directive attribute.
+                if (descriptor.IsAnyComponentDocumentTagHelper() && !descriptor.IsComponentOrChildContentTagHelper())
+                {
+                    hasDirectiveAttribute = true;
+                }
+            }
+
+            if (hasDirectiveAttribute && startTag.IsVoidElement() && endTag == null)
+            {
+                return TagMode.StartTagOnly;
             }
 
             return TagMode.StartTagAndEndTag;

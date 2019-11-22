@@ -22,7 +22,7 @@ RazorDocument - [0..44)::44 - [@{<!p class='btn1 @DateTime.Now btn2'></!p>}]
                                         MarkupTextLiteral - [6..11)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[class];
                                         Equals;[=];
-                                        MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                         GenericBlock - [13..36)::23
                                             MarkupLiteralAttributeValue - [13..17)::4 - [btn1]
@@ -47,7 +47,7 @@ RazorDocument - [0..44)::44 - [@{<!p class='btn1 @DateTime.Now btn2'></!p>}]
                                                     Whitespace;[ ];
                                                 MarkupTextLiteral - [32..36)::4 - [btn2] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[btn2];
-                                        MarkupTextLiteral - [36..37)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        MarkupTextLiteral - [36..37)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
                                     CloseAngle;[>];
                                 MarkupEndTag - [38..43)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:None

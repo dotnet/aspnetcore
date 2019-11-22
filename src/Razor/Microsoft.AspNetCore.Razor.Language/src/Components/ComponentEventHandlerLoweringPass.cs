@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
@@ -31,11 +32,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Each usage will be represented by a tag helper property that is a descendant of either
             // a component or element.
             var references = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeIntermediateNode>();
-
             var parents = new HashSet<IntermediateNode>();
             for (var i = 0; i < references.Count; i++)
             {
                 parents.Add(references[i].Parent);
+            }
+
+            // We need to do something similar for directive attribute parameters like @onclick:preventDefault.
+            var parameterReferences = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeParameterIntermediateNode>();
+            for (var i = 0; i < parameterReferences.Count; i++)
+            {
+                parents.Add(parameterReferences[i].Parent);
             }
 
             foreach (var parent in parents)
@@ -57,6 +64,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 if (node.TagHelper.IsEventHandlerTagHelper())
                 {
                     reference.Replace(RewriteUsage(reference.Parent, node));
+                }
+            }
+
+            for (var i = 0; i < parameterReferences.Count; i++)
+            {
+                var reference = parameterReferences[i];
+                var node = (TagHelperDirectiveAttributeParameterIntermediateNode)reference.Node;
+
+                if (!reference.Parent.Children.Contains(node))
+                {
+                    // This node was removed as a duplicate, skip it.
+                    continue;
+                }
+
+                if (node.TagHelper.IsEventHandlerTagHelper())
+                {
+                    reference.Replace(RewriteParameterUsage(reference.Parent, node));
                 }
             }
         }
@@ -101,6 +125,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             foreach (var duplicate in duplicates)
             {
                 parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateEventHandler_Duplicates(
+                    parent.Source,
+                    duplicate.Key,
+                    duplicate.ToArray()));
+                foreach (var property in duplicate)
+                {
+                    parent.Children.Remove(property);
+                }
+            }
+
+            var parameterDuplicates = parent.Children
+                .OfType<TagHelperDirectiveAttributeParameterIntermediateNode>()
+                .Where(p => p.TagHelper?.IsEventHandlerTagHelper() ?? false)
+                .GroupBy(p => p.AttributeName)
+                .Where(g => g.Count() > 1);
+
+            foreach (var duplicate in parameterDuplicates)
+            {
+                parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateEventHandlerParameter_Duplicates(
                     parent.Source,
                     duplicate.Key,
                     duplicate.ToArray()));
@@ -198,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private static IReadOnlyList<IntermediateToken> GetAttributeContent(TagHelperDirectiveAttributeIntermediateNode node)
+        private static IReadOnlyList<IntermediateToken> GetAttributeContent(IntermediateNode node)
         {
             var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
             if (template != null)
@@ -221,6 +263,50 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 return node.FindDescendantNodes<IntermediateToken>();
             }
+        }
+
+        private IntermediateNode RewriteParameterUsage(IntermediateNode parent, TagHelperDirectiveAttributeParameterIntermediateNode node)
+        {
+            // Now rewrite the node to look like:
+            //
+            // builder.AddEventPreventDefaultAttribute(2, "onclick", true); // If minimized.
+            // or
+            // builder.AddEventPreventDefaultAttribute(2, "onclick", someBoolExpression); // If a bool expression is provided in the value.
+
+            string eventHandlerMethod;
+            if (node.BoundAttributeParameter.Name == "preventDefault")
+            {
+                eventHandlerMethod = ComponentsApi.RenderTreeBuilder.AddEventPreventDefaultAttribute;
+            }
+            else if (node.BoundAttributeParameter.Name == "stopPropagation")
+            {
+                eventHandlerMethod = ComponentsApi.RenderTreeBuilder.AddEventStopPropagationAttribute;
+            }
+            else
+            {
+                // Unsupported event handler attribute parameter. This can only happen if bound attribute descriptor
+                // is configured to expect a parameter other than 'preventDefault' and 'stopPropagation'.
+                return node;
+            }
+
+            var result = new ComponentAttributeIntermediateNode(node)
+            {
+                Annotations =
+                    {
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
+                        [ComponentMetadata.Common.AddAttributeMethodName] = eventHandlerMethod,
+                    },
+            };
+
+            result.Children.Clear();
+            if (node.AttributeStructure != AttributeStructure.Minimized)
+            {
+                var tokens = GetAttributeContent(node);
+                result.Children.Add(new CSharpExpressionIntermediateNode());
+                result.Children[0].Children.AddRange(tokens);
+            }
+
+            return result;
         }
     }
 }

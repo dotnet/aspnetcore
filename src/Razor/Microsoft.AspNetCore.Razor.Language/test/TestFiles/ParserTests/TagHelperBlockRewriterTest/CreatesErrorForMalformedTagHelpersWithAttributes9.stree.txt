@@ -12,7 +12,7 @@ RazorDocument - [0..25)::25 - [<p class=btn" bar<strong>]
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [9..12)::3
                         MarkupLiteralAttributeValue - [9..12)::3 - [btn]
-                            MarkupTextLiteral - [9..12)::3 - [btn] - Gen<None> - SpanEditHandler;Accepts:Any
+                            MarkupTextLiteral - [9..12)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
                 MarkupMiscAttributeContent - [12..25)::13
                     MarkupTextLiteral - [12..25)::13 - [" bar<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any

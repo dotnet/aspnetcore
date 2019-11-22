@@ -10,7 +10,7 @@ RazorDocument - [0..30)::30 - [<myth bound='    @(true)  ' />]
                     MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                     MarkupTagHelperAttributeValue - [13..26)::13
                         MarkupBlock - [13..24)::11
@@ -32,7 +32,7 @@ RazorDocument - [0..30)::30 - [<myth bound='    @(true)  ' />]
                                                 RightParenthesis;[)];
                         CSharpExpressionLiteral - [24..26)::2 - [  ] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                             Whitespace;[  ];
-                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [26..27)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
                 MarkupMiscAttributeContent - [27..28)::1
                     MarkupTextLiteral - [27..28)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

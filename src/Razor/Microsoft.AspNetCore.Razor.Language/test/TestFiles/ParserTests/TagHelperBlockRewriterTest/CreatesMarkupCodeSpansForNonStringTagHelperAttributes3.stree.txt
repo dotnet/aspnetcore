@@ -10,7 +10,7 @@ RazorDocument - [0..35)::35 - [<person age="@DateTime.Now.Year" />]
                     MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[age];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..31)::18
                         MarkupBlock - [13..31)::18
@@ -26,7 +26,7 @@ RazorDocument - [0..35)::35 - [<person age="@DateTime.Now.Year" />]
                                                 Identifier;[Now];
                                                 Dot;[.];
                                                 Identifier;[Year];
-                    MarkupTextLiteral - [31..32)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [31..32)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [32..33)::1
                     MarkupTextLiteral - [32..33)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

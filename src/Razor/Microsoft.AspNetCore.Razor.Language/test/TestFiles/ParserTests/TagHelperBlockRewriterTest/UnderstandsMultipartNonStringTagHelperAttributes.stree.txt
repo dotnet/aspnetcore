@@ -10,7 +10,7 @@ RazorDocument - [0..30)::30 - [<person age="(() => 123)()" />]
                     MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[age];
                     Equals;[=];
-                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                     MarkupTagHelperAttributeValue - [13..26)::13
                         CSharpExpressionLiteral - [13..26)::13 - [(() => 123)()] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
@@ -20,7 +20,7 @@ RazorDocument - [0..30)::30 - [<person age="(() => 123)()" />]
                             CloseAngle;[>];
                             Whitespace;[ ];
                             Text;[123)()];
-                    MarkupTextLiteral - [26..27)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [26..27)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
                 MarkupMiscAttributeContent - [27..28)::1
                     MarkupTextLiteral - [27..28)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any

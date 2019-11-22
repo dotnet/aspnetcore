@@ -5,14 +5,14 @@ Generated Location: (320:12,0 [41] )
 
 Source Location: (59:1,15 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |CurrentDate|
-Generated Location: (1101:32,15 [11] )
+Generated Location: (1109:32,15 [11] )
 |CurrentDate|
 
 Source Location: (126:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |
-Generated Location: (1480:43,7 [77] )
+Generated Location: (1488:43,7 [77] )
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |

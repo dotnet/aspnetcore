@@ -234,6 +234,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void AllowsCompatibleTagStructures_DirectiveAttribute_SelfClosing()
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule =>
+                    {
+                        rule
+                            .RequireTagName("*")
+                            .RequireAttributeDescriptor(b =>
+                            {
+                                b.Name = "@onclick";
+                                b.Metadata.Add(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
+                            });
+                    })
+                    .AddMetadata(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind)
+                    .Build(),
+            };
+
+            // Act & Assert
+            EvaluateData(descriptors, "<input @onclick=\"@test\"/>");
+        }
+
+        [Fact]
+        public void AllowsCompatibleTagStructures_DirectiveAttribute_Void()
+        {
+            // Arrange
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule =>
+                    {
+                        rule
+                            .RequireTagName("*")
+                            .RequireAttributeDescriptor(b =>
+                            {
+                                b.Name = "@onclick";
+                                b.Metadata.Add(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
+                            });
+ 
+                    })
+                    .AddMetadata(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind)
+                    .Build(),
+            };
+
+            // Act & Assert
+            EvaluateData(descriptors, "<input @onclick=\"@test\">");
+        }
+
+        [Fact]
         public void CreatesErrorForMalformedTagHelpersWithAttributes1()
         {
             RunParseTreeRewriterTest("<p class='", "strong", "p");

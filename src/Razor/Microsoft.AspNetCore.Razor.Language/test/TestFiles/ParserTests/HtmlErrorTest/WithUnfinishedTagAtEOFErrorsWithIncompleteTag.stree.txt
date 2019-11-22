@@ -23,7 +23,7 @@ RazorDocument - [0..14)::14 - [@{<foo bar=baz]
                                         Equals;[=];
                                         GenericBlock - [11..14)::3
                                             MarkupLiteralAttributeValue - [11..14)::3 - [baz]
-                                                MarkupTextLiteral - [11..14)::3 - [baz] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [11..14)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[baz];
                                     CloseAngle;[<Missing>];
                     RazorMetaCode - [14..14)::0 - Gen<None> - SpanEditHandler;Accepts:Any

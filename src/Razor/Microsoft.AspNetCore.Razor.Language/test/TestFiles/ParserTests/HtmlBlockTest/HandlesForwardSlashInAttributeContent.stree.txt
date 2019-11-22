@@ -29,7 +29,7 @@ RazorDocument - [0..20)::20 - [@{<p / class=foo />}]
                                         Equals;[=];
                                         GenericBlock - [13..16)::3
                                             MarkupLiteralAttributeValue - [13..16)::3 - [foo]
-                                                MarkupTextLiteral - [13..16)::3 - [foo] - Gen<None> - SpanEditHandler;Accepts:Any
+                                                MarkupTextLiteral - [13..16)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                                     Text;[foo];
                                     MarkupMiscAttributeContent - [16..17)::1
                                         MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
