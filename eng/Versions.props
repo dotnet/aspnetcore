@@ -158,7 +158,6 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>3.1.0</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>3.1.0-rtm.19568.3</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.1.0</MicrosoftJSInteropPackageVersion>
-    <MonoWebAssemblyInteropPackageVersion>3.1.0-preview4.19568.3</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <dotnetefPackageVersion>3.1.0</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.1.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
