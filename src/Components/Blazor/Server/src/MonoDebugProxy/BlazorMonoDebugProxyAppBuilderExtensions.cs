@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Builder
             IgnoreNullValues = true
         };
 
+        private static string DefaultDebuggerHost = "http://localhost:9222";
+
         /// <summary>
         /// Adds middleware for needed for debugging Blazor applications
         /// inside Chromium dev tools.
@@ -61,6 +63,28 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
+        private static string GetDebuggerHost()
+        {
+            var envVar = Environment.GetEnvironmentVariable("ASPNETCORE_WEBASSEMBLYDEBUGHOST");
+            string debuggerHost;
+            if (envVar is null || envVar.Equals(string.Empty))
+            {
+                debuggerHost = DefaultDebuggerHost;
+            }
+            else
+            {
+                debuggerHost = envVar;
+            }
+
+            return debuggerHost;
+        }
+
+        private static int GetDebuggerPort()
+        {
+            var host = GetDebuggerHost();
+            return new Uri(host).Port;
+        }
+
         private static void UseVisualStudioDebuggerConnectionRequestHandlers(this IApplicationBuilder app)
         {
             // Unfortunately VS doesn't send any deliberately distinguishing information so we know it's
@@ -74,16 +98,7 @@ namespace Microsoft.AspNetCore.Builder
                 if (requestPath.StartsWithSegments("/json")
                     && !request.Headers.ContainsKey("User-Agent"))
                 {
-                    var envVar = Environment.GetEnvironmentVariable("ASPNETCORE_WEBASSEMBLYDEBUGHOST");
-                    string debuggerHost;
-                    if(envVar is null || envVar.Equals(string.Empty))
-                    {
-                        debuggerHost = "http://localhost:9222";
-                    }
-                    else
-                    {
-                        debuggerHost = envVar;
-                    }
+                    var debuggerHost = GetDebuggerHost();
 
                     if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
                     {
@@ -160,7 +175,7 @@ namespace Microsoft.AspNetCore.Builder
 
             // TODO: Allow overriding port (but not hostname, as we're connecting to the
             // local browser, not to the webserver serving the app)
-            var debuggerHost = "http://localhost:9222";
+            var debuggerHost = GetDebuggerHost();
             var debuggerTabsListUrl = $"{debuggerHost}/json";
             IEnumerable<BrowserTab> availableTabs;
 
@@ -233,21 +248,22 @@ namespace Microsoft.AspNetCore.Builder
         private static string GetLaunchChromeInstructions(string appRootUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
+            var debuggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><code>chrome --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+                          <p><strong><code>chrome --remote-debugging-port={debuggerPort} --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>google-chrome --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>google-chrome --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>Execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
@@ -258,16 +274,17 @@ namespace Microsoft.AspNetCore.Builder
         private static string GetLaunchEdgeInstructions(string appRootUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
+            var debugggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><code>msedge --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+                          <p><strong><code>msedge --remote-debugging-port={debugggerPort} --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port={debugggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
