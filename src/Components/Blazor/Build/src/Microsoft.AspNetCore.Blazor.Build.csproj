@@ -65,10 +65,7 @@
 
     <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
-      <Output TaskParameter="CopiedFiles" ItemName="_CopiedFiles" />
     </Copy>
-
-    <Message Text="@(_CopiedFiles)" Importance="High" />
   </Target>
 
 </Project>
