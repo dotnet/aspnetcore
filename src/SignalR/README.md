@@ -25,7 +25,7 @@ npm install @microsoft/signalr
 
 The `@microsoft/signalr` package (and it's dependencies) require NPM 5.6.0 or higher.
 
-**NOTE:** Previous previews of the SignalR client library for JavaScript were named `@aspnet/signalr-client`. This has been deprecated as of Preview 1.
+**NOTE:** Previous versions of the SignalR client were named `@aspnet/signalr` or `@aspnet/signalr-client`.
 
 **IMPORTANT:** When using preview builds, you should always ensure you are using the same version of both the JavaScript client and the Server. The version numbers should align as they are produced in the same build process.
 
