@@ -82,6 +82,9 @@ if [ $? -ne 0 ]; then
     done
 fi
 
+ls -la Microsoft.AspNetCore.App
+ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App
+
 # Copy over any local shared fx if found
 if [ -d "Microsoft.AspNetCore.App" ]
 then
