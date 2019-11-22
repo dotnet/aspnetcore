@@ -27,14 +27,20 @@ Write-Host "Renaming to $zipPackage"
 Rename-Item -Path $AppRuntimePath -NewName $zipPackage
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
     # Use built-in commands where possible as they are cross-plat compatible
-    Microsoft.PowerShell.Archive\Expand-Archive -Path $zipPackage -DestinationPath $InstallDir -Force
+    Microsoft.PowerShell.Archive\Expand-Archive -Path $zipPackage -DestinationPath ".\tmpRuntime" -Force
 }
 else {
-    Remove-Item $tempDir -Recurse -ErrorAction Ignore
+    Remove-Item ".\tmpRuntime" -Recurse -ErrorAction Ignore
     # Fallback to old approach for old installations of PowerShell
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPackage, $InstallDir)
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPackage, ".\tmpRuntime")
 }
 
-Write-Host "Expanded App Runtime to $InstallDir"
+Write-Host "Expanded App Runtime to tmpRuntime"
+Get-ChildItem -Path ".\tmpRuntime"
+
+Write-Host "Copying managed files to $InstallDir"
+Copy-Item -Path ".\tmpRuntime\win-x64\lib\netcoreapp5.0\*" $InstallDir
+Write-Host "Copying native files to $InstallDir"
+Copy-Item -Path ".\tmpRuntime\win-x64\native\*" $InstallDir
 Get-ChildItem -Path $InstallDir
