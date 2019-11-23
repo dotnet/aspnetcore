@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http
         public static readonly string Trace = "TRACE";
 
         /// <summary>
-        /// Verifies the HTTP request method is CONNECT. 
+        /// Returns a value that indicates if the HTTP request method is CONNECT. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsConnect(string method)
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is DELETE. 
+        /// Returns a value that indicates if the HTTP request method is DELETE. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsDelete(string method)
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is GET. 
+        /// Returns a value that indicates if the HTTP request method is GET. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsGet(string method)
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is HEAD. 
+        /// Returns a value that indicates if the HTTP request method is HEAD. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsHead(string method)
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is OPTIONS. 
+        /// Returns a value that indicates if the HTTP request method is OPTIONS. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsOptions(string method)
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is PATCH. 
+        /// Returns a value that indicates if the HTTP request method is PATCH. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsPatch(string method)
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is POST. 
+        /// Returns a value that indicates if the HTTP request method is POST. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsPost(string method)
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is PUT. 
+        /// Returns a value that indicates if the HTTP request method is PUT. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsPut(string method)
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Verifies the HTTP request method is TRACE. 
+        /// Returns a value that indicates if the HTTP request method is TRACE. 
         /// <summary/>
         /// <param name="method">HTTP request method.</param>
         public static bool IsTrace(string method)

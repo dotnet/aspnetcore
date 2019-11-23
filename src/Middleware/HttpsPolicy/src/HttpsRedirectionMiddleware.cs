@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware.
+        /// Initializes <see cref="HttpsRedirectionMiddleware" />.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
