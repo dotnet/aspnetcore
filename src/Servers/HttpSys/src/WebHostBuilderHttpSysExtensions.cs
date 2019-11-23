@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting
     public static class WebHostBuilderHttpSysExtensions
     {
         /// <summary>
-        /// Specify HttpSys as the server to be used by the web host.
+        /// Specify Http.sys as the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify HttpSys as the server to be used by the web host.
+        /// Specify Http.sys as the server to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
         /// <param name="options">
-        /// A callback to configure HttpSys options.
+        /// A callback to configure Http.sys options.
         /// </param>
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
