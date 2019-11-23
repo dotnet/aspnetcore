@@ -87,7 +87,7 @@ ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App
 # Copy over any local shared fx if found
 if [ -d "Microsoft.AspNetCore.App" ]
 then
-    mv Microsoft.AppNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/
+    cp Microsoft.AppNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 fi
 
 $DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
