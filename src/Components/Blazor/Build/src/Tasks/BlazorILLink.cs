@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -164,6 +163,27 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
             }
 
             return args.ToString();
+        }
+
+        protected override bool HandleTaskExecutionErrors()
+        {
+            // Show a slightly better error than the standard ToolTask message that says "dotnet" failed.
+            Log.LogError($"ILLink failed with exited code {ExitCode}.");
+            return false;
+        }
+
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
+        {
+            if (!string.IsNullOrEmpty(singleLine) && singleLine.StartsWith("Unhandled exception.", StringComparison.Ordinal))
+            {
+                // The Mono linker currently prints out an entire stack trace when the linker fails.
+                // We want to show something actionable in the VS Error window.
+                Log.LogError(singleLine);
+            }
+            else
+            {
+                base.LogEventsFromTextOutput(singleLine, messageImportance);
+            }
         }
     }
 }
