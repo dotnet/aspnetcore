@@ -6,7 +6,7 @@ using System.Threading;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Represents the properties and methods used to keep access the current HTTP context. 
+    /// Represents the properties and methods used to access the current HTTP context. 
     /// <summary/>
     public class HttpContextAccessor : IHttpContextAccessor
     {

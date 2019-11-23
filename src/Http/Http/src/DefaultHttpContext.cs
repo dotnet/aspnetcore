@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Represents an implementation of the HTTP Context class with HTTP-specific information for a request. 
+    /// Represents an implementation of the HTTP Context class. 
     /// <summary/>
     public sealed class DefaultHttpContext : HttpContext
     {
@@ -47,8 +47,9 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the DefaultHttpContext class with the using a collection of AspNetCore.Http.Features.
+        /// Initializes a new instance of the DefaultHttpContext class with options passed in.
         /// <summary/>
+        /// <param name="features">Options to set when instantianting the Default HTTP context object.</param>
         public DefaultHttpContext(IFeatureCollection features)
         {
             _features.Initalize(features);
@@ -57,8 +58,9 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Initialize the current instant of the class with the using a collection of AspNetCore.Http.Features.
+        /// Initialize the current instant of the class with options passed in.
         /// <summary/>
+        /// <param name="features">Options to initialize the Default HTTP context object.</param>
         public void Initialize(IFeatureCollection features)
         {
             var revision = features.Revision;
