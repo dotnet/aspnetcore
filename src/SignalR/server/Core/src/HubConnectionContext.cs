@@ -571,7 +571,7 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     if (_receivedMessageTimeoutEnabled)
                     {
-                        _receivedMessageElapsedTicks += DateTime.UtcNow.Ticks - _receivedMessageTimestamp;
+                        _receivedMessageElapsedTicks = DateTime.UtcNow.Ticks - _receivedMessageTimestamp;
 
                         if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
                         {
