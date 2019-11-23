@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _RemoveBlazorWwwrootFromStaticWebAssets;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+
+  <Target Name="_RemoveBlazorWwwrootFromStaticWebAssets">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="BlazorStaticWebAssetsComputeFilesToPublish"
+    AfterTargets="_StaticWebAssetsComputeFilesToPublish">
+  
+    <ItemGroup>
+      <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != ''">
+        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.String]::Copy('%(RelativePath)').Replace('wwwroot','$(BlazorPublishDistDir)'))'))'))</RelativePath>
+      </_StandaloneExternalPublishStaticWebAsset>  
+
+      <ResolvedFileToPublish Remove="@(_StandaloneExternalPublishStaticWebAsset)" />
+      <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
+
+    </ItemGroup>  
+  </Target>
+</Project>
