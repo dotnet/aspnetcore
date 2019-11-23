@@ -31,7 +31,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is CONNECT. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsConnect(string method)
         {
             return object.ReferenceEquals(Connect, method) || StringComparer.OrdinalIgnoreCase.Equals(Connect, method);
@@ -40,7 +43,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is DELETE. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsDelete(string method)
         {
             return object.ReferenceEquals(Delete, method) || StringComparer.OrdinalIgnoreCase.Equals(Delete, method);
@@ -49,7 +55,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is GET. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The  HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsGet(string method)
         {
             return object.ReferenceEquals(Get, method) || StringComparer.OrdinalIgnoreCase.Equals(Get, method);
@@ -58,7 +67,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is HEAD. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsHead(string method)
         {
             return object.ReferenceEquals(Head, method) || StringComparer.OrdinalIgnoreCase.Equals(Head, method);
@@ -67,7 +79,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is OPTIONS. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsOptions(string method)
         {
             return object.ReferenceEquals(Options, method) || StringComparer.OrdinalIgnoreCase.Equals(Options, method);
@@ -76,7 +91,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is PATCH. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsPatch(string method)
         {
             return object.ReferenceEquals(Patch, method) || StringComparer.OrdinalIgnoreCase.Equals(Patch, method);
@@ -85,7 +103,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is POST. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsPost(string method)
         {
             return object.ReferenceEquals(Post, method) || StringComparer.OrdinalIgnoreCase.Equals(Post, method);
@@ -94,7 +115,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is PUT. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsPut(string method)
         {
             return object.ReferenceEquals(Put, method) || StringComparer.OrdinalIgnoreCase.Equals(Put, method);
@@ -103,7 +127,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a value that indicates if the HTTP request method is TRACE. 
         /// <summary/>
-        /// <param name="method">HTTP request method.</param>
+        /// <param name="method">The HTTP request method.</param>
+        /// <returns>
+        /// The System.Boolean.
+        /// </returns>
         public static bool IsTrace(string method)
         {
             return object.ReferenceEquals(Trace, method) || StringComparer.OrdinalIgnoreCase.Equals(Trace, method);

@@ -6,15 +6,13 @@ using System.Threading;
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Represents the properties and methods used to access the current HTTP context. 
+    /// Provides an implementation of <see cref="IHttpContextAccessor" /> based on the current execution context. 
     /// <summary/>
     public class HttpContextAccessor : IHttpContextAccessor
     {
         private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
-        /// <summary>
-        /// Gets or sets the HTTP context. 
-        /// <summary/>
+        /// <inheritdoc/>
         public HttpContext HttpContext
         {
             get

@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.HttpsPolicy
 {
     /// <summary>
-    /// Provides functionality to redirect client requests to an address that uses the HTTPS protocol.
+    /// Middleware that redirects non-HTTPS requests to an HTTPS URL.
     /// </summary>
     public class HttpsRedirectionMiddleware
     {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         }
 
         /// <summary>
-        /// Initializes the HttpsRedirectionMiddleware.
+        /// Initializes <see cref="HttpsRedirectionMiddleware" />.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         }
 
         /// <summary>
-        /// Invokes the HttpsRedirectionMiddleware
+        /// Invokes the HttpsRedirectionMiddleware.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

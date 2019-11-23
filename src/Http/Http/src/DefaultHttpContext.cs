@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         private DefaultWebSocketManager _websockets;
 
         /// <summary>
-        /// Initializes a new instance of the DefaultHttpContext class.
+        /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
         /// <summary/>
         public DefaultHttpContext()
             : this(new FeatureCollection())
@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the DefaultHttpContext class with options passed in.
+        /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class with provided features.
         /// <summary/>
-        /// <param name="features">Options to set when instantianting the Default HTTP context object.</param>
+        /// <param name="features">Initial set of features for the <see cref="DefaultHttpContext"/>.</param>
         public DefaultHttpContext(IFeatureCollection features)
         {
             _features.Initalize(features);
@@ -58,9 +58,12 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Initialize the current instant of the class with options passed in.
+        /// Reinitialize  the current instant of the class with features passed in.
         /// <summary/>
-        /// <param name="features">Options to initialize the Default HTTP context object.</param>
+        /// <remarks>
+        /// This method allows the consumer to re-use the <see cref="DefaultHttpContext" /> for another request, rather than having to allocate a new instance.
+        /// <remarks>
+        /// <param name="features">The new set of features for the <see cref="DefaultHttpContext" />.</param>
         public void Initialize(IFeatureCollection features)
         {
             var revision = features.Revision;
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Uninitialize the child request, response, connection and websocket object features and reset the class instance features.
+        /// Uninitialize all the features in the <see cref="DefaultHttpContext" />.
         /// <summary/>
         public void Uninitialize()
         {
@@ -84,13 +87,19 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Gets or set the FormOptions for this instance.
+        /// Gets or set the <see cref="FormOptions" /> for this instance.
         /// <summary/>
+        /// <returns>        
+        /// The Microsoft.AspNetCore.Http.Features.FormOptions.
+        /// </returns>
         public FormOptions FormOptions { get; set; }
 
         /// <summary>
-        /// Gets or sets the IServiceScopeFactory for this instance.
+        /// Gets or sets the <see cref="IServiceScopeFactory" /> for this instance.
         /// <summary/>
+        /// <returns>        
+        /// The Microsoft.Extensions.DependencyInjection.IServiceScopeFactory.
+        /// </returns>
         public IServiceScopeFactory ServiceScopeFactory { get; set; }
 
         private IItemsFeature ItemsFeature =>
@@ -115,43 +124,22 @@ namespace Microsoft.AspNetCore.Http
         private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
             _features.Fetch(ref _features.Cache.RequestIdentifier, _newHttpRequestIdentifierFeature);
 
-        /// <summary>
-        /// Returns the Features for this instance. If null, an ObjectDisposedException Exceptioon is thrown.
-        /// <summary/>
+        /// <inheritdoc/>
         public override IFeatureCollection Features => _features.Collection ?? ContextDisposed();
 
-        /// <summary>
-        /// Returns the HttpRequest of this instance.
-        /// <summary/>
+        /// <inheritdoc/>
         public override HttpRequest Request => _request;
 
-        /// <summary>
-        /// Returns the HttpResponse of this instance.
-        /// <summary/>
+        /// <inheritdoc/>
         public override HttpResponse Response => _response;
 
-        /// <summary>
-        /// Returns the connection information of this instance. 
-        /// <summary/>
-        /// <remarks>
-        /// If the Connection is null, a new DefaultConnectionInfo object is instantiated using the Features collection of this instance. 
-        /// <remarks/>
+        /// <inheritdoc/>
         public override ConnectionInfo Connection => _connection ?? (_connection = new DefaultConnectionInfo(Features));
 
-        /// <summary>
-        /// Returns the Web Socket Manager of this instance. 
-        /// <summary/>
-        /// <remarks>
-        /// If the Connection is null, a new DefaultWebSocketManager object is instantiated using the Features collection of this instance. 
-        /// <remarks/>
+        /// <inheritdoc/>
         public override WebSocketManager WebSockets => _websockets ?? (_websockets = new DefaultWebSocketManager(Features));
 
-        /// <summary>
-        /// Gets or sets the claims principal of this instance. 
-        /// <summary/>
-        /// <remarks>
-        /// If the ClaimsPrincipal object is null, a new ClaimsPrincipal object is instantiated. 
-        /// <remarks/>
+        /// <inheritdoc/>
         public override ClaimsPrincipal User
         {
             get
@@ -167,48 +155,35 @@ namespace Microsoft.AspNetCore.Http
             set { HttpAuthenticationFeature.User = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the item feature object(s) of this instance. 
-        /// <summary/>
+        /// <inheritdoc/>
         public override IDictionary<object, object> Items
         {
             get { return ItemsFeature.Items; }
             set { ItemsFeature.Items = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the service provider feature object of this instance. 
-        /// <summary/>
+        /// <inheritdoc/>
         public override IServiceProvider RequestServices
         {
             get { return ServiceProvidersFeature.RequestServices; }
             set { ServiceProvidersFeature.RequestServices = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the cancellation token object of this instance. 
-        /// <summary/>
+        /// <inheritdoc/>
         public override CancellationToken RequestAborted
         {
             get { return LifetimeFeature.RequestAborted; }
             set { LifetimeFeature.RequestAborted = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the trace identifier of this instance. 
-        /// <summary/>
+        /// <inheritdoc/>
         public override string TraceIdentifier
         {
             get { return RequestIdentifierFeature.TraceIdentifier; }
             set { RequestIdentifierFeature.TraceIdentifier = value; }
         }
 
-        /// <summary>
-        /// Gets or sets the session of this instance. 
-        /// <summary/>
-        /// <remarks>
-        /// If session feature has not been set, an Invalid Operation Exception is thrown. 
-        /// <remarks/>
+        /// <inheritdoc/>
         public override ISession Session
         {
             get
@@ -234,6 +209,7 @@ namespace Microsoft.AspNetCore.Http
         [EditorBrowsable(EditorBrowsableState.Never)]
         public HttpContext HttpContext => this;
 
+        /// <inheritdoc/>
         public override void Abort()
         {
             LifetimeFeature.Abort();
