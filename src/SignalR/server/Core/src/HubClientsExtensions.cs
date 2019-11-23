@@ -497,6 +497,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections associated with all of the specified users.
         /// </summary>
         /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="userIds">The user IDs.</param>
+        /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
+        public static T Users<T>(this IHubClients<T> hubClients, IEnumerable<string> userIds)
+        {
+            return hubClients.Users(userIds.ToList());
+        }
+
+        /// <summary>
+        /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections associated with all of the specified users.
+        /// </summary>
+        /// <param name="hubClients">The abstraction that provides access to connections.</param>
         /// <param name="user1">The first user to include.</param>
         /// <param name="user2">The second user to include.</param>
         /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
