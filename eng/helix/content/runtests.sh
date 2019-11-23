@@ -82,13 +82,12 @@ if [ $? -ne 0 ]; then
     done
 fi
 
-ls -la Microsoft.AspNetCore.App
-ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App
-
 # Copy over any local shared fx if found
 if [ -d "Microsoft.AspNetCore.App" ]
 then
-    cp -r Microsoft.AppNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+    ls -la Microsoft.AspNetCore.App
+    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+    ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 fi
 
 $DOTNET_ROOT/dotnet vstest $test_binary_path -lt >discovered.txt
