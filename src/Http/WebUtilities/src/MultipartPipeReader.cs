@@ -61,17 +61,12 @@ namespace Microsoft.AspNetCore.WebUtilities
 
 
             var headersAccumulator = new KeyValueAccumulator();
-            ReadOnlySequence<byte> buffer = default;
-            ReadResult readResult = default;
             _boundary.ExpectLeadingCrlf = true;
             long headersLength = 0;
             while (true)
             {
-                if (buffer.IsEmpty)
-                {
-                    readResult = await _pipeReader.ReadAsync(cancellationToken);
-                    buffer = readResult.Buffer;
-                }
+                var readResult = await _pipeReader.ReadAsync(cancellationToken);
+                var buffer = readResult.Buffer;
 
                 if (!buffer.IsEmpty)
                 {
@@ -80,6 +75,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                     }
+
                     if (finishedParsing)
                     {
                         _bytesConsumed += headersLength;
@@ -88,6 +84,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                         long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
                         return new MultipartPipeSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
                     }
+
+                    _pipeReader.AdvanceTo(buffer.Start, buffer.End);
                 }
 
                 if (readResult.IsCompleted)
@@ -193,7 +191,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             int colon = line.IndexOf(ColonDelimiter);
 
             if (colon == -1)
-            { 
+            {
                 throw new InvalidDataException($"Invalid header line: {GetDecodedString(line)}");
             }
             else
@@ -231,6 +229,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     }
 
                     //TODO: keep the sequence and advance the pipeReader in case the sequence length is shorter than the headers limit.
+                    return false;
                 }
 
                 if (sequenceReader.Consumed + headersLength > HeadersLengthLimit)
