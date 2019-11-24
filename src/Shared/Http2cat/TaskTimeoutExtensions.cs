@@ -30,7 +30,7 @@ namespace System.Threading.Tasks
             return task.TimeoutAfter(DefaultTimeoutTimeSpan);
         }
 
-        public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,
+        private static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default)
         {
@@ -53,7 +53,7 @@ namespace System.Threading.Tasks
             }
         }
 
-        public static async Task TimeoutAfter(this Task task, TimeSpan timeout,
+        private static async Task TimeoutAfter(this Task task, TimeSpan timeout,
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default)
         {

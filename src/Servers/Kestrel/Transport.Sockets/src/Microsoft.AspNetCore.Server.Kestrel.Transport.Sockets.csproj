@@ -25,11 +25,11 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
-
+<!--
   <ItemGroup>
     <InternalsVisibleTo Include="http2cat" />
   </ItemGroup>
-
+-->
   <ItemGroup>
     <EmbeddedResource Update="SocketsStrings.resx">
       <Generator></Generator>

@@ -24,8 +24,10 @@ namespace http2cat
 {
     public class Http2Utilities : IHttpHeadersHandler
     {
+        public static ReadOnlySpan<byte> ClientPreface => new byte[24] { (byte)'P', (byte)'R', (byte)'I', (byte)' ', (byte)'*', (byte)' ', (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'2', (byte)'.', (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n', (byte)'S', (byte)'M', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
         public static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
         public static readonly string _4kHeaderValue = new string('a', 4096);
+        private static readonly Encoding HeaderValueEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
         public static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
         {
@@ -122,7 +124,64 @@ namespace http2cat
 
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+            _decodedHeaders[GetAsciiStringNonNullCharacters(name)] = GetAsciiOrUTF8StringNonNullCharacters(value);
+        }
+
+        public unsafe string GetAsciiStringNonNullCharacters(ReadOnlySpan<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+            return asciiString;
+        }
+
+        public unsafe string GetAsciiOrUTF8StringNonNullCharacters(ReadOnlySpan<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var resultString = new string('\0', span.Length);
+
+            fixed (char* output = resultString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    // null characters are considered invalid
+                    if (span.IndexOf((byte)0) != -1)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    try
+                    {
+                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                    }
+                    catch (DecoderFallbackException)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+            return resultString;
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
@@ -170,7 +229,7 @@ namespace http2cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, length));
 
             while (!done)
@@ -185,7 +244,7 @@ namespace http2cat
                     frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                 }
 
-                Http2FrameWriter.WriteHeader(frame, writableBuffer);
+                Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
                 writableBuffer.Write(buffer.Slice(0, length));
             }
 
@@ -235,7 +294,7 @@ namespace http2cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -275,7 +334,7 @@ namespace http2cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -323,7 +382,7 @@ namespace http2cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -340,7 +399,7 @@ namespace http2cat
             await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
         }
 
-        public Task SendPreambleAsync() => SendAsync(Http2Connection.ClientPreface);
+        public Task SendPreambleAsync() => SendAsync(ClientPreface);
 
         public async Task SendSettingsAsync()
         {
@@ -350,8 +409,8 @@ namespace http2cat
             var settings = _clientSettings.GetNonProtocolDefaults();
             var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
             frame.PayloadLength = payload.Length;
-            Http2FrameWriter.WriteSettings(settings, payload);
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteSettings(settings, payload);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -361,7 +420,7 @@ namespace http2cat
             var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             frame.PayloadLength = length;
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             await SendAsync(new byte[length]);
         }
 
@@ -374,8 +433,8 @@ namespace http2cat
             var settings = _clientSettings.GetNonProtocolDefaults();
             var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
             frame.PayloadLength = payload.Length;
-            Http2FrameWriter.WriteSettings(settings, payload);
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteSettings(settings, payload);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -387,7 +446,7 @@ namespace http2cat
 
             frame.PayloadLength = length;
             var payload = new byte[length];
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -405,7 +464,7 @@ namespace http2cat
             payload[4] = (byte)(value >> 8);
             payload[5] = (byte)value;
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -417,7 +476,7 @@ namespace http2cat
             frame.Type = Http2FrameType.PUSH_PROMISE;
             frame.StreamId = 1;
 
-            Http2FrameWriter.WriteHeader(frame, writableBuffer);
+            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
             return FlushAsync(writableBuffer);
         }
 
@@ -431,7 +490,7 @@ namespace http2cat
             var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -445,7 +504,7 @@ namespace http2cat
             frame.PrepareHeaders(flags, streamId);
             frame.PayloadLength = headerBlock.Length;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(headerBlock);
         }
 
@@ -464,7 +523,7 @@ namespace http2cat
                 payload[0] = padLength;
             }
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -482,7 +541,7 @@ namespace http2cat
             payload[1] = 2;
             payload[2] = (byte)'a';
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -496,7 +555,7 @@ namespace http2cat
             var done = _hpackEncoder.Encode(buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -510,7 +569,7 @@ namespace http2cat
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = payload.Length;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -524,7 +583,7 @@ namespace http2cat
             var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -538,7 +597,7 @@ namespace http2cat
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = 0;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return FlushAsync(outputWriter);
         }
 
@@ -556,7 +615,7 @@ namespace http2cat
             payload[1] = 2;
             payload[2] = (byte)'a';
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -569,7 +628,7 @@ namespace http2cat
             frame.PayloadLength = data.Length;
             frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(data.Span);
         }
 
@@ -586,7 +645,7 @@ namespace http2cat
                 frame.DataFlags |= Http2DataFrameFlags.END_STREAM;
             }
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             outputWriter.GetSpan(1)[0] = padLength;
             outputWriter.Advance(1);
             await SendAsync(data.Span);
@@ -609,7 +668,7 @@ namespace http2cat
                 payload[0] = padLength;
             }
 
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -618,7 +677,7 @@ namespace http2cat
             var outputWriter = _pair.Application.Output;
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(flags);
-            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[8]); // Empty payload
         }
 
@@ -628,7 +687,7 @@ namespace http2cat
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.PayloadLength = length;
-            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -640,7 +699,7 @@ namespace http2cat
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.StreamId = streamId;
-            Http2FrameWriter.WriteHeader(pingFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[pingFrame.PayloadLength]);
         }
 
@@ -661,7 +720,7 @@ namespace http2cat
             Bitshifter.WriteUInt31BigEndian(payload, (uint)streamDependency);
             payload[4] = 0; // Weight
 
-            Http2FrameWriter.WriteHeader(priorityFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(priorityFrame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -672,7 +731,7 @@ namespace http2cat
             priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
             priorityFrame.PayloadLength = length;
 
-            Http2FrameWriter.WriteHeader(priorityFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(priorityFrame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -689,7 +748,7 @@ namespace http2cat
             var payload = new byte[rstStreamFrame.PayloadLength];
             BinaryPrimitives.WriteUInt32BigEndian(payload, (uint)Http2ErrorCode.CANCEL);
 
-            Http2FrameWriter.WriteHeader(rstStreamFrame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(rstStreamFrame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -699,7 +758,7 @@ namespace http2cat
             var frame = new Http2Frame();
             frame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
             frame.PayloadLength = length;
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -708,7 +767,7 @@ namespace http2cat
             var outputWriter = _pair.Application.Output;
             var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(new byte[frame.PayloadLength]);
         }
 
@@ -718,7 +777,7 @@ namespace http2cat
             var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
             frame.StreamId = 1;
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(new byte[frame.PayloadLength]);
         }
 
@@ -727,7 +786,7 @@ namespace http2cat
             var outputWriter = _pair.Application.Output;
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             var buffer = outputWriter.GetSpan(4);
             BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)sizeIncrement);
             outputWriter.Advance(4);
@@ -740,7 +799,7 @@ namespace http2cat
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             frame.PayloadLength = length;
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -751,7 +810,7 @@ namespace http2cat
             frame.StreamId = streamId;
             frame.Type = (Http2FrameType)frameType;
             frame.PayloadLength = 0;
-            Http2FrameWriter.WriteHeader(frame, outputWriter);
+            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
             return FlushAsync(outputWriter);
         }
 
