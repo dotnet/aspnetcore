@@ -347,7 +347,52 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithSameName_Works()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            serviceCollection.AddHttpClient<TestTypedClient>(c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithSameName_WithAddTypedClient_Works()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            serviceCollection.AddHttpClient(nameof(TestTypedClient), c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            })
+            .AddTypedClient<TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_ThrowsError()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
@@ -365,7 +410,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_WithAddTypedClient_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_WithAddTypedClient_ThrowsError()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();

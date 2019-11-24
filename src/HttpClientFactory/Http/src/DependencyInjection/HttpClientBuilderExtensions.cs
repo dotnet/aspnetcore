@@ -532,7 +532,12 @@ namespace Microsoft.Extensions.DependencyInjection
             Debug.Assert(registry != null);
 
             // Check for same type registered twice. This can't work because typed clients have to be unique for DI to function.
-            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName))
+            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName) &&
+
+                // Allow duplicate registrations with the same name. This is usually someone calling "AddHttpClient" once
+                // as part of a library, and the consumer of that library doing the same thing to add further configuration.
+                // See: https://github.com/aspnet/Extensions/issues/2077
+                !string.Equals(name, otherName, StringComparison.Ordinal))
             {
                 var message =
                     $"The HttpClient factory already has a registered client with the type '{type.FullName}'. " +
@@ -542,7 +547,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
-            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType))
+            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType) &&
+
+                // Allow registering the same name twice to the same type (see above).
+                type != otherType)
             {
                 var message =
                     $"The HttpClient factory already has a registered client with the name '{name}', bound to the type '{otherType.FullName}'. " +
