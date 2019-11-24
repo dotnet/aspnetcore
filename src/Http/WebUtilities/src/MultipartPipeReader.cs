@@ -228,7 +228,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                         throw new InvalidDataException($"Line length limit {HeadersLengthLimit - headersLength} exceeded.");
                     }
 
-                    //TODO: keep the sequence and advance the pipeReader in case the sequence length is shorter than the headers limit.
                     return false;
                 }
 
@@ -266,7 +265,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
             }
 
-            buffer = buffer.Slice(sequenceReader.Position);
+            buffer = default;
             headersLength += sequenceReader.Consumed;
             return false;
         }
