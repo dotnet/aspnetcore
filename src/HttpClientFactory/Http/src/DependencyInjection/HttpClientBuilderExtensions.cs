@@ -323,7 +323,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, bool validateSingleType)
+            where TClient : class
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -377,7 +383,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient, TImplementation>(builder, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient, TImplementation>(this IHttpClientBuilder builder, bool validateSingleType)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -425,7 +438,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, factory, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, Func<HttpClient, TClient> factory, bool validateSingleType)
+            where TClient : class
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -472,7 +491,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, factory, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, Func<HttpClient, IServiceProvider, TClient> factory, bool validateSingleType)
+            where TClient : class
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -526,7 +561,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // See comments on HttpClientMappingRegistry.
-        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name)
+        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name, bool validateSingleType)
         {
             var registry = (HttpClientMappingRegistry)builder.Services.Single(sd => sd.ServiceType == typeof(HttpClientMappingRegistry)).ImplementationInstance;
             Debug.Assert(registry != null);
@@ -548,6 +583,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
             if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType) &&
+
+                // Allow using the same name with multiple types in some cases (see callers).
+                validateSingleType &&
 
                 // Allow registering the same name twice to the same type (see above).
                 type != otherType)

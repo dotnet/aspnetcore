@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -292,7 +292,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddHttpClient(services);
 
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // Name was explicitly provided.
             return builder;
         }
 
@@ -343,7 +343,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddHttpClient(services);
 
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -388,7 +388,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -433,7 +433,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -483,7 +483,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -533,7 +533,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -585,7 +585,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -637,7 +637,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // name was explictly provided
             return builder;
         }
 
@@ -694,7 +694,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -751,7 +751,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
     }
