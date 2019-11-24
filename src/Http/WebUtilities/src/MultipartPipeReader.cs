@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!buffer.IsEmpty)
                 {
-                    var finishedParsing = TryParseHeaders(ref buffer, ref headersAccumulator, ref headersLength, readResult.IsCompleted);
+                    var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength, readResult.IsCompleted);
                     if (headersLength > DefaultHeadersLengthLimit)
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal bool TryParseHeaders(
+        internal bool TryParseHeadersToEnd(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
             ref long headersLength,
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             if (buffer.IsSingleSegment)
             {
-                var didFinishParsing = ParseHeadersFast(buffer.First.Span,
+                var didFinishParsing = TryParseHeadersToEndFast(buffer.First.Span,
                     ref accumulator,
                     isFinalBlock,
                     HeadersLengthLimit - headersLength,
@@ -123,21 +123,19 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return didFinishParsing;
             }
 
-            return ParseHeadersSlow(ref buffer,
+            return TryParseHeadersToEndSlow(ref buffer,
                 ref accumulator,
                 ref headersLength,
                 isFinalBlock);
         }
 
         // Fast parsing for single span in ReadOnlySequence
-        private bool ParseHeadersFast(ReadOnlySpan<byte> span,
+        private bool TryParseHeadersToEndFast(ReadOnlySpan<byte> span,
             ref KeyValueAccumulator accumulator,
             bool isFinalBlock,
             long lengthLimit,
             out int consumed)
         {
-            ReadOnlySpan<byte> key;
-            ReadOnlySpan<byte> value;
             consumed = 0;
 
             while (span.Length > 0)
@@ -145,7 +143,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // Find the end of the header.
                 var newLine = span.IndexOf(CrlfDelimiter);
                 ReadOnlySpan<byte> line;
-                int colon;
                 var foundNewLine = newLine != -1;
 
                 if (foundNewLine)
@@ -180,37 +177,43 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                 }
 
-                colon = line.IndexOf(ColonDelimiter);
-
-                if (colon == -1)
-                {
-                    throw new InvalidDataException($"Invalid header line: {line.ToString()}");
-                }
-                else
-                {
-                    key = line.Slice(0, colon);
-                    value = line.Slice(colon + ColonDelimiter.Length);
-                }
-
+                ParseHeaderLineFast(line, ref accumulator);
                 lengthLimit -= line.Length;
-                var decodedKey = GetDecodedString(key);
-                var decodedValue = GetDecodedString(value).Trim();
-
-                AppendAndVerify(ref accumulator, decodedKey, decodedValue);
             }
             return false;
         }
 
+
+        private void ParseHeaderLineFast(ReadOnlySpan<byte> line,
+          ref KeyValueAccumulator accumulator)
+        {
+            ReadOnlySpan<byte> key;
+            ReadOnlySpan<byte> value;
+
+            int colon = line.IndexOf(ColonDelimiter);
+
+            if (colon == -1)
+            { 
+                throw new InvalidDataException($"Invalid header line: {GetDecodedString(line)}");
+            }
+            else
+            {
+                key = line.Slice(0, colon);
+                value = line.Slice(colon + ColonDelimiter.Length);
+            }
+            var decodedKey = GetDecodedString(key);
+            var decodedValue = GetDecodedString(value).Trim();
+            AppendAndVerify(ref accumulator, decodedKey, decodedValue);
+        }
+
         // For multi-segment parsing of a read only sequence
-        private bool ParseHeadersSlow(
+        private bool TryParseHeadersToEndSlow(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
             ref long headersLength,
             bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
-            //var position = sequenceReader.Position;
-            //var consumedBytes = default(long);
 
             while (!sequenceReader.End)
             {
@@ -244,8 +247,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (line.IsSingleSegment)
                 {
-                    ParseHeadersFast(line.FirstSpan, ref accumulator, isFinalBlock: true, HeadersLengthLimit - sequenceReader.Consumed - headersLength, out var segmentConsumed);
-                    Debug.Assert(segmentConsumed == line.FirstSpan.Length);
+                    ParseHeaderLineFast(line.FirstSpan, ref accumulator);
                     continue;
                 }
 
