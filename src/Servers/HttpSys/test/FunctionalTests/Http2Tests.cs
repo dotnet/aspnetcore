@@ -109,6 +109,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                             await http2Utilities.StartStreamAsync(1, Http2Utilities._browserRequestHeaders, endStream: true);
 
+                            var goAwayFrame = await http2Utilities.ReceiveFrameAsync();
+                            http2Utilities.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
+
                             var headersFrame = await http2Utilities.ReceiveFrameAsync();
 
                             Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
@@ -123,12 +126,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                             Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                             Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
-                            var goAwayFrame = await http2Utilities.ReceiveFrameAsync();
-                            http2Utilities.VerifyGoAway(goAwayFrame, 1, Http2ErrorCode.NO_ERROR);
-
-                            await http2Utilities.SendGoAwayAsync();
-                            // TODO: Close the connection?
-                            // await http2Utilities.StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+                            await http2Utilities.StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
                             logger.LogInformation("Connection stopped.");
                         };
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 })
                 .Build();
 
-            await host.RunAsync();
+            await host.RunHttp2CatAsync();
         }
     }
 }
