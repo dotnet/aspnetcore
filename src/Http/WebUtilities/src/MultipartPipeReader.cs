@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 key = line.Slice(0, colon);
                 value = line.Slice(colon + ColonDelimiter.Length);
             }
-            var decodedKey = GetDecodedString(key);
+            var decodedKey = GetDecodedString(key).Trim();
             var decodedValue = GetDecodedString(value).Trim();
             AppendAndVerify(ref accumulator, decodedKey, decodedValue);
         }
@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 value = line.Slice(lineReader.Position);
 
 
-                var decodedKey = GetDecodedStringFromReadOnlySequence(key);
-                var decodedValue = GetDecodedStringFromReadOnlySequence(value);
+                var decodedKey = GetDecodedStringFromReadOnlySequence(key).Trim();
+                var decodedValue = GetDecodedStringFromReadOnlySequence(value).Trim();
 
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
             }
