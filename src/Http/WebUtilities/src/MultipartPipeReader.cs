@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!lineReader.TryReadTo(out var key, ColonDelimiter))
                 {
-                    throw new InvalidDataException($"Invalid header line: {line}");
+                    throw new InvalidDataException($"Invalid header line: {GetDecodedStringFromReadOnlySequence(line)}");
                 }
                 value = line.Slice(lineReader.Position);
 
