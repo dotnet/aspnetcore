@@ -258,6 +258,11 @@ namespace http2cat
             return _decodedHeaders;
         }
 
+        internal void ResetHeaders()
+        {
+            _decodedHeaders.Clear();
+        }
+
         /* https://tools.ietf.org/html/rfc7540#section-6.2
             +---------------+
             |Pad Length? (8)|

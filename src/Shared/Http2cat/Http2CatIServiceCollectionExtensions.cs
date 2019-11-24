@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace http2cat
 {
@@ -17,9 +18,14 @@ namespace http2cat
         public static IServiceCollection UseHttp2Cat(this IServiceCollection services, Action<Http2CatOptions> configureOptions)
         {
             services.AddSingleton<IConnectionFactory, SocketConnectionFactory>();
-            services.AddHostedService<Http2CatHostedService>();
+            services.AddSingleton<Http2CatHostedService>();
             services.Configure(configureOptions);
             return services;
+        }
+
+        public static Task RunHttp2CatAsync(this IHost host)
+        {
+            return host.Services.GetRequiredService<Http2CatHostedService>().RunAsync();
         }
     }
 }

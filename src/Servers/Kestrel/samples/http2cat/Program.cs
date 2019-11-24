@@ -29,7 +29,7 @@ namespace http2cat
                 })
                 .Build();
 
-            await host.RunAsync();
+            await host.RunHttp2CatAsync();
         }
 
         public static async Task RunTestCase(Http2Utilities http2Utilities, ILogger logger)
@@ -71,8 +71,7 @@ namespace http2cat
 
             logger.LogInformation("Received trailers in a single frame.");
 
-            http2Utilities._decodedHeaders.Clear();
-
+            http2Utilities.ResetHeaders();
             var decodedTrailers = http2Utilities.DecodeHeaders(trailersFrame);
 
             foreach (var header in decodedHeaders)
