@@ -212,7 +212,7 @@ namespace Templates.Test.SpaTemplateTest
                 catch (HttpRequestException ex) when (ex.Message.StartsWith("The SSL connection could not be established"))
                 {
                 }
-                await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
+                await Task.Delay(TimeSpan.FromSeconds(10 * attempt));
             } while (attempt < maxAttempts);
         }
 
@@ -306,10 +306,12 @@ namespace Templates.Test.SpaTemplateTest
                 var entries = logs.GetLog(logKind);
                 var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));
 
+                // Based on https://github.com/webpack/webpack-dev-server/issues/2134
                 badEntries = badEntries.Where(e =>
                     !e.Message.Contains("failed: WebSocket is closed before the connection is established.")
                     && !e.Message.Contains("[WDS] Disconnected!")
-                    && !e.Message.Contains("Timed out connecting to Chrome, retrying"));
+                    && !e.Message.Contains("Timed out connecting to Chrome, retrying")
+                    && !(e.Message.Contains("jsonp?c=") && e.Message.Contains("Uncaught TypeError:") && e.Message.Contains("is not a function")));
 
                 Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }

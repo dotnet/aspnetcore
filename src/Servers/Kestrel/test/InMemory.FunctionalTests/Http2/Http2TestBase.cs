@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -21,7 +23,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -400,12 +401,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             base.Dispose();
         }
 
-        void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
+        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
-        void IHttpHeadersHandler.OnHeadersComplete() { }
+        void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
 
         protected void CreateConnection()
         {
@@ -687,7 +688,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
         }
 
-        protected Task SendPreambleAsync() => SendAsync(new ArraySegment<byte>(Http2Connection.ClientPreface));
+        protected Task SendPreambleAsync() => SendAsync(Http2Connection.ClientPreface);
 
         protected async Task SendSettingsAsync()
         {
@@ -1112,12 +1113,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = result.Buffer;
                 var consumed = buffer.Start;
                 var examined = buffer.Start;
+                var copyBuffer = buffer;
 
                 try
                 {
                     Assert.True(buffer.Length > 0);
 
-                    if (Http2FrameReader.ReadFrame(buffer, frame, maxFrameSize, out var framePayload))
+                    if (Http2FrameReader.TryReadFrame(ref buffer, frame, maxFrameSize, out var framePayload))
                     {
                         consumed = examined = framePayload.End;
                         frame.Payload = framePayload.ToArray();
@@ -1135,7 +1137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 finally
                 {
-                    _bytesReceived += buffer.Slice(buffer.Start, consumed).Length;
+                    _bytesReceived += copyBuffer.Slice(copyBuffer.Start, consumed).Length;
                     _pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }

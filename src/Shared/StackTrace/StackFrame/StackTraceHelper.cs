@@ -15,12 +15,13 @@ namespace Microsoft.Extensions.StackTrace.Sources
 {
     internal class StackTraceHelper
     {
-        public static IList<StackFrameInfo> GetFrames(Exception exception)
+        public static IList<StackFrameInfo> GetFrames(Exception exception, out AggregateException error)
         {
             var frames = new List<StackFrameInfo>();
 
             if (exception == null)
             {
+                error = default;
                 return frames;
             }
 
@@ -32,8 +33,11 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
                 if (stackFrames == null)
                 {
+                    error = default;
                     return frames;
                 }
+
+                List<Exception> exceptions = null;
 
                 for (var i = 0; i < stackFrames.Length; i++)
                 {
@@ -56,14 +60,33 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
                     if (string.IsNullOrEmpty(stackFrame.FilePath))
                     {
-                        // .NET Framework and older versions of mono don't support portable PDBs
-                        // so we read it manually to get file name and line information
-                        portablePdbReader.PopulateStackFrame(stackFrame, method, frame.GetILOffset());
+                        try
+                        {
+                            // .NET Framework and older versions of mono don't support portable PDBs
+                            // so we read it manually to get file name and line information
+                            portablePdbReader.PopulateStackFrame(stackFrame, method, frame.GetILOffset());
+                        }
+                        catch (Exception ex)
+                        {
+                            if (exceptions is null)
+                            {
+                                exceptions = new List<Exception>();
+                            }
+
+                            exceptions.Add(ex);
+                        }
                     }
 
                     frames.Add(stackFrame);
                 }
 
+                if (exceptions != null)
+                {
+                    error = new AggregateException(exceptions);
+                    return frames;
+                }
+
+                error = default;
                 return frames;
             }
         }

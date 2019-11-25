@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // with hash collisions will cause the server to consume excess CPU.  1000 headers limits CPU time to under 
         // 0.5 seconds per request.  Respond with a 400 Bad Request.
         private const int UnknownHeaderLimit = 1000;
+
+        internal MemoryPool<byte> MemoryPool { get; } = SlabMemoryPoolFactory.Create();
 
         private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 

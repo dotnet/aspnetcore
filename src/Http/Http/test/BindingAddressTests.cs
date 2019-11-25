@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 namespace Microsoft.AspNetCore.Http.Tests
 {
@@ -32,6 +34,16 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Throws<FormatException>(() => BindingAddress.Parse(url));
         }
 
+        [ConditionalTheory]
+        [InlineData("http://unix:/")]
+        [InlineData("http://unix:/c")]
+        [InlineData("http://unix:/wrong.path")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
+        public void FromUriThrowsForUrlsWithWrongFilePathOnWindows(string url)
+        {
+            Assert.Throws<FormatException>(() => BindingAddress.Parse(url));
+        }
+
         [Theory]
         [InlineData("://emptyscheme", "", "emptyscheme", 0, "", "://emptyscheme:0")]
         [InlineData("http://+", "http", "+", 80, "", "http://+:80")]
@@ -50,11 +62,6 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("http://foo:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "foo:", 80, "/tmp/kestrel-test.sock:5000/doesn't/matter", "http://foo::80/tmp/kestrel-test.sock:5000/doesn't/matter")]
         [InlineData("http://unix:foo/tmp/kestrel-test.sock", "http", "unix:foo", 80, "/tmp/kestrel-test.sock", "http://unix:foo:80/tmp/kestrel-test.sock")]
         [InlineData("http://unix:5000/tmp/kestrel-test.sock", "http", "unix", 5000, "/tmp/kestrel-test.sock", "http://unix:5000/tmp/kestrel-test.sock")]
-        [InlineData("http://unix:/tmp/kestrel-test.sock", "http", "unix:/tmp/kestrel-test.sock", 0, "", null)]
-        [InlineData("https://unix:/tmp/kestrel-test.sock", "https", "unix:/tmp/kestrel-test.sock", 0, "", null)]
-        [InlineData("http://unix:/tmp/kestrel-test.sock:", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
-        [InlineData("http://unix:/tmp/kestrel-test.sock:/", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
-        [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
         public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
         {
             var serverAddress = BindingAddress.Parse(url);
@@ -66,5 +73,43 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             Assert.Equal(toString ?? url, serverAddress.ToString());
         }
+
+        [ConditionalTheory]
+        [InlineData("http://unix:/tmp/kestrel-test.sock", "http", "unix:/tmp/kestrel-test.sock", 0, "", null)]
+        [InlineData("https://unix:/tmp/kestrel-test.sock", "https", "unix:/tmp/kestrel-test.sock", 0, "", null)]
+        [InlineData("http://unix:/tmp/kestrel-test.sock:", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
+        [InlineData("http://unix:/tmp/kestrel-test.sock:/", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
+        [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        public void UnixSocketUrlsAreParsedCorrectlyOnUnix(string url, string scheme, string host, int port, string pathBase, string toString)
+        {
+            var serverAddress = BindingAddress.Parse(url);
+
+            Assert.Equal(scheme, serverAddress.Scheme);
+            Assert.Equal(host, serverAddress.Host);
+            Assert.Equal(port, serverAddress.Port);
+            Assert.Equal(pathBase, serverAddress.PathBase);
+
+            Assert.Equal(toString ?? url, serverAddress.ToString());
+        }
+
+        [ConditionalTheory]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", null)]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:5000/doesn't/matter", "http", "unix:/c:/foo/bar/pipe.socket", 0, "5000/doesn't/matter", "http://unix:/c:/foo/bar/pipe.socket")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
+        public void UnixSocketUrlsAreParsedCorrectlyOnWindows(string url, string scheme, string host, int port, string pathBase, string toString)
+        {
+            var serverAddress = BindingAddress.Parse(url);
+
+            Assert.Equal(scheme, serverAddress.Scheme);
+            Assert.Equal(host, serverAddress.Host);
+            Assert.Equal(port, serverAddress.Port);
+            Assert.Equal(pathBase, serverAddress.PathBase);
+
+            Assert.Equal(toString ?? url, serverAddress.ToString());
+        }
+
     }
 }

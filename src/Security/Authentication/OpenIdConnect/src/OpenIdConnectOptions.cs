@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// cookie gets added to the response.
         /// </summary>
         /// <remarks>
-        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <seealso cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <see cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
         /// </remarks>
         public CookieBuilder NonceCookie
         {
@@ -327,5 +327,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return cookieOptions;
             }
         }
+
+        /// <summary>
+        /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.
+        /// </summary>
+        public TimeSpan AutomaticRefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultAutomaticRefreshInterval;
+
+        /// <summary>
+        /// The minimum time between <see cref="ConfigurationManager" /> retrievals, in the event that a retrieval failed, or that a refresh was explicitly requested. 30 seconds is the default.
+        /// </summary>
+        public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
     }
 }

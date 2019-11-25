@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <para>
     /// API conventions are used to influence the output of ApiExplorer.
     /// <see cref="ApiConventionMethodAttribute"/> can be used to specify an exact convention method that applies
-    /// to an action. <seealso cref="ApiConventionTypeAttribute"/> for details about applying conventions at
+    /// to an action. <see cref="ApiConventionTypeAttribute"/> for details about applying conventions at
     /// the assembly or controller level.
     /// </para>
     /// </summary>

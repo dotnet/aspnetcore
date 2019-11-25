@@ -27,6 +27,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get { return _contentLength; }
             set
             {
+                if (_isReadOnly)
+                {
+                    ThrowHeadersReadOnlyException();
+                }
                 if (value.HasValue && value.Value < 0)
                 {
                     ThrowInvalidContentLengthException(value.Value);

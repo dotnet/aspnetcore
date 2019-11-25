@@ -12,12 +12,42 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal class HeaderCollection : IHeaderDictionary
     {
+        // https://tools.ietf.org/html/rfc7230#section-4.1.2
+        internal static readonly HashSet<string> DisallowedTrailers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // Message framing headers.
+            HeaderNames.TransferEncoding, HeaderNames.ContentLength,
+
+            // Routing headers.
+            HeaderNames.Host,
+
+            // Request modifiers: controls and conditionals.
+            // rfc7231#section-5.1: Controls.
+            HeaderNames.CacheControl, HeaderNames.Expect, HeaderNames.MaxForwards, HeaderNames.Pragma, HeaderNames.Range, HeaderNames.TE,
+
+            // rfc7231#section-5.2: Conditionals.
+            HeaderNames.IfMatch, HeaderNames.IfNoneMatch, HeaderNames.IfModifiedSince, HeaderNames.IfUnmodifiedSince, HeaderNames.IfRange,
+
+            // Authentication headers.
+            HeaderNames.WWWAuthenticate, HeaderNames.Authorization, HeaderNames.ProxyAuthenticate, HeaderNames.ProxyAuthorization, HeaderNames.SetCookie, HeaderNames.Cookie,
+
+            // Response control data.
+            // rfc7231#section-7.1: Control Data.
+            HeaderNames.Age, HeaderNames.Expires, HeaderNames.Date, HeaderNames.Location, HeaderNames.RetryAfter, HeaderNames.Vary, HeaderNames.Warning,
+
+            // Content-Encoding, Content-Type, Content-Range, and Trailer itself.
+            HeaderNames.ContentEncoding, HeaderNames.ContentType, HeaderNames.ContentRange, HeaderNames.Trailer
+        };
+
+        // Should this instance check for prohibited trailers?
+        private readonly bool _checkTrailers;
         private long? _contentLength;
         private StringValues _contentLengthText;
 
-        public HeaderCollection()
+        public HeaderCollection(bool checkTrailers = false)
             : this(new Dictionary<string, StringValues>(4, StringComparer.OrdinalIgnoreCase))
         {
+            _checkTrailers = checkTrailers;
         }
 
         public HeaderCollection(IDictionary<string, StringValues> store)
@@ -39,6 +69,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             set
             {
+                ValidateRestrictedTrailers(key);
                 ThrowIfReadOnly();
                 if (StringValues.IsNullOrEmpty(value))
                 {
@@ -58,6 +89,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get { return Store[key]; }
             set
             {
+                ValidateRestrictedTrailers(key);
                 ThrowIfReadOnly();
                 ValidateHeaderCharacters(key);
                 ValidateHeaderCharacters(value);
@@ -105,6 +137,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             set
             {
+                ValidateRestrictedTrailers(HeaderNames.ContentLength);
                 ThrowIfReadOnly();
 
                 if (value.HasValue)
@@ -128,6 +161,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public void Add(KeyValuePair<string, StringValues> item)
         {
+            ValidateRestrictedTrailers(item.Key);
             ThrowIfReadOnly();
             ValidateHeaderCharacters(item.Key);
             ValidateHeaderCharacters(item.Value);
@@ -136,6 +170,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public void Add(string key, StringValues value)
         {
+            ValidateRestrictedTrailers(key);
             ThrowIfReadOnly();
             ValidateHeaderCharacters(key);
             ValidateHeaderCharacters(value);
@@ -144,6 +179,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public void Append(string key, string value)
         {
+            ValidateRestrictedTrailers(key);
             ThrowIfReadOnly();
             ValidateHeaderCharacters(key);
             ValidateHeaderCharacters(value);
@@ -214,6 +250,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             if (IsReadOnly)
             {
+                if (_checkTrailers)
+                {
+                    throw new InvalidOperationException("The response trailers cannot be modified because the response has already completed. "
+                        + "If this is a Content-Length response then you need to call HttpResponse.DeclareTrailer before starting the body.");
+                }
                 throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
             }
         }
@@ -237,6 +278,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                         throw new InvalidOperationException(string.Format("Invalid control character in header: 0x{0:X2}", (byte)ch));
                     }
                 }
+            }
+        }
+
+        private void ValidateRestrictedTrailers(string key)
+        {
+            if (_checkTrailers && DisallowedTrailers.Contains(key))
+            {
+                throw new InvalidOperationException($"The '{key}' header is not allowed in HTTP trailers.");
             }
         }
     }

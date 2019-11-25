@@ -6,13 +6,14 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.HPack;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -1564,7 +1565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
-                expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
+                expectedErrorMessage: SR.net_http_hpack_incomplete_header_block);
         }
 
         [Fact]
@@ -1592,7 +1593,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
-                expectedErrorMessage: CoreStrings.HPackErrorIntegerTooBig);
+                expectedErrorMessage: SR.net_http_hpack_bad_integer);
         }
 
         [Theory]
@@ -3431,7 +3432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.COMPRESSION_ERROR,
-                expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
+                expectedErrorMessage: SR.net_http_hpack_incomplete_header_block);
         }
 
         [Theory]
