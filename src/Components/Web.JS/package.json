@@ -14,8 +14,8 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@aspnet/signalr": "link:../../SignalR/clients/ts/signalr",
-    "@aspnet/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
+    "@microsoft/signalr": "link:../../SignalR/clients/ts/signalr",
+    "@microsoft/signalr-protocol-msgpack": "link:../../SignalR/clients/ts/signalr-protocol-msgpack",
     "@microsoft/dotnet-js-interop": "https://dotnet.myget.org/F/aspnetcore-dev/npm/@microsoft/dotnet-js-interop/-/@microsoft/dotnet-js-interop-5.0.0-alpha1.19572.2.tgz",
     "@types/emscripten": "0.0.31",
     "@types/jest": "^24.0.6",
