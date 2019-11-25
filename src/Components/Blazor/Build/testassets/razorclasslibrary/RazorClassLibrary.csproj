@@ -5,8 +5,4 @@
     <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="3.0.0" />
-  </ItemGroup>
-
 </Project>
