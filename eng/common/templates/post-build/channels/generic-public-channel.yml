@@ -71,7 +71,6 @@ stages:
           StageLabel: '${{ parameters.stageName }}'
           JobLabel: 'SymbolPublishing'
 
-
   - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars

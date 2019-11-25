@@ -97,7 +97,6 @@ stages:
           buildType: current
           artifactName: BlobArtifacts
         continueOnError: true
-
       - task: DownloadBuildArtifacts@0
         displayName: Download Asset Manifests
         inputs:

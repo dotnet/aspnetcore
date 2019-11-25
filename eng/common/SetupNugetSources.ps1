@@ -94,34 +94,41 @@ function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Password) {
     }
 }
 
-if (!(Test-Path $ConfigFile -PathType Leaf)) {
-  Write-Host "Couldn't find the file NuGet config file: $ConfigFile"
-  ExitWithExitCode 1
+try {
+    if (!(Test-Path $ConfigFile -PathType Leaf)) {
+    Write-PipelineTelemetryError -Category 'Build' -Message "Couldn't find the file NuGet config file: $ConfigFile"
+    ExitWithExitCode 1
+    }
+
+    # Load NuGet.config
+    $doc = New-Object System.Xml.XmlDocument
+    $filename = (Get-Item $ConfigFile).FullName
+    $doc.Load($filename)
+
+    # Get reference to <PackageSources> or create one if none exist already
+    $sources = $doc.DocumentElement.SelectSingleNode("packageSources")
+    if ($sources -eq $null) {
+        $sources = $doc.CreateElement("packageSources")
+        $doc.DocumentElement.AppendChild($sources) | Out-Null
+    }
+
+    # Looks for a <PackageSourceCredentials> node. Create it if none is found.
+    $creds = $doc.DocumentElement.SelectSingleNode("packageSourceCredentials")
+    if ($creds -eq $null) {
+        $creds = $doc.CreateElement("packageSourceCredentials")
+        $doc.DocumentElement.AppendChild($creds) | Out-Null
+    }
+
+    # Insert credential nodes for Maestro's private feeds
+    InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Password $Password
+
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
+
+    $doc.Save($filename)
 }
-
-# Load NuGet.config
-$doc = New-Object System.Xml.XmlDocument
-$filename = (Get-Item $ConfigFile).FullName
-$doc.Load($filename)
-
-# Get reference to <PackageSources> or create one if none exist already
-$sources = $doc.DocumentElement.SelectSingleNode("packageSources")
-if ($sources -eq $null) {
-    $sources = $doc.CreateElement("packageSources")
-    $doc.DocumentElement.AppendChild($sources) | Out-Null
+catch {
+    Write-Host $_.ScriptStackTrace
+    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message $_
+    ExitWithExitCode 1
 }
-
-# Looks for a <PackageSourceCredentials> node. Create it if none is found.
-$creds = $doc.DocumentElement.SelectSingleNode("packageSourceCredentials")
-if ($creds -eq $null) {
-    $creds = $doc.CreateElement("packageSourceCredentials")
-    $doc.DocumentElement.AppendChild($creds) | Out-Null
-}
-
-# Insert credential nodes for Maestro's private feeds
-InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Password $Password
-
-AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
-AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
-
-$doc.Save($filename)

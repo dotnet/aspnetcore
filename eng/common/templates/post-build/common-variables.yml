@@ -4,7 +4,7 @@ variables:
   - group: DotNet-DotNetCli-Storage
   - group: DotNet-MSRC-Storage
   - group: Publish-Build-Assets
-
+    
   # .NET Core 3.1 Dev
   - name: PublicDevRelease_31_Channel_Id
     value: 128
@@ -13,19 +13,19 @@ variables:
   - name: NetCore_5_Dev_Channel_Id
     value: 131
 
-  # .NET Tools - Validation
-  - name: NetCore_Tools_Validation_Channel_Id
+  # .NET Eng - Validation
+  - name: Net_Eng_Validation_Channel_Id
     value: 9
 
-  # .NET Tools - Latest
-  - name: NetCore_Tools_Latest_Channel_Id
+  # .NET Eng - Latest
+  - name: Net_Eng_Latest_Channel_Id
     value: 2
 
-  # .NET 3 Tools - Validation
-  - name: NETCore_3_Tools_Validation_Channel_Id
+  # .NET 3 Eng - Validation
+  - name: NET_3_Eng_Validation_Channel_Id
     value: 390
 
-  # .NET 3 Tools - Latest
+  # .NET 3 Eng
   - name: NetCore_3_Tools_Channel_Id
     value: 344
 
