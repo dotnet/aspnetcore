@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\razorclasslibrary\RazorClassLibrary.csproj" />
+  </ItemGroup>
+
 </Project>

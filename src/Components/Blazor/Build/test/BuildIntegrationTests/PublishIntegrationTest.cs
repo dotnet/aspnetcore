@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_WithDefaultSettings_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new string[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
+            // Verify referenced static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
+
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
@@ -39,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_WithLinkOnBuildDisabled_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new string[] { "razorclasslibrary" });
             project.AddProjectFileContent(
 @"<PropertyGroup>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
@@ -61,6 +65,10 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
+            // Verify referenced static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
