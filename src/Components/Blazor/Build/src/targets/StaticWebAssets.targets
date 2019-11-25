@@ -23,7 +23,7 @@
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
       </_StandaloneExternalPublishStaticWebAsset>
 
-      <!-- Update doesn't work inside targets so we need to remove the items and re-add them -->
+      <!-- Update doesn't work inside targets so we need to remove the items and re-add them. See https://github.com/microsoft/msbuild/issues/2835 for details -->
       <ResolvedFileToPublish Remove="@(_StandaloneExternalPublishStaticWebAsset)" />
       <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
 
