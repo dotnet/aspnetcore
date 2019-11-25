@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
-        private readonly IEnumerable<IConnectionListenerFactory> _transportFactories;
+        private readonly List<IConnectionListenerFactory> _transportFactories;
 
         private bool _hasStarted;
         private int _stopping;
@@ -42,7 +42,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(transportFactories));
             }
 
-            _transportFactories = transportFactories;
+            _transportFactories = transportFactories.ToList();
+
+            if (_transportFactories.Count == 0)
+            {
+                throw new InvalidOperationException(CoreStrings.TransportNotFound);
+            }
+
             ServiceContext = serviceContext;
 
             Features = new FeatureCollection();
@@ -143,19 +149,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                         {
                             if (transportFactory is IMultiplexedConnectionListenerFactory)
                             {
+                                // Don't break early. Always use the last registered factory.
                                 factory = transportFactory;
-                                break;
                             }
                         }
 
                         if (factory == null)
                         {
-                            throw new Exception("Quic transport not found when using HTTP/3");
+                            throw new InvalidOperationException(CoreStrings.QuicTransportNotFound);
                         }
                     }
                     else
                     {
-                        factory = _transportFactories.Single();
+                        factory = _transportFactories.Last();
                     }
 
                     var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
