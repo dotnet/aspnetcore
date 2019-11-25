@@ -97,6 +97,13 @@
 
     <ItemGroup>
       <_BlazorDependencyInput Include="@(ReferenceCopyLocalPaths->WithMetadataValue('Extension','.dll')->'%(FullPath)')" />
+
+      <_WebAssemblyBCLFolder Include="
+        $(DotNetWebAssemblyBCLPath);
+        $(DotNetWebAssemblyBCLFacadesPath);
+        $(DotNetWebAssemblyFrameworkPath)" />
+
+      <_WebAssemblyBCLAssembly Include="%(_WebAssemblyBCLFolder.Identity)*.dll" />
     </ItemGroup>
 
     <MakeDir Directories="$(BlazorIntermediateOutputPath)" />
@@ -119,7 +126,7 @@
   <Target
     Name="_ResolveBlazorOutputsWhenLinked"
     Condition="'$(BlazorLinkOnBuild)' == 'true'"
-    DependsOnTargets="_GenerateLinkerDescriptor;_LinkBlazorApplication">
+    DependsOnTargets="_GenerateBlazorLinkerDescriptor;_LinkBlazorApplication">
 
     <!-- _BlazorLinkerOutputCache records files linked during the last incremental build of the target. Read the contents and assign linked files to be copied to the output. -->
     <ReadLinesFromFile File="$(_BlazorLinkerOutputCache)">
@@ -133,35 +140,26 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateLinkerDescriptor"
+  <UsingTask TaskName="BlazorCreateRootDescriptorFile" AssemblyFile="$(BlazorTasksPath)" />
+  <Target Name="_GenerateBlazorLinkerDescriptor"
           Inputs="@(IntermediateAssembly)"
           Outputs="$(GeneratedBlazorLinkerDescriptor)"
           Condition="'@(BlazorLinkerDescriptor)' == ''">
 
     <!-- Generate linker descriptors if the project doesn't explicitly provide one. -->
 
-    <ItemGroup>
-      <_PrepareLinkerDescriptorAssemblyLine Include="@(IntermediateAssembly->'%(FileName)')" />
-      <_GeneratedLinkerDescriptorLine Include="&lt;linker&gt;" />
-      <_GeneratedLinkerDescriptorLine Include="@(_PrepareLinkerDescriptorAssemblyLine->'&lt;assembly fullname=&quot;%(Identity)&quot; /&gt;')" />
-      <_GeneratedLinkerDescriptorLine Include="&lt;/linker&gt;" />
-    </ItemGroup>
-
-    <WriteLinesToFile
-      Lines="@(_GeneratedLinkerDescriptorLine)"
-      File="$(GeneratedBlazorLinkerDescriptor)"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="True" />
+    <BlazorCreateRootDescriptorFile
+      AssemblyNames="@(IntermediateAssembly->'%(Filename)')"
+      RootDescriptorFilePath="$(GeneratedBlazorLinkerDescriptor)" />
 
     <ItemGroup>
       <FileWrites Include="$(GeneratedBlazorLinkerDescriptor)" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
       <BlazorLinkerDescriptor Include="$(GeneratedBlazorLinkerDescriptor)" />
+      <BlazorLinkerDescriptor Include="$(_BlazorBuiltInBclLinkerDescriptor)" />
     </ItemGroup>
   </Target>
+
+  <UsingTask TaskName="BlazorILLink" AssemblyFile="$(BlazorTasksPath)" />
 
   <Target
       Name="_LinkBlazorApplication"
@@ -173,39 +171,44 @@
       Outputs="$(_BlazorLinkerOutputCache)">
 
     <ItemGroup>
-      <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)">
-        <RelativeDirNoTrailingSlash>$([System.String]::Copy('%(RelativeDir)').TrimEnd('\').TrimEnd('/'))</RelativeDirNoTrailingSlash>
-        <IsLinkable Condition="$([System.String]::Copy('%(FileName)').StartsWith('System.'))">true</IsLinkable>
-      </_BlazorDependencyAssembly>
-    </ItemGroup>
-    <ItemGroup>
-      <_WebAssemblyBCLFolder Include="$(DotNetWebAssemblyBCLPath);$(DotNetWebAssemblyBCLFacadesPath);$(DotNetWebAssemblyFrameworkPath)" />
-      <_BlazorAssembliesToCopy Include="@(IntermediateAssembly->'-a &quot;%(FullPath)&quot;')" />
-      <_BlazorFolderLookupPaths Include="@(_WebAssemblyBCLFolder->'-d &quot;%(Identity)&quot;')" />
+      <_BlazorDependencyAssembly Include="@(_BlazorDependencyInput)" IsLinkable="$([System.String]::Copy('%(FileName)').StartsWith('System.'))" />
 
-      <!-- For linkable assemblies, add their directories as lookup paths -->
-      <_BlazorFolderLookupPaths Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" Include="@(_BlazorDependencyAssembly->'-d &quot;%(RelativeDirNoTrailingSlash)&quot;')" />
+      <_BlazorAssemblyToLink Include="@(_WebAssemblyBCLAssembly)" />
+      <_BlazorAssemblyToLink Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' == 'true'" />
 
-      <!-- For non-linkable assemblies, reference the .dll directly -->
-      <_BlazorAssembliesToCopy Condition="'%(_BlazorDependencyAssembly.IsLinkable)' != 'true'" Include="@(_BlazorDependencyAssembly->'-a &quot;%(FullPath)&quot;')" />
-
-      <_BlazorAssemblyDescriptorFiles
-        Include="@(BlazorLinkerDescriptor->'-x &quot;%(FullPath)&quot;')" Condition="'@(BlazorLinkerDescriptor)' != ''" />
+      <_BlazorLinkerRoot Include="@(IntermediateAssembly)" />
+      <_BlazorLinkerRoot Include="@(_BlazorDependencyAssembly)" Condition="'%(_BlazorDependencyAssembly.IsLinkable)' != 'true'" />
     </ItemGroup>
 
     <PropertyGroup>
       <_BlazorLinkerAdditionalOptions>-l $(MonoLinkerI18NAssemblies) $(AdditionalMonoLinkerOptions)</_BlazorLinkerAdditionalOptions>
     </PropertyGroup>
 
-    <!-- Clear the contents of /obj/<<configuration>>/<<targetframework>>/blazor/linker -->
     <ItemGroup>
       <_OldLinkedFile Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
     </ItemGroup>
 
     <Delete Files="@(_OldLinkedFile)" />
 
-    <!-- Run the linker and put the results in /obj/<<configuration>>/<<targetframework>>/blazor/blazor/linker -->
-    <Exec Command="dotnet &quot;$(MonoLinkerPath)&quot; $(_BlazorLinkerAdditionalOptions) @(_BlazorFolderLookupPaths, ' ') -o &quot;$(BlazorIntermediateLinkerOutputPath)&quot; @(_BlazorAssemblyDescriptorFiles, ' ') @(_BlazorAssembliesToCopy, ' ')"  />
+    <!--
+      When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
+      In this case, explicitly specify the path to the dotnet host.
+    -->
+    <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
+      <_DotNetHostDirectory>$(NetCoreRoot)</_DotNetHostDirectory>
+      <_DotNetHostFileName>dotnet</_DotNetHostFileName>
+      <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
+    </PropertyGroup>
+
+    <BlazorILLink
+        ILLinkPath="$(MonoLinkerPath)"
+        AssemblyPaths="@(_BlazorAssemblyToLink)"
+        RootAssemblyNames="@(_BlazorLinkerRoot)"
+        RootDescriptorFiles="@(BlazorLinkerDescriptor)"
+        OutputDirectory="$(BlazorIntermediateLinkerOutputPath)"
+        ExtraArgs="$(_BlazorLinkerAdditionalOptions)"
+        ToolExe="$(_DotNetHostFileName)"
+        ToolPath="$(_DotNetHostDirectory)" />
 
     <ItemGroup>
       <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
@@ -213,6 +216,7 @@
 
     <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
   </Target>
+
 
   <UsingTask TaskName="ResolveBlazorRuntimeDependencies" AssemblyFile="$(BlazorTasksPath)" />
   <Target
@@ -242,13 +246,7 @@
     At this point we have decided not to run the linker and instead to just copy the assemblies
     from the BCL referenced by the app the nuget package into the _framework/_bin folder.
     The only thing we need to do here is collect the list of items that will go into _framework/_bin.
-  -->
-
-    <ItemGroup>
-      <_WebAssemblyBCLFolder Include="$(DotNetWebAssemblyBCLPath);$(DotNetWebAssemblyBCLFacadesPath);$(DotNetWebAssemblyFrameworkPath)" />
-      <_WebAssemblyBCLAssembly Include="%(_WebAssemblyBCLFolder.Identity)*.dll" />
-    </ItemGroup>
-
+    -->
     <ResolveBlazorRuntimeDependencies
       EntryPoint="@(IntermediateAssembly)"
       ApplicationDependencies="@(_BlazorDependencyInput)"
