@@ -9,9 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using WsProxy;
 
 namespace Microsoft.AspNetCore.Builder
@@ -21,6 +21,15 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class BlazorMonoDebugProxyAppBuilderExtensions
     {
+        private static JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            IgnoreNullValues = true
+        };
+
+        private static string DefaultDebuggerHost = "http://localhost:9222";
+
         /// <summary>
         /// Adds middleware for needed for debugging Blazor applications
         /// inside Chromium dev tools.
@@ -28,6 +37,8 @@ namespace Microsoft.AspNetCore.Builder
         public static void UseBlazorDebugging(this IApplicationBuilder app)
         {
             app.UseWebSockets();
+
+            app.UseVisualStudioDebuggerConnectionRequestHandlers();
 
             app.Use((context, next) =>
             {
@@ -49,6 +60,85 @@ namespace Microsoft.AspNetCore.Builder
 
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
+            });
+        }
+
+        private static string GetDebuggerHost()
+        {
+            var envVar = Environment.GetEnvironmentVariable("ASPNETCORE_WEBASSEMBLYDEBUGHOST");
+
+            if (string.IsNullOrEmpty(envVar))
+            {
+                return DefaultDebuggerHost;
+            }
+            else
+            {
+                return envVar;
+            }
+        }
+
+        private static int GetDebuggerPort()
+        {
+            var host = GetDebuggerHost();
+            return new Uri(host).Port;
+        }
+
+        private static void UseVisualStudioDebuggerConnectionRequestHandlers(this IApplicationBuilder app)
+        {
+            // Unfortunately VS doesn't send any deliberately distinguishing information so we know it's
+            // not a regular browser or API client. The closest we can do is look for the *absence* of a
+            // User-Agent header. In the future, we should try to get VS to send a special header to indicate
+            // this is a debugger metadata request.
+            app.Use(async (context, next) =>
+            {
+                var request = context.Request;
+                var requestPath = request.Path;
+                if (requestPath.StartsWithSegments("/json")
+                    && !request.Headers.ContainsKey("User-Agent"))
+                {
+                    if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var availableTabs = await GetOpenedBrowserTabs();
+
+                        // Filter the list to only include tabs displaying the requested app,
+                        // but only during the "choose application to debug" phase. We can't apply
+                        // the same filter during the "connecting" phase (/json/list), nor do we need to.
+                        if (requestPath.Equals("/json"))
+                        {
+                            availableTabs = availableTabs.Where(tab => tab.Url.StartsWith($"{request.Scheme}://{request.Host}{request.PathBase}/"));
+                        }
+
+                        var proxiedTabInfos = availableTabs.Select(tab =>
+                        {
+                            var underlyingV8Endpoint = tab.WebSocketDebuggerUrl;
+                            var proxiedV8Endpoint = $"ws://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
+                            return new
+                            {
+                                description = "",
+                                devtoolsFrontendUrl = "",
+                                id = tab.Id,
+                                title = tab.Title,
+                                type = tab.Type,
+                                url = tab.Url,
+                                webSocketDebuggerUrl = proxiedV8Endpoint
+                            };
+                        });
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(proxiedTabInfos));
+                    }
+                    else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var browserVersionJson = await GetBrowserVersionInfoAsync();
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(browserVersionJson);
+                    }
+                }
+                else
+                {
+                    await next();
+                }
             });
         }
 
@@ -81,13 +171,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // TODO: Allow overriding port (but not hostname, as we're connecting to the
             // local browser, not to the webserver serving the app)
-            var debuggerHost = "http://localhost:9222";
+            var debuggerHost = GetDebuggerHost();
             var debuggerTabsListUrl = $"{debuggerHost}/json";
             IEnumerable<BrowserTab> availableTabs;
 
             try
             {
-                availableTabs = await GetOpenedBrowserTabs(debuggerHost);
+                availableTabs = await GetOpenedBrowserTabs();
             }
             catch (Exception ex)
             {
@@ -154,21 +244,22 @@ namespace Microsoft.AspNetCore.Builder
         private static string GetLaunchChromeInstructions(string appRootUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
+            var debuggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><code>chrome --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+                          <p><strong><code>chrome --remote-debugging-port={debuggerPort} --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>google-chrome --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>google-chrome --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>Execute the following:</p>
-                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port={debuggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
@@ -179,16 +270,17 @@ namespace Microsoft.AspNetCore.Builder
         private static string GetLaunchEdgeInstructions(string appRootUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
+            var debugggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><code>msedge --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+                          <p><strong><code>msedge --remote-debugging-port={debugggerPort} --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
+                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port={debugggerPort} --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
@@ -196,17 +288,24 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs(string debuggerHost)
+        private static async Task<string> GetBrowserVersionInfoAsync()
         {
-            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
-            {
-                var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
-                return JsonConvert.DeserializeObject<BrowserTab[]>(jsonResponse);
-            }
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var debuggerHost = GetDebuggerHost();
+            return await httpClient.GetStringAsync($"{debuggerHost}/json/version");
+        }
+
+        private static async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
+        {
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            var debuggerHost = GetDebuggerHost();
+            var jsonResponse = await httpClient.GetStringAsync($"{debuggerHost}/json");
+            return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
         }
 
         class BrowserTab
         {
+            public string Id { get; set; }
             public string Type { get; set; }
             public string Url { get; set; }
             public string Title { get; set; }
