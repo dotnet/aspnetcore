@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.FileProviders
         public ManifestEmbeddedFileProvider(System.Reflection.Assembly assembly, string root) { }
         public ManifestEmbeddedFileProvider(System.Reflection.Assembly assembly, string root, System.DateTimeOffset lastModified) { }
         public ManifestEmbeddedFileProvider(System.Reflection.Assembly assembly, string root, string manifestName, System.DateTimeOffset lastModified) { }
-        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.FileProviders.IDirectoryContents GetDirectoryContents(string subpath) { throw null; }
         public Microsoft.Extensions.FileProviders.IFileInfo GetFileInfo(string subpath) { throw null; }
         public Microsoft.Extensions.Primitives.IChangeToken Watch(string filter) { throw null; }
@@ -30,9 +30,9 @@ namespace Microsoft.Extensions.FileProviders.Embedded
         public EmbeddedResourceFileInfo(System.Reflection.Assembly assembly, string resourcePath, string name, System.DateTimeOffset lastModified) { }
         public bool Exists { get { throw null; } }
         public bool IsDirectory { get { throw null; } }
-        public System.DateTimeOffset LastModified { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.DateTimeOffset LastModified { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public long Length { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string PhysicalPath { get { throw null; } }
         public System.IO.Stream CreateReadStream() { throw null; }
     }
