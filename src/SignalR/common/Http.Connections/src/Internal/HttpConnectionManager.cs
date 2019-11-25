@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimerAwaitable _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
+        private readonly bool _useSendTimeout = true;
         private readonly TimeSpan _disconnectTimeout;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
@@ -44,6 +45,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
             _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
+            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Http.Connections.DoNotUseSendTimeout", out var timeoutDisabled))
+            {
+                _useSendTimeout = !timeoutDisabled;
+            }
+
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
@@ -155,20 +161,26 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Capture the connection state
                 var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
+                var utcNow = DateTimeOffset.UtcNow;
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && lastSeenUtc.HasValue && (DateTimeOffset.UtcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
+                if (!Debugger.IsAttached && lastSeenUtc.HasValue && (utcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
 
                     // This is most likely a long polling connection. The transport here ends because
-                    // a poll completed and has been inactive for > 5 seconds so we wait for the 
+                    // a poll completed and has been inactive for > 5 seconds so we wait for the
                     // application to finish gracefully
                     _ = DisposeAndRemoveAsync(connection, closeGracefully: true);
                 }
                 else
                 {
+                    if (!Debugger.IsAttached && _useSendTimeout)
+                    {
+                        connection.TryCancelSend(utcNow.Ticks);
+                    }
+
                     // Tick the heartbeat, if the connection is still active
                     connection.TickHeartbeat();
                 }
