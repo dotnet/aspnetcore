@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
 
             // Verify referenced static web assets
-            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
 
             // Verify static assets are in the publish directory
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
             // Verify referenced static web assets
-            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "exampleJsInterop.js");
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
 
             // Verify web.config
