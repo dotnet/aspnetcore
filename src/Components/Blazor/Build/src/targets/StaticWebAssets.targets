@@ -18,10 +18,12 @@
     AfterTargets="_StaticWebAssetsComputeFilesToPublish">
 
     <ItemGroup>
+      <!-- We need to update the external static web assets to follow the blazor publish output convention that puts them inside $(TargetName)/dist instead of wwwroot -->
       <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != ''">
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
       </_StandaloneExternalPublishStaticWebAsset>
 
+      <!-- Update doesn't work inside targets so we need to remove the items and re-add them -->
       <ResolvedFileToPublish Remove="@(_StandaloneExternalPublishStaticWebAsset)" />
       <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
 
