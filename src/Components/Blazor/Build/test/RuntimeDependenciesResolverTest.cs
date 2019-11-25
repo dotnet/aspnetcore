@@ -9,7 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build
 {
     public class RuntimeDependenciesResolverTest
     {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Act
 
-            var paths = RuntimeDependenciesResolver
+            var paths = ResolveBlazorRuntimeDependencies
                 .ResolveRuntimeDependenciesCore(
                     mainAssemblyLocation,
                     references,
