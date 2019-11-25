@@ -402,7 +402,7 @@ namespace Microsoft.Extensions.Internal
                     }
                 }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP
                 return _constructor.Invoke(BindingFlags.DoNotWrapExceptions, binder: null, parameters: _parameterValues, culture: null);
 #else
                 try
