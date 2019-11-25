@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.ObjectPool
     public partial class DefaultObjectPoolProvider : Microsoft.Extensions.ObjectPool.ObjectPoolProvider
     {
         public DefaultObjectPoolProvider() { }
-        public int MaximumRetained { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int MaximumRetained { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override Microsoft.Extensions.ObjectPool.ObjectPool<T> Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T> policy) { throw null; }
     }
     public partial class DefaultObjectPool<T> : Microsoft.Extensions.ObjectPool.ObjectPool<T> where T : class
@@ -68,8 +68,8 @@ namespace Microsoft.Extensions.ObjectPool
     public partial class StringBuilderPooledObjectPolicy : Microsoft.Extensions.ObjectPool.PooledObjectPolicy<System.Text.StringBuilder>
     {
         public StringBuilderPooledObjectPolicy() { }
-        public int InitialCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MaximumRetainedCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int InitialCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int MaximumRetainedCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Text.StringBuilder Create() { throw null; }
         public override bool Return(System.Text.StringBuilder obj) { throw null; }
     }
