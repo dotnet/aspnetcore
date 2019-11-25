@@ -3,12 +3,12 @@
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>
       $(ResolveStaticWebAssetsInputsDependsOn);
-      _RemoveBlazorWwwrootFromStaticWebAssets;
+      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
 
-  <Target Name="_RemoveBlazorWwwrootFromStaticWebAssets">
+  <Target Name="_RemoveBlazorCurrentProjectAssetsFromStaticWebAssets">
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
     </ItemGroup>
@@ -16,15 +16,15 @@
 
   <Target Name="BlazorStaticWebAssetsComputeFilesToPublish"
     AfterTargets="_StaticWebAssetsComputeFilesToPublish">
-  
+
     <ItemGroup>
       <_StandaloneExternalPublishStaticWebAsset Include="@(_ExternalPublishStaticWebAsset)" Condition="'%(RelativePath)' != ''">
-        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.String]::Copy('%(RelativePath)').Replace('wwwroot','$(BlazorPublishDistDir)'))'))'))</RelativePath>
-      </_StandaloneExternalPublishStaticWebAsset>  
+        <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$([MSBuild]::NormalizePath('$([System.Text.RegularExpressions.Regex]::Replace('%(RelativePath)','^wwwroot\\?\/?(.*)','$(BlazorPublishDistDir)$1'))'))'))</RelativePath>
+      </_StandaloneExternalPublishStaticWebAsset>
 
       <ResolvedFileToPublish Remove="@(_StandaloneExternalPublishStaticWebAsset)" />
       <ResolvedFileToPublish Include="@(_StandaloneExternalPublishStaticWebAsset)" />
 
-    </ItemGroup>  
+    </ItemGroup>
   </Target>
 </Project>
