@@ -200,6 +200,8 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var input = connection.Input;
             var protocol = connection.Protocol;
+            connection.BeginClientTimeout();
+
 
             var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
 
@@ -207,6 +209,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 var result = await input.ReadAsync();
                 var buffer = result.Buffer;
+
+                connection.ResetClientTimeout();
 
                 try
                 {
@@ -217,14 +221,20 @@ namespace Microsoft.AspNetCore.SignalR
 
                     if (!buffer.IsEmpty)
                     {
-                        connection.ResetClientTimeout();
-
+                        bool messageReceived = false;
                         // No message limit, just parse and dispatch
                         if (_maximumMessageSize == null)
                         {
                             while (protocol.TryParseMessage(ref buffer, binder, out var message))
                             {
+                                messageReceived = true;
+                                connection.StopClientTimeout();
                                 await _dispatcher.DispatchMessageAsync(connection, message);
+                            }
+
+                            if (messageReceived)
+                            {
+                                connection.BeginClientTimeout();
                             }
                         }
                         else
@@ -245,6 +255,9 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 if (protocol.TryParseMessage(ref segment, binder, out var message))
                                 {
+                                    messageReceived = true;
+                                    connection.StopClientTimeout();
+
                                     await _dispatcher.DispatchMessageAsync(connection, message);
                                 }
                                 else if (overLength)
@@ -259,6 +272,11 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 // Update the buffer to the remaining segment
                                 buffer = buffer.Slice(segment.Start);
+                            }
+
+                            if (messageReceived)
+                            {
+                                connection.BeginClientTimeout();
                             }
                         }
                     }
