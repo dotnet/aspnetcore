@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace http2cat
 {
-    partial class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             using var host = new HostBuilder()
                 .ConfigureLogging(loggingBuilder =>
@@ -26,7 +26,7 @@ namespace http2cat
             await host.RunAsync();
         }
 
-        public static async Task RunTestCase(Http2Utilities h2Connection)
+        internal static async Task RunTestCase(Http2Utilities h2Connection)
         {
             await h2Connection.InitializeConnectionAsync();
 

@@ -10,7 +10,6 @@
     <Compile Include="$(SharedSourceRoot)Http2\**\*.cs" LinkBase="Shared\Http2\" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
-    <Compile Remove="TaskTimeoutExtensions.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
   </ItemGroup>
   

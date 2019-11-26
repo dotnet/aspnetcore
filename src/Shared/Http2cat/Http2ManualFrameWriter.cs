@@ -156,25 +156,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 }
             }
         }
-        /*
-        public ValueTask<FlushResult> WriteResponseTrailers(int streamId, HttpResponseTrailers headers)
-        {
-            lock (_writeLock)
-            {
-                if (_completed)
-                {
-                    return default;
-                }
 
-                _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
-                var buffer = _headerEncodingBuffer.AsSpan();
-                var done = _hpackEncoder.BeginEncode(EnumerateHeaders(headers), buffer, out var payloadLength);
-                FinishWritingHeaders(streamId, payloadLength, done);
-
-                return TimeFlushUnsynchronizedAsync();
-            }
-        }
-        */
         private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
         {
             var buffer = _headerEncodingBuffer.AsSpan();
