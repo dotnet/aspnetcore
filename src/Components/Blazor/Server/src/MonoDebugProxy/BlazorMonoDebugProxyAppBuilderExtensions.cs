@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static string GetLaunchChromeInstructions(string appRootUrl)
         {
-            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
+            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
             var debuggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static string GetLaunchEdgeInstructions(string appRootUrl)
         {
-            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
+            var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
             var debugggerPort = GetDebuggerPort();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
