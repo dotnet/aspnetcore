@@ -247,11 +247,6 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
                 throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}` due to: `{error}`");
             }
-
-            if (process.ExitCode == 0)
-            {
-                return;
-            }
         }
 
         internal async Task DownloadToFileAsync(string url, string destinationPath, bool overwrite)
