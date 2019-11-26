@@ -220,54 +220,37 @@ namespace Microsoft.DotNet.OpenApi.Commands
             {
                 throw new ArgumentException($"dotnet was not found on the path.");
             }
-            var retryLimit = 10;
-            for (var retryCount = 0; retryCount < retryLimit; retryCount++)
+
+            var startInfo = new ProcessStartInfo
             {
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = muxer,
-                    Arguments = string.Join(" ", args),
-                    WorkingDirectory = projectFile.Directory.FullName,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                };
+                FileName = muxer,
+                Arguments = string.Join(" ", args),
+                WorkingDirectory = projectFile.Directory.FullName,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+            };
 
-                var process = Process.Start(startInfo);
+            var process = Process.Start(startInfo);
 
-                var timeout = 20;
-                if (!process.WaitForExit(timeout * 1000))
-                {
-                    var exception = new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
-                    await TryThrowExceptionAsync(retryCount, retryLimit, exception);
-                }
-
-                if (process.ExitCode != 0)
-                {
-                    var output = await process.StandardOutput.ReadToEndAsync();
-                    var error = await process.StandardError.ReadToEndAsync();
-                    await Out.WriteAsync(output);
-                    await Error.WriteAsync(error);
-
-                    var exception = new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}` due to: `{error}`");
-                    await TryThrowExceptionAsync(retryCount, retryLimit, exception);
-                }
-
-                if (process.ExitCode == 0)
-                {
-                    return;
-                }
+            var timeout = 20;
+            if (!process.WaitForExit(timeout * 1000))
+            {
+                throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` took longer than {timeout} seconds.");
             }
-        }
 
-        private static async Task TryThrowExceptionAsync(int retryCount, int retryLimit, Exception exception)
-        {
-            if(retryCount >= retryLimit - 1)
+            if (process.ExitCode != 0)
             {
-                throw exception;
+                var output = await process.StandardOutput.ReadToEndAsync();
+                var error = await process.StandardError.ReadToEndAsync();
+                await Out.WriteAsync(output);
+                await Error.WriteAsync(error);
+
+                throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}` due to: `{error}`");
             }
-            else
+
+            if (process.ExitCode == 0)
             {
-                await Task.Delay(1 * 1000);
+                return;
             }
         }
 
