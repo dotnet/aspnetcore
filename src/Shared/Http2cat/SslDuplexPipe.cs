@@ -7,7 +7,7 @@ using System.IO.Pipelines;
 using System.Net.Security;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-namespace http2cat
+namespace Microsoft.AspNetCore.Http2Cat
 {
     internal class SslDuplexPipe : DuplexPipeStreamAdapter<SslStream>
     {

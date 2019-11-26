@@ -23,8 +23,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <EmbeddedResource Include="..\..\Core\src\CoreStrings.resx" Link="Shared\CoreStrings.resx">
-      <ManifestResourceName>Microsoft.AspNetCore.Server.Kestrel.Core.CoreStrings</ManifestResourceName>
+    <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
       <Generator></Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">

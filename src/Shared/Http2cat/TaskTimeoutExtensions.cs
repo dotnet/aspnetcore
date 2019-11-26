@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Threading.Tasks
 {
-    public static class TaskTimeoutExtensions
+    internal static class TaskTimeoutExtensions
     {
         public static TimeSpan DefaultTimeoutTimeSpan { get; } = TimeSpan.FromSeconds(5);
 

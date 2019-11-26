@@ -2,17 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
-namespace http2cat
+namespace Microsoft.AspNetCore.Http2Cat
 {
-    public class Http2CatOptions
+    internal class Http2CatOptions
     {
         public string Url { get; set; }
-        public Func<Http2Utilities, ILogger, Task> Scenaro { get; set; }
+        public Func<Http2Utilities, Task> Scenaro { get; set; }
     }
 }

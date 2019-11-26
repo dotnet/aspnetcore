@@ -36,6 +36,10 @@
     <EmbeddedResource Update="CoreStrings.resx">
       <Generator></Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="$(SharedSourceRoot)ServerInfrastructure\SharedStrings.resx" Link="Shared\SharedStrings.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Server.SharedStrings</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="$(SharedSourceRoot)Http2\SR.resx" Link="Shared\Http2\SR.resx">
       <ManifestResourceName>System.Net.Http.SR</ManifestResourceName>
       <Generator></Generator>

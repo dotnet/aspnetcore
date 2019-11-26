@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
@@ -12,28 +11,42 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace http2cat
+namespace Microsoft.AspNetCore.Http2Cat
 {
-    public class Http2Utilities : IHttpHeadersHandler
+    internal class Http2Utilities : IHttpHeadersHandler
     {
         public static ReadOnlySpan<byte> ClientPreface => new byte[24] { (byte)'P', (byte)'R', (byte)'I', (byte)' ', (byte)'*', (byte)' ', (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'2', (byte)'.', (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n', (byte)'S', (byte)'M', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
         public static readonly int MaxRequestHeaderFieldSize = 16 * 1024;
-        public static readonly string _4kHeaderValue = new string('a', 4096);
+        public static readonly string FourKHeaderValue = new string('a', 4096);
         private static readonly Encoding HeaderValueEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _browserRequestHeaders = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> BrowserRequestHeaders = new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:443"),
+            new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
+            new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+            new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
+            new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
+            new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
+        };
+
+        public static readonly IEnumerable<KeyValuePair<string, string>> BrowserRequestHeadersHttp = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
@@ -42,7 +55,7 @@ namespace http2cat
             new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
         };
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _postRequestHeaders = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> PostRequestHeaders = new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
@@ -50,7 +63,7 @@ namespace http2cat
             new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
         };
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> ExpectContinueRequestHeaders = new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
@@ -59,37 +72,37 @@ namespace http2cat
             new KeyValuePair<string, string>("expect", "100-continue"),
         };
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _requestTrailers = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> RequestTrailers = new[]
         {
             new KeyValuePair<string, string>("trailer-one", "1"),
             new KeyValuePair<string, string>("trailer-two", "2"),
         };
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _oneContinuationRequestHeaders = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> OneContinuationRequestHeaders = new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue)
+            new KeyValuePair<string, string>("a", FourKHeaderValue),
+            new KeyValuePair<string, string>("b", FourKHeaderValue),
+            new KeyValuePair<string, string>("c", FourKHeaderValue),
+            new KeyValuePair<string, string>("d", FourKHeaderValue)
         };
 
-        public static readonly IEnumerable<KeyValuePair<string, string>> _twoContinuationsRequestHeaders = new[]
+        public static readonly IEnumerable<KeyValuePair<string, string>> TwoContinuationsRequestHeaders = new[]
         {
             new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(HeaderNames.Path, "/"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
-            new KeyValuePair<string, string>("a", _4kHeaderValue),
-            new KeyValuePair<string, string>("b", _4kHeaderValue),
-            new KeyValuePair<string, string>("c", _4kHeaderValue),
-            new KeyValuePair<string, string>("d", _4kHeaderValue),
-            new KeyValuePair<string, string>("e", _4kHeaderValue),
-            new KeyValuePair<string, string>("f", _4kHeaderValue),
-            new KeyValuePair<string, string>("g", _4kHeaderValue),
+            new KeyValuePair<string, string>("a", FourKHeaderValue),
+            new KeyValuePair<string, string>("b", FourKHeaderValue),
+            new KeyValuePair<string, string>("c", FourKHeaderValue),
+            new KeyValuePair<string, string>("d", FourKHeaderValue),
+            new KeyValuePair<string, string>("e", FourKHeaderValue),
+            new KeyValuePair<string, string>("f", FourKHeaderValue),
+            new KeyValuePair<string, string>("g", FourKHeaderValue),
         };
 
         public static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
@@ -116,11 +129,16 @@ namespace http2cat
         internal DuplexPipe.DuplexPipePair _pair;
         public long _bytesReceived;
 
-        public Http2Utilities(ConnectionContext clientConnectionContext)
+        public Http2Utilities(ConnectionContext clientConnectionContext, ILogger logger, CancellationToken stopToken)
         {
             _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
             _pair = new DuplexPipe.DuplexPipePair(transport: null, application: clientConnectionContext.Transport);
+            Logger = logger;
+            StopToken = stopToken;
         }
+
+        public ILogger Logger { get; }
+        public CancellationToken StopToken { get; }
 
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {

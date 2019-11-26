@@ -12,12 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Http2Cat
 {
     internal class Http2ManualFrameWriter
     {
@@ -28,8 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Frame _outgoingFrame;
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly ConnectionContext _connectionContext;
-        private readonly string _connectionId;
-        private readonly MinDataRate _minResponseDataRate;
 
         private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
         private byte[] _headerEncodingBuffer;
@@ -41,15 +36,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Http2ManualFrameWriter(
             PipeWriter outputPipeWriter,
-            ConnectionContext connectionContext,
-            MinDataRate minResponseDataRate,
-            string connectionId)
+            ConnectionContext connectionContext)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
             _outputWriter = outputPipeWriter;
             _connectionContext = connectionContext;
-            _connectionId = connectionId;
-            _minResponseDataRate = minResponseDataRate;
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
         }
