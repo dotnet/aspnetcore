@@ -1,10 +1,8 @@
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,19 +11,19 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class MultipartSectionPipeReader
+    public class MultipartSectionPipeReader : PipeReader
     {
         private readonly PipeReader _pipeReader;
         private bool _finished = false;
         private bool _metadataSkipped = false;
         private readonly MultipartBoundary _boundary;
         private int _partialMatchIndex = 0;
-        private const int StackAllocThreshold = 128;
         private ReadOnlySequence<byte> _buffer;
+        private SequencePosition _endPosition;
+        private bool _isReaderComplete;
 
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> EndOfFileDelimiter => new byte[] { (byte)'-', (byte)'-' };
-
 
         public bool CanSeek { get; }
 
@@ -41,335 +39,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             CanSeek = canSeek;
         }
 
-        public int Read(byte[] buffer, int offset, int count)
-        {
-            if (_finished && _metadataSkipped)
-            {
-                return 0;
-            }
-            int consumed = 0;
-            ReadOnlySequence<byte> sequence = default;
-            ReadResult readResult = default;
-            while (true)
-            {
-                if (!sequence.IsEmpty)
-                {
-                    if (!_finished)
-                    {
-                        var (didReachEnd, copied) = TryCopyToEnd(ref sequence, buffer, offset, count, readResult.IsCompleted);
-                        _pipeReader.AdvanceTo(sequence.Start);
-                        consumed += copied;
-                        if (didReachEnd)
-                        {
-                            _finished = true;
-                            Length += copied;
-                            RawLength += copied;
-                        }
-
-                        if (copied > buffer.Length - offset)
-                        {
-                            Length += copied;
-                            RawLength += copied;
-                            return consumed;
-                        }
-                        offset += copied;
-                    }
-                    else if (!_metadataSkipped)
-                    {
-                        if (TrySkipMetadata(ref sequence, readResult.IsCompleted))
-                        {
-                            _pipeReader.AdvanceTo(sequence.Start);
-                            _metadataSkipped = true;
-                            return consumed;
-                        }
-                    }
-                    else
-                    {
-                        return consumed;
-                    }
-                }
-
-                if (_pipeReader.TryRead(out readResult))
-                {
-                    if (readResult.IsCompleted)
-                    {
-                        _finished = true;
-                        _metadataSkipped = true;
-                        //handle last result
-                        return consumed;
-                    }
-
-                    sequence = readResult.Buffer;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        }
-
-        internal async Task<string> ReadToEndAsync(Encoding streamEncoding, CancellationToken cancellationToken = default)
-        {
-            string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
-            {
-                if (readOnlySpan.Length == 0)
-                {
-                    return string.Empty;
-                }
-                else
-                {
-                    // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
-                    // We will also create a string from it by the end of the function.
-                    var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-                    return streamEncoding.GetString(span);
-                }
-            }
-
-            string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
-            {
-                if (ros.IsSingleSegment)
-                {
-                    return GetDecodedString(ros.First.Span);
-                }
-
-                if (ros.Length < StackAllocThreshold)
-                {
-                    Span<byte> buffer = stackalloc byte[(int)ros.Length];
-                    ros.CopyTo(buffer);
-                    return GetDecodedString(buffer);
-                }
-                else
-                {
-                    var byteArray = ArrayPool<byte>.Shared.Rent((int)ros.Length);
-
-                    try
-                    {
-                        Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
-                        ros.CopyTo(buffer);
-                        return GetDecodedString(buffer);
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(byteArray);
-                    }
-                }
-            }
-
-            if (_finished && _metadataSkipped)
-            {
-                return "";
-            }
-
-            long consumed = 0;
-            var stringBuilder = new StringBuilder();
-            ReadOnlySequence<byte> sequence = default;
-            ReadResult readResult = default;
-            while (true)
-            {
-                if (!sequence.IsEmpty)
-                {
-                    if (!_finished)
-                    {
-                        var tempSequence = sequence;
-                        (bool didReachEnd, long read) = TryAdvanceToEnd(ref tempSequence, readResult.IsCompleted);
-                        stringBuilder.Append(GetDecodedStringFromReadOnlySequence(sequence.Slice(0, read)));
-                        _pipeReader.AdvanceTo(tempSequence.Start);
-                        UpdateLength(read);
-                        consumed += read;
-                        if (didReachEnd)
-                        {
-                            _finished = true;
-                        }
-                    }
-                    else if (!_metadataSkipped)
-                    {
-                        var result = TrySkipMetadata(ref sequence, readResult.IsCompleted);
-                        _pipeReader.AdvanceTo(sequence.Start);
-                        if (result)
-                        {
-                            _metadataSkipped = true;
-                            return stringBuilder.ToString();
-                        }
-                    }
-                }
-                else if (readResult.IsCompleted)
-                {
-                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-                }
-
-                readResult = await _pipeReader.ReadAsync(cancellationToken);
-                sequence = readResult.Buffer;
-            }
-        }
-
-        public async Task DrainAsync(CancellationToken cancellationToken)
-        {
-            if (_finished && _metadataSkipped)
-            {
-                return;
-            }
-
-            long consumed = 0;
-            ReadOnlySequence<byte> sequence = default;
-            ReadResult readResult = default;
-            while (true)
-            {
-                if (!sequence.IsEmpty)
-                {
-                    if (!_finished)
-                    {
-                        (bool didReachEnd, long read) = TryAdvanceToEnd(ref sequence, readResult.IsCompleted);
-                        _pipeReader.AdvanceTo(sequence.Start);
-                        UpdateLength(read);
-                        consumed += read;
-                        if (didReachEnd)
-                        {
-                            _finished = true;
-                        }
-                    }
-                    else if (!_metadataSkipped)
-                    {
-                        var result = TrySkipMetadata(ref sequence, readResult.IsCompleted);
-                        _pipeReader.AdvanceTo(sequence.Start);
-                        if (result)
-                        {
-                            _metadataSkipped = true;
-                            return;
-                        }
-                    }
-                }
-                else if (readResult.IsCompleted)
-                {
-                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-                }
-
-                readResult = await _pipeReader.ReadAsync(cancellationToken);
-                sequence = readResult.Buffer;
-            }
-        }
-
-        public async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
-        {
-            if (_finished && _metadataSkipped)
-            {
-                return 0;
-            }
-            if (_buffer.Length > count || _buffer.Length > buffer.Length - offset)
-            {
-                var read = CopySequenceToBuffer(_buffer, buffer, offset, count);
-                _buffer = _buffer.Slice(read);
-                _pipeReader.AdvanceTo(_buffer.Start);
-                return read;
-            }
-
-            long consumed = 0;
-
-            if (_buffer.Length > 0)
-            {
-                consumed = CopySequenceToBuffer(_buffer, buffer, offset, count);
-                _buffer = default;
-            }
-
-            ReadResult readResult = default;
-            while (true)
-            {
-                if (!_buffer.IsEmpty)
-                {
-                    if (!_finished)
-                    {
-                        var localSequence = _buffer;
-                        (bool didReachEnd, long read) = TryAdvanceToEnd(ref localSequence, readResult.IsCompleted);
-                        _buffer = _buffer.Slice(0, read);
-                        read = CopySequenceToBuffer(_buffer, buffer, offset, count);
-                        _buffer = _buffer.Slice(read);
-                        _pipeReader.AdvanceTo(localSequence.Start);
-                        UpdateLength(read);
-                        offset += (int)read;
-                        consumed += read;
-                        if (didReachEnd)
-                        {
-                            _finished = true;
-                        }
-                        return (int)consumed;
-
-                    }
-                    else if (!_metadataSkipped)
-                    {
-                        var result = TrySkipMetadata(ref _buffer, readResult.IsCompleted);
-                        _pipeReader.AdvanceTo(_buffer.Start);
-                        if (result)
-                        {
-                            _metadataSkipped = true;
-                            return (int)consumed;
-                        }
-                    }
-                }
-                else if (readResult.IsCompleted)
-                {
-                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-                }
-
-                readResult = await _pipeReader.ReadAsync(cancellationToken);
-                _buffer = readResult.Buffer;
-            }
-        }
-
-
-        //public async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
-        //{
-        //    if (_finished && _metadataSkipped)
-        //    {
-        //        return 0;
-        //    }
-        //    int consumed = 0;
-        //    ReadOnlySequence<byte> sequence = default;
-        //    ReadResult readResult = default;
-        //    while (true)
-        //    {
-        //        if (!sequence.IsEmpty)
-        //        {
-        //            if (!_finished)
-        //            {
-        //                var (didReachEnd, copied) = TryCopyToEnd(ref sequence, buffer, offset, count, readResult.IsCompleted);
-        //                _pipeReader.AdvanceTo(sequence.Start);
-        //                UpdateLength(copied);
-        //                consumed += copied;
-        //                if (didReachEnd)
-        //                {
-        //                    _finished = true;
-        //                }
-        //                else if (!sequence.IsEmpty)
-        //                {
-        //                    return consumed;
-        //                }
-
-        //                if (copied >= buffer.Length - offset || copied >= count)
-        //                {
-        //                    return consumed;
-        //                }
-        //                offset += copied;
-        //            }
-        //            else if (!_metadataSkipped)
-        //            {
-        //                var result = TrySkipMetadata(ref sequence, readResult.IsCompleted);
-        //                _pipeReader.AdvanceTo(sequence.Start);
-        //                if (result)
-        //                {
-        //                    _metadataSkipped = true;
-        //                    return consumed;
-        //                }
-        //            }
-        //        }
-        //        else if (readResult.IsCompleted)
-        //        {
-        //            throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-        //        }
-
-        //        readResult = await _pipeReader.ReadAsync(cancellationToken);
-        //        sequence = readResult.Buffer;
-        //    }
-        //}
-
         private void UpdateLength(long read)
         {
             Length += read;
@@ -380,20 +49,202 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private int CopySequenceToBuffer(ReadOnlySequence<byte> sequence, byte[] buffer, int offset, int count)
+        public override void AdvanceTo(SequencePosition consumed)
         {
-            var span = buffer.AsSpan(offset);
-            count = Math.Min(count, buffer.Length - offset);
-            if (sequence.Length > count)
-            {
-                sequence.Slice(0, count).CopyTo(span);
-                return span.Length;
-            }
-
-            sequence.CopyTo(span);
-            return (int)sequence.Length;
+            AdvanceTo(consumed, consumed);
         }
 
+
+        public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        {
+
+            ThrowIfCompleted();
+
+            if (consumed.GetObject() == null || examined.GetObject() == null)
+            {
+                return;
+            }
+
+            if (!_buffer.IsEmpty)
+            {
+                var buffer = _buffer.Slice(consumed); //not sure how to handle examined since this is relevant only at the end of the pipe.
+                UpdateLength(_buffer.Length - buffer.Length);
+                _buffer = buffer;
+            }
+
+            if(_metadataSkipped)
+            {
+                return;
+            }
+
+            if (!_finished)
+            {
+                _pipeReader.AdvanceTo(consumed, examined);
+            }
+            else if (_buffer.IsEmpty)
+            {
+                _pipeReader.AdvanceTo(_endPosition);
+
+            }
+            else
+            {
+                _pipeReader.AdvanceTo(consumed);
+            }
+        }
+
+        private void ThrowIfCompleted()
+        {
+            if(_isReaderComplete)
+            {
+                throw new InvalidOperationException("No Reading Allowed");
+            }
+        }
+
+        public override void CancelPendingRead()
+        {
+            //todo maybe handle cancellation of a finished Read
+            _pipeReader.CancelPendingRead();
+        }
+
+        public override void Complete(Exception exception = null)
+        {
+            _isReaderComplete = true;
+            _pipeReader.Complete(exception);
+        }
+
+        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+
+            ThrowIfCompleted();
+
+            if (!_finished)
+            {
+                var readResult = await _pipeReader.ReadAsync(cancellationToken);
+                _buffer = readResult.Buffer;
+                var buffer = readResult.Buffer;
+                (var didReachEnd, var read) = TryAdvanceToEnd(ref buffer, readResult.IsCompleted);
+                _buffer = _buffer.Slice(0, read);
+                if (didReachEnd)
+                {
+                    _finished = true;
+                    _pipeReader.AdvanceTo(_buffer.Start, buffer.Start);
+                    _endPosition = buffer.Start;
+                    return new ReadResult(_buffer, readResult.IsCanceled, false);
+                }
+                if (buffer.IsEmpty)
+                {
+                    return readResult;
+                }
+
+                if (readResult.IsCompleted)
+                {
+                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                }
+                return new ReadResult(_buffer, readResult.IsCanceled, false);
+
+            }
+            if (!_buffer.IsEmpty)
+            {
+                return new ReadResult(_buffer, false, false);
+            }
+            if (!_metadataSkipped)
+            {
+                var readResult = await _pipeReader.ReadAsync();
+                var sequence = readResult.Buffer;
+                var isCurrentCompleted = TrySkipMetadata(ref sequence, readResult.IsCompleted);
+                if (isCurrentCompleted)
+                {
+                    _pipeReader.AdvanceTo(sequence.Start);
+                    _metadataSkipped = true;
+                }
+                else
+                {
+                    _pipeReader.AdvanceTo(sequence.Start, sequence.End);
+                }
+
+                if (readResult.IsCompleted && !isCurrentCompleted)
+                {
+                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                }
+
+                return new ReadResult(default, false, isCurrentCompleted);
+            }
+
+            //currently there is no handling of a finished read cancellation, so we set false for isCanceled
+            return new ReadResult(_buffer, false, true);
+        }
+
+        public override bool TryRead(out ReadResult result)
+        {
+            if (!_finished)
+            {
+                if (!_pipeReader.TryRead(out result))
+                {
+                    return false;
+                }
+
+                _buffer = result.Buffer;
+                var buffer = result.Buffer;
+                (var didReachEnd, var read) = TryAdvanceToEnd(ref buffer, result.IsCompleted);
+                _buffer = _buffer.Slice(0, read);
+                if (didReachEnd)
+                {
+                    _finished = true;
+                    _pipeReader.AdvanceTo(_buffer.Start, buffer.Start);
+                    _endPosition = buffer.Start;
+                    result = new ReadResult(_buffer, result.IsCanceled, false);
+                    return true;
+                }
+                if (buffer.IsEmpty)
+                {
+                    return true;
+                }
+
+                if (result.IsCompleted)
+                {
+                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                }
+                result = new ReadResult(_buffer, result.IsCanceled, false);
+                return true;
+
+            }
+            if (!_buffer.IsEmpty)
+            {
+                result = new ReadResult(_buffer, false, false);
+                return true;
+            }
+            if (!_metadataSkipped)
+            {
+                if (!_pipeReader.TryRead(out result))
+                {
+                    return false;
+                }
+
+                var sequence = result.Buffer;
+                var isCurrentCompleted = TrySkipMetadata(ref sequence, result.IsCompleted);
+                if (isCurrentCompleted)
+                {
+                    _pipeReader.AdvanceTo(sequence.Start);
+                    _metadataSkipped = true;
+                }
+                else
+                {
+                    _pipeReader.AdvanceTo(sequence.Start, sequence.End);
+                }
+
+                if (result.IsCompleted && !isCurrentCompleted)
+                {
+                    throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                }
+
+                result = new ReadResult(default, false, isCurrentCompleted);
+                return true;
+            }
+
+            //currently there is no handling of a finished read cancellation, so we set false for isCanceled
+            result = new ReadResult(_buffer, false, true);
+            return true;
+        }
 
         private (bool reachedEnd, long consumed) TryAdvanceToEnd(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
@@ -463,97 +314,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             return (false, read);
         }
 
-        private (bool didReachEnd, int readCount) TryCopyToEnd(ref ReadOnlySequence<byte> sequence, byte[] buffer, int offset, int count, bool isFinalBlock)
-        {
-            var sequenceReader = new SequenceReader<byte>(sequence);
-            int read = 0;
-
-            if (isFinalBlock && sequence.Length < _boundary.FinalBoundaryLength - _partialMatchIndex)
-            {
-                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
-            }
-
-            while (!sequenceReader.End)
-            {
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> body, _boundary.BoundaryBytes[_partialMatchIndex]))
-                {
-                    //advance reader to end
-                    body = sequence.Slice(sequenceReader.Position);
-                    read += CopySequenceToBuffer(body, buffer, offset + read, count - read);
-                    sequence = sequence.Slice(read);
-                    return (false, read);
-                }
-                if (_partialMatchIndex != 0 && body.Length > 0)
-                {
-                    // there was a potential end, but it isn't - Copy Previous Matches to buffer and continue
-                    for (int i = offset, j = 0; i < buffer.Length && j < _partialMatchIndex; i++)
-                    {
-                        buffer[i] = _boundary.BoundaryBytes[j];
-                        j++;
-                    }
-                    read = _partialMatchIndex;
-                    read += CopySequenceToBuffer(body, buffer, offset + read, count - read);
-                    sequence = sequence.Slice(read);
-                    return (false, read);
-                }
-                if (body.Length > 0)
-                {
-                    //copy all bytes until persumed boundary
-                    read += CopySequenceToBuffer(body, buffer, offset + read, count - read);
-                }
-
-                //there are more bytes than the received buffer, so return and slice bufferedData.
-                if (read == buffer.Length - offset)
-                {
-                    sequence = sequence.Slice(read);
-                    return (false, read);
-                }
-
-                //continue to check for boundaryMatch
-                for (int i = _partialMatchIndex + 1; i < _boundary.BoundaryBytes.Length; i++)
-                {
-                    if (sequenceReader.TryRead(out var value))
-                    {
-                        if (_boundary.BoundaryBytes[i] == value)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            //no match - copy previous potential matches
-                            int j = 0;
-                            for (int bufferIndex = offset + read; bufferIndex < buffer.Length && j < i; bufferIndex++)
-                            {
-                                buffer[bufferIndex] = _boundary.BoundaryBytes[j];
-                                j++;
-                            }
-                            read += j;
-                            _partialMatchIndex = 0;
-                            sequence = sequence.Slice(sequenceReader.Consumed - 1);
-                            return (false, read);
-                        }
-                    }
-                    else
-                    {
-                        if (sequenceReader.End)
-                        {
-                            //might be a partial Match, need to read more to know for sure
-                            _partialMatchIndex = i;
-                            sequence = sequence.Slice(read);
-                            //slice partial read to insure _bufferedData is empty in the next check
-                            sequence = sequence.Slice(i);
-                            return (false, read);
-                        }
-                    }
-                }
-                sequence = sequence.Slice(sequenceReader.Position);
-                RawLength += _boundary.BoundaryBytes.Length;
-                return (true, read);
-            }
-            return (false, read);
-        }
-
-
         private bool TrySkipMetadata(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
@@ -595,6 +355,165 @@ namespace Microsoft.AspNetCore.WebUtilities
             sequence = sequence.Slice(sequenceReader.Position);
             RawLength += sequenceReader.Consumed;
             return false;
+        }
+    }
+
+    public static class PipeReaderExtensions
+    {
+
+        private const int StackAllocThreshold = 128;
+
+        public static int Read(this PipeReader pipeReader, byte[] buffer, int offset, int count)
+        {
+            if (!pipeReader.TryRead(out var readResult))
+            {
+                //todo handle failure to read
+                return 0;
+            }
+            var _buffer = readResult.Buffer;
+            int initialOffset = offset;
+
+            if (!readResult.IsCompleted)
+            {
+                int copied = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
+                offset += copied;
+                count -= copied;
+                pipeReader.AdvanceTo(_buffer.Start);
+                if (count == 0 || offset == _buffer.Length)
+                {
+                    return initialOffset - offset;
+                }
+            }
+            return offset - initialOffset;
+        }
+
+        public static async Task<string> ReadToEndAsync(this PipeReader pipeReader, Encoding streamEncoding, CancellationToken cancellationToken = default)
+        {
+            string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
+            {
+                if (readOnlySpan.Length == 0)
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
+                    // We will also create a string from it by the end of the function.
+                    var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
+                    return streamEncoding.GetString(span);
+                }
+            }
+
+            string GetDecodedStringFromReadOnlySequence(ref ReadOnlySequence<byte> sequence)
+            {
+                if (sequence.IsSingleSegment)
+                {
+                    var str = GetDecodedString(sequence.First.Span);
+                    sequence = sequence.Slice(sequence.End);
+                    return str;
+                }
+
+                if (sequence.Length < StackAllocThreshold)
+                {
+                    Span<byte> buffer = stackalloc byte[(int)sequence.Length];
+                    sequence.CopyTo(buffer);
+                    sequence = sequence.Slice(sequence.End);
+                    return GetDecodedString(buffer);
+                }
+                else
+                {
+                    var byteArray = ArrayPool<byte>.Shared.Rent((int)sequence.Length);
+
+                    try
+                    {
+                        Span<byte> buffer = byteArray.AsSpan(0, (int)sequence.Length);
+                        sequence.CopyTo(buffer);
+                        sequence = sequence.Slice(sequence.End);
+                        return GetDecodedString(buffer);
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(byteArray);
+                    }
+                }
+            }
+
+            var stringBuilder = new StringBuilder();
+            ReadResult readResult;
+
+            do
+            {
+                readResult = await pipeReader.ReadAsync(cancellationToken);
+                var sequence = readResult.Buffer;
+                stringBuilder.Append(GetDecodedStringFromReadOnlySequence(ref sequence));
+                pipeReader.AdvanceTo(sequence.Start);
+
+            } while (!readResult.IsCompleted);
+
+            return stringBuilder.ToString();
+        }
+
+        public static async Task DrainAsync(this PipeReader pipeReader, CancellationToken cancellationToken)
+        {
+            ReadResult readResult;
+            do
+            {
+                readResult = await pipeReader.ReadAsync(cancellationToken);
+                pipeReader.AdvanceTo(readResult.Buffer.End);
+            } while (!readResult.IsCompleted);
+        }
+
+        public static async Task<int> ReadAsync(this PipeReader pipeReader, byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
+        {
+            //if (_buffer.Length > count || _buffer.Length > buffer.Length - offset)
+            //{
+            //    var read = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
+            //    pipeReader.AdvanceTo(_buffer.Start);
+            //    return read;
+            //}
+
+            //int consumed = 0;
+
+            //if (_buffer.Length > 0)
+            //{
+            //    offset+= CopySequenceToBuffer(_buffer, buffer, offset, count);
+            //    _buffer = default;
+            //}
+
+            var readResult = await pipeReader.ReadAsync(cancellationToken);
+            var _buffer = readResult.Buffer;
+            int initialOffset = offset;
+
+            if (!readResult.IsCompleted)
+            {
+                int copied = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
+                offset += copied;
+                count -= copied;
+                pipeReader.AdvanceTo(_buffer.Start);
+                if (count == 0 || offset == _buffer.Length)
+                {
+                    return initialOffset - offset;
+                }
+            }
+
+            return offset - initialOffset;
+        }
+
+        private static int CopySequenceToBuffer(ref ReadOnlySequence<byte> sequence, byte[] buffer, int offset, int count)
+        {
+            var span = buffer.AsSpan(offset);
+            count = Math.Min(count, buffer.Length - offset);
+            if (sequence.Length > count)
+            {
+                sequence.Slice(0, count).CopyTo(span);
+                sequence = sequence.Slice(count);
+                return span.Length;
+            }
+
+            sequence.CopyTo(span);
+            int length = (int)sequence.Length;
+            sequence = sequence.Slice(sequence.End);
+            return length;
         }
     }
 }
