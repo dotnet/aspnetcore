@@ -237,7 +237,8 @@ namespace Microsoft.AspNetCore.Builder
             var underlyingV8Endpoint = tabToDebug.WebSocketDebuggerUrl;
             var proxyEndpoint = $"{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
             var devToolsUrlAbsolute = new Uri(debuggerHost + tabToDebug.DevtoolsFrontendUrl);
-            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?ws={proxyEndpoint}";
+            var wsParamName = request.IsHttps ? "wss" : "ws";
+            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{wsParamName}={proxyEndpoint}";
             context.Response.Redirect(devToolsUrlWithProxy);
         }
 
