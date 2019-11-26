@@ -72,8 +72,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueSharing", "samples\QueueSharing\QueueSharing.csproj", "{9B58DF76-DC6D-4728-86B7-40087BDDC897}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}"
 EndProject
 Global
@@ -322,18 +320,6 @@ Global
 		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|x86.ActiveCfg = Release|Any CPU
 		{9B58DF76-DC6D-4728-86B7-40087BDDC897}.Release|x86.Build.0 = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Debug|x86.Build.0 = Debug|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|x86.ActiveCfg = Release|Any CPU
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208}.Release|x86.Build.0 = Release|Any CPU
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -372,7 +358,6 @@ Global
 		{D93575B3-BFA3-4523-B060-D268D6A0A66B} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{00A88B8D-D539-45DD-B071-1E955AF89A4A} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{9B58DF76-DC6D-4728-86B7-40087BDDC897} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
-		{4EA84FB6-C32B-45C3-9AFD-27976EDAC208} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 		{33CF53ED-A4BC-4EAA-9EA7-EF5E748A03BB} = {4DA3C456-5050-4AC0-A554-795F6DEC8660}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
