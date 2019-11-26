@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Builder
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><code>msedge --remote-debugging-port={debugggerPort} --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
+                          <p><strong><code>msedge --remote-debugging-port={debugggerPort} --user-data-dir=""{profilePath}"" --no-first-run {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
