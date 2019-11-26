@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     {
         private const string ContentRoot = "ContentRoot";
         private const string BasePath = "BasePath";
+        private const string SourceId = "SourceId";
 
         [Required]
         public string TargetManifestPath { get; set; }
@@ -76,13 +77,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // so it needs to always be '/'.
                 var normalizedBasePath = basePath.Replace("\\", "/");
 
+                // contentRoot can have forward and trailing slashes and sometimes consecutive directory
+                // separators. To be more flexible we will normalize the content root so that it contains a
+                // single trailing separator.
+                var normalizedContentRoot = $"{contentRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
+
                 // At this point we already know that there are no elements with different base paths and same content roots
                 // or viceversa. Here we simply skip additional items that have the same base path and same content root.
-                if (!nodes.Exists(e => e.Attribute(BasePath).Value.Equals(normalizedBasePath, StringComparison.OrdinalIgnoreCase)))
+                if (!nodes.Exists(e => e.Attribute("BasePath").Value.Equals(normalizedBasePath, StringComparison.OrdinalIgnoreCase) &&
+                    e.Attribute("Path").Value.Equals(normalizedContentRoot, StringComparison.OrdinalIgnoreCase)))
                 {
                     nodes.Add(new XElement("ContentRoot",
                         new XAttribute("BasePath", normalizedBasePath),
-                        new XAttribute("Path", contentRoot)));
+                        new XAttribute("Path", normalizedContentRoot)));
                 }
             }
 
@@ -102,7 +109,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var contentRootDefinition = ContentRootDefinitions[i];
                 if (!EnsureRequiredMetadata(contentRootDefinition, BasePath) ||
-                    !EnsureRequiredMetadata(contentRootDefinition, ContentRoot))
+                    !EnsureRequiredMetadata(contentRootDefinition, ContentRoot) ||
+                    !EnsureRequiredMetadata(contentRootDefinition, SourceId))
                 {
                     return false;
                 }
@@ -126,23 +134,35 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var contentRootDefinition = ContentRootDefinitions[i];
                 var basePath = contentRootDefinition.GetMetadata(BasePath);
                 var contentRoot = contentRootDefinition.GetMetadata(ContentRoot);
+                var sourceId = contentRootDefinition.GetMetadata(SourceId);
 
                 if (basePaths.TryGetValue(basePath, out var existingBasePath))
                 {
                     var existingBasePathContentRoot = existingBasePath.GetMetadata(ContentRoot);
-                    if (!string.Equals(contentRoot, existingBasePathContentRoot, StringComparison.OrdinalIgnoreCase))
+                    var existingSourceId = existingBasePath.GetMetadata(SourceId);
+                    if (!string.Equals(contentRoot, existingBasePathContentRoot, StringComparison.OrdinalIgnoreCase) &&
+                        // We want to check this case to allow for client-side blazor projects to have multiple different content
+                        // root sources exposed under the same base path while still requiring unique base paths/content roots across
+                        // project/package boundaries.
+                        !string.Equals(sourceId, existingSourceId, StringComparison.OrdinalIgnoreCase))
                     {
                         // Case:
-                        // Item1: /_content/Library, /package/aspnetContent1
-                        // Item2: /_content/Library, /package/aspnetContent2
+                        // Item2: /_content/Library, project:/project/aspnetContent2
+                        // Item1: /_content/Library, package:/package/aspnetContent1
                         Log.LogError($"Duplicate base paths '{basePath}' for content root paths '{contentRoot}' and '{existingBasePathContentRoot}'. " +
                             $"('{contentRootDefinition.ItemSpec}', '{existingBasePath.ItemSpec}')");
                         return false;
                     }
+
                     // It was a duplicate, so we skip it.
                     // Case:
-                    // Item1: /_content/Library, /package/aspnetContent
-                    // Item2: /_content/Library, /package/aspnetContent
+                    // Item1: /_content/Library, project:/project/aspnetContent
+                    // Item2: /_content/Library, project:/project/aspnetContent
+
+                    // It was a separate content root exposed from the same project/package, so we skip it.
+                    // Case:
+                    // Item1: /_content/Library, project:/project/aspnetContent/bin/debug/netstandard2.1/dist
+                    // Item2: /_content/Library, project:/project/wwwroot
                 }
                 else
                 {

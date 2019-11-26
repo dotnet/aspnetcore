@@ -89,12 +89,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
                     {
                         ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = Path.Combine("nuget","MyLibrary")
+                        ["ContentRoot"] = Path.Combine("nuget", "MyLibrary"),
+                        ["SourceId"] = "MyLibrary"
                     }),
                     CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
                     {
                         ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary")
+                        ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary"),
+                        ["SourceId"] = "MyOtherLibrary"
                     })
                 }
             };
@@ -109,6 +111,58 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 $"Duplicate base paths 'MyLibrary' for content root paths '{Path.Combine("nuget", "MyOtherLibrary")}' and '{Path.Combine("nuget", "MyLibrary")}'. " +
                 $"('{Path.Combine("wwwroot", "otherLib.js")}', '{Path.Combine("wwwroot", "sample.js")}')",
                 message);
+        }
+
+        [Fact]
+        public void AllowsMultipleContentRootsWithSameBasePath_ForTheSameSourceId()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+            var expectedDocument = $@"<StaticWebAssets Version=""1.0"">
+  <ContentRoot BasePath=""Blazor.Client"" Path=""{Path.Combine(".", "nuget", $"Blazor.Client{Path.DirectorySeparatorChar}")}"" />
+  <ContentRoot BasePath=""Blazor.Client"" Path=""{Path.Combine(".", "nuget", "bin", "debug", $"netstandard2.1{Path.DirectorySeparatorChar}")}"" />
+</StaticWebAssets>";
+
+            var buildEngine = new Mock<IBuildEngine>();
+
+            var task = new GenerateStaticWebAssetsManifest
+            {
+                BuildEngine = buildEngine.Object,
+                ContentRootDefinitions = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "Blazor.Client",
+                        ["ContentRoot"] = Path.Combine(".", "nuget","Blazor.Client"),
+                        ["SourceId"] = "Blazor.Client"
+                    }),
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "Blazor.Client",
+                        ["ContentRoot"] = Path.Combine(".", "nuget", "bin","debug","netstandard2.1"),
+                        ["SourceId"] = "Blazor.Client"
+                    })
+                },
+                TargetManifestPath = file
+            };
+
+            try
+            {
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                Assert.True(result);
+                var document = File.ReadAllText(file);
+                Assert.Equal(expectedDocument, document);
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
         }
 
         [Fact]
@@ -128,11 +182,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
                     {
                         ["BasePath"] = "MyLibrary",
+                        ["SourceId"] = "MyLibrary",
                         ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     }),
                     CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
                     {
                         ["BasePath"] = "MyOtherLibrary",
+                        ["SourceId"] = "MyOtherLibrary",
                         ["ContentRoot"] = Path.Combine(".", "MyLibrary")
                     })
                 }
@@ -191,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Arrange
             var file = Path.GetTempFileName();
             var expectedDocument = $@"<StaticWebAssets Version=""1.0"">
-  <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
+  <ContentRoot BasePath=""MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", $"razorContent{Path.DirectorySeparatorChar}")}"" />
 </StaticWebAssets>";
 
             try
@@ -206,7 +262,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
                         {
                             ["BasePath"] = "MyLibrary",
-                            ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
+                            ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent"),
+                            ["SourceId"] = "MyLibrary"
                         }),
                     },
                     TargetManifestPath = file
@@ -235,7 +292,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Arrange
             var file = Path.GetTempFileName();
             var expectedDocument = $@"<StaticWebAssets Version=""1.0"">
-  <ContentRoot BasePath=""Base/MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", "razorContent")}"" />
+  <ContentRoot BasePath=""Base/MyLibrary"" Path=""{Path.Combine(".", "nuget", "MyLibrary", $"razorContent{Path.DirectorySeparatorChar}")}"" />
 </StaticWebAssets>";
 
             try
@@ -251,12 +308,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         {
                             // Base path needs to be normalized to '/' as it goes in the url
                             ["BasePath"] = "Base\\MyLibrary",
+                            ["SourceId"] = "MyLibrary",
                             ["ContentRoot"] = Path.Combine(".", "nuget", "MyLibrary", "razorContent")
                         }),
                         // Comparisons are case insensitive
                         CreateItem(Path.Combine("wwwroot, site.css"), new Dictionary<string,string>
                         {
                             ["BasePath"] = "Base\\MyLIBRARY",
+                            ["SourceId"] = "MyLibrary",
                             ["ContentRoot"] = Path.Combine(".", "nuget", "MyLIBRARY", "razorContent")
                         }),
                     },
