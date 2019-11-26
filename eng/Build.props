@@ -126,7 +126,7 @@
           the entire pattern will silently fail to evaluate correctly. We're excluding all non-components projects in this servicing branch.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)src\Components\**\*.csproj;
+                          $(RepoRoot)src\Components\Blazor\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
