@@ -89,16 +89,16 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or set the <see cref="FormOptions" /> for this instance.
         /// <summary/>
-        /// <returns>        
-        /// The Microsoft.AspNetCore.Http.Features.FormOptions.
+        /// <returns>
+        /// <see cref="FormOptions"/>        
         /// </returns>
         public FormOptions FormOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IServiceScopeFactory" /> for this instance.
         /// <summary/>
-        /// <returns>        
-        /// The Microsoft.Extensions.DependencyInjection.IServiceScopeFactory.
+        /// <returns>   
+        /// <see cref="IServiceScopeFactory"/>      
         /// </returns>
         public IServiceScopeFactory ServiceScopeFactory { get; set; }
 

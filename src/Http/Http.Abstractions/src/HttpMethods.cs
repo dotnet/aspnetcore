@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is CONNECT; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsConnect(string method)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is DELETE; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsDelete(string method)
         {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The  HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+         /// <see langword="true" /> if the method is GET; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsGet(string method)
         {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+         /// <see langword="true" /> if the method is HEAD; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsHead(string method)
         {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+         /// <see langword="true" /> if the method is OPTIONS; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsOptions(string method)
         {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is PATCH; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsPatch(string method)
         {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is POST; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsPost(string method)
         {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is PUT; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsPut(string method)
         {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary/>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-        /// The System.Boolean.
+        /// <see langword="true" /> if the method is TRACE; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsTrace(string method)
         {
