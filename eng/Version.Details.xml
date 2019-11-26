@@ -281,10 +281,6 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>dcdecd07e6059a4b3041ea14baa36e7794343ce3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-rc2.19463.5" Pinned="true">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>40c00020ac632006c9db91383de246226f9cb44a</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.JSInterop" Version="3.0.2-servicing.19575.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>dcdecd07e6059a4b3041ea14baa36e7794343ce3</Sha>
