@@ -12,7 +12,6 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
     <Compile Remove="TaskTimeoutExtensions.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)\DuplexPipe.cs" Link="Shared\DuplexPipe.cs" />
   </ItemGroup>
   
   <ItemGroup>
