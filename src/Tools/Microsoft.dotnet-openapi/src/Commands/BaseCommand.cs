@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             {
                 throw new ArgumentException($"dotnet was not found on the path.");
             }
-            var retryLimit = 60;
+            var retryLimit = 10;
             for (var retryCount = 0; retryCount < retryLimit; retryCount++)
             {
                 var startInfo = new ProcessStartInfo
