@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_WithDefaultSettings_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone", additionalProjects: new string[] { "razorclasslibrary" });
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_WithNoBuild_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone");
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
 
             Assert.BuildPassed(result);
@@ -65,6 +65,14 @@ namespace Microsoft.AspNetCore.Blazor.Build
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
+            // Verify static web assets from referenced projects are copied.
+            // Uncomment once https://github.com/aspnet/AspNetCore/issues/17426 is resolved.
+            // Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            // Assert.FileExists(result, blazorPublishDirectory, "dist", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
         }
@@ -73,7 +81,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_WithLinkOnBuildDisabled_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("standalone", additionalProjects: new string[] { "razorclasslibrary" });
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new [] { "razorclasslibrary" });
             project.AddProjectFileContent(
 @"<PropertyGroup>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
@@ -108,7 +116,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_HostedApp_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone" });
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
             project.TargetFramework = "netcoreapp3.1";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
@@ -129,6 +137,13 @@ namespace Microsoft.AspNetCore.Blazor.Build
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
 
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
 
@@ -140,7 +155,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone" });
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
             project.TargetFramework = "netcoreapp3.1";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
 
@@ -159,6 +174,14 @@ namespace Microsoft.AspNetCore.Blazor.Build
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "wasm", "mono.js");
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "standalone.dll");
             Assert.FileExists(result, blazorPublishDirectory, "dist", "_framework", "_bin", "Microsoft.Extensions.Logging.Abstractions.dll"); // Verify dependencies are part of the output.
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");
+
+            // Verify static web assets from referenced projects are copied.
+            // Uncomment once https://github.com/aspnet/AspNetCore/issues/17426 is resolved.
+            // Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            // Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "dist", "index.html");

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         public async Task Build_Hosted_Works()
         {
             // Arrange
-            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone" });
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
             project.TargetFramework = "netcoreapp3.1";
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
