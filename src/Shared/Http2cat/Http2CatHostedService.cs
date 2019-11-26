@@ -53,6 +53,7 @@ namespace http2cat
             _logger.LogInformation($"Connected to '{endpoint}'.");
 
             var originalTransport = context.Transport;
+            IAsyncDisposable sslState = null;
             if (address.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogInformation("Starting TLS handshake.");
@@ -63,6 +64,7 @@ namespace http2cat
 
                 var sslDuplexPipe = new SslDuplexPipe(context.Transport, inputPipeOptions, outputPipeOptions);
                 var sslStream = sslDuplexPipe.Stream;
+                sslState = sslDuplexPipe;
 
                 context.Transport = sslDuplexPipe;
 
@@ -92,6 +94,11 @@ namespace http2cat
             {
                 // Unwind Https for shutdown. This must happen before context goes ot of scope or else DisposeAsync will hang
                 context.Transport = originalTransport;
+
+                if (sslState != null)
+                {
+                    await sslState.DisposeAsync();
+                }
             }
         }
     }
