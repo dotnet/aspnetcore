@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Override version labels -->
+    <VersionPrefix>3.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>preview4</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind />
+  </PropertyGroup>
+</Project>
