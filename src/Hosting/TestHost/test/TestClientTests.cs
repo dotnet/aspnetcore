@@ -389,7 +389,6 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             var requestStreamTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var responseEndingSyncPoint = new SyncPoint();
 
             RequestDelegate appDelegate = ctx =>
             {
@@ -424,6 +423,9 @@ namespace Microsoft.AspNetCore.TestHost
             byte[] buffer = new byte[1024];
             var length = await responseContent.ReadAsync(buffer).AsTask().WithTimeout();
             Assert.Equal(0, length);
+
+            // Writing to request stream will fail because server is complete
+            await Assert.ThrowsAnyAsync<Exception>(() => requestStream.WriteAsync(buffer).AsTask());
 
             // Unblock request
             requestStreamTcs.TrySetResult(null);
