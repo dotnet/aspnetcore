@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, length));
 
             while (!done)
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                     frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                 }
 
-                Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+                WriteHeader(frame, writableBuffer);
                 writableBuffer.Write(buffer.Slice(0, length));
             }
 
@@ -279,6 +279,33 @@ namespace Microsoft.AspNetCore.Http2Cat
         internal void ResetHeaders()
         {
             _decodedHeaders.Clear();
+        }
+
+        /* https://tools.ietf.org/html/rfc7540#section-4.1
+            +-----------------------------------------------+
+            |                 Length (24)                   |
+            +---------------+---------------+---------------+
+            |   Type (8)    |   Flags (8)   |
+            +-+-------------+---------------+-------------------------------+
+            |R|                 Stream Identifier (31)                      |
+            +=+=============================================================+
+            |                   Frame Payload (0...)                      ...
+            +---------------------------------------------------------------+
+        */
+        internal static void WriteHeader(Http2Frame frame, PipeWriter output)
+        {
+            var buffer = output.GetSpan(Http2FrameReader.HeaderLength);
+
+            Bitshifter.WriteUInt24BigEndian(buffer, (uint)frame.PayloadLength);
+            buffer = buffer.Slice(3);
+
+            buffer[0] = (byte)frame.Type;
+            buffer[1] = frame.Flags;
+            buffer = buffer.Slice(2);
+
+            Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId, preserveHighestBit: false);
+
+            output.Advance(Http2FrameReader.HeaderLength);
         }
 
         /* https://tools.ietf.org/html/rfc7540#section-6.2
@@ -317,7 +344,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -357,7 +384,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -405,7 +432,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 frame.HeadersFlags |= Http2HeadersFrameFlags.END_STREAM;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             writableBuffer.Write(buffer.Slice(0, frame.PayloadLength));
             return FlushAsync(writableBuffer);
         }
@@ -432,9 +459,19 @@ namespace Microsoft.AspNetCore.Http2Cat
             var settings = _clientSettings.GetNonProtocolDefaults();
             var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
             frame.PayloadLength = payload.Length;
-            Http2ManualFrameWriter.WriteSettings(settings, payload);
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteSettings(settings, payload);
+            WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
+        }
+
+        internal static void WriteSettings(IList<Http2PeerSetting> settings, Span<byte> destination)
+        {
+            foreach (var setting in settings)
+            {
+                BinaryPrimitives.WriteUInt16BigEndian(destination, (ushort)setting.Parameter);
+                BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(2), setting.Value);
+                destination = destination.Slice(Http2FrameReader.SettingSize);
+            }
         }
 
         public async Task SendSettingsAckWithInvalidLengthAsync(int length)
@@ -443,7 +480,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var frame = new Http2Frame();
             frame.PrepareSettings(Http2SettingsFrameFlags.ACK);
             frame.PayloadLength = length;
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             await SendAsync(new byte[length]);
         }
 
@@ -456,8 +493,8 @@ namespace Microsoft.AspNetCore.Http2Cat
             var settings = _clientSettings.GetNonProtocolDefaults();
             var payload = new byte[settings.Count * Http2FrameReader.SettingSize];
             frame.PayloadLength = payload.Length;
-            Http2ManualFrameWriter.WriteSettings(settings, payload);
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteSettings(settings, payload);
+            WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -469,7 +506,7 @@ namespace Microsoft.AspNetCore.Http2Cat
 
             frame.PayloadLength = length;
             var payload = new byte[length];
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -487,7 +524,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             payload[4] = (byte)(value >> 8);
             payload[5] = (byte)value;
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             await SendAsync(payload);
         }
 
@@ -499,7 +536,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.Type = Http2FrameType.PUSH_PROMISE;
             frame.StreamId = 1;
 
-            Http2ManualFrameWriter.WriteHeader(frame, writableBuffer);
+            WriteHeader(frame, writableBuffer);
             return FlushAsync(writableBuffer);
         }
 
@@ -513,7 +550,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -527,7 +564,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.PrepareHeaders(flags, streamId);
             frame.PayloadLength = headerBlock.Length;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(headerBlock);
         }
 
@@ -546,7 +583,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 payload[0] = padLength;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -564,7 +601,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             payload[1] = 2;
             payload[2] = (byte)'a';
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -578,7 +615,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var done = _hpackEncoder.Encode(buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -592,7 +629,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = payload.Length;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -606,7 +643,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var done = _hpackEncoder.BeginEncode(headers, buffer.Span, out var length);
             frame.PayloadLength = length;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(buffer.Span.Slice(0, length));
 
             return done;
@@ -620,7 +657,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.PrepareContinuation(flags, streamId);
             frame.PayloadLength = 0;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return FlushAsync(outputWriter);
         }
 
@@ -638,7 +675,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             payload[1] = 2;
             payload[2] = (byte)'a';
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             await SendAsync(payload);
         }
 
@@ -651,7 +688,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.PayloadLength = data.Length;
             frame.DataFlags = endStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE;
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(data.Span);
         }
 
@@ -668,7 +705,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 frame.DataFlags |= Http2DataFrameFlags.END_STREAM;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             outputWriter.GetSpan(1)[0] = padLength;
             outputWriter.Advance(1);
             await SendAsync(data.Span);
@@ -691,7 +728,7 @@ namespace Microsoft.AspNetCore.Http2Cat
                 payload[0] = padLength;
             }
 
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -700,7 +737,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var outputWriter = _pair.Application.Output;
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(flags);
-            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
+            WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[8]); // Empty payload
         }
 
@@ -710,7 +747,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.PayloadLength = length;
-            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
+            WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -722,7 +759,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.StreamId = streamId;
-            Http2ManualFrameWriter.WriteHeader(pingFrame, outputWriter);
+            WriteHeader(pingFrame, outputWriter);
             return SendAsync(new byte[pingFrame.PayloadLength]);
         }
 
@@ -743,7 +780,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             Bitshifter.WriteUInt31BigEndian(payload, (uint)streamDependency);
             payload[4] = 0; // Weight
 
-            Http2ManualFrameWriter.WriteHeader(priorityFrame, outputWriter);
+            WriteHeader(priorityFrame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -754,7 +791,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
             priorityFrame.PayloadLength = length;
 
-            Http2ManualFrameWriter.WriteHeader(priorityFrame, outputWriter);
+            WriteHeader(priorityFrame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -771,7 +808,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var payload = new byte[rstStreamFrame.PayloadLength];
             BinaryPrimitives.WriteUInt32BigEndian(payload, (uint)Http2ErrorCode.CANCEL);
 
-            Http2ManualFrameWriter.WriteHeader(rstStreamFrame, outputWriter);
+            WriteHeader(rstStreamFrame, outputWriter);
             return SendAsync(payload);
         }
 
@@ -781,7 +818,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var frame = new Http2Frame();
             frame.PrepareRstStream(streamId, Http2ErrorCode.CANCEL);
             frame.PayloadLength = length;
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -790,7 +827,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var outputWriter = _pair.Application.Output;
             var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(new byte[frame.PayloadLength]);
         }
 
@@ -800,7 +837,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
             frame.StreamId = 1;
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(new byte[frame.PayloadLength]);
         }
 
@@ -809,7 +846,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var outputWriter = _pair.Application.Output;
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             var buffer = outputWriter.GetSpan(4);
             BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)sizeIncrement);
             outputWriter.Advance(4);
@@ -822,7 +859,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             frame.PayloadLength = length;
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return SendAsync(new byte[length]);
         }
 
@@ -833,7 +870,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             frame.StreamId = streamId;
             frame.Type = (Http2FrameType)frameType;
             frame.PayloadLength = 0;
-            Http2ManualFrameWriter.WriteHeader(frame, outputWriter);
+            WriteHeader(frame, outputWriter);
             return FlushAsync(outputWriter);
         }
 
