@@ -53,6 +53,11 @@
       <_Parameter2>$(ProcDumpPath)</_Parameter2>
     </AssemblyAttribute>
 
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+
   </ItemGroup>
 
   <!-- The test projects rely on these binaries being available -->
