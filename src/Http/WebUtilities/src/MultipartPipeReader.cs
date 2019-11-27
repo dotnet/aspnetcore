@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
-        public async Task<MultipartPipeSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
+        public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
             await _currentStream.DrainAsync(cancellationToken);
             _bytesConsumed += _currentStream.RawLength;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                         _pipeReader.AdvanceTo(buffer.Start);
                         _currentStream = new MultipartSectionPipeReader(_pipeReader, _boundary, _trackBaseOffsets);
                         long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
-                        return new MultipartPipeSection() { Headers = headersAccumulator.GetResults(), Body = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
+                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
                     }
 
                     _pipeReader.AdvanceTo(buffer.Start, buffer.End);

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FormMultipartSection"/></param>
         /// <remarks>Reparses the content disposition header</remarks>
-        public FormMultipartSection(MultipartPipeSection section)
+        public FormMultipartSection(MultipartSection section)
             : this(section, section.GetContentDispositionHeader())
         {
         }
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="section">The section from which to create the <see cref="FormMultipartSection"/></param>
         /// <param name="header">An already parsed content disposition header</param>
-        public FormMultipartSection(MultipartPipeSection section, ContentDispositionHeaderValue header)
+        public FormMultipartSection(MultipartSection section, ContentDispositionHeaderValue header)
         {
             if (header == null || !header.IsFormDisposition())
             {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <summary>
         /// Gets the original section from which this object was created
         /// </summary>
-        public MultipartPipeSection Section { get; }
+        public MultipartSection Section { get; }
 
         /// <summary>
         /// The form name

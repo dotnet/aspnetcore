@@ -3,9 +3,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,6 +44,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
             }
+        }
+
+        public override Stream AsStream(bool leaveOpen = false)
+        {
+            return new PipeReaderStream(this, Length, leaveOpen);
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -355,165 +357,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             sequence = sequence.Slice(sequenceReader.Position);
             RawLength += sequenceReader.Consumed;
             return false;
-        }
-    }
-
-    public static class PipeReaderExtensions
-    {
-
-        private const int StackAllocThreshold = 128;
-
-        public static int Read(this PipeReader pipeReader, byte[] buffer, int offset, int count)
-        {
-            if (!pipeReader.TryRead(out var readResult))
-            {
-                //todo handle failure to read
-                return 0;
-            }
-            var _buffer = readResult.Buffer;
-            int initialOffset = offset;
-
-            if (!readResult.IsCompleted)
-            {
-                int copied = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
-                offset += copied;
-                count -= copied;
-                pipeReader.AdvanceTo(_buffer.Start);
-                if (count == 0 || offset == _buffer.Length)
-                {
-                    return initialOffset - offset;
-                }
-            }
-            return offset - initialOffset;
-        }
-
-        public static async Task<string> ReadToEndAsync(this PipeReader pipeReader, Encoding streamEncoding, CancellationToken cancellationToken = default)
-        {
-            string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
-            {
-                if (readOnlySpan.Length == 0)
-                {
-                    return string.Empty;
-                }
-                else
-                {
-                    // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
-                    // We will also create a string from it by the end of the function.
-                    var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-                    return streamEncoding.GetString(span);
-                }
-            }
-
-            string GetDecodedStringFromReadOnlySequence(ref ReadOnlySequence<byte> sequence)
-            {
-                if (sequence.IsSingleSegment)
-                {
-                    var str = GetDecodedString(sequence.First.Span);
-                    sequence = sequence.Slice(sequence.End);
-                    return str;
-                }
-
-                if (sequence.Length < StackAllocThreshold)
-                {
-                    Span<byte> buffer = stackalloc byte[(int)sequence.Length];
-                    sequence.CopyTo(buffer);
-                    sequence = sequence.Slice(sequence.End);
-                    return GetDecodedString(buffer);
-                }
-                else
-                {
-                    var byteArray = ArrayPool<byte>.Shared.Rent((int)sequence.Length);
-
-                    try
-                    {
-                        Span<byte> buffer = byteArray.AsSpan(0, (int)sequence.Length);
-                        sequence.CopyTo(buffer);
-                        sequence = sequence.Slice(sequence.End);
-                        return GetDecodedString(buffer);
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(byteArray);
-                    }
-                }
-            }
-
-            var stringBuilder = new StringBuilder();
-            ReadResult readResult;
-
-            do
-            {
-                readResult = await pipeReader.ReadAsync(cancellationToken);
-                var sequence = readResult.Buffer;
-                stringBuilder.Append(GetDecodedStringFromReadOnlySequence(ref sequence));
-                pipeReader.AdvanceTo(sequence.Start);
-
-            } while (!readResult.IsCompleted);
-
-            return stringBuilder.ToString();
-        }
-
-        public static async Task DrainAsync(this PipeReader pipeReader, CancellationToken cancellationToken)
-        {
-            ReadResult readResult;
-            do
-            {
-                readResult = await pipeReader.ReadAsync(cancellationToken);
-                pipeReader.AdvanceTo(readResult.Buffer.End);
-            } while (!readResult.IsCompleted);
-        }
-
-        public static async Task<int> ReadAsync(this PipeReader pipeReader, byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
-        {
-            //if (_buffer.Length > count || _buffer.Length > buffer.Length - offset)
-            //{
-            //    var read = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
-            //    pipeReader.AdvanceTo(_buffer.Start);
-            //    return read;
-            //}
-
-            //int consumed = 0;
-
-            //if (_buffer.Length > 0)
-            //{
-            //    offset+= CopySequenceToBuffer(_buffer, buffer, offset, count);
-            //    _buffer = default;
-            //}
-
-            var readResult = await pipeReader.ReadAsync(cancellationToken);
-            var _buffer = readResult.Buffer;
-            int initialOffset = offset;
-
-            if (!readResult.IsCompleted)
-            {
-                int copied = CopySequenceToBuffer(ref _buffer, buffer, offset, count);
-                offset += copied;
-                count -= copied;
-                pipeReader.AdvanceTo(_buffer.Start);
-                if (count == 0 || offset == _buffer.Length)
-                {
-                    return offset - initialOffset;
-                }
-            }
-
-            return offset - initialOffset;
-        }
-
-        private static int CopySequenceToBuffer(ref ReadOnlySequence<byte> sequence, byte[] buffer, int offset, int count)
-        {
-            var span = buffer.AsSpan(offset);
-            count = Math.Min(count, buffer.Length - offset);
-            if (sequence.Length > count)
-            {
-                sequence.Slice(0, count).CopyTo(span);
-                sequence = sequence.Slice(count);
-                return span.Length;
-            }
-
-            sequence.CopyTo(span);
-            int length = (int)sequence.Length;
-            sequence = sequence.Slice(sequence.End);
-            return length;
         }
     }
 }

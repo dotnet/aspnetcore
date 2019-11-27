@@ -200,10 +200,10 @@ namespace Microsoft.AspNetCore.Http.Features
                                     _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
 
                                 // Find the end
-                                await stream.DrainAsync(cancellationToken);
+                                await stream.Body.DrainAsync(cancellationToken);
 
                                 // Individually buffered file body
-                                file = new FormFile(stream, 0, stream.Length, name, fileName);
+                                file = new FormFile(stream.Body, 0, stream.Body.Length, name, fileName);
                             }
                             file.Headers = new HeaderDictionary(section.Headers);
 

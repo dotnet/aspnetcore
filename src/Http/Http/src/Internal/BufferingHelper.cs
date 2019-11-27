@@ -50,21 +50,5 @@ namespace Microsoft.AspNetCore.Http
             }
             return section;
         }
-
-        public static Stream EnableRewind(this MultipartPipeSection section, Action<IDisposable> registerForDispose,
-          int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
-        {
-            if (section == null)
-            {
-                throw new ArgumentNullException(nameof(section));
-            }
-            if (registerForDispose == null)
-            {
-                throw new ArgumentNullException(nameof(registerForDispose));
-            }
-
-            var body = section.Body;
-            return new FileBufferingPipeReaderStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
-        }
     }
 }

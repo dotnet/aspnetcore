@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
+using System.IO.Pipes;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -10,6 +12,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class MultipartSection
     {
+        private Stream _body;
+        private PipeReader _bodyReader;
+
         public string ContentType
         {
             get
@@ -38,7 +43,36 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public Dictionary<string, StringValues> Headers { get; set; }
 
-        public Stream Body { get; set; }
+        public Stream Body {
+            get
+            {
+                if (_body == null && _bodyReader != null)
+                {
+                    _body = _bodyReader.AsStream();
+                }
+                return _body;
+            }
+            set
+            {
+                _body = value;
+            }
+        }
+
+        public PipeReader BodyReader
+        {
+            get
+            {
+                if(_bodyReader == null && _body != null)
+                {
+                    _bodyReader = PipeReader.Create(_body);
+                }
+                return _bodyReader;
+            }
+            set
+            {
+                _bodyReader = value;
+            }
+        }
 
         /// <summary>
         /// The position where the body starts in the total multipart body.
