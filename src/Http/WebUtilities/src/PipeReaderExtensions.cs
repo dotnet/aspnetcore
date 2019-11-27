@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public static class PipeReaderExtensions
+    internal static class PipeReaderExtensions
     {
 
         private const int StackAllocThreshold = 128;
