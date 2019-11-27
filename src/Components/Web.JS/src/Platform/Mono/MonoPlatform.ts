@@ -12,6 +12,7 @@ let find_class: (assemblyHandle: number, namespace: string, className: string) =
 let find_method: (typeHandle: number, methodName: string, unknownArg: number) => MethodHandle;
 let invoke_method: (method: MethodHandle, target: System_Object, argsArrayPtr: number, exceptionFlagIntPtr: number) => System_Object;
 let mono_call_assembly_entry_point: (assemblyName: string, args: System_Object[]) => System_Object;
+let mono_obj_array_new: (length: number) => System_Object;
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
 const appBinDirName = 'appBinDir';
@@ -41,7 +42,8 @@ export const monoPlatform: Platform = {
   findMethod: findMethod,
 
   callEntryPoint: function callEntryPoint(assemblyName: string): System_Object {
-    return mono_call_assembly_entry_point(assemblyName, []);
+    const empty_array = mono_obj_array_new(0);
+    return mono_call_assembly_entry_point(assemblyName, [empty_array]);
   },
 
   callMethod: function callMethod(method: MethodHandle, target: System_Object, args: System_Object[]): System_Object {
@@ -262,8 +264,10 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
     ]);
 
     mono_call_assembly_entry_point = Module.mono_call_assembly_entry_point;
+
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
+    mono_obj_array_new = Module.cwrap ('mono_wasm_obj_array_new', 'number', ['number']);
 
     MONO.loaded_files = [];
 
