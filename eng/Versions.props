@@ -70,7 +70,7 @@
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.0-beta4-19569-03</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.1-servicing.19575.1</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>3.1.1-servicing.19575.1</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.1-servicing.19575.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
@@ -159,7 +159,7 @@
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.0-rtm.19575.5</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.0-rtm.19575.5</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.1.0-rtm.19575.5</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.0-rtm.19575.5</MicrosoftInternalExtensionsRefsPackageVersion>
+    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.0-rtm.19565.4</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.1.0-rtm.19575.5</MicrosoftJSInteropPackageVersion>
     <MonoWebAssemblyInteropPackageVersion>3.1.0-preview4.19575.5</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
