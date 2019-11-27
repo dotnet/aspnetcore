@@ -186,6 +186,7 @@
 
     <ItemGroup>
       <_OldLinkedFile Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_OldLinkedFile Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" />
     </ItemGroup>
 
     <Delete Files="@(_OldLinkedFile)" />
@@ -212,6 +213,7 @@
 
     <ItemGroup>
       <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.dll" />
+      <_LinkerResult Include="$(BlazorIntermediateLinkerOutputPath)*.pdb" Condition="'$(BlazorEnableDebugging)' == 'true'" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(_BlazorLinkerOutputCache)" Lines="@(_LinkerResult)" Overwrite="true" />
