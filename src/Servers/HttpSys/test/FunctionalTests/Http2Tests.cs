@@ -114,21 +114,114 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
                     Assert.Equal(0, dataFrame.PayloadLength);
 
-                    // TODO: Why doesn't HttpSys send a final GoAway or close the connection?
-                    // https://tools.ietf.org/html/rfc7540#section-6.8
-                    // A server that is attempting to gracefully shut down a
-                    // connection SHOULD send an initial GOAWAY frame with the last stream
-                    // identifier set to 2^31-1 and a NO_ERROR code.  This signals to the
-                    // client that a shutdown is imminent and that initiating further
-                    // requests is prohibited.  After allowing time for any in-flight stream
-                    // creation (at least one round-trip time), the server can send another
-                    // GOAWAY frame with an updated last stream identifier.  This ensures
-                    // that a connection can be cleanly shut down without losing requests.
-                    //
-                    // await h2Connection.StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-                    // or
-                    // await h2Connection.SendGoAwayAsync();
-                    // await h2Connection.WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H2, SkipReason = "GoAway support was added in Win10_19H2.")]
+        public async Task ConnectionClose_AdditionalRequests_ReceivesSecondGoAway()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                httpContext.Response.Headers[HeaderNames.Connection] = "close";
+                return Task.FromResult(0);
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    var streamId = 1;
+                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    var goAwayFrame = await h2Connection.ReceiveFrameAsync();
+                    h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
+
+                    var headersFrame = await h2Connection.ReceiveFrameAsync();
+
+                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                    Assert.Equal(streamId, headersFrame.StreamId);
+
+                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
+
+                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
+
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    h2Connection.ResetHeaders();
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                    Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
+                    Assert.Equal(0, dataFrame.PayloadLength);
+                    Assert.Equal(streamId, dataFrame.StreamId);
+
+                    // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
+
+                    for (var i = 1; i < 200; i++)
+                    {
+                        streamId = 1 + (i * 2); // Odds.
+                        await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                        headersFrame = await h2Connection.ReceiveFrameAsync();
+
+                        Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+                        Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                        Assert.Equal(streamId, headersFrame.StreamId);
+
+                        h2Connection.Logger.LogInformation("Received headers in a single frame.");
+
+                        decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
+
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                        h2Connection.ResetHeaders();
+
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                        Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
+                        Assert.Equal(0, dataFrame.PayloadLength);
+                        Assert.Equal(streamId, dataFrame.StreamId);
+                    }
+
+                    streamId = 1 + (200 * 2); // Odds.
+                    await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    // Final GoAway
+                    goAwayFrame = await h2Connection.ReceiveFrameAsync();
+                    h2Connection.VerifyGoAway(goAwayFrame, streamId, Http2ErrorCode.NO_ERROR);
+
+                    // Normal response
+                    headersFrame = await h2Connection.ReceiveFrameAsync();
+
+                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                    Assert.Equal(streamId, headersFrame.StreamId);
+
+                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
+
+                    decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
+
+                    // HTTP/2 filters out the connection header
+                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    h2Connection.ResetHeaders();
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                    Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
+                    Assert.Equal(0, dataFrame.PayloadLength);
+                    Assert.Equal(streamId, dataFrame.StreamId);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
