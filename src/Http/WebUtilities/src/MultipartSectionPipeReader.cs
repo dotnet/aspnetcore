@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 pipeReader.AdvanceTo(_buffer.Start);
                 if (count == 0 || offset == _buffer.Length)
                 {
-                    return initialOffset - offset;
+                    return offset - initialOffset;
                 }
             }
 
