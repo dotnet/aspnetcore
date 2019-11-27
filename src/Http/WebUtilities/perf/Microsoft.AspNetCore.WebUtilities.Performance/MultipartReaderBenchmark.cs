@@ -41,20 +41,17 @@ namespace Microsoft.AspNetCore.WebUtilities
         [Benchmark]
         public async Task ReadSmallMultipartAsyncPipe()
         {
-            var pipe = new Pipe();
             var bytes = Encoding.UTF8.GetBytes(OnePartBody);
+            var stream = new MemoryStream(bytes);
 
             for (var i = 0; i < 1000; i++)
             {
-                pipe.Writer.Write(bytes);
-                pipe.Writer.Complete();
-                var multipartReader = new MultipartPipeReader(Boundary,pipe.Reader, true);
+                var multipartReader = new MultipartPipeReader(Boundary,PipeReader.Create(stream), true);
                 for (int j = 0; j < 2; j++)
                 {
                     await multipartReader.ReadNextSectionAsync();
                 }
-                pipe.Reader.Complete();
-                pipe.Reset();
+                stream.Position = 0;
             }
         }
     }
