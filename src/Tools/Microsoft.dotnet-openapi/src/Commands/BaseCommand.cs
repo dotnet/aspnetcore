@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
                 RedirectStandardOutput = true,
             };
 
-            var process = Process.Start(startInfo);
+            using var process = Process.Start(startInfo);
 
             var timeout = 20;
             if (!process.WaitForExit(timeout * 1000))
