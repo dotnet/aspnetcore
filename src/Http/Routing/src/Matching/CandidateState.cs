@@ -50,6 +50,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// Gets <see cref="RouteValueDictionary"/> associated with the
         /// <see cref="Http.Endpoint"/> and the current request.
         /// </summary>
-        public RouteValueDictionary Values { get; set; }
+        public RouteValueDictionary Values { get; internal set; }
     }
 }

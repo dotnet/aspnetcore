@@ -125,6 +125,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         internal static void SetValidity(ref Microsoft.AspNetCore.Routing.Matching.CandidateState candidate, bool value) { }
     }
 
+    public partial struct CandidateState
+    {
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+
     internal sealed partial class DataSourceDependentMatcher : Microsoft.AspNetCore.Routing.Matching.Matcher
     {
         public DataSourceDependentMatcher(Microsoft.AspNetCore.Routing.EndpointDataSource dataSource, Microsoft.AspNetCore.Routing.Matching.DataSourceDependentMatcher.Lifetime lifetime, System.Func<Microsoft.AspNetCore.Routing.Matching.MatcherBuilder> matcherBuilderFactory) { }

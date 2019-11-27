@@ -10,3 +10,5 @@ M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.#ct
 P:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.Cache
 M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.get_Cache
 M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.set_Cache(Microsoft.Extensions.Caching.Memory.IMemoryCache)
+# Manually implemented - Need to include internal setter
+P:Microsoft.AspNetCore.Routing.Matching.CandidateState.Values
