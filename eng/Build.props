@@ -102,12 +102,13 @@
           <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
         </NativeProjects>
 
-        <!-- We're excluding all non-components projects in this servicing branch. -->
-        <ProjectToExclude Include="@(NativeProjects)" />
+        <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
-        <!-- We're excluding all non-components projects in this servicing branch. -->
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
+                          $(RepoRoot)src\SignalR\**\*.npmproj;
+                          $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
@@ -118,15 +119,40 @@
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 
-        <!-- We're excluding all non-components projects in this servicing branch. -->
-        <ProjectToExclude Include="@(JavaProjects)" />
+        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
 
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
-          the entire pattern will silently fail to evaluate correctly. We're excluding all non-components projects in this servicing branch.
+          the entire pattern will silently fail to evaluate correctly.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)src\Components\Blazor\**\*.csproj;
+                          $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
+                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\DefaultBuilder\**\*.*proj;
+                          $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
+                          $(RepoRoot)src\DataProtection\**\*.*proj;
+                          $(RepoRoot)src\Antiforgery\**\*.*proj;
+                          $(RepoRoot)src\Hosting\**\*.*proj;
+                          $(RepoRoot)src\Http\**\*.*proj;
+                          $(RepoRoot)src\Html\**\*.*proj;
+                          $(RepoRoot)src\Identity\**\*.*proj;
+                          $(RepoRoot)src\Servers\**\*.csproj;
+                          $(RepoRoot)src\Security\**\*.*proj;
+                          $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
+                          $(RepoRoot)src\Shared\**\*.*proj;
+                          $(RepoRoot)src\Tools\**\*.*proj;
+                          $(RepoRoot)src\Middleware\**\*.csproj;
+                          $(RepoRoot)src\Razor\**\*.*proj;
+                          $(RepoRoot)src\Mvc\**\*.*proj;
+                          $(RepoRoot)src\Azure\**\*.*proj;
+                          $(RepoRoot)src\MusicStore\**\*.*proj;
+                          $(RepoRoot)src\SignalR\**\*.csproj;
+                          $(RepoRoot)src\Components\**\*.csproj;
+                          $(RepoRoot)src\Analyzers\**\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\*\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

@@ -156,7 +156,7 @@
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.0-rtm.19572.8</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.0-rtm.19572.8</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.1.0</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.0</MicrosoftInternalExtensionsRefsPackageVersion>
+    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.0-rtm.19572.8</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.1.0</MicrosoftJSInteropPackageVersion>
     <MonoWebAssemblyInteropPackageVersion>3.1.0-preview4.19572.8</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
