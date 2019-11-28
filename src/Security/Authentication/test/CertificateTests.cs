@@ -276,6 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     Events = sucessfulValidationEvents,
                     CustomTrustStore = new X509Certificate2Collection() { Certificates.SignedSecondaryRoot },
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
@@ -291,6 +292,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 {
                     Events = sucessfulValidationEvents,
                     CustomTrustStore = new X509Certificate2Collection() { Certificates.SelfSignedPrimaryRoot, Certificates.SignedSecondaryRoot },
+                    ChainTrustValidationMode = X509ChainTrustMode.CustomRootTrust,
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
@@ -578,6 +580,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
                     {
                         options.CustomTrustStore = configureOptions.CustomTrustStore;
+                        options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
                         options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
                         options.Events = configureOptions.Events;
                         options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
