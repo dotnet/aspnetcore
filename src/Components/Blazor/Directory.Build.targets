@@ -4,4 +4,25 @@
   <PropertyGroup>
     <ComponentsPackageVersion>$(PackageVersion)</ComponentsPackageVersion>
   </PropertyGroup>
+
+  <!-- We need to do this because our build config interferes with the FrameworkReference definition.
+       This is a way to add the framework defition to the projects that need it (like Blazor Server and
+       Blazor Dev Server) -->
+  <Target Name="_AddAspNetCoreFrameworkReference" BeforeTargets="ProcessFrameworkReferences" Condition="'$(UseLatestAspNetCoreReference)' == 'true' ">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" Version="$(LatestAspNetCoreReferenceVersion)" />
+    <KnownFrameworkReference Include="Microsoft.AspNetCore.App">
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+      <RuntimeFrameworkName>Microsoft.AspNetCore.App</RuntimeFrameworkName>
+      <DefaultRuntimeFrameworkVersion>$(LatestAspNetCoreReferenceVersion)</DefaultRuntimeFrameworkVersion>
+      <LatestRuntimeFrameworkVersion>$(LatestAspNetCoreReferenceVersion)</LatestRuntimeFrameworkVersion>
+      <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
+      <TargetingPackVersion>$(LatestAspNetCoreReferenceVersion)</TargetingPackVersion>
+      <RuntimePackNamePatterns>Microsoft.AspNetCore.App.Runtime.**RID**</RuntimePackNamePatterns>
+      <RuntimePackRuntimeIdentifiers>linux-arm;linux-arm64;linux-musl-arm64;linux-musl-x64;linux-x64;osx-x64;rhel.6-x64;tizen.4.0.0-armel;tizen.5.0.0-armel;win-arm;win-arm64;win-x64;win-x86</RuntimePackRuntimeIdentifiers>
+      <IsTrimmable>true</IsTrimmable>
+    </KnownFrameworkReference>
+  </ItemGroup>
+
+  </Target>
 </Project>
