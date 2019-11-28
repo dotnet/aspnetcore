@@ -8,3 +8,11 @@ namespace Microsoft.AspNetCore.Builder
         internal bool ForwardWindowsAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
+namespace Microsoft.AspNetCore.Server.IISIntegration
+{
+    internal partial class IISSetupFilter : Microsoft.AspNetCore.Hosting.IStartupFilter
+    {
+        internal IISSetupFilter(string pairingToken, Microsoft.AspNetCore.Http.PathString pathBase, bool isWebsocketsSupported) { }
+        public System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next) { throw null; }
+    }
+}

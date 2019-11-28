@@ -12,3 +12,5 @@ M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.get
 M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.set_Cache(Microsoft.Extensions.Caching.Memory.IMemoryCache)
 # Manually implemented - Need to include internal setter
 P:Microsoft.AspNetCore.Routing.Matching.CandidateState.Values
+# Manually implemented - Need to include internal setter
+P:Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.KestrelServerOptions
