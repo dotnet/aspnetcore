@@ -18,8 +18,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <summary>
         /// Collection of X509 certificates which are trusted components of the certificate chain.
         /// </summary>
-        /// <remarks>If this collection contains certificates, X509 certificate issuer validation will ignore the system trust store.</remarks>
         public X509Certificate2Collection CustomTrustStore { get; set; } = new X509Certificate2Collection();
+
+        /// <summary>
+        /// Method used to validate certificate chains against <see cref="CustomTrustStore"/>.
+        /// </summary>
+        /// <remarks>This property must be set to <see cref="X509ChainTrustMode.CustomRootTrust"/> to enable <see cref="CustomTrustStore"/> to be used in certificate chain validation.</remarks>
+        public X509ChainTrustMode ChainTrustValidationMode { get; set; } = X509ChainTrustMode.System;
 
         /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client
