@@ -326,9 +326,11 @@ namespace Microsoft.AspNetCore.Testing
     public static partial class WindowsVersions
     {
         public const string Win10 = "10.0";
+        public const string Win10_19H1 = "10.0.18362";
         public const string Win10_19H2 = "10.0.18363";
-        public const string Win10_20H1 = "10.0.18990";
+        public const string Win10_20H1 = "10.0.19033";
         public const string Win10_RS4 = "10.0.17134";
+        public const string Win10_RS5 = "10.0.17763";
         public const string Win2008R2 = "6.1";
         public const string Win7 = "6.1";
         public const string Win8 = "6.2";

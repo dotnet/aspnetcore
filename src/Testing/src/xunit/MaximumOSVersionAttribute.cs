@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Testing
             _targetOS = targetOS;
             _maxVersion = maxVersion;
             _currentOS = currentOS;
-            _currentVersion = currentVersion;
+            // We drop the 4th field because it is not significant and it messes up the comparisons.
+            _currentVersion = new Version(currentVersion.Major, currentVersion.Minor, currentVersion.Build);
 
             // Do not skip other OS's, Use OSSkipConditionAttribute or a separate MaximumOsVersionAttribute for that.
             _skip = _targetOS == _currentOS && _maxVersion < _currentVersion;

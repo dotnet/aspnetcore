@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             var osSkipAttribute = new MaximumOSVersionAttribute(
                 OperatingSystems.Windows,
-                new Version("2.5"),
+                new Version("2.5.9"),
                 OperatingSystems.Windows,
-                new Version("2.0"));
+                new Version("2.0.10.12"));
 
             Assert.True(osSkipAttribute.IsMet);
         }
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             var osSkipAttribute = new MaximumOSVersionAttribute(
                 OperatingSystems.Windows,
-                new Version("2.5"),
+                new Version("2.5.10"),
                 OperatingSystems.Windows,
-                new Version("2.5"));
+                new Version("2.5.10.12"));
 
             Assert.True(osSkipAttribute.IsMet);
         }
@@ -55,9 +55,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             var osSkipAttribute = new MaximumOSVersionAttribute(
                 OperatingSystems.Windows,
-                new Version("2.5"),
+                new Version("2.5.11"),
                 OperatingSystems.Windows,
-                new Version("3.0"));
+                new Version("3.0.10.12"));
 
             Assert.False(osSkipAttribute.IsMet);
         }
@@ -67,9 +67,9 @@ namespace Microsoft.AspNetCore.Testing
         {
             var osSkipAttribute = new MaximumOSVersionAttribute(
                 OperatingSystems.Windows,
-                new Version("2.5"),
+                new Version("2.5.10.12"),
                 OperatingSystems.Linux,
-                new Version("2.5"));
+                new Version("2.5.10.12"));
 
             Assert.True(osSkipAttribute.IsMet);
         }
