@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Blazor applications.</Description>
     <IsShippingPackage>true</IsShippingPackage>
-
+    <HasReferenceAssembly>false</HasReferenceAssembly>
     <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
     <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
   </PropertyGroup>
