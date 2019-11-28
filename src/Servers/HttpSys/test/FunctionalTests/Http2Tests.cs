@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
     public class Http2Tests
     {
-        [ConditionalFact/*(Skip = "https://github.com/aspnet/AspNetCore/issues/17420")*/]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17420")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        [MaximumOSVersion(OperatingSystems.Windows, "10.0.18362", SkipReason = "This is last version without GoAway support")]
+        [MaximumOSVersion(OperatingSystems.Windows, "10.0.18362.9999", SkipReason = "This is last version without GoAway support")]
         public async Task ConnectionClose_NoOSSupport_NoGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
