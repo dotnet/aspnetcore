@@ -43,7 +43,7 @@
 
     <ItemGroup>
       <_BlazorPublishConfigContent Include="." />
-      <_BlazorPublishConfigContent Include="$(AssemblyName)" />
+      <_BlazorPublishConfigContent Include="$(AssemblyName)/" />
     </ItemGroup>
 
     <WriteLinesToFile

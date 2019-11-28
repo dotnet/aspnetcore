@@ -147,8 +147,10 @@ namespace Microsoft.AspNetCore.Blazor.Build
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
 
-            var blazorConfig = Path.Combine(publishDirectory, "standalone.blazor.config");
-            Assert.FileContains(result, blazorConfig, ".");
+            var blazorConfig = Path.Combine(result.Project.DirectoryPath, publishDirectory, "standalone.blazor.config");
+            var blazorConfigLines = File.ReadAllLines(blazorConfig);
+            Assert.Equal(".", blazorConfigLines[0]);
+            Assert.Equal("standalone/", blazorConfigLines[1]);
         }
 
         [Fact]
