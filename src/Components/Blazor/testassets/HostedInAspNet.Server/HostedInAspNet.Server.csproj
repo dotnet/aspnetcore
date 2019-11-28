@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- This is so that we add the FrameworkReference to Microsoft.AspNetCore.App -->
+    <UseLatestAspNetCoreReference>true</UseLatestAspNetCoreReference>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,8 +13,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
-    <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
 </Project>
