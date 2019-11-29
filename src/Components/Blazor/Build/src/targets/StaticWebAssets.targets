@@ -5,6 +5,11 @@
       $(ResolveStaticWebAssetsInputsDependsOn);
       _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
     </ResolveStaticWebAssetsInputsDependsOn>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _RemoveBlazorCurrentProjectAssetsFromStaticWebAssets;
+    </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
 
 
