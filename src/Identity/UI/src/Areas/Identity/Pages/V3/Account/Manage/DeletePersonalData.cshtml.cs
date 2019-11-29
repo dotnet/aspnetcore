@@ -105,15 +105,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             }
 
             var result = await _userManager.DeleteAsync(user);
-            var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred deleting user with ID '{userId}'.");
+                throw new InvalidOperationException($"Unexpected error occurred deleting user.");
             }
 
             await _signInManager.SignOutAsync();
 
-            _logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+            _logger.LogInformation("User deleted themselves.");
 
             return Redirect("~/");
         }
