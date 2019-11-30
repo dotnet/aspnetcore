@@ -13,7 +13,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No supported on this platform")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No supported on this platform")]
     public class WebSocketsTests
     {
         private readonly string _webSocketUri;
