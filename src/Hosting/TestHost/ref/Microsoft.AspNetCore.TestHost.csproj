@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.TestHost.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.TestHost.Manual.cs" />
     <Compile Include="../src/Properties/AssemblyInfo.cs" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
