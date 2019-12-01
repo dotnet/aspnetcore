@@ -67,7 +67,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         public SocketAddress(System.Net.Sockets.AddressFamily family, int size) { }
         internal byte[] Buffer { get { throw null; } }
         internal System.Net.Sockets.AddressFamily Family { get { throw null; } }
-        private byte this[int offset] { get { throw null; } }
         internal int Size { get { throw null; } }
         public override bool Equals(object comparand) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -107,14 +106,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct FromFileHandle
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct FromMemory
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTPAPI_VERSION
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_API_VERSION
         {
@@ -141,10 +143,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_BINDING_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_CACHE_POLICY
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_CACHE_POLICY_TYPE
         {
@@ -155,14 +159,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_CONNECTION_LIMIT_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_COOKED_URL
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
         internal partial struct HTTP_DATA_CHUNK
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_DATA_CHUNK_TYPE
         {
@@ -190,14 +197,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_KNOWN_HEADER
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_MULTIPLE_KNOWN_HEADERS
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_QOS_SETTING_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_QOS_SETTING_TYPE
         {
@@ -208,10 +218,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_AUTH_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_REQUEST_AUTH_TYPE
         {
@@ -225,6 +237,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_CHANNEL_BIND_STATUS
         {
+            private int _dummyPrimitive;
         }
         [System.FlagsAttribute]
         internal enum HTTP_REQUEST_FLAGS
@@ -237,10 +250,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_HEADERS
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_REQUEST_INFO_TYPE
         {
@@ -252,18 +267,22 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_TOKEN_BINDING_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_V2
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_HEADERS
         {
+            private int _dummyPrimitive;
         }
         internal static partial class HTTP_RESPONSE_HEADER_ID
         {
@@ -307,6 +326,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_RESPONSE_INFO_FLAGS : uint
         {
@@ -322,18 +342,22 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_V2
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_SERVER_PROPERTY
         {
@@ -353,6 +377,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVICE_BINDING_BASE
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_SERVICE_BINDING_TYPE : uint
         {
@@ -363,18 +388,22 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_CLIENT_CERT_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_PROTOCOL_INFO
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_TIMEOUT_LIMIT_INFO
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_TIMEOUT_TYPE
         {
@@ -388,10 +417,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_TRANSPORT_ADDRESS
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_UNKNOWN_HEADER
         {
+            private int _dummyPrimitive;
         }
         internal enum HTTP_VERB
         {
@@ -420,10 +451,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_VERSION
         {
+            private int _dummyPrimitive;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct SOCKADDR
         {
+            private int _dummyPrimitive;
         }
     }
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TextTemplatingFileGenerator", "")]
@@ -450,7 +483,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         internal Microsoft.Extensions.Primitives.StringValues Date { get { throw null; } set { } }
         internal Microsoft.Extensions.Primitives.StringValues Expect { get { throw null; } set { } }
         internal Microsoft.Extensions.Primitives.StringValues Expires { get { throw null; } set { } }
-        private System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Extra { get { throw null; } }
         internal Microsoft.Extensions.Primitives.StringValues From { get { throw null; } set { } }
         internal Microsoft.Extensions.Primitives.StringValues Host { get { throw null; } set { } }
         internal Microsoft.Extensions.Primitives.StringValues IfMatch { get { throw null; } set { } }
@@ -615,13 +647,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal partial class ServerSession : System.IDisposable
     {
         internal ServerSession() { }
-        public Microsoft.AspNetCore.Server.HttpSys.HttpServerSessionHandle Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public Microsoft.AspNetCore.Server.HttpSys.HttpServerSessionHandle Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void Dispose() { }
     }
     internal partial class UrlGroup : System.IDisposable
     {
         internal UrlGroup(Microsoft.AspNetCore.Server.HttpSys.ServerSession serverSession, Microsoft.Extensions.Logging.ILogger logger) { }
-        internal ulong Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        internal ulong Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void Dispose() { }
         internal void RegisterPrefix(string uriPrefix, int contextId) { }
         internal void SetMaxConnections(long maxConnections) { }
@@ -652,20 +684,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         internal Request(Microsoft.AspNetCore.Server.HttpSys.RequestContext requestContext, Microsoft.AspNetCore.HttpSys.Internal.NativeRequestContext nativeRequestContext) { }
         public System.IO.Stream Body { get { throw null; } }
-        public System.Security.Authentication.CipherAlgorithmType CipherAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
-        public int CipherStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Security.Authentication.CipherAlgorithmType CipherAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int CipherStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public long ConnectionId { get { throw null; } }
         public long? ContentLength { get { throw null; } }
         public bool HasEntityBody { get { throw null; } }
-        public System.Security.Authentication.HashAlgorithmType HashAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
-        public int HashStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Security.Authentication.HashAlgorithmType HashAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int HashStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool HasRequestBodyStarted { get { throw null; } }
         public Microsoft.AspNetCore.HttpSys.Internal.RequestHeaders Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal bool IsHeadMethod { get { throw null; } }
         public bool IsHttps { get { throw null; } }
         internal bool IsUpgradable { get { throw null; } }
-        public System.Security.Authentication.ExchangeAlgorithmType KeyExchangeAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
-        public int KeyExchangeStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Security.Authentication.ExchangeAlgorithmType KeyExchangeAlgorithm { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int KeyExchangeStrength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_VERB KnownMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Net.IPAddress LocalIpAddress { get { throw null; } }
         public int LocalPort { get { throw null; } }
@@ -673,7 +705,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public string Method { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Security.Authentication.SslProtocols Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Security.Authentication.SslProtocols Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Version ProtocolVersion { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string QueryString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string RawUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -722,12 +754,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public HttpSysListener(Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         internal Microsoft.AspNetCore.Server.HttpSys.DisconnectListener DisconnectListener { get { throw null; } }
         public bool IsListening { get { throw null; } }
-        internal Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        internal Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal Microsoft.AspNetCore.Server.HttpSys.RequestQueue RequestQueue { get { throw null; } }
         internal Microsoft.AspNetCore.Server.HttpSys.UrlGroup UrlGroup { get { throw null; } }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.HttpSys.RequestContext> AcceptAsync() { throw null; }
-        private void DisposeInternal() { }
         internal void SendError(ulong requestId, int httpStatusCode, System.Collections.Generic.IList<string> authChallenges = null) { }
         public void Start() { }
         public void Dispose() { }

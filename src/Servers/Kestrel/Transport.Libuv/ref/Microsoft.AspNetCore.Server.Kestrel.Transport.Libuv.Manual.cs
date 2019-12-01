@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext TransportContext { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions TransportOptions { get { throw null; } }
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        private System.Collections.Generic.IAsyncEnumerator<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvConnection> AcceptConnections() { throw null; }
         internal System.Threading.Tasks.Task BindAsync() { throw null; }
         public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         internal System.Threading.Tasks.Task StopThreadsAsync() { throw null; }
@@ -155,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     internal partial class Listener : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ListenerContext, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.IAsyncDisposable
     {
         public Listener(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext)) { }
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle ListenSocket { get { throw null; } private set { } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle ListenSocket { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace Log { get { throw null; } }
         protected virtual void DispatchConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket) { }
         public virtual System.Threading.Tasks.Task DisposeAsync() { throw null; }
@@ -267,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         protected UvMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger, System.Runtime.InteropServices.GCHandleType handleType) : base(System.IntPtr.Zero, true) { }
         public override bool IsInvalid { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions Libuv { get { throw null; } }
-        public int ThreadId { get { throw null; } private set { } }
+        public int ThreadId { get { throw null; } }
         protected void CreateMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions uv, int threadId, int size) { }
         protected static void DestroyMemory(System.IntPtr memory) { }
         protected static void DestroyMemory(System.IntPtr memory, System.IntPtr gcHandlePtr) { }
@@ -356,7 +355,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public void close(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_close_cb close_cb) { }
         public void close(System.IntPtr handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_close_cb close_cb) { }
         public string err_name(int err) { throw null; }
-        private Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException GetError(int statusCode) { throw null; }
         public int handle_size(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.HandleType handleType) { throw null; }
         public void ip4_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
         public void ip6_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
@@ -383,7 +381,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public void tcp_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle) { }
         public void tcp_nodelay(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, bool enable) { }
         public void tcp_open(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, System.IntPtr hSocket) { }
-        private void ThrowError(int statusCode) { }
         public void ThrowIfErrored(int statusCode) { }
         public void timer_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle handle) { }
         public void timer_start(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_timer_cb cb, long timeout, long repeat) { }
@@ -456,7 +453,7 @@ namespace System.Buffers
 {
     internal partial class DiagnosticMemoryPool : System.Buffers.MemoryPool<byte>
     {        public DiagnosticMemoryPool(System.Buffers.MemoryPool<byte> pool, bool allowLateReturn = false, bool rentTracking = false) { }
-        public bool IsDisposed { get { throw null; } private set { } }
+        public bool IsDisposed { get { throw null; } }
         public override int MaxBufferSize { get { throw null; } }
         protected override void Dispose(bool disposing) { }
         public override System.Buffers.IMemoryOwner<byte> Rent(int size = -1) { throw null; }
@@ -489,9 +486,9 @@ namespace System.Buffers
     internal partial class MemoryPoolSlab : System.IDisposable
     {
         public MemoryPoolSlab(byte[] data) { }
-        public byte[] Array { get { throw null; } private set { } }
+        public byte[] Array { get { throw null; } }
         public bool IsActive { get { throw null; } }
-        public System.IntPtr NativePointer { get { throw null; } private set { } }
+        public System.IntPtr NativePointer { get { throw null; } }
         public static System.Buffers.MemoryPoolSlab Create(int length) { throw null; }
         public void Dispose() { }
         protected void Dispose(bool disposing) { }

@@ -598,7 +598,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
         public void StartAcceptingWrites() { }
         public System.Threading.Tasks.Task StopAcceptingWritesAsync() { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]private void ValidateState(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { }
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteAsync(System.ReadOnlyMemory<byte> source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     internal partial class DateHeaderValueManager : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IHeartbeatHandler
@@ -1214,7 +1213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature.MinDataRate { get { throw null; } set { } }
         public bool ReceivedEmptyRequestBody { get { throw null; } }
         public System.IO.Pipelines.Pipe RequestBodyPipe { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool RequestBodyStarted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public bool RequestBodyStarted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal bool RstStreamReceived { get { throw null; } }
         public int StreamId { get { throw null; } }
         public void Abort(System.IO.IOException abortReason) { }
@@ -1427,7 +1426,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public void Abort() { }
         public void Advance(int bytes) { }
         public int AdvanceUpToAndWait(long bytes, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControlAwaitable awaitable) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]private static int Clamp(int value, int min, long max) { throw null; }
         public bool TryUpdateWindow(int bytes) { throw null; }
     }
     internal partial class OutputFlowControl
@@ -1503,7 +1501,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         public HPackEncoder() { }
         public bool BeginEncode(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> headers, System.Span<byte> buffer, out int length) { throw null; }
         public bool BeginEncode(int statusCode, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> headers, System.Span<byte> buffer, out int length) { throw null; }
-        private bool Encode(System.Span<byte> buffer, bool throwIfNoneEncoded, out int length) { throw null; }
         public bool Encode(System.Span<byte> buffer, out int length) { throw null; }
     }
     internal partial class DynamicTable
@@ -1628,7 +1625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         public TimeoutControl(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutHandler timeoutHandler) { }
         internal Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IDebugger Debugger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason TimerReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason TimerReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void BytesRead(long count) { }
         public void BytesWrittenToBuffer(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count) { }
         public void CancelTimeout() { }

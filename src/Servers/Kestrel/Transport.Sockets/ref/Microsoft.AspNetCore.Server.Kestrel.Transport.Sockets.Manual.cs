@@ -5,7 +5,7 @@ namespace System.Buffers
 {
     internal partial class DiagnosticMemoryPool : System.Buffers.MemoryPool<byte>
     {        public DiagnosticMemoryPool(System.Buffers.MemoryPool<byte> pool, bool allowLateReturn = false, bool rentTracking = false) { }
-        public bool IsDisposed { get { throw null; } private set { } }
+        public bool IsDisposed { get { throw null; } }
         public override int MaxBufferSize { get { throw null; } }
         protected override void Dispose(bool disposing) { }
         public override System.Buffers.IMemoryOwner<byte> Rent(int size = -1) { throw null; }
@@ -38,9 +38,9 @@ namespace System.Buffers
     internal partial class MemoryPoolSlab : System.IDisposable
     {
         public MemoryPoolSlab(byte[] data) { }
-        public byte[] Array { get { throw null; } private set { } }
+        public byte[] Array { get { throw null; } }
         public bool IsActive { get { throw null; } }
-        public System.IntPtr NativePointer { get { throw null; } private set { } }
+        public System.IntPtr NativePointer { get { throw null; } }
         public static System.Buffers.MemoryPoolSlab Create(int length) { throw null; }
         public void Dispose() { }
         protected void Dispose(bool disposing) { }

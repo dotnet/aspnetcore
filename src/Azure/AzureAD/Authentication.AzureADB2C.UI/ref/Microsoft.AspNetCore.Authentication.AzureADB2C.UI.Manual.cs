@@ -5,17 +5,9 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 {
     internal partial class AzureADB2COpenIDConnectEventHandlers
     {
-        private System.Collections.Generic.IDictionary<string, string> _policyToIssuerAddress;
-        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        private readonly Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions _Options_k__BackingField;
-        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
-        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-        private readonly string _SchemeName_k__BackingField;
         public AzureADB2COpenIDConnectEventHandlers(string schemeName, Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions options) { }
         public Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string SchemeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        private string BuildIssuerAddress(Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext context, string defaultPolicy, string policy) { throw null; }
         public System.Threading.Tasks.Task OnRedirectToIdentityProvider(Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext context) { throw null; }
         public System.Threading.Tasks.Task OnRemoteFailure(Microsoft.AspNetCore.Authentication.RemoteFailureContext context) { throw null; }
     }

@@ -179,12 +179,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public DfaNode() { }
         public Microsoft.AspNetCore.Routing.Matching.DfaNode CatchAll { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Label { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Routing.Matching.DfaNode> Literals { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Http.Endpoint> Matches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Routing.Matching.DfaNode> Literals { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.Http.Endpoint> Matches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy NodeBuilder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Routing.Matching.DfaNode Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int PathDepth { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.Dictionary<object, Microsoft.AspNetCore.Routing.Matching.DfaNode> PolicyEdges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public System.Collections.Generic.Dictionary<object, Microsoft.AspNetCore.Routing.Matching.DfaNode> PolicyEdges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void AddLiteral(string literal, Microsoft.AspNetCore.Routing.Matching.DfaNode node) { }
         public void AddMatch(Microsoft.AspNetCore.Http.Endpoint endpoint) { }
         public void AddMatches(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Endpoint> endpoints) { }
