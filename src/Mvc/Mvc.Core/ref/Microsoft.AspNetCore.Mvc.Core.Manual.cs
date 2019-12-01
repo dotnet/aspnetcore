@@ -3,12 +3,27 @@
 
 namespace Microsoft.AspNetCore.Internal
 {
+    internal partial class ChunkingCookieManager
+    {
+        public const int DefaultChunkSize = 4050;
+        public ChunkingCookieManager() { }
+        public int? ChunkSize { get { throw null; } set { } }
+        public bool ThrowForPartialCookies { get { throw null; } set { } }
+        public void AppendResponseCookie(Microsoft.AspNetCore.Http.HttpContext context, string key, string value, Microsoft.AspNetCore.Http.CookieOptions options) { }
+        public void DeleteCookie(Microsoft.AspNetCore.Http.HttpContext context, string key, Microsoft.AspNetCore.Http.CookieOptions options) { }
+        public string GetRequestCookie(Microsoft.AspNetCore.Http.HttpContext context, string key) { throw null; }
+    }
     internal partial interface IResponseCacheFilter
     {
     }
 }
 namespace Microsoft.AspNetCore.Mvc
 {
+    internal partial class ApiDescriptionActionData
+    {
+        public ApiDescriptionActionData() { }
+        public string GroupName { get { throw null; } set { } }
+    }
     internal partial class MvcCoreMvcOptionsSetup
     {
         public MvcCoreMvcOptionsSetup(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory) { }
@@ -17,10 +32,6 @@ namespace Microsoft.AspNetCore.Mvc
         internal static void ConfigureAdditionalModelMetadataDetailsProviders(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider> modelMetadataDetailsProviders) { }
         public void PostConfigure(string name, Microsoft.AspNetCore.Mvc.MvcOptions options) { }
     }
-}
-namespace Microsoft.AspNetCore.Mvc.Controllers
-{
-    internal delegate System.Threading.Tasks.Task ControllerBinderDelegate(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, object controller, System.Collections.Generic.Dictionary<string, object> arguments);
 }
 namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
@@ -336,6 +347,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
 }
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
+    internal delegate System.Threading.Tasks.Task ControllerBinderDelegate(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, object controller, System.Collections.Generic.Dictionary<string, object> arguments);
     internal partial class DefaultControllerPropertyActivator : Microsoft.AspNetCore.Mvc.Controllers.IControllerPropertyActivator
     {
         public DefaultControllerPropertyActivator() { }
@@ -374,8 +386,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     }
     internal partial struct FilterCursor
     {
-        private object _dummy;
-        private int _dummyPrimitive;
+        private readonly Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata[] _filters;
+        private int _index;
         public FilterCursor(Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata[] filters) { throw null; }
         public Microsoft.AspNetCore.Mvc.Filters.FilterCursorItem<TFilter, TFilterAsync> GetNextFilter<TFilter, TFilterAsync>() where TFilter : class where TFilterAsync : class { throw null; }
         public void Reset() { }
@@ -620,29 +632,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public void CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext context) { }
     }
 }
-namespace Microsoft.AspNetCore.Internal
-{
-    internal partial class ChunkingCookieManager
-    {
-        public const int DefaultChunkSize = 4050;
-        public ChunkingCookieManager() { }
-        public int? ChunkSize { get { throw null; } set { } }
-        public bool ThrowForPartialCookies { get { throw null; } set { } }
-        public void AppendResponseCookie(Microsoft.AspNetCore.Http.HttpContext context, string key, string value, Microsoft.AspNetCore.Http.CookieOptions options) { }
-        public void DeleteCookie(Microsoft.AspNetCore.Http.HttpContext context, string key, Microsoft.AspNetCore.Http.CookieOptions options) { }
-        public string GetRequestCookie(Microsoft.AspNetCore.Http.HttpContext context, string key) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Mvc
-{
-    internal partial class ApiDescriptionActionData
-    {
-        public ApiDescriptionActionData() { }
-        public string GroupName { get { throw null; } set { } }
-    }
-}
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    {
+    }
+    {
+    }
     internal static partial class ViewEnginePath
     {
         public static readonly char[] PathSeparators;
@@ -663,8 +658,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     }
     internal readonly partial struct ConventionalRouteEntry
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
+        public readonly Microsoft.AspNetCore.Routing.Patterns.RoutePattern Pattern;
+        public readonly string RouteName;
+        public readonly Microsoft.AspNetCore.Routing.RouteValueDictionary DataTokens;
+        public readonly int Order;
+        public readonly System.Collections.Generic.IReadOnlyList<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder>> Conventions;
         public ConventionalRouteEntry(string routeName, string pattern, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IDictionary<string, object> constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens, int order, System.Collections.Generic.List<System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder>> conventions) { throw null; }
     }
     internal partial class ActionConstraintMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy
@@ -799,12 +797,21 @@ namespace Microsoft.Extensions.Internal
     }
     internal readonly partial struct ObjectMethodExecutorAwaitable
     {
-        private readonly object _dummy;
+        private readonly object _customAwaitable;
+        private readonly System.Func<object, object> _getAwaiterMethod;
+        private readonly System.Func<object, bool> _isCompletedMethod;
+        private readonly System.Func<object, object> _getResultMethod;
+        private readonly System.Action<object, System.Action> _onCompletedMethod;
+        private readonly System.Action<object, System.Action> _unsafeOnCompletedMethod;
         public ObjectMethodExecutorAwaitable(object customAwaitable, System.Func<object, object> getAwaiterMethod, System.Func<object, bool> isCompletedMethod, System.Func<object, object> getResultMethod, System.Action<object, System.Action> onCompletedMethod, System.Action<object, System.Action> unsafeOnCompletedMethod) { throw null; }
         public Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable.Awaiter GetAwaiter() { throw null; }
         public readonly partial struct Awaiter : System.Runtime.CompilerServices.ICriticalNotifyCompletion
         {
-            private readonly object _dummy;
+            private readonly object _customAwaiter;
+            private readonly System.Func<object, bool> _isCompletedMethod;
+            private readonly System.Func<object, object> _getResultMethod;
+            private readonly System.Action<object, System.Action> _onCompletedMethod;
+            private readonly System.Action<object, System.Action> _unsafeOnCompletedMethod;
             public Awaiter(object customAwaiter, System.Func<object, bool> isCompletedMethod, System.Func<object, object> getResultMethod, System.Action<object, System.Action> onCompletedMethod, System.Action<object, System.Action> unsafeOnCompletedMethod) { throw null; }
             public bool IsCompleted { get { throw null; } }
             public object GetResult() { throw null; }

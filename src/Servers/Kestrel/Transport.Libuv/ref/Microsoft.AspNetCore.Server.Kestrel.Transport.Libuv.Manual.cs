@@ -429,7 +429,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public delegate void uv_async_cb(System.IntPtr handle);
         public partial struct uv_buf_t
         {
-            private int _dummyPrimitive;
+            private readonly System.IntPtr _field0;
+            private readonly System.IntPtr _field1;
             public uv_buf_t(System.IntPtr memory, int len, bool IsWindows) { throw null; }
         }
         public delegate void uv_close_cb(System.IntPtr handle);

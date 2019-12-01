@@ -99,24 +99,28 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         public void ReinitializeNativeOverlapped() { }
         protected override bool ReleaseHandle() { throw null; }
     }
-    internal static partial class HttpApiTypes
+    internal static unsafe partial class HttpApiTypes
     {
         internal static readonly string[] HttpVerbs;
         internal const int MaxTimeout = 6;
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct FromFileHandle
         {
-            private int _dummyPrimitive;
+            internal ulong offset;
+            internal ulong count;
+            internal System.IntPtr fileHandle;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct FromMemory
         {
-            private int _dummyPrimitive;
+            internal System.IntPtr pBuffer;
+            internal uint BufferLength;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTPAPI_VERSION
         {
-            private int _dummyPrimitive;
+            internal ushort HttpApiMajorVersion;
+            internal ushort HttpApiMinorVersion;
         }
         internal enum HTTP_API_VERSION
         {
@@ -143,12 +147,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_BINDING_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_FLAGS Flags;
+            internal System.IntPtr RequestQueueHandle;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_CACHE_POLICY
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_CACHE_POLICY_TYPE Policy;
+            internal uint SecondsToLive;
         }
         internal enum HTTP_CACHE_POLICY_TYPE
         {
@@ -159,17 +165,30 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_CONNECTION_LIMIT_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_FLAGS Flags;
+            internal uint MaxConnections;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_COOKED_URL
         {
-            private int _dummyPrimitive;
+            internal ushort FullUrlLength;
+            internal ushort HostLength;
+            internal ushort AbsPathLength;
+            internal ushort QueryStringLength;
+            internal ushort* pFullUrl;
+            internal ushort* pHost;
+            internal ushort* pAbsPath;
+            internal ushort* pQueryString;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
         internal partial struct HTTP_DATA_CHUNK
         {
-            private int _dummyPrimitive;
+            [System.Runtime.InteropServices.FieldOffset(0)]
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_DATA_CHUNK_TYPE DataChunkType;
+            [System.Runtime.InteropServices.FieldOffset(8)]
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.FromMemory fromMemory;
+            [System.Runtime.InteropServices.FieldOffset(8)]
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.FromFileHandle fromFile;
         }
         internal enum HTTP_DATA_CHUNK_TYPE
         {
@@ -197,17 +216,22 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_KNOWN_HEADER
         {
-            private int _dummyPrimitive;
+            internal ushort RawValueLength;
+            internal byte* pRawValue;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_MULTIPLE_KNOWN_HEADERS
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum HeaderId;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS Flags;
+            internal ushort KnownHeaderCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER* KnownHeaders;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_QOS_SETTING_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_QOS_SETTING_TYPE QosType;
+            internal System.IntPtr QosSetting;
         }
         internal enum HTTP_QOS_SETTING_TYPE
         {
@@ -218,12 +242,39 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST_FLAGS Flags;
+            internal ulong ConnectionId;
+            internal ulong RequestId;
+            internal ulong UrlContext;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_VERSION Version;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_VERB Verb;
+            internal ushort UnknownVerbLength;
+            internal ushort RawUrlLength;
+            internal byte* pUnknownVerb;
+            internal byte* pRawUrl;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_COOKED_URL CookedUrl;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_TRANSPORT_ADDRESS Address;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST_HEADERS Headers;
+            internal ulong BytesReceived;
+            internal ushort EntityChunkCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_DATA_CHUNK* pEntityChunks;
+            internal ulong RawConnectionId;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SSL_INFO* pSslInfo;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_AUTH_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_AUTH_STATUS AuthStatus;
+            internal uint SecStatus;
+            internal uint Flags;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST_AUTH_TYPE AuthType;
+            internal System.IntPtr AccessToken;
+            internal uint ContextAttributes;
+            internal uint PackedContextLength;
+            internal uint PackedContextType;
+            internal System.IntPtr PackedContext;
+            internal uint MutualAuthDataLength;
+            internal char* pMutualAuthData;
         }
         internal enum HTTP_REQUEST_AUTH_TYPE
         {
@@ -237,7 +288,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_CHANNEL_BIND_STATUS
         {
-            private int _dummyPrimitive;
+            internal System.IntPtr ServiceName;
+            internal System.IntPtr ChannelToken;
+            internal uint ChannelTokenSize;
+            internal uint Flags;
         }
         [System.FlagsAttribute]
         internal enum HTTP_REQUEST_FLAGS
@@ -250,12 +304,58 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_HEADERS
         {
-            private int _dummyPrimitive;
+            internal ushort UnknownHeaderCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_UNKNOWN_HEADER* pUnknownHeaders;
+            internal ushort TrailerCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_UNKNOWN_HEADER* pTrailers;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_02;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_03;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_04;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_05;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_06;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_07;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_08;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_09;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_10;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_11;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_12;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_13;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_14;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_15;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_16;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_17;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_18;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_19;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_20;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_21;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_22;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_23;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_24;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_25;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_26;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_27;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_28;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_29;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_30;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_31;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_32;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_33;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_34;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_35;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_36;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_37;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_38;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_39;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_40;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_41;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST_INFO_TYPE InfoType;
+            internal uint InfoLength;
+            internal void* pInfo;
         }
         internal enum HTTP_REQUEST_INFO_TYPE
         {
@@ -267,22 +367,68 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_TOKEN_BINDING_INFO
         {
-            private int _dummyPrimitive;
+            public byte* TokenBinding;
+            public uint TokenBindingSize;
+            public byte* TlsUnique;
+            public uint TlsUniqueSize;
+            public char* KeyType;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_REQUEST_V2
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST Request;
+            internal ushort RequestInfoCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST_INFO* pRequestInfo;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE
         {
-            private int _dummyPrimitive;
+            internal uint Flags;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_VERSION Version;
+            internal ushort StatusCode;
+            internal ushort ReasonLength;
+            internal byte* pReason;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_HEADERS Headers;
+            internal ushort EntityChunkCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_DATA_CHUNK* pEntityChunks;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_HEADERS
         {
-            private int _dummyPrimitive;
+            internal ushort UnknownHeaderCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_UNKNOWN_HEADER* pUnknownHeaders;
+            internal ushort TrailerCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_UNKNOWN_HEADER* pTrailers;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_02;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_03;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_04;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_05;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_06;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_07;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_08;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_09;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_10;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_11;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_12;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_13;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_14;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_15;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_16;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_17;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_18;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_19;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_20;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_21;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_22;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_23;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_24;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_25;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_26;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_27;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_28;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_29;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_KNOWN_HEADER KnownHeaders_30;
         }
         internal static partial class HTTP_RESPONSE_HEADER_ID
         {
@@ -326,7 +472,9 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_INFO_TYPE Type;
+            internal uint Length;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* pInfo;
         }
         internal enum HTTP_RESPONSE_INFO_FLAGS : uint
         {
@@ -342,22 +490,35 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_RESPONSE_V2
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE Response_V1;
+            internal ushort ResponseInfoCount;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_INFO* pResponseInfo;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
         {
-            private int _dummyPrimitive;
+            ushort RealmLength;
+            char* Realm;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
         {
-            private int _dummyPrimitive;
+            internal ushort DomainNameLength;
+            internal char* DomainName;
+            internal ushort RealmLength;
+            internal char* Realm;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVER_AUTHENTICATION_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_FLAGS Flags;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_AUTH_TYPES AuthSchemes;
+            internal bool ReceiveMutualAuth;
+            internal bool ReceiveContextHandle;
+            internal bool DisableNTLMCredentialCaching;
+            internal ulong ExFlags;
+            Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS DigestParams;
+            Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS BasicParams;
         }
         internal enum HTTP_SERVER_PROPERTY
         {
@@ -377,7 +538,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SERVICE_BINDING_BASE
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SERVICE_BINDING_TYPE Type;
         }
         internal enum HTTP_SERVICE_BINDING_TYPE : uint
         {
@@ -388,22 +549,45 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_CLIENT_CERT_INFO
         {
-            private int _dummyPrimitive;
+            internal uint CertFlags;
+            internal uint CertEncodedSize;
+            internal byte* pCertEncoded;
+            internal void* Token;
+            internal byte CertDeniedByMapper;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_INFO
         {
-            private int _dummyPrimitive;
+            internal ushort ServerCertKeySize;
+            internal ushort ConnectionKeySize;
+            internal uint ServerCertIssuerSize;
+            internal uint ServerCertSubjectSize;
+            internal byte* pServerCertIssuer;
+            internal byte* pServerCertSubject;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo;
+            internal uint SslClientCertNegotiated;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_SSL_PROTOCOL_INFO
         {
-            private int _dummyPrimitive;
+            internal System.Security.Authentication.SslProtocols Protocol;
+            internal System.Security.Authentication.CipherAlgorithmType CipherType;
+            internal uint CipherStrength;
+            internal System.Security.Authentication.HashAlgorithmType HashType;
+            internal uint HashStrength;
+            internal System.Security.Authentication.ExchangeAlgorithmType KeyExchangeType;
+            internal uint KeyExchangeStrength;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_TIMEOUT_LIMIT_INFO
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_FLAGS Flags;
+            internal ushort EntityBody;
+            internal ushort DrainEntityBody;
+            internal ushort RequestQueue;
+            internal ushort IdleConnection;
+            internal ushort HeaderWait;
+            internal uint MinSendRate;
         }
         internal enum HTTP_TIMEOUT_TYPE
         {
@@ -417,12 +601,16 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_TRANSPORT_ADDRESS
         {
-            private int _dummyPrimitive;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.SOCKADDR* pRemoteAddress;
+            internal Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.SOCKADDR* pLocalAddress;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_UNKNOWN_HEADER
         {
-            private int _dummyPrimitive;
+            internal ushort NameLength;
+            internal ushort RawValueLength;
+            internal byte* pName;
+            internal byte* pRawValue;
         }
         internal enum HTTP_VERB
         {
@@ -451,12 +639,27 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_VERSION
         {
-            private int _dummyPrimitive;
+            internal ushort MajorVersion;
+            internal ushort MinorVersion;
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct SOCKADDR
         {
-            private int _dummyPrimitive;
+            internal ushort sa_family;
+            internal byte sa_data;
+            internal byte sa_data_02;
+            internal byte sa_data_03;
+            internal byte sa_data_04;
+            internal byte sa_data_05;
+            internal byte sa_data_06;
+            internal byte sa_data_07;
+            internal byte sa_data_08;
+            internal byte sa_data_09;
+            internal byte sa_data_10;
+            internal byte sa_data_11;
+            internal byte sa_data_12;
+            internal byte sa_data_13;
+            internal byte sa_data_14;
         }
     }
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TextTemplatingFileGenerator", "")]

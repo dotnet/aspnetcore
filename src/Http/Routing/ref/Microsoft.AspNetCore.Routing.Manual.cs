@@ -7,14 +7,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct Candidate
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
+        public readonly Microsoft.AspNetCore.Http.Endpoint Endpoint;
+        public readonly CandidateFlags Flags;
         public readonly System.Collections.Generic.KeyValuePair<string, object>[] Slots;
         public readonly (string parameterName, int segmentIndex, int slotIndex)[] Captures;
         public readonly (string parameterName, int segmentIndex, int slotIndex) CatchAll;
         public readonly (Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment pathSegment, int segmentIndex)[] ComplexSegments;
         public readonly System.Collections.Generic.KeyValuePair<string, IRouteConstraint>[] Constraints;
-        public readonly CandidateFlags Flags;
         public readonly int Score;
         public Candidate(Microsoft.AspNetCore.Http.Endpoint endpoint) { throw null; }
         public Candidate(Microsoft.AspNetCore.Http.Endpoint endpoint, int score, System.Collections.Generic.KeyValuePair<string, object>[] slots, System.ValueTuple<string, int, int>[] captures, in (string parameterName, int segmentIndex, int slotIndex) catchAll, System.ValueTuple<Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment, int>[] complexSegments, System.Collections.Generic.KeyValuePair<string, Microsoft.AspNetCore.Routing.IRouteConstraint>[] constraints) { throw null; }
@@ -97,8 +96,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal readonly partial struct EdgeKey : System.IComparable, System.IComparable<Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy.EdgeKey>, System.IEquatable<Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy.EdgeKey>
         {
-            private readonly object _dummy;
-            private readonly int _dummyPrimitive;
+            public readonly bool IsCorsPreflightRequest;
+            public readonly string HttpMethod;
             public EdgeKey(string httpMethod, bool isCorsPreflightRequest) { throw null; }
             public int CompareTo(Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy.EdgeKey other) { throw null; }
             public int CompareTo(object obj) { throw null; }
@@ -211,7 +210,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct DfaState
     {
-        private readonly object _dummy;
+        public readonly Candidate[] Candidates;
+        public readonly IEndpointSelectorPolicy[] Policies;
+        public readonly JumpTable PathTransitions;
+        public readonly PolicyJumpTable PolicyTransitions;
         public DfaState(Microsoft.AspNetCore.Routing.Matching.Candidate[] candidates, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy[] policies, Microsoft.AspNetCore.Routing.Matching.JumpTable pathTransitions, Microsoft.AspNetCore.Routing.Matching.PolicyJumpTable policyTransitions) { throw null; }
         public string DebuggerToString() { throw null; }
     }
@@ -245,7 +247,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct PathSegment : System.IEquatable<Microsoft.AspNetCore.Routing.Matching.PathSegment>
     {
-        private readonly int _dummyPrimitive;
+        public readonly int Start;
+        public readonly int Length;
         public PathSegment(int start, int length) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Routing.Matching.PathSegment other) { throw null; }
         public override bool Equals(object obj) { throw null; }
@@ -279,8 +282,8 @@ namespace Microsoft.AspNetCore.Routing
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct PathTokenizer : System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.Generic.IReadOnlyCollection<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.IEnumerable
     {
-        private object _dummy;
-        private int _dummyPrimitive;
+        private readonly string _path;
+        private int _count;
         public PathTokenizer(Microsoft.AspNetCore.Http.PathString path) { throw null; }
         public int Count { get { throw null; } }
         public Microsoft.Extensions.Primitives.StringSegment this[int index] { get { throw null; } }
@@ -290,8 +293,9 @@ namespace Microsoft.AspNetCore.Routing
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator : System.Collections.Generic.IEnumerator<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.IEnumerator, System.IDisposable
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly string _path;
+            private int _index;
+            private int _length;
             public Enumerator(Microsoft.AspNetCore.Routing.PathTokenizer tokenizer) { throw null; }
             public Microsoft.Extensions.Primitives.StringSegment Current { get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
@@ -363,7 +367,6 @@ namespace Microsoft.AspNetCore.Routing
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal readonly partial struct MatcherState
         {
-            private readonly object _dummy;
             public readonly Microsoft.AspNetCore.Routing.RoutePatternMatcher Matcher;
             public readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<IRouteConstraint>> Constraints;
             public MatcherState(Microsoft.AspNetCore.Routing.RoutePatternMatcher matcher, System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Microsoft.AspNetCore.Routing.IRouteConstraint>> constraints) { throw null; }
@@ -472,7 +475,7 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct DecisionCriterionValue
     {
-        private readonly object _dummy;
+        private readonly object _value;
         public DecisionCriterionValue(object value) { throw null; }
         public object Value { get { throw null; } }
     }

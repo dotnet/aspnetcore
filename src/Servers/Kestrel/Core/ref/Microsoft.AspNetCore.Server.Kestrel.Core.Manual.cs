@@ -895,8 +895,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerator, System.IDisposable
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders _collection;
+            private readonly long _bits;
+            private int _next;
+            private System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> _current;
+            private readonly bool _hasUnknown;
+            private System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>.Enumerator _unknownEnumerator;
             internal Enumerator(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders collection) { throw null; }
             public System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> Current { get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
@@ -967,8 +971,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerator, System.IDisposable
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders _collection;
+            private readonly long _bits;
+            private int _next;
+            private System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> _current;
+            private readonly bool _hasUnknown;
+            private System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>.Enumerator _unknownEnumerator;
             internal Enumerator(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders collection) { throw null; }
             public System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> Current { get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
@@ -993,8 +1001,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerator, System.IDisposable
         {
-            private object _dummy;
-            private int _dummyPrimitive;
+            private readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseTrailers _collection;
+            private readonly long _bits;
+            private int _next;
+            private System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> _current;
+            private readonly bool _hasUnknown;
+            private System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>.Enumerator _unknownEnumerator;
             internal Enumerator(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseTrailers collection) { throw null; }
             public System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> Current { get { throw null; } }
             object System.Collections.IEnumerator.Current { get { throw null; } }
@@ -1038,8 +1050,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct Http1ParsingHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
+        public readonly Http1Connection Connection;
+        public readonly bool Trailers;
         public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection connection) { throw null; }
         public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection connection, bool trailers) { throw null; }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
@@ -1851,6 +1863,9 @@ namespace System.Buffers
     internal ref partial struct BufferWriter<T> where T : System.Buffers.IBufferWriter<byte>
     {
         private T _output;
+        private System.Span<byte> _span;
+        private int _buffered;
+        private long _bytesCommitted;
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public BufferWriter(T output) { throw null; }
         public long BytesCommitted { get { throw null; } }
         public System.Span<byte> Span { get { throw null; } }
