@@ -47,6 +47,7 @@
   <Target Name="RestoreTestAssets" AfterTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <ItemGroup>
       <_TestAsset Include="..\testassets\standalone\standalone.csproj" />
+      <_TestAsset Include="..\testassets\blazorhosted\blazorhosted.csproj" />
     </ItemGroup>
 
     <MSBuild

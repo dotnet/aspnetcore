@@ -32,6 +32,8 @@ namespace TestSite
 {
     public partial class Startup
     {
+        public static bool StartupHookCalled;
+
         public void Configure(IApplicationBuilder app)
         {
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
@@ -909,6 +911,11 @@ namespace TestSite
                 return;
             }
             RecursiveFunction(i - 1);
+        }
+
+        private async Task StartupHook(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(StartupHookCalled.ToString());
         }
 
         private async Task GetServerVariableStress(HttpContext ctx)

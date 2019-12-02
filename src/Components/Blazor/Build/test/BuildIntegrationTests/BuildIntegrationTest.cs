@@ -29,6 +29,25 @@ namespace Microsoft.AspNetCore.Blazor.Build
         }
 
         [Fact]
+        public async Task Build_Hosted_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
+            project.TargetFramework = "netcoreapp3.1";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+            var blazorConfig = Path.Combine(buildOutputDirectory, "standalone.blazor.config");
+            Assert.FileExists(result, blazorConfig);
+
+            var path = Path.GetFullPath(Path.Combine(project.SolutionPath, "standalone", "bin", project.Configuration, "netstandard2.1", "standalone.dll"));
+            Assert.FileContains(result, blazorConfig, path);
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "dist", "_framework", "_bin", "standalone.dll");
+        }
+
+        [Fact]
         public async Task Build_WithLinkOnBuildDisabled_Works()
         {
             // Arrange

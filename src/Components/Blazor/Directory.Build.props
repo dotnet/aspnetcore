@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Override version labels -->
+    <VersionPrefix>3.1.0</VersionPrefix>
+    <PreReleaseVersionLabel>preview4</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind />
+    <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
+         target the latest patch before a preview release. -->
+    <LatestAspNetCoreReferenceVersion>3.1.0</LatestAspNetCoreReferenceVersion>
+  </PropertyGroup>
+</Project>

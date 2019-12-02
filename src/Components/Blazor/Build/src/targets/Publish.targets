@@ -40,8 +40,17 @@
     <PropertyGroup>
       <_BlazorConfigPath>$(OutDir)$(AssemblyName).blazor.config</_BlazorConfigPath>
     </PropertyGroup>
-    <WriteLinesToFile File="$(_BlazorConfigPath)" Lines="." Overwrite="true" />
-    <WriteLinesToFile File="$(_BlazorConfigPath)" Lines="$(AssemblyName)/" Overwrite="false" />
+
+    <ItemGroup>
+      <_BlazorPublishConfigContent Include="." />
+      <_BlazorPublishConfigContent Include="$(AssemblyName)/" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(_BlazorConfigPath)"
+      Lines="@(_BlazorPublishConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <!-- The following target runs only for standalone publishing -->
