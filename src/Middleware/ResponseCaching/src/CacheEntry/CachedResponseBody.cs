@@ -31,17 +31,20 @@ namespace Microsoft.AspNetCore.ResponseCaching
             foreach (var segment in Segments)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var segmentLength = segment.Length;
 
-                var memory = destination.GetMemory(segmentLength);
-                segment.AsMemory().CopyTo(memory);
-
-                destination.Advance(segmentLength);
+                Copy(segment, destination);
 
                 await destination.FlushAsync();
             }
+        }
 
-            await destination.CompleteAsync();
+        private static void Copy(byte[] segment, PipeWriter destination)
+        {
+            var segmentLength = segment.Length;
+            var span = destination.GetSpan(segmentLength);
+
+            segment.CopyTo(span);
+            destination.Advance(segmentLength);
         }
     }
 }
