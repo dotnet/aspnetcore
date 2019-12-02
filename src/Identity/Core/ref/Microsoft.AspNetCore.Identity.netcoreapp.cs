@@ -137,7 +137,6 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool IsSignedIn(System.Security.Claims.ClaimsPrincipal principal) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> IsTwoFactorClientRememberedAsync(TUser user) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult> LockedOut(TUser user) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure) { throw null; }
