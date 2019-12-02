@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -93,20 +94,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
-
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                return string.Create(span.Length, new IntPtr(source), (buffer, state) =>
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
-                }
+                    fixed (char* output = &MemoryMarshal.GetReference(buffer))
+                    {
+                        // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                        // in the string
+                        if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                        {
+                            BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                        }
+                    }
+                });
             }
-
-            return asciiString;
         }
 
         public static string GetAsciiStringNonNullCharacters(this Span<byte> span)
@@ -119,19 +121,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var asciiString = new string('\0', span.Length);
-
-            fixed (char* output = asciiString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                return string.Create(span.Length, new IntPtr(source), (buffer, state) =>
                 {
-                    throw new InvalidOperationException();
-                }
+                    fixed (char* output = &MemoryMarshal.GetReference(buffer))
+                    {
+                        // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                        // in the string
+                        if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                        {
+                            throw new InvalidOperationException();
+                        }
+                    }
+                });
             }
-            return asciiString;
         }
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
@@ -144,16 +148,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return string.Empty;
             }
 
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
+            fixed (byte* source = &MemoryMarshal.GetReference(span))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                var resultString = string.Create(span.Length, new IntPtr(source), (buffer, state) =>
                 {
-                    // null characters are considered invalid
+                    fixed (char* output = &MemoryMarshal.GetReference(buffer))
+                    {
+                        // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                        // in the string
+                        if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                        {
+                            // Mark resultString for UTF-8 encoding
+                            output[0] = '\0';
+                        }
+                    }
+                });
+
+                // If rersultString is marked, perform UTF-8 encoding
+                if (resultString[0] == '\0')
+                {
                     if (span.IndexOf((byte)0) != -1)
                     {
                         throw new InvalidOperationException();
@@ -161,15 +174,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                     try
                     {
-                        resultString = HeaderValueEncoding.GetString(buffer, span.Length);
+                        resultString = HeaderValueEncoding.GetString(span);
                     }
                     catch (DecoderFallbackException)
                     {
                         throw new InvalidOperationException();
                     }
                 }
+
+                return resultString;
             }
-            return resultString;
         }
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
@@ -288,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Head;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Post;
                 }
@@ -299,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     method = HttpMethod.Trace;
                 }
-                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
                 {
                     method = HttpMethod.Patch;
                 }
