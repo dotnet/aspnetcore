@@ -112,17 +112,18 @@ function Build {
     @properties
 }
 
-if ($clean) {
-  if(Test-Path $ArtifactsDir) {
-    Remove-Item -Recurse -Force $ArtifactsDir
-    Write-Host 'Artifacts directory deleted.'
-  }
-  exit 0
-}
-
 try {
   . $PSScriptRoot\tools.ps1
-  If ((Test-Path variable:LastExitCode) -And ($LastExitCode -ne 0)) {
+  
+  if ($clean) {
+    if (Test-Path $ArtifactsDir) {
+      Remove-Item -Recurse -Force $ArtifactsDir
+      Write-Host 'Artifacts directory deleted.'
+    }
+    exit 0
+  }
+  
+  if ((Test-Path variable:LastExitCode) -And ($LastExitCode -ne 0)) {
     Write-PipelineTelemetryError -Category 'InitializeToolset' -Message 'Eng/common/tools.ps1 returned a non-zero exit code.'
     ExitWithExitCode $LastExitCode
   }

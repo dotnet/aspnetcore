@@ -49,6 +49,10 @@ variables:
   - name: NetCore_31_Blazor_Features_Channel_Id
     value: 531
 
+  # .NET Core Experimental
+  - name: NetCore_Experimental_Channel_Id
+    value: 562
+
   # Whether the build is internal or not
   - name: IsInternalBuild
     value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
