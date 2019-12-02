@@ -194,12 +194,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         {
                             await body.CopyToAsync(response.BodyWriter, context.HttpContext.RequestAborted);
                         }
-                            catch (OperationCanceledException)
+                        catch (OperationCanceledException)
                         {
                             context.HttpContext.Abort();
                         }
                 }
-                    _logger.CachedResponseServed();
+                _logger.CachedResponseServed();
                 }
                 return true;
             }

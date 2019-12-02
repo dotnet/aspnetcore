@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            for (var segmentIndex = 0; segmentIndex < Segments.Count; segmentIndex++)
+            foreach (var segment in Segments)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var segmentLength = Segments[segmentIndex].Length;
+                var segmentLength = segment.Length;
 
                 var memory = destination.GetMemory(segmentLength);
-                Segments[segmentIndex].AsMemory().CopyTo(memory);
+                segment.AsMemory().CopyTo(memory);
 
                 destination.Advance(segmentLength);
 
