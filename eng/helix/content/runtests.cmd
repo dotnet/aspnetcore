@@ -22,7 +22,7 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
-    xcopy ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion% /s /i
+    xcopy /i ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%
 )
 
 set HELIX=%helixQueue%
