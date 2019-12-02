@@ -72,4 +72,19 @@ namespace Microsoft.AspNetCore.Testing
                 "Test should only be running on Win7 or Win2008R2.");
         }
     }
+
+    // Let this one run cross plat just to check the constructor logic.
+    [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
+    public class OSMaxVersionCrossPlatTest
+    {
+        [ConditionalFact]
+        public void TestSkipClass_Win7DoesRunOnWin7()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.True(Environment.OSVersion.Version.ToString().StartsWith("6.1"),
+                    "Test should only be running on Win7 or Win2008R2.");
+            }
+        }
+    }
 }

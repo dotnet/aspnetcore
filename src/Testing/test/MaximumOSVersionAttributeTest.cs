@@ -27,6 +27,18 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         [Fact]
+        public void DoesNotSkip_ShortVersions()
+        {
+            var osSkipAttribute = new MaximumOSVersionAttribute(
+                OperatingSystems.Windows,
+                new Version("2.5"),
+                OperatingSystems.Windows,
+                new Version("2.0"));
+
+            Assert.True(osSkipAttribute.IsMet);
+        }
+
+        [Fact]
         public void DoesNotSkip_EarlierVersions()
         {
             var osSkipAttribute = new MaximumOSVersionAttribute(
