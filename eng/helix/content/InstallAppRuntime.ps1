@@ -36,11 +36,7 @@ else {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPackage, ".\tmpRuntime")
 }
 
-Write-Host "Expanded App Runtime to tmpRuntime"
-Get-ChildItem -Path ".\tmpRuntime\runtimes"
-
 Write-Host "Copying managed files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\lib\netcoreapp5.0\*" $InstallDir
 Write-Host "Copying native files to $InstallDir"
 Copy-Item -Path ".\tmpRuntime\runtimes\win-x86\native\*" $InstallDir
-Get-ChildItem -Path $InstallDir
