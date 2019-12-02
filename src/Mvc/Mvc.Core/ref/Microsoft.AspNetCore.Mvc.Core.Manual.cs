@@ -62,6 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
             public int Version { get { throw null; } }
         }
     }
+    internal partial interface IConsumesActionConstraint : Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint, Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata
+    {
+    }
 }
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -106,6 +109,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         internal bool IsAction(System.Reflection.TypeInfo typeInfo, System.Reflection.MethodInfo methodInfo) { throw null; }
         public void OnProvidersExecuted(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
         public void OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
+    }
+}
+namespace Microsoft.AspNetCore.Mvc.ApplicationParts
+{
+    public sealed partial class RelatedAssemblyAttribute : System.Attribute
+    {
+        internal static System.Collections.Generic.IReadOnlyList<System.Reflection.Assembly> GetRelatedAssemblies(System.Reflection.Assembly assembly, bool throwOnError, System.Func<string, bool> fileExists, System.Func<string, System.Reflection.Assembly> loadFile) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Core
@@ -348,6 +358,12 @@ namespace Microsoft.AspNetCore.Mvc.Core
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     internal delegate System.Threading.Tasks.Task ControllerBinderDelegate(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, object controller, System.Collections.Generic.Dictionary<string, object> arguments);
+    internal class DefaultControllerFactory : Microsoft.AspNetCore.Mvc.Controllers.IControllerFactory
+    {
+        public DefaultControllerFactory(Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator controllerActivator, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Controllers.IControllerPropertyActivator> propertyActivators) { }
+        public object CreateController(Microsoft.AspNetCore.Mvc.ControllerContext context) { throw null; }
+        public void ReleaseController(Microsoft.AspNetCore.Mvc.ControllerContext context, object controller) { }
+    }
     internal partial class DefaultControllerPropertyActivator : Microsoft.AspNetCore.Mvc.Controllers.IControllerPropertyActivator
     {
         public DefaultControllerPropertyActivator() { }
@@ -426,6 +442,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public static void ResolveContentTypeAndEncoding(string actionResultContentType, string httpResponseContentType, string defaultContentType, out string resolvedContentType, out System.Text.Encoding resolvedContentTypeEncoding) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json
+{
+    internal sealed class TranscodingReadStream : System.IO.Stream
+    {
+        internal const int MaxByteBufferSize = 4096;
+        internal const int MaxCharBufferSize = 3 * MaxByteBufferSize;
+        public TranscodingReadStream(System.IO.Stream input, System.Text.Encoding sourceEncoding) { }
+        public override bool CanRead { get { throw null; } }
+        public override bool CanSeek { get { throw null; } }
+        public override bool CanWrite { get { throw null; } }
+        public override long Length { get { throw null; } }
+        public override long Position { get { throw null; } set { } }
+        internal int ByteBufferCount { get { throw null; }}
+        internal int CharBufferCount { get { throw null; }}
+        internal int OverflowCount { get { throw null; }}
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) { throw null; }
+        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
+        public override void SetLength(long value) { }
+        public override void Write(byte[] buffer, int offset, int count) { }
+        protected override void Dispose(bool disposing) { }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal abstract partial class ActionMethodExecutor
@@ -434,6 +474,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected abstract bool CanExecute(Microsoft.Extensions.Internal.ObjectMethodExecutor executor);
         public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Mvc.IActionResult> Execute(Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper mapper, Microsoft.Extensions.Internal.ObjectMethodExecutor executor, object controller, object[] arguments);
         public static Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor GetExecutor(Microsoft.Extensions.Internal.ObjectMethodExecutor executor) { throw null; }
+    }
+    internal class ClientErrorResultFilter : Microsoft.AspNetCore.Mvc.Filters.IAlwaysRunResultFilter, Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter
+    {
+        internal const int FilterOrder = -2000;
+        public ClientErrorResultFilter(Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorFactory clientErrorFactory, Microsoft.Extensions.Logging.ILogger<ClientErrorResultFilter> logger) { }
+        public int Order { get { throw null; }}
+        public void OnResultExecuted(Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext context) { }
+        public void OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) { }
+    }
+    internal class ControllerActionInvoker : Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker, Microsoft.AspNetCore.Mvc.Abstractions.IActionInvoker
+    {
+        internal ControllerActionInvoker(Microsoft.Extensions.Logging.ILogger logger, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor actionContextAccessor, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper mapper, Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvokerCacheEntry cacheEntry, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata[] filters)
+            : base(diagnosticListener, logger, actionContextAccessor, mapper, controllerContext, filters, controllerContext.ValueProviderFactories) { }
+        internal Microsoft.AspNetCore.Mvc.ControllerContext ControllerContext { get { throw null; }}
+        protected override void ReleaseResources() { }
+        protected override System.Threading.Tasks.Task InvokeInnerFilterAsync() { throw null; }
     }
     internal partial class ControllerActionInvokerCacheEntry
     {
@@ -606,10 +662,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public void CreateValidators(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidatorProviderContext context) { }
         public bool HasValidators(System.Type modelType, System.Collections.Generic.IList<object> validatorMetadata) { throw null; }
     }
+    internal class DefaultObjectValidator : Microsoft.AspNetCore.Mvc.ModelBinding.ObjectModelValidator
+    {
+        public DefaultObjectValidator(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider> validatorProviders, Microsoft.AspNetCore.Mvc.MvcOptions mvcOptions)
+            : base(modelMetadataProvider, validatorProviders) { }
+        public override Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState) { throw null; }
+    }
     internal partial class HasValidatorsValidationMetadataProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IValidationMetadataProvider
     {
         public HasValidatorsValidationMetadataProvider(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider> modelValidatorProviders) { }
         public void CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext context) { }
+    }
+    internal class ValidationStack
+    {
+        public int Count { get { throw null; } }
+        internal const int CutOff = 20;
+        internal System.Collections.Generic.List<object> List { get { throw null; } }
+        internal System.Collections.Generic.HashSet<object> HashSet { get { throw null; } set { } }
+        public bool Push(object model) { throw null; }
+        public void Pop(object model) { }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -634,9 +705,39 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 }
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    internal class AttributeRoute : Microsoft.AspNetCore.Routing.IRouter
     {
+        public AttributeRoute(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, System.IServiceProvider services, System.Func<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor[], Microsoft.AspNetCore.Routing.IRouter> handlerFactory) { }
+        public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
+        internal void AddEntries(Microsoft.AspNetCore.Routing.Tree.TreeRouteBuilder builder, Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection actions) { }
     }
+    internal class ConsumesMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy
     {
+        internal const string Http415EndpointDisplayName = "415 HTTP Unsupported Media Type";
+        internal const string AnyContentType = "*/*";
+        public override int Order { get { throw null; } }
+        public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { get { throw null; } }
+        bool Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        public System.Threading.Tasks.Task ApplyAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates) { throw null; }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyNodeEdge> GetEdges(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        public Microsoft.AspNetCore.Routing.Matching.PolicyJumpTable BuildJumpTable(int exitDestination, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyJumpTableEdge> edges) { throw null; }
+    }
+    internal class ConsumesMetadata : Microsoft.AspNetCore.Mvc.Routing.IConsumesMetadata
+    {
+        public ConsumesMetadata(string[] contentTypes) { }
+        public System.Collections.Generic.IReadOnlyList<string> ContentTypes { get { throw null; } }
+    }
+    internal interface IConsumesMetadata
+    {
+        System.Collections.Generic.IReadOnlyList<string> ContentTypes { get; }
+    }
+    internal class MvcRouteHandler : Microsoft.AspNetCore.Routing.IRouter
+    {
+        public MvcRouteHandler(Microsoft.AspNetCore.Mvc.Infrastructure.IActionInvokerFactory actionInvokerFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IActionSelector actionSelector, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
     }
     internal static partial class ViewEnginePath
     {

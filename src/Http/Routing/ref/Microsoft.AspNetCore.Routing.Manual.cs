@@ -404,6 +404,13 @@ namespace Microsoft.AspNetCore.Routing
         public override Microsoft.Extensions.Primitives.IChangeToken GetChangeToken() { throw null; }
     }
 
+    internal partial class NullRouter : Microsoft.AspNetCore.Routing.IRouter
+    {
+        public static readonly Microsoft.AspNetCore.Routing.NullRouter Instance;
+        public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
+    }
+
     internal partial class RoutePatternMatcher
     {
         public RoutePatternMatcher(Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults) { }
