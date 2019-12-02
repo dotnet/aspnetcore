@@ -47,6 +47,7 @@ void HostFxr::Load(HMODULE moduleHandle)
         m_corehost_set_error_writer_fn = ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(moduleHandle, "hostfxr_set_error_writer", /* optional */ true);
         m_hostfxr_initialize_for_dotnet_commandline_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_initialize_for_dotnet_runtime_fn>(moduleHandle, "hostfxr_initialize_for_dotnet_command_line", /* optional */ true);
         m_hostfxr_set_runtime_property_value_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_set_runtime_property_value_fn>(moduleHandle, "hostfxr_set_runtime_property_value", /* optional */ true);
+        m_hostfxr_get_runtime_property_value_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_runtime_property_value_fn>(moduleHandle, "hostfxr_get_runtime_property_value", /* optional */ true);
         m_hostfxr_run_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_run_app_fn>(moduleHandle, "hostfxr_run_app", /* optional */ true);
         m_hostfxr_close_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_close_fn>(moduleHandle, "hostfxr_close", /* optional */ true);
     }
@@ -160,6 +161,15 @@ int HostFxr::SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept
     if (m_host_context_handle != nullptr && m_hostfxr_set_runtime_property_value_fn != nullptr)
     {
         return m_hostfxr_set_runtime_property_value_fn(m_host_context_handle, name, value);
+    }
+    return 0;
+}
+
+int HostFxr::GetRuntimePropertyValue(PCWSTR name, PWSTR* value) const noexcept
+{
+    if (m_host_context_handle != nullptr && m_hostfxr_get_runtime_property_value_fn != nullptr)
+    {
+        return m_hostfxr_get_runtime_property_value_fn(m_host_context_handle, name, value);
     }
     return 0;
 }
