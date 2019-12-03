@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         internal bool HasValidCertificateWithInnaccessibleKeyAcrossPartitions()
         {
-            var certificates = ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true);
+            var certificates = GetHttpsCertificates();
             if (certificates.Count == 0)
             {
                 return false;
@@ -211,6 +211,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             return result;
         }
+
+        public IList<X509Certificate2> GetHttpsCertificates() =>
+            ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true);
 
         public X509Certificate2 CreateApplicationTokenSigningDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
         {
@@ -720,6 +723,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 catch
                 {
                     return EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+                }
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    MakeCertificateKeyAccessibleAcrossPartitions(certificate);
                 }
             }
             if (path != null)
