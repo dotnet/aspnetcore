@@ -40,11 +40,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private static void Copy(byte[] segment, PipeWriter destination)
         {
-            var segmentLength = segment.Length;
-            var span = destination.GetSpan(segmentLength);
+            var span = destination.GetSpan(segment.Length);
 
             segment.CopyTo(span);
-            destination.Advance(segmentLength);
+            destination.Advance(segment.Length);
         }
     }
 }
