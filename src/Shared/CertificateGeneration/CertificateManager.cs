@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
 #endif
         private const int UserCancelledErrorCode = 1223;
+        private const string MacOSSetPartitionKeyPermissionsCommandLine = "sudo";
+        private const string MacOSSetPartitionKeyPermissionsCommandLineArguments = "security set-key-partition-list -D localhost -S unsigned:, teamid:UBF8T346G9'";
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -190,6 +192,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             return certificate;
+        }
+
+        internal bool HasValidCertificateWithAccessibleKeyAcrossPartitions()
+        {
+            var certificates = ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true);
+            foreach (var certificate in certificates)
+            {
+                if (CanAccessCertificateKeyAcrossPartitions(certificate))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public X509Certificate2 CreateApplicationTokenSigningDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
@@ -596,9 +612,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool trust = false,
             bool includePrivateKey = false,
             string password = null,
-            string subject = LocalhostHttpsDistinguishedName)
+            string subject = LocalhostHttpsDistinguishedName,
+            bool isInteractive = true)
         {
-            return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject);
+            return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject, isInteractive);
         }
 
         public EnsureCertificateResult EnsureAspNetCoreApplicationTokensDevelopmentCertificate(
@@ -610,7 +627,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             string password = null,
             string subject = IdentityDistinguishedName)
         {
-            return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.Signing, path, trust, includePrivateKey, password, subject);
+            return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.Signing, path, trust, includePrivateKey, password, subject, isInteractive: true);
         }
 
         public EnsureCertificateResult EnsureValidCertificateExists(
@@ -621,7 +638,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool trust = false,
             bool includePrivateKey = false,
             string password = null,
-            string subjectOverride = null)
+            string subjectOverride = null,
+            bool isInteractive = true)
         {
             if (purpose == CertificatePurpose.All)
             {
@@ -632,6 +650,33 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 ListCertificates(purpose, StoreName.My, StoreLocation.LocalMachine, isValid: true));
 
             certificates = subjectOverride == null ? certificates : certificates.Where(c => c.Subject == subjectOverride);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                foreach (var cert in certificates)
+                {
+                    if (!CanAccessCertificateKeyAcrossPartitions(cert))
+                    {
+                        if (!isInteractive)
+                        {
+                            // If the process is not interactive (first run experience) bail out. We will simply create a certificate
+                            // in case there is none or report success during the first run experience.
+                            break;
+                        }
+                        try
+                        {
+                            // The command we run handles making keys for all localhost certificates accessible across partitions. If it can not run the
+                            // command safely (because there are other localhost certificates that were not created by asp.net core, it will throw.
+                            MakeCertificateKeyAccessibleAcrossPartitions(cert);
+                            break;
+                        }
+                        catch (Exception)
+                        {
+                            return EnsureCertificateResult.FailedToMakeKeyAccessible;
+                        }
+                    }
+                }
+            }
 
             var result = EnsureCertificateResult.Succeeded;
 
@@ -702,6 +747,71 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             return result;
+        }
+
+        private void MakeCertificateKeyAccessibleAcrossPartitions(X509Certificate2 certificate)
+        {
+            if (OtherNonAspNetCoreHttpsCertificatesPresent())
+            {
+                throw new InvalidOperationException("Unable to make HTTPS ceritificate key trusted across security partitions.");
+            }
+            using (var process = Process.Start(MacOSSetPartitionKeyPermissionsCommandLine, MacOSSetPartitionKeyPermissionsCommandLineArguments))
+            {
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException("Error making the key accessible across partitions.");
+                }
+            }
+
+            var certificateSentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificate.{certificate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+            File.WriteAllText(certificateSentinelPath, "true");
+        }
+
+        private bool OtherNonAspNetCoreHttpsCertificatesPresent()
+        {
+            var certificates = new List<X509Certificate2>();
+            try
+            {
+                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadOnly);
+                    certificates.AddRange(store.Certificates.OfType<X509Certificate2>());
+                    IEnumerable<X509Certificate2> matchingCertificates = certificates;
+                        // Ensure the certificate hasn't expired, has a private key and its exportable
+                        // (for container/unix scenarios).
+                        var now = DateTimeOffset.Now;
+                        matchingCertificates = matchingCertificates
+                            .Where(c => c.NotBefore <= now &&
+                                now <= c.NotAfter && c.Subject == LocalhostHttpsDistinguishedName);
+
+                    // We need to enumerate the certificates early to prevent dispoisng issues.
+                    matchingCertificates = matchingCertificates.ToList();
+
+                    var certificatesToDispose = certificates.Except(matchingCertificates);
+                    DisposeCertificates(certificatesToDispose);
+
+                    store.Close();
+
+                    return matchingCertificates.All(c => !HasOid(c, AspNetHttpsOid));
+                }
+            }
+            catch
+            {
+                DisposeCertificates(certificates);
+                certificates.Clear();
+                return true;
+            }
+
+            bool HasOid(X509Certificate2 certificate, string oid) =>
+                certificate.Extensions.OfType<X509Extension>()
+                .Any(e => string.Equals(oid, e.Oid.Value, StringComparison.Ordinal));
+        }
+
+        private bool CanAccessCertificateKeyAcrossPartitions(X509Certificate2 certificate)
+        {
+            var certificateSentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificate.{certificate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+            return File.Exists(certificateSentinelPath);
         }
 
         private class UserCancelledTrustException : Exception
