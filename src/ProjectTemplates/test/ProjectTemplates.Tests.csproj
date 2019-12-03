@@ -11,7 +11,6 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
-    <TestDependsOnAppRuntime>true</TestDependsOnAppRuntime>
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
     <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
