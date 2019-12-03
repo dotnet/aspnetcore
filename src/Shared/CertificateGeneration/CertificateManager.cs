@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 #endif
         private const int UserCancelledErrorCode = 1223;
         private const string MacOSSetPartitionKeyPermissionsCommandLine = "sudo";
-        private static readonly string MacOSSetPartitionKeyPermissionsCommandLineArguments = "security set-key-partition-list -D localhost -S unsigned:, teamid:UBF8T346G9 " + MacOSUserKeyChain;
+        private static readonly string MacOSSetPartitionKeyPermissionsCommandLineArguments = "security set-key-partition-list -D localhost -S unsigned:,teamid:UBF8T346G9 " + MacOSUserKeyChain;
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
