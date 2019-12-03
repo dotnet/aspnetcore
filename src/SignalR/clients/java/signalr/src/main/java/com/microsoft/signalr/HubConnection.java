@@ -31,6 +31,7 @@ public class HubConnection {
 
     private String baseUrl;
     private Transport transport;
+    private boolean customTransport = false;
     private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
@@ -112,7 +113,7 @@ public class HubConnection {
     }
 
     // For testing purposes
-    Map<String,Observable> getStreamMap() {
+    Map<String, Observable> getStreamMap() {
         return this.streamMap;
     }
 
@@ -147,6 +148,7 @@ public class HubConnection {
 
         if (transport != null) {
             this.transport = transport;
+            this.customTransport = true;
         } else if (transportEnum != null) {
             this.transportEnum = transportEnum;
         }
@@ -548,7 +550,10 @@ public class HubConnection {
             if (this.httpClient instanceof DefaultHttpClient) {
                 this.httpClient = null;
             }
-            this.transport = null;
+
+            if (this.customTransport == false) {
+                this.transport = null;
+            }
         } finally {
             hubConnectionStateLock.unlock();
         }
