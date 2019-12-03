@@ -166,20 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
                 }
 
-                try
-                {
-                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
-                }
-                catch (AuthenticationException ex)
-                {
-                    if (_serverCertificate != null &&
-                        CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
-                        !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
-                    {
-                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
-                    }
-                    throw;
-                }
+                await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
 #else
                 var serverCert = _serverCertificate;
                 if (_serverCertificateSelector != null)
@@ -191,22 +178,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         EnsureCertificateIsAllowedForServerAuth(serverCert);
                     }
                 }
-                try
-                {
-                    await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
-                    _options.SslProtocols, _options.CheckCertificateRevocation);
 
-                }
-                catch (AuthenticationException ex)
-                {
-                    if (_serverCertificate != null &&
-                        CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
-                        !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
-                    {
-                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
-                    }
-                    throw;
-                }
+                await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
+                    _options.SslProtocols, _options.CheckCertificateRevocation);
 #endif
             }
             catch (OperationCanceledException)
@@ -223,6 +197,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
             finally
             {
+                if (!sslStream.IsAuthenticated && (_serverCertificate != null ||
+                    CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
+                    !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate)))
+                {
+                    _logger?.LogError(3, CoreStrings.BadDeveloperCertificateState);
+                }
+
                 timeoutFeature.CancelTimeout();
             }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -242,6 +242,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
+        }
+
+        [Fact]
+        public async Task DevCertWithInvalidPrivateKeyProducesCustomWarning()
+        {
+            var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
+
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            listenOptions.KestrelServerOptions = new KestrelServerOptions();
+            listenOptions.KestrelServerOptions.ApplicationServices = new ServiceCollection()
+                .AddSingleton(LoggerFactory)
+                .BuildServiceProvider();
+
+            var serverCertificate = new X509Certificate2(TestResources.GetTestCertificate().Export(X509ContentType.Cert));
+            listenOptions.UseHttps(serverCertificate);
+            using (var server = new TestServer(context => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
+                {
+                    // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
+                    await Assert.ThrowsAsync<IOException>(() =>
+                        sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
+                            enabledSslProtocols: SslProtocols.Tls,
+                            checkCertificateRevocation: false));
+                }
+            }
+
+            await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
+            Assert.Equal(3, loggerProvider.FilterLogger.LastEventId);
+            Assert.Equal(LogLevel.Error, loggerProvider.FilterLogger.LastLogLevel);
         }
 
         [Fact]
