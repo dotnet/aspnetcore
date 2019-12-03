@@ -51,8 +51,7 @@ namespace Templates.Test.Helpers
                 Timeout = TimeSpan.FromMinutes(2)
             };
 
-            var now = DateTimeOffset.Now;
-            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
+            EnsureDevelopmentCertificates();
 
             output.WriteLine("Running ASP.NET application...");
 
@@ -62,6 +61,12 @@ namespace Templates.Test.Helpers
             {
                 ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
             }
+        }
+
+        internal static void EnsureDevelopmentCertificates()
+        {
+            var now = DateTimeOffset.Now;
+            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
         }
 
         public void VisitInBrowser(IWebDriver driver)
