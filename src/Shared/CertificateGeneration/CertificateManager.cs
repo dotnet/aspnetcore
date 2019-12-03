@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 #endif
         private const int UserCancelledErrorCode = 1223;
         private const string MacOSSetPartitionKeyPermissionsCommandLine = "sudo";
-        private const string MacOSSetPartitionKeyPermissionsCommandLineArguments = "security set-key-partition-list -D localhost -S unsigned:, teamid:UBF8T346G9'";
+        private static readonly string MacOSSetPartitionKeyPermissionsCommandLineArguments = "security set-key-partition-list -D localhost -S unsigned:, teamid:UBF8T346G9 " + MacOSUserKeyChain;
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -764,9 +764,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
             }
 
-            var certificateSentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificate.{certificate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+            var certificateSentinelPath = GetCertificateSentinelPath(certificate);
             File.WriteAllText(certificateSentinelPath, "true");
         }
+
+        private static string GetCertificateSentinelPath(X509Certificate2 certificate) =>
+            Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificate.{certificate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
 
         private bool OtherNonAspNetCoreHttpsCertificatesPresent()
         {
@@ -810,7 +813,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         private bool CanAccessCertificateKeyAcrossPartitions(X509Certificate2 certificate)
         {
-            var certificateSentinelPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".dotnet", $"certificate.{certificate.GetCertHashString(HashAlgorithmName.SHA256)}.sentinel");
+            var certificateSentinelPath = GetCertificateSentinelPath(certificate);
             return File.Exists(certificateSentinelPath);
         }
 

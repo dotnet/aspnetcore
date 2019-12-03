@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         private const int ErrorNoValidCertificateFound = 6;
         private const int ErrorCertificateNotTrusted = 7;
         private const int ErrorCleaningUpCertificates = 8;
+        private const int ErrorMacOsCertificateKeyCouldNotBeAccessible = 9;
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
@@ -157,7 +158,16 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
             else
             {
-                reporter.Verbose("A valid certificate was found.");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !certificateManager.HasValidCertificateWithAccessibleKeyAcrossPartitions())
+                {
+                    reporter.Warn($"We found a valid HTTPS certificate but we couldn't determine that the key will be accessible across security partitions. Running dotnet dev-certs https will fix the issue.");
+                    return ErrorMacOsCertificateKeyCouldNotBeAccessible;
+                }
+                else
+                {
+                    reporter.Verbose("A valid certificate was found.");
+                }
+
             }
 
             if (trust != null && trust.HasValue())
