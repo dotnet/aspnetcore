@@ -21,6 +21,14 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
             return retVal;
         }
 
+        protected uint GetProperty<T>(string pszProperty, Span<T> buffer, uint cbOutput) where T : unmanaged
+        {
+            fixed (T* ptr = buffer)
+            {
+                return GetProperty(pszProperty, ptr, cbOutput);
+            }
+        }
+
         protected void SetProperty(string pszProperty, void* pbInput, uint cbInput)
         {
             int ntstatus = UnsafeNativeMethods.BCryptSetProperty(this, pszProperty, pbInput, cbInput, dwFlags: 0);

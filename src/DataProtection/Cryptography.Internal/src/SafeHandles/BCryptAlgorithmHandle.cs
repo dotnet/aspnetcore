@@ -75,15 +75,11 @@ namespace Microsoft.AspNetCore.Cryptography.SafeHandles
                 return String.Empty; // degenerate case
             }
 
-            // Allocate a string object and write directly into it (CLR team approves of this mechanism).
-            string retVal = new String((char)0, checked((int)numCharsWithoutNull));
-            uint numBytesCopied;
-            fixed (char* pRetVal = retVal)
+            return string.Create(checked((int)numCharsWithoutNull), byteLengthOfNameWithTerminatingNull, (buffer, state) =>
             {
-                numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, pRetVal, byteLengthOfNameWithTerminatingNull);
-            }
-            CryptoUtil.Assert(numBytesCopied == byteLengthOfNameWithTerminatingNull, "numBytesCopied == byteLengthOfNameWithTerminatingNull");
-            return retVal;
+                uint numBytesCopied = GetProperty(Constants.BCRYPT_ALGORITHM_NAME, buffer, state);
+                CryptoUtil.Assert(numBytesCopied == byteLengthOfNameWithTerminatingNull, "numBytesCopied == byteLengthOfNameWithTerminatingNull");
+            });
         }
 
         /// <summary>
