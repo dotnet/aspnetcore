@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -146,6 +147,39 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 catch
                 {
                 }
+            }
+        }
+
+        internal static bool IsHttpsDevelopmentCertificate(X509Certificate2 certificate) =>
+            certificate.Extensions.OfType<X509Extension>()
+                .Any(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal));
+
+        internal static bool CheckDeveloperCertificateKey(X509Certificate2 candidate)
+        {
+            // Tries to use the certificate key to validate it can't access it
+            try
+            {
+                var rsa = candidate.GetRSAPrivateKey();
+                if (rsa == null)
+                {
+                    return false;
+                }
+
+                // Encrypting a random value is the ultimate test for a key validity.
+                // Windows and Mac OS both return HasPrivateKey = true if there is (or there has been) a private key associated
+                // with the certificate at some point.
+                var value = new byte[32];
+                using (var rng = RandomNumberGenerator.Create())
+                {
+                    rsa.Decrypt(rsa.Encrypt(value, RSAEncryptionPadding.Pkcs1), RSAEncryptionPadding.Pkcs1);
+                }
+
+                // Being able to encrypt and decrypt a payload is the strongest guarantee that the key is valid.
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

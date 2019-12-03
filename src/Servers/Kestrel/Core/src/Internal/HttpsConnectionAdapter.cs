@@ -9,6 +9,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -165,7 +166,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
                 }
 
-                await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                try
+                {
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                }
+                catch (AuthenticationException ex)
+                {
+                    if (_serverCertificate != null &&
+                        CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
+                        !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
+                    {
+                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                    }
+                    throw;
+                }
 #else
                 var serverCert = _serverCertificate;
                 if (_serverCertificateSelector != null)
@@ -177,8 +191,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         EnsureCertificateIsAllowedForServerAuth(serverCert);
                     }
                 }
-                await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
-                        _options.SslProtocols, _options.CheckCertificateRevocation);
+                try
+                {
+                    await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
+                    _options.SslProtocols, _options.CheckCertificateRevocation);
+
+                }
+                catch (AuthenticationException ex)
+                {
+                    if (_serverCertificate != null &&
+                        CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
+                        !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
+                    {
+                        _logger.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                    }
+                    throw;
+                }
 #endif
             }
             catch (OperationCanceledException)

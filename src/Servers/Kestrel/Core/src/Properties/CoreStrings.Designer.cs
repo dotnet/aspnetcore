@@ -1876,6 +1876,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatConnectionTimedOutByServer()
             => GetString("ConnectionTimedOutByServer");
 
+        /// <summary>
+        /// The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.
+        /// </summary>
+        internal static string BadDeveloperCertificateState
+        {
+            get => GetString("BadDeveloperCertificateState");
+        }
+
+        /// <summary>
+        /// The ASP.NET Core developer certificate is in an invalid state. To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates and create a new untrusted developer certificate. On macOS or Windows, use 'dotnet dev-certs https --trust' to trust the new certificate.
+        /// </summary>
+        internal static string FormatBadDeveloperCertificateState()
+            => GetString("BadDeveloperCertificateState");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
