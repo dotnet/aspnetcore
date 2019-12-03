@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 reporter.Warn($"We did not find a valid HTTPS certificate with a key accessible across security partitions. We will run the following command:" + Environment.NewLine +
                     "'sudo security set-key-partition-list -D localhost -S unsigned:,teamid:UBF8T346G9'" + Environment.NewLine +
-                    "This command will make the certificate key accessible across security partitions and might prompt you for your password. For more information see: <<FWDLink>>");
+                    "This command will make the certificate key accessible across security partitions and might prompt you for your password. For more information see: https://aka.ms/aspnetcore/2.1/troubleshootcertissues");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && trust?.HasValue() == true)
