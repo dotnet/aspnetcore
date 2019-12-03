@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
             else
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !certificateManager.HasValidCertificateWithAccessibleKeyAcrossPartitions())
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && certificateManager.HasValidCertificateWithInnaccessibleKeyAcrossPartitions())
                 {
                     reporter.Warn($"We found a valid HTTPS certificate but we couldn't determine that the key will be accessible across security partitions. Running dotnet dev-certs https will fix the issue.");
                     return ErrorMacOsCertificateKeyCouldNotBeAccessible;
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             var now = DateTimeOffset.Now;
             var manager = new CertificateManager();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !manager.HasValidCertificateWithAccessibleKeyAcrossPartitions())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && manager.HasValidCertificateWithInnaccessibleKeyAcrossPartitions())
             {
                 reporter.Warn($"We found a valid HTTPS certificate but we couldn't determine that the key will be accessible across security partitions. We will run the following command:" + Environment.NewLine +
                     "'sudo security set-key-partition-list -D localhost -S unsigned:,teamid:UBF8T346G9'" + Environment.NewLine +

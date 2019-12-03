@@ -194,18 +194,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return certificate;
         }
 
-        internal bool HasValidCertificateWithAccessibleKeyAcrossPartitions()
+        internal bool HasValidCertificateWithInnaccessibleKeyAcrossPartitions()
         {
             var certificates = ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true);
-            foreach (var certificate in certificates)
+            if (certificates.Count == 0)
             {
-                if (CanAccessCertificateKeyAcrossPartitions(certificate))
-                {
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            // We need to check all certificates as a new one might be created that hasn't been correctly setup.
+            var result = false;
+            foreach (var certificate in certificates)
+            {
+                result = result || !CanAccessCertificateKeyAcrossPartitions(certificate);
+            }
+
+            return result;
         }
 
         public X509Certificate2 CreateApplicationTokenSigningDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
