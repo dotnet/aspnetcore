@@ -127,4 +127,6 @@ abstract class HttpClient {
     public abstract WebSocketWrapper createWebSocket(String url, Map<String, String> headers);
 
     public abstract HttpClient cloneWithTimeOut(int timeoutInMilliseconds);
+
+    public abstract void close();
 }

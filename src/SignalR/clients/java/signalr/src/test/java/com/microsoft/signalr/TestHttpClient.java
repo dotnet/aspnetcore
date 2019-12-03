@@ -76,6 +76,10 @@ class TestHttpClient extends HttpClient {
         return this;
     }
 
+    @Override
+    public void close() {
+    }
+
     interface TestHttpRequestHandler {
         Single<HttpResponse> invoke(HttpRequest request);
     }

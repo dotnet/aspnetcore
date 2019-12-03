@@ -59,6 +59,7 @@ public class HubConnection {
     private String connectionId;
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
+    private ScheduledExecutorService handshakeTimeout = null;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -246,8 +247,8 @@ public class HubConnection {
     }
 
     private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
-        ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-        scheduledThreadPool.schedule(() -> {
+        handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
+        handshakeTimeout.schedule(() -> {
             // If onError is called on a completed subject the global error handler is called
             if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
             {
@@ -323,6 +324,10 @@ public class HubConnection {
     public Completable start() {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return Completable.complete();
+        }
+
+        if (this.httpClient == null) {
+            this.httpClient = new DefaultHttpClient();
         }
 
         handshakeResponseSubject = CompletableSubject.create();
@@ -531,6 +536,19 @@ public class HubConnection {
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
             this.streamMap.clear();
+            if (this.pingTimer != null) {
+                this.pingTimer.cancel();
+            }
+            if (this.handshakeTimeout != null) {
+                this.handshakeTimeout.shutdownNow();
+                this.handshakeTimeout = null;
+            }
+
+            this.httpClient.close();
+            if (this.httpClient instanceof DefaultHttpClient) {
+                this.httpClient = null;
+            }
+            this.transport = null;
         } finally {
             hubConnectionStateLock.unlock();
         }

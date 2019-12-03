@@ -29,6 +29,13 @@ final class DefaultHttpClient extends HttpClient {
         return new DefaultHttpClient(timeoutInMilliseconds, newClient);
     }
 
+    @Override
+    public void close() {
+        if (this.client != null) {
+            this.client.dispatcher().executorService().shutdown();
+        }
+    }
+
     public DefaultHttpClient(int timeoutInMilliseconds, OkHttpClient client) {
         if (client != null) {
             this.client = client;
