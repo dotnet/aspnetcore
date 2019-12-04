@@ -5,6 +5,9 @@ using System;
 using System.Buffers;
 using System.Net.Http;
 using System.Net.Http.HPack;
+#if KESTREL
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+#endif
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
