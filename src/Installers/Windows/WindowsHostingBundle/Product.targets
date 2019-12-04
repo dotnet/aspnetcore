@@ -26,10 +26,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppInternalPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
         <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
