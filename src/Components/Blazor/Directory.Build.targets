@@ -4,4 +4,5 @@
   <PropertyGroup>
     <ComponentsPackageVersion>$(PackageVersion)</ComponentsPackageVersion>
   </PropertyGroup>
+
 </Project>
