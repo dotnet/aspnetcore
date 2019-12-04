@@ -195,15 +195,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
+            catch (NotSupportedException ex)
+            {
+                if (_serverCertificate != null &&
+                    CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
+                    !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate))
+                {
+                    _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
+                }
+                throw;
+            }
             finally
             {
-                if (!sslStream.IsAuthenticated && (_serverCertificate != null ||
-                    CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) ||
-                    !CertificateManager.CheckDeveloperCertificateKey(_serverCertificate)))
-                {
-                    _logger?.LogError(3, CoreStrings.BadDeveloperCertificateState);
-                }
-
                 timeoutFeature.CancelTimeout();
             }
 

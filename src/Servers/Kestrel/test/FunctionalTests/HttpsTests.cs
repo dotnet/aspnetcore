@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .AddSingleton(LoggerFactory)
                 .BuildServiceProvider();
 
-            var serverCertificate = new X509Certificate2(TestResources.GetTestCertificate().Export(X509ContentType.Cert));
+            var serverCertificate = new X509Certificate2(TestResources.GetTestCertificate("aspnetdevcert.pfx", "aspnetdevcert").Export(X509ContentType.Cert));
             listenOptions.UseHttps(serverCertificate);
             using (var server = new TestServer(context => Task.CompletedTask,
                 new TestServiceContext(LoggerFactory),
