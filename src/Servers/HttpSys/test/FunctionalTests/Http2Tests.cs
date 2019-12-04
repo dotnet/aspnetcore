@@ -1,7 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http2Cat;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Testing;
@@ -16,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
     {
         [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17420")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        [MaximumOSVersion(OperatingSystems.Windows, "10.0.18362.9999", SkipReason = "This is last version without GoAway support")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H1, SkipReason = "This is last version without GoAway support")]
         public async Task ConnectionClose_NoOSSupport_NoGoAway()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -226,6 +230,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
                 .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without Reset support")]
+        public async Task Reset_PriorOSVersions_NotSupported()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.Null(feature);
+                return httpContext.Response.WriteAsync("Hello World");
+            });
+
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using HttpClient client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            var response = await client.GetStringAsync(address);
+            Assert.Equal("Hello World", response);
         }
     }
 }
