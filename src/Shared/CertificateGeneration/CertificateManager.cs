@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     return EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                 }
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && isInteractive)
                 {
                     MakeCertificateKeyAccessibleAcrossPartitions(certificate);
                 }
