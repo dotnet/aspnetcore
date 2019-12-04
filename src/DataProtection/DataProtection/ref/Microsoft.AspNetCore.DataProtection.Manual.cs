@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public System.DateTimeOffset CreationDate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor Descriptor { get { throw null; } }
         public System.DateTimeOffset ExpirationDate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsRevoked { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        public bool IsRevoked { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Guid KeyId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor CreateEncryptor() { throw null; }
         internal void SetRevoked() { }
