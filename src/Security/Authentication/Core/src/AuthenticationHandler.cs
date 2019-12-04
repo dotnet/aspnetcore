@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected virtual Task InitializeHandlerAsync() => Task.CompletedTask;
 
         protected string BuildRedirectUri(string targetPath)
-            => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
+            => Request.Scheme + "://" + Request.Host + OriginalPathBase.ToString().TrimEnd('/') + targetPath;
 
         protected virtual string ResolveTarget(string scheme)
         {
