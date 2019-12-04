@@ -214,6 +214,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Custom = (byte)9,
         None = (byte)255,
     }
+    public partial class HttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    {
+        public HttpParser() { }
+        public HttpParser(bool showErrorDetails) { }
+        public bool ParseHeaders(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
+        public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+    }
     public enum HttpScheme
     {
         Unknown = -1,
@@ -227,6 +234,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Http11 = 1,
         Http2 = 2,
         Http3 = 3,
+    }
+    public partial interface IHttpHeadersHandler
+    {
+        void OnHeader(System.ReadOnlySpan<byte> name, System.ReadOnlySpan<byte> value);
+        void OnHeadersComplete(bool endStream);
     }
     public partial interface IHttpRequestLineHandler
     {

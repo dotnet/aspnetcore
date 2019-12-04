@@ -3,8 +3,8 @@
 
 using System;
 using System.Buffers;
-using System.Net.Http;
 using System.Net.Http.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {

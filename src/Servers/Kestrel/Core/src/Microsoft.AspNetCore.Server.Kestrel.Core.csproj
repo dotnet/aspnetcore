@@ -9,6 +9,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <IsShippingPackage>false</IsShippingPackage>
+    <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

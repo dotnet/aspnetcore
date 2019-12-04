@@ -4,6 +4,9 @@
 
 using System.Buffers;
 using System.Diagnostics;
+#if KESTREL
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+#endif
 
 namespace System.Net.Http.HPack
 {
