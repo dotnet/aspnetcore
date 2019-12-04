@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -46,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var payloadLength = (int)Bitshifter.ReadUInt24BigEndian(header);
             if (payloadLength > maxFrameSize)
             {
-                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(SharedStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             // Make sure the whole frame is buffered
@@ -78,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (extendedHeaderLength > frame.PayloadLength)
             {
                 throw new Http2ConnectionErrorException(
-                    CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR);
+                    SharedStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             var extendedHeaders = readableBuffer.Slice(HeaderLength, extendedHeaderLength).ToSpan();
