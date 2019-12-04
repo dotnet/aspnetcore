@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TestGroupName>Kestrel.Core.Tests</TestGroupName>
+    <DefineConstants>$(DefineConstants);KESTREL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
