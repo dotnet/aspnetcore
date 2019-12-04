@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && certificateManager.HasValidCertificateWithInnaccessibleKeyAcrossPartitions())
                 {
-                    reporter.Warn($"We found a valid HTTPS certificate but we couldn't confirm that the key will be accessible across security partitions. Run dotnet dev-certs https to ensure it will be accessible during development.");
+                    reporter.Warn($"A valid HTTPS certificate was found but it may not be accessible across security partitions. Run dotnet dev-certs https to ensure it will be accessible during development.");
                     return ErrorMacOsCertificateKeyCouldNotBeAccessible;
                 }
                 else
