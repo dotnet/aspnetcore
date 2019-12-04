@@ -189,13 +189,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
-            catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
+            catch (IOException ex)
             {
                 _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
-            catch (NotSupportedException ex)
+            catch (AuthenticationException ex)
             {
                 if (_serverCertificate != null &&
                     CertificateManager.IsHttpsDevelopmentCertificate(_serverCertificate) &&
@@ -203,7 +203,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     _logger?.LogError(3, ex, CoreStrings.BadDeveloperCertificateState);
                 }
-                throw;
+                else
+                {
+                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                }
+
+                sslStream.Dispose();
+                return _closedAdaptedConnection;
             }
             finally
             {
