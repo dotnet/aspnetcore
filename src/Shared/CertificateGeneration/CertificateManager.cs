@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         }
 
         public IList<X509Certificate2> GetHttpsCertificates() =>
-            ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: true);
+            ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
 
         public X509Certificate2 CreateApplicationTokenSigningDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
         {
