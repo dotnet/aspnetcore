@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -61,14 +62,15 @@ namespace Company.WebApplication1
 
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
             services.AddDefaultIdentity<IdentityUser>()
+                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -115,7 +117,7 @@ namespace Company.WebApplication1
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
 #endif
 
-            #if (OrganizationalAuth)
+#if (OrganizationalAuth)
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -123,9 +125,9 @@ namespace Company.WebApplication1
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 #else
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 #endif
         }
 
@@ -134,9 +136,6 @@ namespace Company.WebApplication1
         {
             if (env.IsDevelopment())
             {
-#if (UseBrowserLink)
-                app.UseBrowserLink();
-#endif
                 app.UseDeveloperExceptionPage();
 #if (IndividualLocalAuth)
                 app.UseDatabaseErrorPage();
@@ -146,6 +145,7 @@ namespace Company.WebApplication1
             {
                 app.UseExceptionHandler("/Home/Error");
 #if (RequiresHttps)
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 

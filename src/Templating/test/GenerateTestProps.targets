@@ -5,8 +5,6 @@
         RestoreSources=$([MSBuild]::Escape($(RestoreSources)));
         RuntimeFrameworkVersion=$(RuntimeFrameworkVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
-        BundledAspNetCoreAllTargetFrameworkVersion=$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAllPackageVersion.Split('.')[1]);
-        BundledAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion);
         BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1]);
         BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)
       </PropsProperties>

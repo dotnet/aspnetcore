@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -303,12 +304,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.NotEmpty(completeQueue);
 
                     // Add more bytes to the write-behind buffer to prevent the next write from
-                    outputProducer.Write((writableBuffer, state) =>
+                    _ = outputProducer.WriteAsync((writableBuffer, state) =>
                     {
                         writableBuffer.Write(state);
                         return state.Count;
                     },
-                    halfWriteBehindBuffer);
+                    halfWriteBehindBuffer,
+                    default);
 
                     // Act
                     var writeTask2 = outputProducer.WriteDataAsync(halfWriteBehindBuffer);
@@ -396,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     // Cause all writes to fail
                     while (completeQueue.TryDequeue(out var triggerNextCompleted))
                     {
-                        await _libuvThread.PostAsync(cb => cb(-1), triggerNextCompleted);
+                        await _libuvThread.PostAsync(cb => cb(LibuvConstants.ECONNRESET.Value), triggerNextCompleted);
                     }
 
                     // Second task is now completed
@@ -734,16 +736,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
-            connectionFeatures.Set(Mock.Of<IBytesWrittenFeature>());
 
-            var http1Connection = new Http1Connection(new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionContext = Mock.Of<ConnectionContext>(),
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 

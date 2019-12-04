@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Xunit;
@@ -380,6 +381,72 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public async Task HandlerIsRemovedProperlyWithOff()
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection);
+                var handlerCalled = new TaskCompletionSource<int>();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    hubConnection.On<int>("Foo", (val) =>
+                    {
+                        handlerCalled.TrySetResult(val);
+                    });
+
+                    hubConnection.Remove("Foo");
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = 1 }).OrTimeout();
+                    var handlerTask = handlerCalled.Task;
+
+                    // We expect the handler task to timeout since the handler has been removed with the call to Remove("Foo")
+                    var ex = Assert.ThrowsAsync<TimeoutException>(async () => await handlerTask.OrTimeout(2000));
+
+                    // Ensure that the task from the WhenAny is not the handler task
+                    Assert.False(handlerCalled.Task.IsCompleted);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task DisposingSubscriptionAfterCallingRemoveHandlerDoesntFail()
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection);
+                var handlerCalled = new TaskCompletionSource<int>();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    var subscription = hubConnection.On<int>("Foo", (val) =>
+                    {
+                        handlerCalled.TrySetResult(val);
+                    });
+
+                    hubConnection.Remove("Foo");
+                    await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = 1 }).OrTimeout();
+                    var handlerTask = handlerCalled.Task;
+
+                    subscription.Dispose();
+
+                    // We expect the handler task to timeout since the handler has been removed with the call to Remove("Foo")
+                    var ex = Assert.ThrowsAsync<TimeoutException>(async () => await handlerTask.OrTimeout(2000));
+
+                    // Ensure that the task from the WhenAny is not the handler task
+                    Assert.False(handlerCalled.Task.IsCompleted);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
             public async Task AcceptsPingMessages()
             {
                 var connection = new TestConnection();
@@ -466,7 +533,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             [Fact]
             public async Task PartialInvocationWorks()
-            {                
+            {
                 var connection = new TestConnection();
                 var hubConnection = CreateHubConnection(connection);
                 try
@@ -492,6 +559,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var response = await tcs.Task.OrTimeout();
 
                     Assert.Equal("hello", response);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
+            public async Task ClientPingsMultipleTimes()
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection);
+
+                hubConnection.TickRate = TimeSpan.FromMilliseconds(30);
+                hubConnection.KeepAliveInterval = TimeSpan.FromMilliseconds(80);
+
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+
+                    var firstPing = await connection.ReadSentTextMessageAsync(ignorePings: false).OrTimeout();
+                    Assert.Equal("{\"type\":6}", firstPing);
+
+                    var secondPing = await connection.ReadSentTextMessageAsync(ignorePings: false).OrTimeout();
+                    Assert.Equal("{\"type\":6}", secondPing);
                 }
                 finally
                 {

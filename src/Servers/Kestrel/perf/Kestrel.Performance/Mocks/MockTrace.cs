@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
@@ -42,11 +43,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void RequestBodyDone(string connectionId, string traceIdentifier) { }
         public void RequestBodyNotEntirelyRead(string connectionId, string traceIdentifier) { }
         public void RequestBodyDrainTimedOut(string connectionId, string traceIdentifier) { }
-        public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate) { }
-        public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier) { }
+        public void RequestBodyMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate) { }
+        public void ResponseMinimumDataRateNotSatisfied(string connectionId, string traceIdentifier) { }
         public void ApplicationAbortedConnection(string connectionId, string traceIdentifier) { }
         public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex) { }
         public void Http2StreamError(string connectionId, Http2StreamErrorException ex) { }
         public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex) { }
+        public void HPackEncodingError(string connectionId, int streamId, HPackEncodingException ex) { }
+        public void Http2StreamResetAbort(string traceIdentifier, Http2ErrorCode error, ConnectionAbortedException abortReason) { }
+        public void Http2ConnectionClosing(string connectionId) { }
+        public void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId) { }
+        public void Http2FrameReceived(string connectionId, Http2Frame frame) { }
+        public void Http2FrameSending(string connectionId, Http2Frame frame) { }
     }
 }

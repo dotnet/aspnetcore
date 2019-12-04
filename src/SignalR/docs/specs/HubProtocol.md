@@ -32,7 +32,7 @@ In the SignalR protocol, the following types of messages can be sent:
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
-After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection.
+After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection. Both the `HandshakeRequest` and `HandshakeResponse` messages must be terminated by the ASCII character `0x1E` (record separator).
 
 The `HandshakeRequest` message contains the following properties:
 
@@ -105,7 +105,7 @@ On the Caller side, the user code which performs the invocation indicates how it
 
 An Invocation is only considered completed when the `Completion` message is received. Receiving **any** message using the same `Invocation ID` after a `Completion` message has been received for that invocation is considered a protocol error and the recipient may immediately terminate the connection.
 
-If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `Completion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. If the Callee receives an `Invocation` message for a method that would yield multiple results or the Callee receives a `StreamInvocationMessage` for a method that would return a single result it **MUST** complete the invocation with a `Completion` message containing an error.
+If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `Completion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. If the Callee receives an `Invocation` message for a method that would yield multiple results or the Callee receives a `StreamInvocation` message for a method that would return a single result it **MUST** complete the invocation with a `Completion` message containing an error.
 
 ## Errors
 
@@ -131,7 +131,7 @@ Keep alive behavior is achieved via the `Ping` message type. **Either endpoint**
 
 Ping messages do not have any payload, they are completely empty messages (aside from the encoding necessary to identify the message as a `Ping` message).
 
-It is up to the server implementation to decide how frequently (if at all) `Ping` frames are sent. The ASP.NET Core implementation sends `Ping` frames only when using the Server Sent Events and WebSockets transports, at a default interval of 15 seconds (configurable). However, a `Ping` frame is only sent if 15 seconds elapses since the last message was sent. Clients may choose to use the "Ping rate" to provide a timeout for the server connection. Since the Client can expect the server to send `Ping` frames at regular intervals, even when the connection is idle, it can use that to determine if the server has left without closing the connection. The ASP.NET Core implementation (both JavaScript and C#) use a default timeout window of 30 seconds, which is twice the server ping rate interval.
+The default ASP.NET Core implementation automatically pings both directions on active connections. These pings are at regular intervals, and allow detection of unexpected disconnects (for example, unplugging a server). If the client detects that the server has stopped pinging, the client will close the connection, and vice versa. If there's other traffic through the connection, keep-alive pings aren't needed. A `Ping` is only sent if the interval has elapsed without a message being sent.
 
 ## Example
 
@@ -278,6 +278,8 @@ C->S: Ping
 ## JSON Encoding
 
 In the JSON Encoding of the SignalR Protocol, each Message is represented as a single JSON object, which should be the only content of the underlying message from the Transport. All property names are case-sensitive. The underlying protocol is expected to handle encoding and decoding of the text, so the JSON string should be encoded in whatever form is expected by the underlying transport. For example, when using the ASP.NET Sockets transports, UTF-8 encoding is always used for text.
+
+All JSON messages must be terminated by the ASCII character `0x1E` (record separator).
 
 ### Invocation Message Encoding
 
@@ -476,8 +478,6 @@ Message headers are encoded into a JSON object, with string values, that are sto
 ### JSON Payload Encoding
 
 Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
-
-JSON payloads are separated with the record separator (0x1e) to ease the parsing.
 
 ## MessagePack (MsgPack) encoding
 

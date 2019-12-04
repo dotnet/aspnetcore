@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 17 - (0:0,0)
+    Tag block - Gen<TagHelper> - 17 - (0:0,0) - myth - mythTagHelper
+        SelfClosing - <myth bound='' />
+        bound - SingleQuotes
+            Markup block - Gen<None> - 0 - (0:0,0)

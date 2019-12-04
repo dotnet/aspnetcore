@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var defaultProvider = new DefaultApplicationModelProvider(
                 Options.Create(new MvcOptions()),
-                TestModelMetadataProvider.CreateDefaultProvider());
+                new EmptyModelMetadataProvider());
 
             var context = new ApplicationModelProviderContext(new[] { controllerType.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);

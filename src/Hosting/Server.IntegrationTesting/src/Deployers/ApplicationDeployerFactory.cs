@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// <param name="deploymentParameters"></param>
         /// <param name="loggerFactory"></param>
         /// <returns></returns>
-        public static IApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
+        public static ApplicationDeployer Create(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
         {
             if (deploymentParameters == null)
             {
@@ -32,10 +32,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             switch (deploymentParameters.ServerType)
             {
                 case ServerType.IISExpress:
-                    return new IISExpressDeployer(deploymentParameters, loggerFactory);
                 case ServerType.IIS:
-                    throw new NotSupportedException("The IIS deployer is no longer supported");
-                case ServerType.WebListener:
+                    throw new NotSupportedException("Use Microsoft.AspNetCore.Server.IntegrationTesting.IIS package and IISApplicationDeployerFactory for IIS support.");
+                case ServerType.HttpSys:
                 case ServerType.Kestrel:
                     return new SelfHostDeployer(deploymentParameters, loggerFactory);
                 case ServerType.Nginx:

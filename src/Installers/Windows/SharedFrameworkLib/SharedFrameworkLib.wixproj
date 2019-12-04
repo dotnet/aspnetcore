@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <Name>AspNetCoreSharedFrameworkLib$(Platform)</Name>
-    <OutputName>$(WixlibBaseFileName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <!-- Use the internal installer name because .wixlib files are only produced so we can hand them off to the dotnet/cli repo. -->
+    <OutputName>$(InternalInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
     <OutputType>Library</OutputType>
     <LibBindFiles>true</LibBindFiles>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>

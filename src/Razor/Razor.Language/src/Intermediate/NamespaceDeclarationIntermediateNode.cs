@@ -20,5 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitNamespaceDeclaration(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(Content);
+
+            formatter.WriteProperty(nameof(Content), Content);
+        }
     }
 }

@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             get
             {
-                if (ViewContext == null)
+                var viewContext = ViewContext;
+                if (viewContext == null)
                 {
-                    var message = Resources.FormatViewContextMustBeSet("ViewContext", "Output");
-                    throw new InvalidOperationException(message);
+                    throw new InvalidOperationException(Resources.FormatViewContextMustBeSet(nameof(ViewContext), nameof(Output)));
                 }
 
-                return ViewContext.Writer;
+                return viewContext.Writer;
             }
         }
 
@@ -183,8 +183,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
+            var viewContext = ViewContext;
             var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
-            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, ViewContext.Writer));
+            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, viewContext.Writer));
 
             // If passed an HtmlEncoder, override the property.
             if (encoder != null)
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = new ViewBufferTextWriter(buffer, ViewContext.Writer.Encoding);
+            viewContext.Writer = new ViewBufferTextWriter(buffer, viewContext.Writer.Encoding);
         }
 
         /// <summary>
@@ -238,7 +239,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(Resources.RazorPage_NestingAttributeWritingScopesNotSupported);
             }
 
-            _pageWriter = ViewContext.Writer;
+            var viewContext = ViewContext;
+            _pageWriter = viewContext.Writer;
 
             if (_valueBuffer == null)
             {
@@ -247,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
-            ViewContext.Writer = _valueBuffer;
+            viewContext.Writer = _valueBuffer;
 
         }
 
@@ -284,15 +286,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            _textWriterStack.Push(ViewContext.Writer);
-            ViewContext.Writer = writer;
+            var viewContext = ViewContext;
+            _textWriterStack.Push(viewContext.Writer);
+            viewContext.Writer = writer;
         }
 
         // Internal for unit testing.
         protected internal virtual TextWriter PopWriter()
         {
-            ViewContext.Writer = _textWriterStack.Pop();
-            return ViewContext.Writer;
+            var viewContext = ViewContext;
+            var writer = _textWriterStack.Pop();
+            viewContext.Writer = writer;
+            return writer;
         }
 
         public virtual string Href(string contentPath)
@@ -304,9 +309,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             if (_urlHelper == null)
             {
-                var services = ViewContext?.HttpContext.RequestServices;
+                var viewContext = ViewContext;
+                var services = viewContext?.HttpContext.RequestServices;
                 var factory = services.GetRequiredService<IUrlHelperFactory>();
-                _urlHelper = factory.GetUrlHelper(ViewContext);
+                _urlHelper = factory.GetUrlHelper(viewContext);
             }
 
             return _urlHelper.Content(contentPath);
@@ -637,8 +643,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// before <see cref="RazorPageBase.FlushAsync"/> flushes the headers. </remarks>
         public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
-            var antiforgery = ViewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(ViewContext?.HttpContext);
+            var viewContext = ViewContext;
+            var antiforgery = viewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+            antiforgery.SetCookieTokenAndHeader(viewContext?.HttpContext);
 
             return HtmlString.Empty;
         }

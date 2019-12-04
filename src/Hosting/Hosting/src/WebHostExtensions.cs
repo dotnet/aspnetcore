@@ -45,8 +45,14 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: string.Empty);
 
-                await host.WaitForTokenShutdownAsync(cts.Token);
-                done.Set();
+                try
+                {
+                    await host.WaitForTokenShutdownAsync(cts.Token);
+                }
+                finally
+                {
+                    done.Set();
+                }
             }
         }
 
@@ -80,8 +86,14 @@ namespace Microsoft.AspNetCore.Hosting
                 var shutdownMessage = host.Services.GetRequiredService<WebHostOptions>().SuppressStatusMessages ? string.Empty : "Application is shutting down...";
                 AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: shutdownMessage);
 
-                await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
-                done.Set();
+                try
+                {
+                    await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
+                }
+                finally
+                {
+                    done.Set();
+                }
             }
         }
 
@@ -92,7 +104,6 @@ namespace Microsoft.AspNetCore.Hosting
                 await host.StartAsync(token);
 
                 var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
-                var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
                 var options = host.Services.GetRequiredService<WebHostOptions>();
 
                 if (!options.SuppressStatusMessages)
@@ -124,18 +135,21 @@ namespace Microsoft.AspNetCore.Hosting
         {
             void Shutdown()
             {
-                if (!cts.IsCancellationRequested)
+                try
                 {
-                    if (!string.IsNullOrEmpty(shutdownMessage))
+                    if (!cts.IsCancellationRequested)
                     {
-                        Console.WriteLine(shutdownMessage);
-                    }
-                    try
-                    {
+                        if (!string.IsNullOrEmpty(shutdownMessage))
+                        {
+                            Console.WriteLine(shutdownMessage);
+                        }
                         cts.Cancel();
                     }
-                    catch (ObjectDisposedException) { }
                 }
+                // When hosting with IIS in-process, we detach the Console handle on main thread exit.
+                // Console.WriteLine may throw here as we are logging to console on ProcessExit.
+                // We catch and ignore all exceptions here. Do not log to Console in thie exception handler.
+                catch (Exception) { }
 
                 // Wait on the given reset event
                 resetEvent.Wait();

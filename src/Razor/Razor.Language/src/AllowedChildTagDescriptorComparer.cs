@@ -54,20 +54,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            return descriptorX != null &&
+            return
                 string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
-                string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(descriptorX.Diagnostics, descriptorY.Diagnostics);
+                string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
         public virtual int GetHashCode(AllowedChildTagDescriptor descriptor)
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Name, _stringComparer);
-            hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Name, _stringComparer);
 
-            return hashCodeCombiner.CombinedHash;
+            return hash.CombinedHash;
         }
     }
 }

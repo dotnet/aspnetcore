@@ -71,11 +71,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     };
                 }
 
+                string message = null;
+                if (!output.IsContentModified)
+                {
+                    var tagHelperContent = await output.GetChildContentAsync();
+
+                    // We check for whitespace to detect scenarios such as:
+                    // <span validation-for="Name">
+                    // </span>
+                    if (!tagHelperContent.IsEmptyOrWhiteSpace)
+                    {
+                        message = tagHelperContent.GetContent();
+                    }
+                }
                 var tagBuilder = Generator.GenerateValidationMessage(
                     ViewContext,
                     For.ModelExplorer,
                     For.Name,
-                    message: null,
+                    message: message,
                     tag: null,
                     htmlAttributes: htmlAttributes);
 
@@ -84,24 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     output.MergeAttributes(tagBuilder);
 
                     // Do not update the content if another tag helper targeting this element has already done so.
-                    if (!output.IsContentModified)
+                    if (!output.IsContentModified && tagBuilder.HasInnerHtml)
                     {
-                        // We check for whitespace to detect scenarios such as:
-                        // <span validation-for="Name">
-                        // </span>
-                        var childContent = await output.GetChildContentAsync();
-                        if (childContent.IsEmptyOrWhiteSpace)
-                        {
-                            // Provide default message text (if any) since there was nothing useful in the Razor source.
-                            if (tagBuilder.HasInnerHtml)
-                            {
-                                output.Content.SetHtmlContent(tagBuilder.InnerHtml);
-                            }
-                        }
-                        else
-                        {
-                            output.Content.SetHtmlContent(childContent);
-                        }
+                        output.Content.SetHtmlContent(tagBuilder.InnerHtml);
                     }
                 }
             }

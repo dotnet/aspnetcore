@@ -24,33 +24,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        public override HtmlSymbol NextSymbol()
+        public override HtmlToken NextToken()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
             Debug.Assert(Buffer.Length == 0);
-            StartSymbol();
+            StartToken();
 
             if (EndOfFile || _visitedFirstTokenStart)
             {
                 return null;
             }
 
-            var symbol = Turn();
+            var token = Turn();
 
             // Post-Condition: Buffer should be empty at the end of Next()
             Debug.Assert(Buffer.Length == 0);
 
-            return symbol;
+            return token;
         }
 
-        private bool IsValidTokenType(HtmlSymbolType type)
+        private bool IsValidTokenType(HtmlTokenType type)
         {
-            return type != HtmlSymbolType.WhiteSpace &&
-                type != HtmlSymbolType.NewLine &&
-                type != HtmlSymbolType.RazorComment &&
-                type != HtmlSymbolType.RazorCommentStar &&
-                type != HtmlSymbolType.RazorCommentTransition &&
-                type != HtmlSymbolType.Transition;
+            return type != HtmlTokenType.WhiteSpace &&
+                type != HtmlTokenType.NewLine &&
+                type != HtmlTokenType.RazorComment &&
+                type != HtmlTokenType.RazorCommentStar &&
+                type != HtmlTokenType.RazorCommentTransition &&
+                type != HtmlTokenType.Transition;
         }
     }
 }

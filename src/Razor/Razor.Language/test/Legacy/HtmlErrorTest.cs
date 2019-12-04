@@ -8,103 +8,53 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class HtmlErrorTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void ParseBlockAllowsInvalidTagNamesAsLongAsParserCanIdentifyEndTag()
+        public void AllowsInvalidTagNamesAsLongAsParserCanIdentifyEndTag()
         {
-            ParseBlockTest("<1-foo+bar>foo</1-foo+bar>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<1-foo+bar>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("foo"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</1-foo+bar>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<1-foo+bar>foo</1-foo+bar>");
         }
 
         [Fact]
-        public void ParseBlockThrowsErrorIfStartTextTagContainsTextAfterName()
+        public void ThrowsErrorIfStartTextTagContainsTextAfterName()
         {
-            ParseBlockTest("<text foo bar></text>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text foo bar>").Accepts(AcceptedCharactersInternal.Any)),
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("</text>"))),
-                RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 4)));
+            ParseBlockTest("<text foo bar></text>");
         }
 
         [Fact]
-        public void ParseBlockThrowsErrorIfEndTextTagContainsTextAfterName()
+        public void ThrowsErrorIfEndTextTagContainsTextAfterName()
         {
-            ParseBlockTest("<text></text foo bar>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text>")),
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("</text foo bar>").Accepts(AcceptedCharactersInternal.Any))),
-                RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
-                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 4)));
+            ParseBlockTest("<text></text foo bar>");
         }
 
         [Fact]
-        public void ParseBlockThrowsExceptionIfBlockDoesNotStartWithTag()
+        public void ThrowsExceptionIfBlockDoesNotStartWithTag()
         {
-            ParseBlockTest("foo bar <baz>",
-                new MarkupBlock(),
-                RazorDiagnosticFactory.CreateParsing_MarkupBlockMustStartWithTag(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 3)));
+            ParseBlockTest("foo bar <baz>");
         }
 
         [Fact]
-        public void ParseBlockStartingWithEndTagProducesRazorErrorThenOutputsMarkupSegmentAndEndsBlock()
+        public void StartingWithEndTagErrorsThenOutputsMarkupSegmentAndEndsBlock()
         {
-            ParseBlockTest("</foo> bar baz",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
-                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 3), "foo"));
+            // ParseBlockStartingWithEndTagProducesRazorErrorThenOutputsMarkupSegmentAndEndsBlock
+            ParseBlockTest("</foo> bar baz");
         }
 
         [Fact]
-        public void ParseBlockWithUnclosedTopLevelTagThrowsMissingEndTagParserExceptionOnOutermostUnclosedTag()
+        public void WithUnclosedTopLevelTagThrowsOnOutermostUnclosedTag()
         {
-            ParseBlockTest("<p><foo></bar>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</bar>").Accepts(AcceptedCharactersInternal.None))),
-                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"));
+            // ParseBlockWithUnclosedTopLevelTagThrowsMissingEndTagParserExceptionOnOutermostUnclosedTag
+            ParseBlockTest("<p><foo></bar>");
         }
 
         [Fact]
-        public void ParseBlockWithUnclosedTagAtEOFThrowsMissingEndTagException()
+        public void WithUnclosedTagAtEOFThrowsMissingEndTagException()
         {
-            ParseBlockTest("<foo>blah blah blah blah blah",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("blah blah blah blah blah")),
-                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
+            ParseBlockTest("<foo>blah blah blah blah blah");
         }
 
         [Fact]
-        public void ParseBlockWithUnfinishedTagAtEOFThrowsIncompleteTagException()
+        public void WithUnfinishedTagAtEOFThrowsIncompleteTagException()
         {
-            ParseBlockTest("<foo bar=baz",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                    Factory.Markup("<foo"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(string.Empty, 12, 0, 12)),
-                            Factory.Markup(" bar=").With(SpanChunkGenerator.Null),
-                            Factory.Markup("baz").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9)))))),
-                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
+            ParseBlockTest("<foo bar=baz");
         }
     }
 }

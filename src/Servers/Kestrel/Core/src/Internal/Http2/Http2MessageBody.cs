@@ -3,17 +3,27 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public abstract class Http2MessageBody : MessageBody
+    public class Http2MessageBody : MessageBody
     {
         private readonly Http2Stream _context;
 
-        protected Http2MessageBody(Http2Stream context)
-            : base(context)
+        private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
+            : base(context, minRequestBodyDataRate)
         {
             _context = context;
+        }
+
+        protected override void OnReadStarting()
+        {
+            // Note ContentLength or MaxRequestBodySize may be null
+            if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
         }
 
         protected override void OnReadStarted()
@@ -25,33 +35,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override Task OnConsumeAsync() => Task.CompletedTask;
-
-        public override Task StopAsync()
+        protected override void OnDataRead(long bytesRead)
         {
-            _context.RequestBodyPipe.Reader.Complete();
-            _context.RequestBodyPipe.Writer.Complete();
-            return Task.CompletedTask;
+            // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
+            _context.OnDataRead((int)bytesRead);
+            AddAndCheckConsumedBytes(bytesRead);
         }
 
-        public static MessageBody For(
-            HttpRequestHeaders headers,
-            Http2Stream context)
+        public static MessageBody For(Http2Stream context, MinDataRate minRequestBodyDataRate)
         {
-            if (context.EndStreamReceived)
+            if (context.EndStreamReceived && !context.RequestBodyStarted)
             {
                 return ZeroContentLengthClose;
             }
 
-            return new ForHttp2(context);
-        }
-
-        private class ForHttp2 : Http2MessageBody
-        {
-            public ForHttp2(Http2Stream context)
-                : base(context)
-            {
-            }
+            return new Http2MessageBody(context, minRequestBodyDataRate);
         }
     }
 }

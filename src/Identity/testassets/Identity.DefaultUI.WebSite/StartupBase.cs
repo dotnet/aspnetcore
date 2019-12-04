@@ -4,10 +4,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace Identity.DefaultUI.WebSite
 {
@@ -21,6 +22,8 @@ namespace Identity.DefaultUI.WebSite
         }
 
         public IConfiguration Configuration { get; }
+
+        public virtual UIFramework Framework { get; } = UIFramework.Bootstrap4;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public virtual void ConfigureServices(IServiceCollection services)
@@ -38,10 +41,18 @@ namespace Identity.DefaultUI.WebSite
                 ));
 
             services.AddDefaultIdentity<TUser>()
+                .AddDefaultUI(Framework)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddRazorOptions(ro =>
+                {
+                    // We do this to avoid file descriptor exhaustion in our functional tests
+                    // due to Razor Pages using a file watcher.
+                    ro.FileProviders.Clear();
+                    ro.FileProviders.Add(new CompositeFileProvider(new[] { new NullFileProvider() }));
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

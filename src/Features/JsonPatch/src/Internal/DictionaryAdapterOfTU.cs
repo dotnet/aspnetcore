@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class DictionaryAdapter<TKey, TValue> : IAdapter
     {
-        public bool TryAdd(
+        public virtual bool TryAdd(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryGet(
+        public virtual bool TryGet(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryRemove(
+        public virtual bool TryRemove(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryReplace(
+        public virtual bool TryReplace(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             return true;
         }
 
-        public bool TryTest(
+        public virtual bool TryTest(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        public bool TryTraverse(
+        public virtual bool TryTraverse(
             object target,
             string segment,
             IContractResolver contractResolver,
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
+        protected virtual bool TryConvertKey(string key, out TKey convertedKey, out string errorMessage)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(key, typeof(TKey));
             if (conversionResult.CanBeConverted)
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
+        protected virtual bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
         {
             var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue));
             if (conversionResult.CanBeConverted)

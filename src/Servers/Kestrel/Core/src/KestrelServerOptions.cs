@@ -42,10 +42,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Gets or sets a value that determines how Kestrel should schedule user callbacks.
         /// </summary>
         /// <remarks>The default mode is <see cref="SchedulingMode.Default"/></remarks>
+#pragma warning disable PUB0001 // Pubternal type in public API
         public SchedulingMode ApplicationSchedulingMode { get; set; } = SchedulingMode.Default;
+#pragma warning restore PUB0001 // Pubternal type in public API
 
         /// <summary>
-        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/> 
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
         /// Defaults to true.
@@ -101,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
             listenOptions.KestrelServerOptions = this;
+            ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }
 

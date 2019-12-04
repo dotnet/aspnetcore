@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -57,8 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                         if (ambiguousMatches == null)
                         {
-                            ambiguousMatches = new List<HandlerMethodDescriptor>();
-                            ambiguousMatches.Add(bestMatch);
+                            ambiguousMatches = new List<HandlerMethodDescriptor>
+                            {
+                                bestMatch
+                            };
                         }
 
                         ambiguousMatches.Add(handler);
@@ -165,13 +167,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static string GetHandlerName(PageContext context)
         {
-            var handlerName = Convert.ToString(context.RouteData.Values[Handler]);
+            var handlerName = Convert.ToString(context.RouteData.Values[Handler], CultureInfo.InvariantCulture);
             if (!string.IsNullOrEmpty(handlerName))
             {
                 return handlerName;
             }
 
-            if (context.HttpContext.Request.Query.TryGetValue(Handler, out StringValues queryValues))
+            if (context.HttpContext.Request.Query.TryGetValue(Handler, out var queryValues))
             {
                 return queryValues[0];
             }

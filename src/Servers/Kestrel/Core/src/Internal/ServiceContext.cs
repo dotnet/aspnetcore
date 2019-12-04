@@ -19,7 +19,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
-        public HttpConnectionManager ConnectionManager { get; set; }
+        public ConnectionManager ConnectionManager { get; set; }
+
+        public Heartbeat Heartbeat { get; set; }
 
         public KestrelServerOptions ServerOptions { get; set; }
     }

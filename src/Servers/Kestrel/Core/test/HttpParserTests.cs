@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        // Doesn't put empty blocks inbetween every byte
+        // Doesn't put empty blocks in between every byte
         internal class BytePerSegmentTestSequenceFactory : ReadOnlySequenceFactory
         {
             public static ReadOnlySequenceFactory Instance { get; } = new HttpParserTests.BytePerSegmentTestSequenceFactory();

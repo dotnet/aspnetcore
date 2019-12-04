@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 
 namespace ControllersFromServicesWebSite
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class AssemblyMetadataReferenceFeatureProvider : IApplicationFeatureProvider<MetadataReferenceFeature>
     {
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, MetadataReferenceFeature feature)
@@ -17,4 +18,5 @@ namespace ControllersFromServicesWebSite
             feature.MetadataReferences.Add(MetadataReference.CreateFromFile(currentAssembly.Location));
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

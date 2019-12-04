@@ -1,0 +1,1 @@
+(1,2): Error RZ1023: "<text>" and "</text>" tags cannot contain attributes.

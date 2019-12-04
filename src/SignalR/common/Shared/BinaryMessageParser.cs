@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Internal
             // remaining bits (%x0000000) are the lowest bits of the value. The most significant bit of the second
             // byte is 0 meaning this is last byte of the VarInt. The actual value bits (%x0101001) need to be
             // prepended to the bits we already read so the values is %01010010000000 i.e. 0x1480 (5248)
-            // We support paylads up to 2GB so the biggest number we support is 7fffffff which when encoded as
+            // We support payloads up to 2GB so the biggest number we support is 7fffffff which when encoded as
             // VarInt is 0xFF 0xFF 0xFF 0xFF 0x07 - hence the maximum length prefix is 5 bytes.
 
             var length = 0U;

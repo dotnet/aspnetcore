@@ -5,12 +5,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal abstract class ParserVisitor
     {
-        protected virtual void VisitDefault(Block block)
+        public virtual void Visit(SyntaxTreeNode node)
+        {
+            node.Accept(this);
+        }
+
+        public virtual void VisitDefault(Block block)
         {
             for (var i = 0; i < block.Children.Count; i++)
             {
                 block.Children[i].Accept(this);
             }
+        }
+
+        public virtual void VisitDefault(Span span)
+        {
         }
 
         public virtual void VisitBlock(Block block)
@@ -44,35 +53,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             VisitDefault(block);
         }
 
-        public virtual void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
-        public virtual void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
-        public virtual void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
-        public virtual void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
-        public virtual void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
-        public virtual void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span block)
-        {
-        }
-
-        public virtual void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-        {
-            VisitDefault(block);
-        }
-
         public virtual void VisitTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
         {
             VisitDefault(block);
@@ -88,16 +68,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             VisitDefault(block);
         }
 
+        public virtual void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+        {
+            VisitDefault(block);
+        }
+
+        public virtual void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
+        public virtual void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
+        public virtual void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
+        public virtual void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
+        public virtual void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
+        public virtual void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+        {
+            VisitDefault(span);
+        }
+
         public virtual void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
         {
+            VisitDefault(span);
         }
 
         public virtual void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
         {
+            VisitDefault(span);
         }
 
         public virtual void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
         {
+            VisitDefault(span);
         }
     }
 }

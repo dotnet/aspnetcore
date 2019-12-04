@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -165,6 +166,74 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 });
             Assert.Equal("Accounts", descriptor.AreaName);
             Assert.Equal("Accounts/Test/{id:int?}", descriptor.AttributeRouteInfo.Template);
+        }
+
+        [Fact]
+        public void GetDescriptors_CopiesActionConstraintsFromModel()
+        {
+            // Arrange
+            var expected = Mock.Of<IActionConstraint>();
+            var model = new PageRouteModel("/Areas/Accounts/Pages/Test.cshtml", "/Test", "Accounts")
+            {
+                Selectors =
+                {
+                    new SelectorModel
+                    {
+                        AttributeRouteModel = new AttributeRouteModel(),
+                        ActionConstraints = { expected }
+                    }
+                },
+            };
+            var applicationModelProvider = new TestPageRouteModelProvider(model);
+            var provider = new PageActionDescriptorProvider(
+                new[] { applicationModelProvider },
+                GetAccessor<MvcOptions>(),
+                GetRazorPagesOptions());
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var result = Assert.Single(context.Results);
+            var descriptor = Assert.IsType<PageActionDescriptor>(result);
+            Assert.Equal(model.RelativePath, descriptor.RelativePath);
+            var actual = Assert.Single(descriptor.ActionConstraints);
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void GetDescriptors_CopiesEndpointMetadataFromModel()
+        {
+            // Arrange
+            var expected = new object();
+            var model = new PageRouteModel("/Test.cshtml", "/Test", "Accounts")
+            {
+                Selectors =
+                {
+                    new SelectorModel
+                    {
+                        AttributeRouteModel = new AttributeRouteModel(),
+                        EndpointMetadata = { expected }
+                    }
+                },
+            };
+            var applicationModelProvider = new TestPageRouteModelProvider(model);
+            var provider = new PageActionDescriptorProvider(
+                new[] { applicationModelProvider },
+                GetAccessor<MvcOptions>(),
+                GetRazorPagesOptions());
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var result = Assert.Single(context.Results);
+            var descriptor = Assert.IsType<PageActionDescriptor>(result);
+            Assert.Equal(model.RelativePath, descriptor.RelativePath);
+            var actual = Assert.Single(descriptor.EndpointMetadata);
+            Assert.Same(expected, actual);
         }
 
         [Fact]

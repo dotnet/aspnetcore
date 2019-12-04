@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-
+    <Reference Include="Microsoft.AspNetCore.Mvc.Analyzers" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
@@ -24,7 +24,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-
   </ItemGroup>
 
 </Project>

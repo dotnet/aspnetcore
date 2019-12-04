@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <BaseSharedFrameworkName>Microsoft.NETCore.App</BaseSharedFrameworkName>
+    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+
+    <!-- The runtime Package ID is for self-contained assets. -->
+    <PackageId>runtime.$(SharedFxRid).$(MSBuildProjectName)</PackageId>
+    <PackageDescription>This package provides assets used for self-contained deployments of an ASP.NET Core application. It is an internal implementation package not meant for direct consumption. Please do not reference directly.
+
+$(MSBuildProjectName) provides a default set of APIs for building an ASP.NET Core application.
+    </PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageProjectReference Include="..\pkg\Microsoft.AspNetCore.App.pkgproj" />
+  </ItemGroup>
+
+</Project>

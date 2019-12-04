@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Fix and parse the span
-            fixed (byte* data = &MemoryMarshal.GetReference(span))
+            fixed (byte* data = span)
             {
                 ParseRequestLine(handler, data, span.Length);
             }
@@ -73,9 +72,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
         {
-            int offset;
             // Get Method and set the offset
-            var method = HttpUtilities.GetKnownMethod(data, length, out offset);
+            var method = HttpUtilities.GetKnownMethod(data, length, out var offset);
 
             Span<byte> customMethod = method == HttpMethod.Custom ?
                 GetUnknownMethod(data, length, out offset) :
@@ -206,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var span = reader.CurrentSegment;
                     var remaining = span.Length - reader.CurrentSegmentIndex;
 
-                    fixed (byte* pBuffer = &MemoryMarshal.GetReference(span))
+                    fixed (byte* pBuffer = span)
                     {
                         while (remaining > 0)
                         {
@@ -298,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 var headerSpan = buffer.Slice(current, lineEnd).ToSpan();
                                 length = headerSpan.Length;
 
-                                fixed (byte* pHeader = &MemoryMarshal.GetReference(headerSpan))
+                                fixed (byte* pHeader = headerSpan)
                                 {
                                     TakeSingleHeader(pHeader, length, handler);
                                 }
@@ -362,6 +360,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Skip CR, LF from end position
             var valueEnd = length - 3;
             var nameEnd = FindEndOfName(headerLine, length);
+
+            // Header name is empty
+            if (nameEnd == 0)
+            {
+                RejectRequestHeader(headerLine, length);
+            }
 
             if (headerLine[valueEnd + 2] != ByteLF)
             {
@@ -437,53 +441,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe Span<byte> GetUnknownMethod(byte* data, int length, out int methodLength)
         {
-            methodLength = 0;
-            for (var i = 0; i < length; i++)
+            var invalidIndex = HttpCharacters.IndexOfInvalidTokenChar(data, length);
+
+            if (invalidIndex <= 0 || data[invalidIndex] != ByteSpace)
             {
-                var ch = data[i];
-
-                if (ch == ByteSpace)
-                {
-                    if (i == 0)
-                    {
-                        RejectRequestLine(data, length);
-                    }
-
-                    methodLength = i;
-                    break;
-                }
-                else if (!IsValidTokenChar((char)ch))
-                {
-                    RejectRequestLine(data, length);
-                }
+                RejectRequestLine(data, length);
             }
 
+            methodLength = invalidIndex;
             return new Span<byte>(data, methodLength);
-        }
-
-        private static bool IsValidTokenChar(char c)
-        {
-            // Determines if a character is valid as a 'token' as defined in the
-            // HTTP spec: https://tools.ietf.org/html/rfc7230#section-3.2.6
-            return
-                (c >= '0' && c <= '9') ||
-                (c >= 'A' && c <= 'Z') ||
-                (c >= 'a' && c <= 'z') ||
-                c == '!' ||
-                c == '#' ||
-                c == '$' ||
-                c == '%' ||
-                c == '&' ||
-                c == '\'' ||
-                c == '*' ||
-                c == '+' ||
-                c == '-' ||
-                c == '.' ||
-                c == '^' ||
-                c == '_' ||
-                c == '`' ||
-                c == '|' ||
-                c == '~';
         }
 
         [StackTraceHidden]

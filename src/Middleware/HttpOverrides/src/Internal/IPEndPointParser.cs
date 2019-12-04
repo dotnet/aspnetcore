@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Net;
 
 namespace Microsoft.AspNetCore.HttpOverrides.Internal
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.HttpOverrides.Internal
                 if (portPart != null)
                 {
                     int port;
-                    if (int.TryParse(portPart, out port))
+                    if (int.TryParse(portPart, NumberStyles.None, CultureInfo.InvariantCulture, out port))
                     {
                         endpoint = new IPEndPoint(address, port);
                         return true;

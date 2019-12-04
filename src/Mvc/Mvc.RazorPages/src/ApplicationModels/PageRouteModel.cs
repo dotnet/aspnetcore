@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -96,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<SelectorModel> Selectors { get; }
 
         /// <summary>
-        /// Gets a collection of route values that must be present in the <see cref="RouteData.Values"/> 
+        /// Gets a collection of route values that must be present in the <see cref="RouteData.Values"/>
         /// for the corresponding page to be selected.
         /// </summary>
         /// <remarks>

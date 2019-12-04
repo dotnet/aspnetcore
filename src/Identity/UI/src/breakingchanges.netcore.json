@@ -1,0 +1,6 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Identity.UI.Pages.ErrorModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel",
+    "Kind": "Removal"
+  }
+]

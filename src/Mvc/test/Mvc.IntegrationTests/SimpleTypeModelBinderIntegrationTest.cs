@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task BindParameter_NonConvertableValue_GetsError()
+        public async Task BindParameter_NonConvertibleValue_GetsError()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task BindParameter_NonConvertableValue_GetsCustomErrorMessage()
+        public async Task BindParameter_NonConvertibleValue_GetsCustomErrorMessage()
         {
             // Arrange
             var parameterType = typeof(int);

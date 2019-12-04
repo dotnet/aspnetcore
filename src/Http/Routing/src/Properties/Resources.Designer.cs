@@ -402,6 +402,146 @@ namespace Microsoft.AspNetCore.Routing
         internal static string FormatTemplateRoute_Exception(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_Exception"), p0, p1);
 
+        /// <summary>
+        /// The request matched multiple endpoints. Matches: {0}{0}{1}
+        /// </summary>
+        internal static string AmbiguousEndpoints
+        {
+            get => GetString("AmbiguousEndpoints");
+        }
+
+        /// <summary>
+        /// The request matched multiple endpoints. Matches: {0}{0}{1}
+        /// </summary>
+        internal static string FormatAmbiguousEndpoints(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousEndpoints"), p0, p1);
+
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string Argument_NullOrEmpty
+        {
+            get => GetString("Argument_NullOrEmpty");
+        }
+
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgument_NullOrEmpty()
+            => GetString("Argument_NullOrEmpty");
+
+        /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string RoutePatternBuilder_CollectionCannotBeEmpty
+        {
+            get => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+        }
+
+        /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string FormatRoutePatternBuilder_CollectionCannotBeEmpty()
+            => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.
+        /// </summary>
+        internal static string ConstraintMustBeStringOrConstraint
+        {
+            get => GetString("ConstraintMustBeStringOrConstraint");
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.
+        /// </summary>
+        internal static string FormatConstraintMustBeStringOrConstraint(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ConstraintMustBeStringOrConstraint"), p0, p1, p2);
+
+        /// <summary>
+        /// Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.
+        /// </summary>
+        internal static string RoutePattern_InvalidConstraintReference
+        {
+            get => GetString("RoutePattern_InvalidConstraintReference");
+        }
+
+        /// <summary>
+        /// Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.
+        /// </summary>
+        internal static string FormatRoutePattern_InvalidConstraintReference(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidConstraintReference"), p0, p1);
+
+        /// <summary>
+        /// Invalid constraint '{0}' for parameter '{1}'. A constraint must be of type 'string', '{2}', or '{3}'.
+        /// </summary>
+        internal static string RoutePattern_InvalidParameterConstraintReference
+        {
+            get => GetString("RoutePattern_InvalidParameterConstraintReference");
+        }
+
+        /// <summary>
+        /// Invalid constraint '{0}' for parameter '{1}'. A constraint must be of type 'string', '{2}', or '{3}'.
+        /// </summary>
+        internal static string FormatRoutePattern_InvalidParameterConstraintReference(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidParameterConstraintReference"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// The constraint reference '{0}' could not be resolved to a type. Register the constraint type with '{1}.{2}'.
+        /// </summary>
+        internal static string RoutePattern_ConstraintReferenceNotFound
+        {
+            get => GetString("RoutePattern_ConstraintReferenceNotFound");
+        }
+
+        /// <summary>
+        /// The constraint reference '{0}' could not be resolved to a type. Register the constraint type with '{1}.{2}'.
+        /// </summary>
+        internal static string FormatRoutePattern_ConstraintReferenceNotFound(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_ConstraintReferenceNotFound"), p0, p1, p2);
+
+        /// <summary>
+        /// Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.
+        /// </summary>
+        internal static string RoutePattern_InvalidStringConstraintReference
+        {
+            get => GetString("RoutePattern_InvalidStringConstraintReference");
+        }
+
+        /// <summary>
+        /// Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.
+        /// </summary>
+        internal static string FormatRoutePattern_InvalidStringConstraintReference(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RoutePattern_InvalidStringConstraintReference"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Endpoints with endpoint name '{0}':
+        /// </summary>
+        internal static string DuplicateEndpointNameEntry
+        {
+            get => GetString("DuplicateEndpointNameEntry");
+        }
+
+        /// <summary>
+        /// Endpoints with endpoint name '{0}':
+        /// </summary>
+        internal static string FormatDuplicateEndpointNameEntry(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateEndpointNameEntry"), p0);
+
+        /// <summary>
+        /// The following endpoints with a duplicate endpoint name were found.
+        /// </summary>
+        internal static string DuplicateEndpointNameHeader
+        {
+            get => GetString("DuplicateEndpointNameHeader");
+        }
+
+        /// <summary>
+        /// The following endpoints with a duplicate endpoint name were found.
+        /// </summary>
+        internal static string FormatDuplicateEndpointNameHeader()
+            => GetString("DuplicateEndpointNameHeader");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

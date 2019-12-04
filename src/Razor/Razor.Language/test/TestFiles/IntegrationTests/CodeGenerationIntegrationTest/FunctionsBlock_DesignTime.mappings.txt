@@ -7,7 +7,7 @@ Source Location: (12:0,12 [4] TestFiles/IntegrationTests/CodeGenerationIntegrati
 |
 
 |
-Generated Location: (867:24,20 [4] )
+Generated Location: (949:25,12 [4] )
 |
 
 |
@@ -19,7 +19,7 @@ Source Location: (33:4,12 [104] TestFiles/IntegrationTests/CodeGenerationIntegra
         return _rand.Next();
     }
 |
-Generated Location: (975:28,12 [104] )
+Generated Location: (1086:31,12 [104] )
 |
     Random _rand = new Random();
     private int RandomInt() {

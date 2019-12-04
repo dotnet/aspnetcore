@@ -185,14 +185,14 @@ namespace Microsoft.TestCommon
 
         private static IEnumerable<object[]> GetDataSetFromTestDataCollection(IEnumerable<TestData> testDataCollection, TestDataVariations variations)
         {
-            foreach (TestData testdataInstance in testDataCollection)
+            foreach (TestData testDataInstance in testDataCollection)
             {
-                foreach (TestDataVariations variation in testdataInstance.GetSupportedTestDataVariations())
+                foreach (TestDataVariations variation in testDataInstance.GetSupportedTestDataVariations())
                 {
                     if ((variation & variations) == variation)
                     {
-                        Type variationType = testdataInstance.GetAsTypeOrNull(variation);
-                        object testData = testdataInstance.GetAsTestDataOrNull(variation);
+                        Type variationType = testDataInstance.GetAsTypeOrNull(variation);
+                        object testData = testDataInstance.GetAsTestDataOrNull(variation);
                         if (AsSingleInstances(variation))
                         {
                             foreach (object obj in (IEnumerable)testData)

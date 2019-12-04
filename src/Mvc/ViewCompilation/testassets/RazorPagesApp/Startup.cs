@@ -10,6 +10,7 @@ namespace RazorPagesApp
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             var builder = services.AddMvc();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => options.LoginPath = "/Login");
             ConfigureMvc(builder);
@@ -17,7 +18,6 @@ namespace RazorPagesApp
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole();
             app.UseAuthentication();
             app.UseMvc();
         }

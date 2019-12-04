@@ -60,7 +60,7 @@ namespace System.IO.Pipelines
             return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return WriteCoreAsync(source, cancellationToken);

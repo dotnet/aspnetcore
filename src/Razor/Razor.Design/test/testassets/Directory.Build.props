@@ -1,5 +1,7 @@
 <Project>
+  <!-- Import solution dependencies.props when building in place -->
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" Condition="!Exists('Before.Directory.Build.props')" />
+
   <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
 
   <PropertyGroup>
@@ -7,28 +9,23 @@
     <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
 
     <!-- Retarget tests to use the copy of the Sdk from source -->
-    <RazorSdkCurrentVersionProps>$(SolutionRoot)Sdk.Razor\src\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
-    <RazorSdkCurrentVersionTargets>$(SolutionRoot)Sdk.Razor\src\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
+    <RazorSdkProjectDirectory>$(SolutionRoot)Sdk.Razor\src\</RazorSdkProjectDirectory>
+
+    <RazorSdkCurrentVersionProps>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
+    <NETStandardImplicitPackageVersion>$(NETStandardLibraryPackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->
   <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(BinariesRoot)'==''">
-    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib"/>
-    <Reference Include="Microsoft.AspNetCore.Razor.Runtime"/>
-    <Reference Include="Microsoft.AspNetCore.Razor.Design" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(BinariesRoot)'!=''">
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
-  </ItemGroup>
 
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
 

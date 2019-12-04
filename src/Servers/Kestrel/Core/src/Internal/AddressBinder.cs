@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         /// Returns an <see cref="IPEndPoint"/> for the given host an port.
         /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.
         /// </summary>
-        protected internal static bool TryCreateIPEndPoint(ServerAddress address, out IPEndPoint endpoint)
+        protected internal static bool TryCreateIPEndPoint(BindingAddress address, out IPEndPoint endpoint)
         {
             if (!IPAddress.TryParse(address.Host, out var ip))
             {
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         internal static ListenOptions ParseAddress(string address, out bool https)
         {
-            var parsedAddress = ServerAddress.FromUrl(address);
+            var parsedAddress = BindingAddress.Parse(address);
             https = false;
 
             if (parsedAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))

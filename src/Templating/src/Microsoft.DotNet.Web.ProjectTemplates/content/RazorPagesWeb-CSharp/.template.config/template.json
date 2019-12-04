@@ -10,9 +10,12 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
-  "precedence": "3000",
-  "identity": "Microsoft.Web.RazorPages.CSharp.2.1",
-  "shortName": [ "razor", "webapp" ],
+  "precedence": "4000",
+  "identity": "Microsoft.Web.RazorPages.CSharp.2.2",
+  "shortName": [
+    "webapp",
+    "razor"
+  ],
   "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
   "tags": {
     "language": "C#",
@@ -219,12 +222,6 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
-    "UseBrowserLink": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Whether or not to include BrowserLink in the project"
-    },
     "HttpPort": {
       "type": "parameter",
       "datatype": "integer",
@@ -326,12 +323,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "copyrightYear": {
       "type": "generated",

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void FromLambaExpression_SetsContainerAsExpected()
+        public void FromLambdaExpression_SetsContainerAsExpected()
         {
             // Arrange
             var myModel = new TestModel { SelectedCategory = new Category() };

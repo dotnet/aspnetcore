@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// </summary>
         protected new JwtBearerEvents Events
         {
-            get { return (JwtBearerEvents)base.Events; }
-            set { base.Events = value; }
+            get => (JwtBearerEvents)base.Events;
+            set => base.Events = value;
         }
 
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new JwtBearerEvents());
@@ -267,9 +267,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         private static string CreateErrorDescription(Exception authFailure)
         {
             IEnumerable<Exception> exceptions;
-            if (authFailure is AggregateException)
+            if (authFailure is AggregateException agEx)
             {
-                var agEx = authFailure as AggregateException;
                 exceptions = agEx.InnerExceptions;
             }
             else
@@ -283,37 +282,32 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             {
                 // Order sensitive, some of these exceptions derive from others
                 // and we want to display the most specific message possible.
-                if (ex is SecurityTokenInvalidAudienceException)
+                switch (ex)
                 {
-                    messages.Add("The audience is invalid");
-                }
-                else if (ex is SecurityTokenInvalidIssuerException)
-                {
-                    messages.Add("The issuer is invalid");
-                }
-                else if (ex is SecurityTokenNoExpirationException)
-                {
-                    messages.Add("The token has no expiration");
-                }
-                else if (ex is SecurityTokenInvalidLifetimeException)
-                {
-                    messages.Add("The token lifetime is invalid");
-                }
-                else if (ex is SecurityTokenNotYetValidException)
-                {
-                    messages.Add("The token is not valid yet");
-                }
-                else if (ex is SecurityTokenExpiredException)
-                {
-                    messages.Add("The token is expired");
-                }
-                else if (ex is SecurityTokenSignatureKeyNotFoundException)
-                {
-                    messages.Add("The signature key was not found");
-                }
-                else if (ex is SecurityTokenInvalidSignatureException)
-                {
-                    messages.Add("The signature is invalid");
+                    case SecurityTokenInvalidAudienceException _:
+                        messages.Add("The audience is invalid");
+                        break;
+                    case SecurityTokenInvalidIssuerException _:
+                        messages.Add("The issuer is invalid");
+                        break;
+                    case SecurityTokenNoExpirationException _:
+                        messages.Add("The token has no expiration");
+                        break;
+                    case SecurityTokenInvalidLifetimeException _:
+                        messages.Add("The token lifetime is invalid");
+                        break;
+                    case SecurityTokenNotYetValidException _:
+                        messages.Add("The token is not valid yet");
+                        break;
+                    case SecurityTokenExpiredException _:
+                        messages.Add("The token is expired");
+                        break;
+                    case SecurityTokenSignatureKeyNotFoundException _:
+                        messages.Add("The signature key was not found");
+                        break;
+                    case SecurityTokenInvalidSignatureException _:
+                        messages.Add("The signature is invalid");
+                        break;
                 }
             }
 

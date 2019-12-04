@@ -1,0 +1,5 @@
+{
+  "configProperties": {
+    "System.GC.Server": true
+  }
+}

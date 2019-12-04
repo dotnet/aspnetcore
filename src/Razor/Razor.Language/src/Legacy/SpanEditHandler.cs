@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
 
-        public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer)
+        public SpanEditHandler(Func<string, IEnumerable<IToken>> tokenizer)
             : this(tokenizer, AcceptedCharactersInternal.Any)
         {
         }
 
-        public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharactersInternal accepted)
+        public SpanEditHandler(Func<string, IEnumerable<IToken>> tokenizer, AcceptedCharactersInternal accepted)
         {
             AcceptedCharacters = accepted;
             Tokenizer = tokenizer;
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public AcceptedCharactersInternal AcceptedCharacters { get; set; }
 
-        public Func<string, IEnumerable<ISymbol>> Tokenizer { get; set; }
+        public Func<string, IEnumerable<IToken>> Tokenizer { get; set; }
 
-        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<ISymbol>> tokenizer)
+        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<IToken>> tokenizer)
         {
             return new SpanEditHandler(tokenizer);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var newContent = change.GetEditedContent(target);
             var newSpan = new SpanBuilder(target);
-            newSpan.ClearSymbols();
+            newSpan.ClearTokens();
             foreach (var token in Tokenizer(newContent))
             {
                 newSpan.Accept(token);

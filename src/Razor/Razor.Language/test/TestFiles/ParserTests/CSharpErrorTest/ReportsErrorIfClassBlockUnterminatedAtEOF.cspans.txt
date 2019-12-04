@@ -1,0 +1,4 @@
+MetaCode span at (0:0,0 [9] ) (Accepts:None) - Parent: Directive block at (0:0,0 [54] )
+Markup span at (9:0,9 [1] ) (Accepts:AllWhiteSpace) - Parent: Directive block at (0:0,0 [54] )
+MetaCode span at (10:0,10 [1] ) (Accepts:None) - Parent: Directive block at (0:0,0 [54] )
+Code span at (11:0,11 [43] ) (Accepts:Any) - Parent: Directive block at (0:0,0 [54] )

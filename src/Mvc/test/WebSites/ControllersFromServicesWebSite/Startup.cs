@@ -11,7 +11,7 @@ using ControllersFromServicesWebSite.Components;
 using ControllersFromServicesWebSite.TagHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,7 +36,8 @@ namespace ControllersFromServicesWebSite
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()
-                .AddTagHelpersAsServices();
+                .AddTagHelpersAsServices()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddTransient<QueryValueService>();
             services.AddTransient<ValueService>();

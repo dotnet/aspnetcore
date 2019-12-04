@@ -6,13 +6,11 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -23,11 +21,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteForwardSlash = (byte)'/';
         private const string Asterisk = "*";
 
-        private readonly Http1ConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly IHttpParser<Http1ParsingHandler> _parser;
+        private readonly Http1OutputProducer _http1Output;
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
 
+        private int _requestAborted;
         private volatile bool _requestTimedOut;
         private uint _requestCount;
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private int _remainingRequestHeadersBytesAllowed;
 
-        public Http1Connection(Http1ConnectionContext context)
+        public Http1Connection(HttpConnectionContext context)
             : base(context)
         {
             _context = context;
@@ -44,21 +44,67 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
-            Output = new Http1OutputProducer(
+            RequestBodyPipe = CreateRequestBodyPipe();
+
+            _http1Output = new Http1OutputProducer(
                 _context.Transport.Output,
                 _context.ConnectionId,
                 _context.ConnectionContext,
                 _context.ServiceContext.Log,
                 _context.TimeoutControl,
-                _context.ConnectionFeatures.Get<IBytesWrittenFeature>());
+                this);
+
+            Output = _http1Output;
         }
 
         public PipeReader Input => _context.Transport.Input;
 
-        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
         public bool RequestTimedOut => _requestTimedOut;
 
-        public override bool IsUpgradableRequest => _upgradeAvailable;
+        public MinDataRate MinRequestBodyDataRate { get; set; }
+
+        public MinDataRate MinResponseDataRate { get; set; }
+
+        protected override void OnRequestProcessingEnded()
+        {
+            Input.Complete();
+
+            TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
+
+            // Prevent RequestAborted from firing. Free up unneeded feature references.
+            Reset();
+
+            _http1Output.Dispose();
+        }
+
+        public void OnInputOrOutputCompleted()
+        {
+            _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            AbortRequest();
+        }
+
+        /// <summary>
+        /// Immediately kill the connection and poison the request body stream with an error.
+        /// </summary>
+        public void Abort(ConnectionAbortedException abortReason)
+        {
+            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
+            {
+                return;
+            }
+
+            _http1Output.Abort(abortReason);
+
+            AbortRequest();
+
+            PoisonRequestBodyStream(abortReason);
+        }
+
+        protected override void ApplicationAbort()
+        {
+            Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+        }
 
         /// <summary>
         /// Stops the request processing loop between requests.
@@ -77,6 +123,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Input.CancelPendingRead();
         }
 
+        public void HandleRequestHeadersTimeout()
+            => SendTimeoutResponse();
+
+        public void HandleReadDataRateTimeout()
+        {
+            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
+            SendTimeoutResponse();
+        }
+
         public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
@@ -90,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     }
 
-                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutAction.SendTimeoutResponse);
+                    TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
 
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
@@ -204,6 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Debug.Assert(HttpVersion != null, "HttpVersion was not set");
         }
 
+        // Compare with Http2Stream.TryValidatePseudoHeaders
         private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
@@ -213,59 +269,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-            string requestUrlPath = null;
-            string rawTarget = null;
 
             try
             {
                 // Read raw target before mutating memory.
-                rawTarget = target.GetAsciiStringNonNullCharacters();
-
-                if (pathEncoded)
-                {
-                    // URI was encoded, unescape and then parse as UTF-8
-                    // Disabling warning temporary
-                    var pathLength = UrlDecoder.Decode(path, path);
-
-                    // Removing dot segments must be done after unescaping. From RFC 3986:
-                    //
-                    // URI producing applications should percent-encode data octets that
-                    // correspond to characters in the reserved set unless these characters
-                    // are specifically allowed by the URI scheme to represent data in that
-                    // component.  If a reserved character is found in a URI component and
-                    // no delimiting role is known for that character, then it must be
-                    // interpreted as representing the data octet corresponding to that
-                    // character's encoding in US-ASCII.
-                    //
-                    // https://tools.ietf.org/html/rfc3986#section-2.2
-                    pathLength = PathNormalizer.RemoveDotSegments(path.Slice(0, pathLength));
-
-                    requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
-                }
-                else
-                {
-                    var pathLength = PathNormalizer.RemoveDotSegments(path);
-
-                    if (path.Length == pathLength && query.Length == 0)
-                    {
-                        // If no decoding was required, no dot segments were removed and
-                        // there is no query, the request path is the same as the raw target
-                        requestUrlPath = rawTarget;
-                    }
-                    else
-                    {
-                        requestUrlPath = path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
-                    }
-                }
+                RawTarget = target.GetAsciiStringNonNullCharacters();
+                QueryString = query.GetAsciiStringNonNullCharacters();
+                Path = PathNormalizer.DecodePath(path, pathEncoded, RawTarget, query.Length);
             }
             catch (InvalidOperationException)
             {
                 ThrowRequestTargetRejected(target);
             }
-
-            QueryString = query.GetAsciiStringNonNullCharacters();
-            RawTarget = rawTarget;
-            Path = requestUrlPath;
         }
 
         private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
@@ -274,13 +289,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // This is not complete validation. It is just a quick scan for invalid characters
             // but doesn't check that the target fully matches the URI spec.
-            for (var i = 0; i < target.Length; i++)
+            if (HttpCharacters.ContainsInvalidAuthorityChar(target))
             {
-                var ch = target[i];
-                if (!UriUtilities.IsValidAuthorityCharacter(ch))
-                {
-                    ThrowRequestTargetRejected(target);
-                }
+                ThrowRequestTargetRejected(target);
             }
 
             // The authority-form of request-target is only used for CONNECT
@@ -350,16 +361,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             QueryString = query.GetAsciiStringNonNullCharacters();
         }
 
-        private static unsafe string GetUtf8String(Span<byte> path)
-        {
-            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
-            // copy to an array
-            fixed (byte* pointer = &MemoryMarshal.GetReference(path))
-            {
-                return Encoding.UTF8.GetString(pointer, path.Length);
-            }
-        }
-
         internal void EnsureHostHeaderExists()
         {
             // https://tools.ietf.org/html/rfc7230#section-5.4
@@ -385,16 +386,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (_requestTargetForm != HttpRequestTarget.OriginForm)
             {
                 // Tail call
-                ValidateNonOrginHostHeader(hostText);
+                ValidateNonOriginHostHeader(hostText);
             }
-            else
+            else if (!HttpUtilities.IsHostHeaderValid(hostText))
             {
-                // Tail call
-                HttpUtilities.ValidateHostHeader(hostText);
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
         }
 
-        private void ValidateNonOrginHostHeader(string hostText)
+        private void ValidateNonOriginHostHeader(string hostText)
         {
             if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
             {
@@ -422,24 +422,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // Tail call
-            HttpUtilities.ValidateHostHeader(hostText);
+            if (!HttpUtilities.IsHostHeaderValid(hostText))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            }
         }
 
         protected override void OnReset()
         {
-            ResetIHttpUpgradeFeature();
+            ResetHttp1Features();
 
             _requestTimedOut = false;
             _requestTargetForm = HttpRequestTarget.Unknown;
             _absoluteRequestTarget = null;
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
             _requestCount++;
+
+            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
+            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
         }
 
         protected override void OnRequestProcessingEnding()
         {
-            Input.Complete();
         }
 
         protected override string CreateRequestId()
@@ -452,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Reset the features and timeout.
             Reset();
-            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
+            TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
         }
 
         protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
@@ -523,5 +527,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return false;
             }
         }
+
+        void IRequestProcessor.Tick(DateTimeOffset now) { }
+
+        private Pipe CreateRequestBodyPipe()
+            => new Pipe(new PipeOptions
+            (
+                pool: _context.MemoryPool,
+                readerScheduler: ServiceContext.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                useSynchronizationContext: false,
+                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            ));
     }
 }

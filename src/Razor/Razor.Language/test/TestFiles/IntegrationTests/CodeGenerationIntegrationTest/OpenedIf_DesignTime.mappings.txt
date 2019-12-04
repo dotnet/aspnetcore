@@ -8,12 +8,12 @@ Generated Location: (716:18,1 [14] )
 Source Location: (38:3,7 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/OpenedIf.cshtml)
 |
 |
-Generated Location: (780:22,19 [2] )
+Generated Location: (852:23,7 [2] )
 |
 |
 
 Source Location: (47:4,7 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/OpenedIf.cshtml)
 ||
-Generated Location: (803:24,19 [0] )
+Generated Location: (976:28,7 [0] )
 ||
 

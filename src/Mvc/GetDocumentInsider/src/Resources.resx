@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssemblyDescription" xml:space="preserve">
+    <value>The assembly to use.</value>
+  </data>
+  <data name="MissingOption" xml:space="preserve">
+    <value>Missing required option '--{0}'.</value>
+  </data>
+  <data name="NoColorDescription" xml:space="preserve">
+    <value>Do not colorize output.</value>
+  </data>
+  <data name="OutputDescription" xml:space="preserve">
+    <value>The file to write the result to.</value>
+  </data>
+  <data name="PrefixDescription" xml:space="preserve">
+    <value>Prefix console output with logging level.</value>
+  </data>
+  <data name="VerboseDescription" xml:space="preserve">
+    <value>Show verbose output.</value>
+  </data>
+  <data name="ToolsDirectoryDescription" xml:space="preserve">
+    <value>Location from which inside man was copied (in the .NET Framework case) or loaded.</value>
+  </data>
+  <data name="MethodDescription" xml:space="preserve">
+    <value>The name of the method to invoke on the '--service' instance. Default value '{0}'.</value>
+  </data>
+  <data name="ServiceDescription" xml:space="preserve">
+    <value>The qualified name of the service type to retrieve from dependency injection. Default value '{0}'.</value>
+  </data>
+  <data name="DocumentDescription" xml:space="preserve">
+    <value>The name of the document to pass to the '--method' method. Default value '{0}'.</value>
+  </data>
+  <data name="UsingDocument" xml:space="preserve">
+    <value>Using document name '{0}'.</value>
+  </data>
+  <data name="UsingMethod" xml:space="preserve">
+    <value>Using method '{0}'.</value>
+  </data>
+  <data name="UsingService" xml:space="preserve">
+    <value>Using service '{0}'.</value>
+  </data>
+  <data name="MethodInvocationFailed" xml:space="preserve">
+    <value>Method '{0}' of service '{1}' failed to generate document '{2}'.</value>
+  </data>
+  <data name="MissingEntryPoint" xml:space="preserve">
+    <value>Assembly '{0}' does not contain an entry point.</value>
+  </data>
+  <data name="ServiceTypeNotFound" xml:space="preserve">
+    <value>Unable to find service type '{0}' in loaded assemblies.</value>
+  </data>
+  <data name="MethodNotFound" xml:space="preserve">
+    <value>Unable to find method named '{0}' in '{1}' implementation.</value>
+  </data>
+  <data name="ServiceNotFound" xml:space="preserve">
+    <value>Unable to find service of type '{0}' in dependency injection container.</value>
+  </data>
+  <data name="MethodReturnedNull" xml:space="preserve">
+    <value>Method '{0}' of service '{1}' returned null. Must return a non-null '{2}'.</value>
+  </data>
+  <data name="MethodReturnTypeUnsupported" xml:space="preserve">
+    <value>Method '{0}' of service '{1}' has unsupported return type '{2}'. Must return a '{3}'.</value>
+  </data>
+  <data name="MethodTimedOut" xml:space="preserve">
+    <value>Method '{0}' of service '{1}' timed out. Must complete execution within {2} minute.</value>
+  </data>
+</root>

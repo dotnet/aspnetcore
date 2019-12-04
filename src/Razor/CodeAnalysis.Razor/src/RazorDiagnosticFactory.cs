@@ -9,40 +9,30 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         private const string DiagnosticPrefix = "RZ";
 
-        /*
-         * Razor.Language starts at 0, 1000, 2000, 3000. Therefore, we should offset by 500 to ensure we can easily
-         * maintain this list of diagnostic descriptors in conjunction with the one in Razor.Language.
-         */
-
+        // Razor.Language starts at 0, 1000, 2000, 3000. Therefore, we should offset by 500 to ensure we can easily
+        // maintain this list of diagnostic descriptors in conjunction with the one in Razor.Language.
+         
         #region General Errors
 
-        /*
-         * General Errors ID Offset = 500
-         */
+        // General Errors ID Offset = 500
 
         #endregion
 
         #region Language Errors
 
-        /*
-         * Language Errors ID Offset = 1500
-         */
+        // Language Errors ID Offset = 1500
 
         #endregion
 
         #region Semantic Errors
 
-        /*
-         * Semantic Errors ID Offset = 2500
-         */
+        // Semantic Errors ID Offset = 2500
 
         #endregion
 
         #region TagHelper Errors
 
-        /*
-         * TagHelper Errors ID Offset = 3500
-         */
+        // TagHelper Errors ID Offset = 3500
 
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidAttributeNameNullOrEmpty =
             new RazorDiagnosticDescriptor(

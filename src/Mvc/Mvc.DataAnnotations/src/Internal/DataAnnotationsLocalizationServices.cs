@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     <IConfigureOptions<MvcDataAnnotationsLocalizationOptions>,
                     MvcDataAnnotationsLocalizationOptionsSetup>());
             }
+
+            services.TryAddEnumerable(
+                    ServiceDescriptor.Transient<IPostConfigureOptions<MvcDataAnnotationsLocalizationOptions>, MvcDataAnnotationsLocalizationConfigureCompatibilityOptions>());
         }
     }
 }

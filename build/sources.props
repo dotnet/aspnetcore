@@ -7,6 +7,7 @@
       $(DotNetAdditionalRestoreSources);
       $(DotNetRestoreSources);
     </RestoreSources>
+
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
@@ -14,11 +15,17 @@
     </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
       $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json;
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json;
     </RestoreSources>
+
+    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
+
+    <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
   </PropertyGroup>
 </Project>

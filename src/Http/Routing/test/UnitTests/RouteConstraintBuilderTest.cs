@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Routing
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
-            var inlineConstraintResolver = new DefaultInlineConstraintResolver(options.Object);
+            var inlineConstraintResolver = new DefaultInlineConstraintResolver(options.Object, new TestServiceProvider());
             return new RouteConstraintBuilder(inlineConstraintResolver, template);
         }
     }

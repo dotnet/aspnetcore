@@ -631,14 +631,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             object[] arguments = null;
             var paramIndex = 0;
             var argumentsCount = 0;
+            var paramCount = paramTypes.Count;
 
             while (ReadArgumentAsType(reader, paramTypes, paramIndex))
             {
                 if (reader.TokenType == JsonToken.EndArray)
                 {
-                    if (argumentsCount != paramTypes.Count)
+                    if (argumentsCount != paramCount)
                     {
-                        throw new InvalidDataException($"Invocation provides {argumentsCount} argument(s) but target expects {paramTypes.Count}.");
+                        throw new InvalidDataException($"Invocation provides {argumentsCount} argument(s) but target expects {paramCount}.");
                     }
 
                     return arguments ?? Array.Empty<object>();
@@ -646,15 +647,19 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                 if (arguments == null)
                 {
-                    arguments = new object[paramTypes.Count];
+                    arguments = new object[paramCount];
                 }
 
                 try
                 {
-                    if (paramIndex < paramTypes.Count)
+                    if (paramIndex < paramCount)
                     {
                         // Set all known arguments
                         arguments[paramIndex] = PayloadSerializer.Deserialize(reader, paramTypes[paramIndex]);
+                    }
+                    else
+                    {
+                        reader.Skip();
                     }
 
                     argumentsCount++;
@@ -683,21 +688,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)
         {
-            if (paramTypes.Count != args.Count)
+            var paramCount = paramTypes.Count;
+            var argCount = args.Count;
+            if (paramCount != argCount)
             {
-                throw new InvalidDataException($"Invocation provides {args.Count} argument(s) but target expects {paramTypes.Count}.");
+                throw new InvalidDataException($"Invocation provides {argCount} argument(s) but target expects {paramCount}.");
             }
 
-            if (paramTypes.Count == 0)
+            if (paramCount == 0)
             {
                 return Array.Empty<object>();
             }
 
-            var arguments = new object[args.Count];
+            var arguments = new object[argCount];
 
             try
             {
-                for (var i = 0; i < paramTypes.Count; i++)
+                for (var i = 0; i < paramCount; i++)
                 {
                     var paramType = paramTypes[i];
                     arguments[i] = args[i].ToObject(paramType, PayloadSerializer);

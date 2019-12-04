@@ -38,7 +38,7 @@ FILE_WATCHER::Create(
 
     m_hChangeNotificationThread = CreateThread(NULL,
         0,
-        ChangeNotificationThread,
+        (LPTHREAD_START_ROUTINE)ChangeNotificationThread,
         this,
         0,
         NULL);

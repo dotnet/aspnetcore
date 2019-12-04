@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <AspNetCoreModuleOutOfProcessVersion>${AspNetCoreModuleOutOfProcessVersion}</AspNetCoreModuleOutOfProcessVersion>
+    <AspNetCoreModuleX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorev2.dll</AspNetCoreModuleX64Location>
+    <AspNetCoreModuleX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorev2.dll</AspNetCoreModuleX86Location>
+    <InProcessRequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorev2_inprocess.dll</InProcessRequestHandlerX64Location>
+    <InProcessRequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorev2_inprocess.dll</InProcessRequestHandlerX86Location>
+    <OutOfProcessRequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\$(AspNetCoreModuleOutOfProcessVersion)\aspnetcorev2_outofprocess.dll</OutOfProcessRequestHandlerX64Location>
+    <OutOfProcessRequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\$(AspNetCoreModuleOutOfProcessVersion)\aspnetcorev2_outofprocess.dll</OutOfProcessRequestHandlerX86Location>
+  </PropertyGroup>
+
+</Project>

@@ -5,7 +5,7 @@ Push-Location $PSScriptRoot
 try {
 
     [xml]$versionProps = Get-Content "$PSScriptRoot/../../../version.props"
-    $LastVersion = "$($versionProps.Project.PropertyGroup.AspNetCoreMajorVersion).$($versionProps.Project.PropertyGroup.AspNetCoreMinorVersion).$($versionProps.Project.PropertyGroup.AspNetCorePatchVersion - 1)"
+    $LastVersion = "$($versionProps.Project.PropertyGroup.AspNetCoreMajorVersion).$($versionProps.Project.PropertyGroup.AspNetCoreMinorVersion | select -first 1).$($versionProps.Project.PropertyGroup.AspNetCorePatchVersion - 1)"
     $manifestUrl = "https://raw.githubusercontent.com/dotnet/versions/master/build-info/dotnet/product/cli/release/$LastVersion/build.xml"
     $buildXml = Invoke-RestMethod -Method GET $manifestUrl
     $feedUrl = $buildXml.OrchestratedBuild.Endpoint.Url

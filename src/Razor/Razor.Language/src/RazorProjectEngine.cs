@@ -35,6 +35,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
+        internal virtual RazorCodeDocument Process(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var codeDocument = CreateCodeDocumentCore(source, importSources, tagHelpers);
+            ProcessCore(codeDocument);
+            return codeDocument;
+        }
+
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -47,9 +59,31 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
+        internal virtual RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var codeDocument = CreateCodeDocumentDesignTimeCore(source, importSources, tagHelpers);
+            ProcessCore(codeDocument);
+            return codeDocument;
+        }
+
         protected abstract RazorCodeDocument CreateCodeDocumentCore(RazorProjectItem projectItem);
 
+        internal virtual RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            return RazorCodeDocument.Create(source, importSources);
+        }
+
         protected abstract RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem);
+
+        internal virtual RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            return RazorCodeDocument.Create(source, importSources);
+        }
 
         protected abstract void ProcessCore(RazorCodeDocument codeDocument);
 

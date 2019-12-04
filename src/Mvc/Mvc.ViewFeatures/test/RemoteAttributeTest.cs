@@ -1045,7 +1045,7 @@ namespace Microsoft.AspNetCore.Mvc
             serviceCollection.AddRouting();
 
             serviceCollection.AddSingleton<IInlineConstraintResolver>(
-                provider => new DefaultInlineConstraintResolver(provider.GetRequiredService<IOptions<RouteOptions>>()));
+                provider => new DefaultInlineConstraintResolver(provider.GetRequiredService<IOptions<RouteOptions>>(), provider));
 
             if (localizerFactory != null)
             {

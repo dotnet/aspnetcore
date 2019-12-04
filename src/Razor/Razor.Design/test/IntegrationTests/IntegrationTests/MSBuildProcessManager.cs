@@ -11,14 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class MSBuildProcessManager
     {
-        public static Task<MSBuildResult> RunProcessAsync(
+        public static async Task<MSBuildResult> RunProcessAsync(
             ProjectDirectory project,
             string arguments,
             TimeSpan? timeout = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(120);
-
             var processStartInfo = new ProcessStartInfo()
             {
                 WorkingDirectory = project.DirectoryPath,
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 if (string.IsNullOrEmpty(BuildVariables.MSBuildPath))
                 {
                     throw new ArgumentException("Unable to locate MSBuild.exe to run desktop tests. " +
-                        "MSBuild.exe is located using state created as part of running build[cmd|sh] at the root of the repository. Run build /t:Prepeare to set this up if this hasn't been done.");
+                        "MSBuild.exe is located using state created as part of running build[cmd|sh] at the root of the repository. Run build /t:Prepare to set this up if this hasn't been done.");
                 }
 
                 processStartInfo.FileName = BuildVariables.MSBuildPath;
@@ -44,6 +42,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 processStartInfo.Arguments = $"msbuild {arguments}";
             }
 
+            var processResult = await RunProcessCoreAsync(processStartInfo, timeout);
+
+            return new MSBuildResult(project, processResult.FileName, processResult.Arguments, processResult.ExitCode, processResult.Output);
+        }
+
+        internal static Task<ProcessResult> RunProcessCoreAsync(
+            ProcessStartInfo processStartInfo,
+            TimeSpan? timeout = null)
+        {
+            timeout = timeout ?? TimeSpan.FromSeconds(120);
+
             var process = new Process()
             {
                 StartInfo = processStartInfo,
@@ -51,15 +60,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             };
 
             var output = new StringBuilder();
+            var outputLock = new object();
 
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
 
             process.Start();
-            process.BeginErrorReadLine();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
-            var timeoutTask = Task.Delay(timeout.Value).ContinueWith((t) =>
+            var timeoutTask = Task.Delay(timeout.Value).ContinueWith<ProcessResult>((t) =>
             {
                 // Don't timeout during debug sessions
                 while (Debugger.IsAttached)
@@ -67,15 +77,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
-                if (process.HasExited)
+                if (!process.HasExited)
                 {
-                    // This will happen on success, the 'real' task has already completed so this value will
-                    // never be visible.
-                    return (MSBuildResult)null;
+                    // This is a timeout.
+                    process.Kill();
                 }
 
-                // This is a timeout.
-                process.Kill();
                 throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}. Output: {output.ToString()}");
             });
 
@@ -93,21 +100,53 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
 
                 process.WaitForExit();
-                var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, output.ToString());
+
+                string outputString;
+                lock (outputLock)
+                {
+                    outputString = output.ToString();
+                }
+
+                var result = new ProcessResult(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputString);
                 return result;
             });
 
-            return Task.WhenAny<MSBuildResult>(waitTask, timeoutTask).Unwrap();
+            return Task.WhenAny<ProcessResult>(waitTask, timeoutTask).Unwrap();
 
             void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
-                output.AppendLine(e.Data);
+                lock (outputLock)
+                {
+                    output.AppendLine(e.Data);
+                }
             }
 
             void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
             {
-                output.AppendLine(e.Data);
+                lock (outputLock)
+                {
+                    output.AppendLine(e.Data);
+                }
             }
+        }
+
+        internal class ProcessResult
+        {
+            public ProcessResult(string fileName, string arguments, int exitCode, string output)
+            {
+                FileName = fileName;
+                Arguments = arguments;
+                ExitCode = exitCode;
+                Output = output;
+            }
+
+            public string Arguments { get; }
+
+            public string FileName { get; }
+
+            public int ExitCode { get; }
+
+            public string Output { get; }
         }
     }
 }

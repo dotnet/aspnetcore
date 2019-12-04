@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Http
             features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             features.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
 
-            // featurecollection is set. all cached interfaces are null.
+            // FeatureCollection is set. all cached interfaces are null.
             var context = new DefaultHttpContext(features);
             TestAllCachedFeaturesAreNull(context, features);
             Assert.Equal(3, features.Count());
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Http
             TestAllCachedFeaturesAreSet(context, features);
             Assert.NotEqual(3, features.Count());
 
-            // featurecollection is null. and all cached interfaces are null.
+            // FeatureCollection is null. and all cached interfaces are null.
             // only top level is tested because child objects are inaccessible.
             context.Uninitialize();
             TestCachedFeaturesAreNull(context, null);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Http
             newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());
             newFeatures.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
 
-            // featurecollection is set to newFeatures. all cached interfaces are null.
+            // FeatureCollection is set to newFeatures. all cached interfaces are null.
             context.Initialize(newFeatures);
             TestAllCachedFeaturesAreNull(context, newFeatures);
             Assert.Equal(3, newFeatures.Count());

@@ -58,9 +58,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
         /// </summary>
+#pragma warning disable PUB0001 // Pubternal type in public API
         public ListenType Type { get; }
+#pragma warning restore PUB0001 // Pubternal type in public API
 
+#pragma warning disable PUB0001 // Pubternal type in public API
         public FileHandleType HandleType
+#pragma warning restore PUB0001 // Pubternal type in public API
         {
             get => _handleType;
             set
@@ -122,8 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The protocols enabled on this endpoint.
         /// </summary>
-        /// <remarks>Defaults to HTTP/1.x only.</remarks>
-        internal HttpProtocols Protocols { get; set; } = HttpProtocols.Http1;
+        /// <remarks>Defaults to HTTP/1.x.</remarks>
+        public HttpProtocols Protocols { get; set; } = HttpProtocols.Http1;
 
         /// <summary>
         /// Gets the <see cref="List{IConnectionAdapter}"/> that allows each connection <see cref="System.IO.Stream"/>
@@ -134,7 +138,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>
         /// Defaults to empty.
         /// </remarks>
+#pragma warning disable PUB0001 // Pubternal type in public API
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
+#pragma warning restore PUB0001 // Pubternal type in public API
 
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 

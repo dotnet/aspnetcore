@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
-    /// Respresents a middleware that maps a request path to a sub-request pipeline.
+    /// Represents a middleware that maps a request path to a sub-request pipeline.
     /// </summary>
     public class MapMiddleware
     {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         private readonly MapOptions _options;
 
         /// <summary>
-        /// Creates a new instace of <see cref="MapMiddleware"/>.
+        /// Creates a new instance of <see cref="MapMiddleware"/>.
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
         /// <param name="options">The middleware options.</param>

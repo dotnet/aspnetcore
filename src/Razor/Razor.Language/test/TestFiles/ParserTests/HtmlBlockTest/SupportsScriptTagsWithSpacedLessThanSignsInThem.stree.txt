@@ -1,0 +1,26 @@
+Markup block - Gen<None> - 47 - (0:0,0)
+    Tag block - Gen<None> - 8 - (0:0,0)
+        Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[script];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [if(foo < bar) { alert("baz");)] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:13
+        HtmlTokenType.Text;[if(foo];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.OpenAngle;[<];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.Text;[bar)];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.Text;[{];
+        HtmlTokenType.WhiteSpace;[ ];
+        HtmlTokenType.Text;[alert(];
+        HtmlTokenType.DoubleQuote;["];
+        HtmlTokenType.Text;[baz];
+        HtmlTokenType.DoubleQuote;["];
+        HtmlTokenType.Text;[);)];
+    Tag block - Gen<None> - 9 - (38:0,38)
+        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:4
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[script];
+            HtmlTokenType.CloseAngle;[>];

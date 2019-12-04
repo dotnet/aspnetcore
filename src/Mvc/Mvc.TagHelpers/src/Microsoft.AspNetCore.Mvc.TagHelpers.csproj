@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\**\*" />
-    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 </Project>

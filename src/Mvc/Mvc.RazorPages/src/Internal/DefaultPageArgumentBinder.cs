@@ -30,7 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ParameterType = type,
             };
 
+#pragma warning disable CS0618 // Type or member is obsolete
             return await _parameterBinder.BindModelAsync(pageContext, valueProvider, parameterDescriptor, value);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private static async Task<CompositeValueProvider> GetCompositeValueProvider(PageContext pageContext)

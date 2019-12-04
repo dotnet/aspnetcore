@@ -80,17 +80,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new InvalidOperationException(Resources.TemplateHelpers_TemplateLimitations);
             }
 
-            Func<object, object> modelAccessor = (container) =>
+            object modelAccessor(object container)
             {
+                var model = (TModel)container;
+                var cachedFunc = CachedExpressionCompiler.Process(expression);
+                if (cachedFunc != null)
+                {
+                    return cachedFunc(model);
+                }
+
+                var func = expression.Compile();
                 try
                 {
-                    return CachedExpressionCompiler.Process(expression)((TModel)container);
+                    return func(model);
                 }
                 catch (NullReferenceException)
                 {
                     return null;
                 }
-            };
+            }
 
             ModelMetadata metadata = null;
             if (containerType != null && propertyName != null)

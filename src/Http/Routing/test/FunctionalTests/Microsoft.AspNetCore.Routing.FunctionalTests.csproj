@@ -1,11 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\RoutingSample.Web\RoutingSample.Web.csproj" />
+    <ProjectReference Include="..\testassets\RoutingWebSite\RoutingWebSite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <ProjectReference Include="..\testassets\Benchmarks\Benchmarks.csproj" />
   </ItemGroup>
 
   <ItemGroup>

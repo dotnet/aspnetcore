@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public async Task OnResultExecutionAsyn_ExecutesSyncFilters()
+        public async Task OnResultExecutionAsync_ExecutesSyncFilters()
         {
             // Arrange
             var pageContext = new PageContext(new ActionContext(

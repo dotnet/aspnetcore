@@ -1,0 +1,245 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Protocols.MessagePack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.MessagePackProtocolDependencyInjectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddMessagePackProtocol<T0>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TBuilder",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.ISignalRBuilder"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMessagePackProtocol<T0>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "T0"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions>"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TBuilder",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.SignalR.ISignalRBuilder"
+              ]
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FormatterResolvers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<MessagePack.IFormatterResolver>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FormatterResolvers",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<MessagePack.IFormatterResolver>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.MessagePackHubProtocol",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Version",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TransferFormat",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.TransferFormat",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsVersionSupported",
+          "Parameters": [
+            {
+              "Name": "version",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseMessage",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Buffers.ReadOnlySequence<System.Byte>",
+              "Direction": "Ref"
+            },
+            {
+              "Name": "binder",
+              "Type": "Microsoft.AspNetCore.SignalR.IInvocationBinder"
+            },
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteMessage",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            },
+            {
+              "Name": "output",
+              "Type": "System.Buffers.IBufferWriter<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetMessageBytes",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.HubMessage"
+            }
+          ],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

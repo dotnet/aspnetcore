@@ -45,7 +45,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
                                  "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.", ex.Message);
-                });
+                })
+                .UseUrls("http://127.0.0.1:0");
 
             using (var host = builder.Build())
             {
@@ -137,6 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     app.UseSignalR(options => configure(options));
                 })
+                .UseUrls("http://127.0.0.1:0")
                 .Build();
         }
     }

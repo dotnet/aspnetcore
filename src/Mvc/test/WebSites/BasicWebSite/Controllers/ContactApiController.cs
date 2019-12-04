@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
@@ -86,6 +83,47 @@ namespace BasicWebSite
             [ModelBinder(typeof(TestModelBinder), Name = "bar")] string foo)
         {
             return foo;
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<int> ActionReturningStatusCodeResult()
+        {
+            return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<int> ActionReturningProblemDetails()
+        {
+            return NotFound(new ProblemDetails
+            {
+                Title = "Not Found",
+                Type = "Type",
+                Detail = "Detail",
+                Status = 404,
+                Instance = "Instance",
+                Extensions =
+                {
+                    ["tracking-id"] = 27,
+                },
+            });
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult<int> ActionReturningValidationProblemDetails()
+        {
+            return BadRequest(new ValidationProblemDetails
+            {
+                Title = "Error",
+                Status = 400,
+                Extensions =
+                {
+                    ["tracking-id"] = "27",
+                },
+                Errors =
+                {
+                    { "Error1", new[] { "Error Message" } },
+                },
+            });
         }
 
         private class TestModelBinder : IModelBinder

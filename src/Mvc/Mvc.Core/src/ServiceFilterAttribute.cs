@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -58,14 +57,11 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            var service = serviceProvider.GetRequiredService(ServiceType);
-
-            var filter = service as IFilterMetadata;
-            if (filter == null)
+            var filter = (IFilterMetadata)serviceProvider.GetRequiredService(ServiceType);
+            if (filter is IFilterFactory filterFactory)
             {
-                throw new InvalidOperationException(Resources.FormatFilterFactoryAttribute_TypeMustImplementIFilter(
-                    typeof(ServiceFilterAttribute).Name,
-                    typeof(IFilterMetadata).Name));
+                // Unwrap filter factories
+                filter = filterFactory.CreateInstance(serviceProvider);
             }
 
             return filter;

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -199,22 +200,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            object routeValue;
-            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out routeValue))
+            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out var routeValue))
             {
                 return null;
             }
 
             var actionDescriptor = context.ActionDescriptor;
             string normalizedValue = null;
-            string value;
-            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out value) &&
+            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out var value) &&
                 !string.IsNullOrEmpty(value))
             {
                 normalizedValue = value;
             }
 
-            var stringRouteValue = routeValue?.ToString();
+            var stringRouteValue = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
             if (string.Equals(normalizedValue, stringRouteValue, StringComparison.OrdinalIgnoreCase))
             {
                 return normalizedValue;

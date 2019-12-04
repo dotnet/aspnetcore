@@ -17,7 +17,7 @@ namespace SignalRSamples.Hubs
                              .Select((_, index) => index)
                              .Take(count);
 
-            return observable.AsChannelReader();
+            return observable.AsChannelReader(Context.ConnectionAborted);
         }
 
         public ChannelReader<int> ChannelCounter(int count, int delay)
