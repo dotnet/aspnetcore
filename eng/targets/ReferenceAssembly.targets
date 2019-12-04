@@ -34,11 +34,9 @@
 ]]></ProjectListContentLines>
     </PropertyGroup>
 
-    <!-- Workaround https://github.com/Microsoft/msbuild/issues/1024 -->
-    <WriteLinesToFile Condition="'$(OS)' == 'Windows_NT'"
-                      File="$(_RefProjectFileOutputPath)" Lines="$([MSBuild]::Escape($(ProjectListContentLines)))" Overwrite="true" />
-    <Exec Condition="'$(OS)' != 'Windows_NT'"
-          Command="echo '$(ProjectListContentLines.Replace('\t','\\t'))' > $(_RefProjectFileOutputPath)" />
+    <WriteLinesToFile File="$(_RefProjectFileOutputPath)"
+        Lines="$([MSBuild]::Escape($(ProjectListContentLines)))"
+        Overwrite="true" />
 
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
