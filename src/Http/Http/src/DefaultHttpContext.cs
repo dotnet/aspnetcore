@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <remarks>
         /// This method allows the consumer to re-use the <see cref="DefaultHttpContext" /> for another request, rather than having to allocate a new instance.
-        /// <remarks>
+        /// </remarks>
         /// <param name="features">The new set of features for the <see cref="DefaultHttpContext" />.</param>
         public void Initialize(IFeatureCollection features)
         {
