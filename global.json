@@ -6,10 +6,10 @@
     "dotnet": "3.0.101",
     "runtimes": {
       "dotnet/x64": [
-        "$(MicrosoftNETCoreAppRuntimeVersion)"
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ],
       "dotnet/x86": [
-        "$(MicrosoftNETCoreAppRuntimeVersion)"
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
       ]
     },
     "Git": "2.22.0",
