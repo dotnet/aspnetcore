@@ -161,10 +161,11 @@ try {
         & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
     }
 
-    Write-Host "Re-generating package baselines"
-    Invoke-Block {
-        & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
-    }
+    # Temporarily disable package baseline generation while we stage for publishing
+    # Write-Host "Re-generating package baselines"
+    # Invoke-Block {
+    #     & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
+    # }
 
     Write-Host "Run git diff to check for pending changes"
 
