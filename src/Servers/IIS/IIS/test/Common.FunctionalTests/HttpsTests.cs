@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task HttpsHelloWorld(TestVariant variant)
         {
             var port = TestPortHelper.GetNextSSLPort();
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win81)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task CheckProtocolIsHttp2()
         {
             var port = TestPortHelper.GetNextSSLPort();
