@@ -37,6 +37,7 @@ public:
         _In_ BOOL                  fAnonymousAuthEnabled,
         _In_ std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
         _In_ BOOL                  fStdoutLogEnabled,
+        _In_ BOOL                  fDisableRedirection,
         _In_ BOOL                  fWebSocketSupported,
         _In_ STRU                 *pstruStdoutLogFile,
         _In_ STRU                 *pszAppPhysicalPath,
@@ -253,6 +254,7 @@ private:
     BOOL                    m_fBasicAuthEnabled;
     BOOL                    m_fAnonymousAuthEnabled;
     BOOL                    m_fDebuggerAttached;
+    BOOL                    m_fEnableOutOfProcessConsoleRedirection;
 
     STTIMER                 m_Timer;
     SOCKET                  m_socket;
