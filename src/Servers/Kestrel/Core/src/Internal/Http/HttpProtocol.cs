@@ -629,6 +629,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 try
                 {
                     KestrelEventSource.Log.RequestStart(this);
+                    
+                    await Task.Delay(10);
 
                     // Run the application code for this request
                     await application.ProcessRequestAsync(context);
