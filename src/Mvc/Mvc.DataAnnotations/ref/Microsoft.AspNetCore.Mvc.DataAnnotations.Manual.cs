@@ -3,6 +3,54 @@
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
+    internal partial class RegularExpressionAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RegularExpressionAttribute>
+    {
+        public RegularExpressionAttributeAdapter(System.ComponentModel.DataAnnotations.RegularExpressionAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.RegularExpressionAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class MaxLengthAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MaxLengthAttribute>
+    {
+        public MaxLengthAttributeAdapter(System.ComponentModel.DataAnnotations.MaxLengthAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.MaxLengthAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class MinLengthAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MinLengthAttribute>
+    {
+        public MinLengthAttributeAdapter(System.ComponentModel.DataAnnotations.MinLengthAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.MinLengthAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class RangeAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RangeAttribute>
+    {
+        public RangeAttributeAdapter(System.ComponentModel.DataAnnotations.RangeAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.RangeAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class CompareAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.CompareAttribute>
+    {
+        public CompareAttributeAdapter(System.ComponentModel.DataAnnotations.CompareAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.CompareAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class FileExtensionsAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.FileExtensionsAttribute>
+    {
+        public FileExtensionsAttributeAdapter(System.ComponentModel.DataAnnotations.FileExtensionsAttribute attribute, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.FileExtensionsAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class DataTypeAttributeAdapter : Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.DataTypeAttribute>
+    {
+        public DataTypeAttributeAdapter(System.ComponentModel.DataAnnotations.DataTypeAttribute attribute, string ruleName, Microsoft.Extensions.Localization.IStringLocalizer stringLocalizer) : base (default(System.ComponentModel.DataAnnotations.DataTypeAttribute), default(Microsoft.Extensions.Localization.IStringLocalizer)) { }
+        public string RuleName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+        public override string GetErrorMessage(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase validationContext) { throw null; }
+    }
+    internal partial class NumericClientModelValidator : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator
+    {
+        public NumericClientModelValidator() { }
+        public void AddValidation(Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext context) { }
+    }
     internal partial class DataAnnotationsMetadataProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IBindingMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IDisplayMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IValidationMetadataProvider
     {
         public DataAnnotationsMetadataProvider(Microsoft.AspNetCore.Mvc.MvcOptions options, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions> localizationOptions, Microsoft.Extensions.Localization.IStringLocalizerFactory stringLocalizerFactory) { }
