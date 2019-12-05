@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
         /// </param>
         /// <returns>
-        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.</param>
+        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.
         /// </returns>
         public static IWebHostBuilder UseHttpSys(this IWebHostBuilder hostBuilder)
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// A callback to configure Http.sys options.
         /// </param>
         /// <returns>
-        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.</param>
+        /// A reference to the <see cref="IWebHostBuilder" /> parameter object.
         /// </returns>
         public static IWebHostBuilder UseHttpSys(this IWebHostBuilder hostBuilder, Action<HttpSysOptions> options)
         {

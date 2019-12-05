@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <param name="options"></param>
         /// <param name="config"></param>
         /// <param name="loggerFactory"></param>
-        /// <param name="serverAddressesFeature">The</param>
+        /// <param name="serverAddressesFeature"></param>
         public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, ILoggerFactory loggerFactory,
             IServerAddressesFeature serverAddressesFeature)
             : this(next, options, config, loggerFactory)
