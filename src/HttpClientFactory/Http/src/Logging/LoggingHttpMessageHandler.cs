@@ -64,10 +64,10 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.RequestStart,
                 "Sending HTTP request {HttpMethod} {Uri}");
 
-            private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestEnd = LoggerMessage.Define<double, HttpStatusCode>(
+            private static readonly Action<ILogger, double, int, Exception> _requestEnd = LoggerMessage.Define<double, int>(
                 LogLevel.Information,
                 EventIds.RequestEnd,
-                "Received HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
+                "Received HTTP response headers after {ElapsedMilliseconds}ms - {StatusCode}");
 
             public static void RequestStart(ILogger logger, HttpRequestMessage request)
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Http.Logging
 
             public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration)
             {
-                _requestEnd(logger, duration.TotalMilliseconds, response.StatusCode, null);
+                _requestEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {

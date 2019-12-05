@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Http
     /// <para>
     /// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following:
     /// <example>
-    /// Converting a non-generic <code>IAsyncPolicy policy</code> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
+    /// Converting a non-generic <c>IAsyncPolicy policy</c> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
     /// <code>
     /// policy.AsAsyncPolicy&lt;HttpResponseMessage&gt;()
     /// </code>

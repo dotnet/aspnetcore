@@ -295,7 +295,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// associated with the <see cref="IHttpClientBuilder"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
