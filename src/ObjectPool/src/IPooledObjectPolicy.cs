@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.ObjectPool
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.ObjectPool
         /// Runs some processing when an object was returned to the pool. Can be used to reset the state of an object and indicate if the object should be returned to the pool.
         /// </summary>
         /// <param name="obj">The object to return to the pool.</param>
-        /// <returns><code>true</code> if the object should be returned to the pool. <code>false</code> if it's not possible/desirable for the pool to keep the object.</returns>
+        /// <returns><c>true</c> if the object should be returned to the pool. <c>false</c> if it's not possible/desirable for the pool to keep the object.</returns>
         bool Return(T obj);
     }
 }
