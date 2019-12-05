@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Builder
                 await context.Response.WriteAsync($@"
 <h1>Unable to find debuggable browser tab</h1>
 <p>
-    Could not get a list of browser tabs from <c>{debuggerTabsListUrl}</c>.
+    Could not get a list of browser tabs from <code>{debuggerTabsListUrl}</code>.
     Ensure your browser is running with debugging enabled.
 </p>
 <h2>Resolution</h2>
