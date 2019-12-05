@@ -144,7 +144,7 @@ namespace OpenIdConnect.AzureAdSample
                             string userObjectID = context.User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
                             var result = await authContext.AcquireTokenSilentAsync(Resource, credential, new UserIdentifier(userObjectID, UserIdentifierType.UniqueId));
 
-                            await response.WriteAsync($"<h3>access_token</h3><c>{HtmlEncode(result.AccessToken)}</c><br>");
+                            await response.WriteAsync($"<h3>access_token</h3><code>{HtmlEncode(result.AccessToken)}</code><br>");
                         }
                         catch (Exception ex)
                         {
