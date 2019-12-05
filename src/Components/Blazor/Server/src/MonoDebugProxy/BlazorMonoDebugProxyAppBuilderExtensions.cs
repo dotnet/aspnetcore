@@ -122,8 +122,8 @@ namespace Microsoft.AspNetCore.Builder
                 await context.Response.WriteAsync($@"
                     <h1>Unable to find debuggable browser tab</h1>
                     <p>
-                        The response from <c>{debuggerTabsListUrl}</c> does not include
-                        any entry for <c>{targetTabUrl}</c>.
+                        The response from <code>{debuggerTabsListUrl}</code> does not include
+                        any entry for <code>{targetTabUrl}</code>.
                     </p>");
                 return;
             }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Builder
                 await context.Response.WriteAsync($@"
                     <h1>Multiple matching tabs are open</h1>
                     <p>
-                        There is more than one browser tab at <c>{targetTabUrl}</c>.
+                        There is more than one browser tab at <code>{targetTabUrl}</code>.
                         Close the ones you do not wish to debug, then refresh this page.
                     </p>");
                 return;
@@ -158,17 +158,17 @@ namespace Microsoft.AspNetCore.Builder
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><c>chrome --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</c></strong></p>";
+                          <p><strong><code>chrome --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><c>google-chrome --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</c></strong></p>";
+                          <p><strong><code>google-chrome --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>Execute the following:</p>
-                          <p><strong><c>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</c></strong></p>";
+                          <p><strong><code>open /Applications/Google\ Chrome.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
@@ -183,12 +183,12 @@ namespace Microsoft.AspNetCore.Builder
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $@"<p>Press Win+R and enter the following:</p>
-                          <p><strong><c>msedge --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</c></strong></p>";
+                          <p><strong><code>msedge --remote-debugging-port=9222 --user-data-dir=""{profilePath}"" {appRootUrl}</code></strong></p>";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return $@"<p>In a terminal window execute the following:</p>
-                          <p><strong><c>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</c></strong></p>";
+                          <p><strong><code>open /Applications/Microsoft\ Edge\ Dev.app --args --remote-debugging-port=9222 --user-data-dir={profilePath} {appRootUrl}</code></strong></p>";
             }
             else
             {
