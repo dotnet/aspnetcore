@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Represents an implementation of the HTTP Context class. 
-    /// <summary/>
+    /// </summary>
     public sealed class DefaultHttpContext : HttpContext
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class.
-        /// <summary/>
+        /// </summary>
         public DefaultHttpContext()
             : this(new FeatureCollection())
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHttpContext"/> class with provided features.
-        /// <summary/>
+        /// </summary>
         /// <param name="features">Initial set of features for the <see cref="DefaultHttpContext"/>.</param>
         public DefaultHttpContext(IFeatureCollection features)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Reinitialize  the current instant of the class with features passed in.
-        /// <summary/>
+        /// </summary>
         /// <remarks>
         /// This method allows the consumer to re-use the <see cref="DefaultHttpContext" /> for another request, rather than having to allocate a new instance.
         /// <remarks>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Uninitialize all the features in the <see cref="DefaultHttpContext" />.
-        /// <summary/>
+        /// </summary>
         public void Uninitialize()
         {
             _features = default;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Gets or set the <see cref="FormOptions" /> for this instance.
-        /// <summary/>
+        /// </summary>
         /// <returns>
         /// <see cref="FormOptions"/>        
         /// </returns>
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// Gets or sets the <see cref="IServiceScopeFactory" /> for this instance.
-        /// <summary/>
+        /// </summary>
         /// <returns>   
         /// <see cref="IServiceScopeFactory"/>      
         /// </returns>

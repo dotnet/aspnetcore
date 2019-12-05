@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Provides an implementation of <see cref="IHttpContextAccessor" /> based on the current execution context. 
-    /// <summary/>
+    /// </summary>
     public class HttpContextAccessor : IHttpContextAccessor
     {
         private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
