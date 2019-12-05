@@ -1,3 +1,5 @@
+Bogus modification. DO NOT MERGE.
+
 The code in this directory is shared between CoreFx and AspNetCore. This contains HTTP/2 protocol infrastructure such as an HPACK implementation. Any changes to this dir need to be checked into both repositories.
 
 Corefx code paths:
