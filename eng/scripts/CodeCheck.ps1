@@ -129,7 +129,8 @@ try {
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
             # These .sln files are used by the templating engine.
-            ($_.Name -ne "BlazorServerWeb_CSharp.sln")
+            ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
+            ($_.Name -ne "BlazorWasm-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
