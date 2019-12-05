@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// Determines if a given <paramref name="typeInfo"/> is a controller.
         /// </summary>
         /// <param name="typeInfo">The <see cref="TypeInfo"/> candidate.</param>
-        /// <returns><c>true</c> if the type is a controller; otherwise <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the type is a controller; otherwise <see langword="false" />.</returns>
         protected virtual bool IsController(TypeInfo typeInfo)
         {
             if (!typeInfo.IsClass)

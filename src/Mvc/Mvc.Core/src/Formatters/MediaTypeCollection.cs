@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Removes the first occurrence of a specific media type from the <see cref="MediaTypeCollection"/>.
         /// </summary>
         /// <param name="item"></param>
-        /// <returns><c>true</c> if <paramref name="item"/> is successfully removed; otherwise, <c>false</c>.
-        /// This method also returns <c>false</c> if <paramref name="item"/> was not found in the original 
+        /// <returns><see langword="true" /> if <paramref name="item"/> is successfully removed; otherwise, <see langword="false" />.
+        /// This method also returns <see langword="false" /> if <paramref name="item"/> was not found in the original 
         /// <see cref="MediaTypeCollection"/>.</returns>
         public bool Remove(MediaTypeHeaderValue item)
         {

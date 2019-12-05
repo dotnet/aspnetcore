@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
         /// Constructs an instance of <see cref="BindElementAttribute"/>.
         /// </summary>
         /// <param name="element">The tag name of the element.</param>
-        /// <param name="suffix">The suffix value. For example, set this to <c>value</c> for <c>bind-value</c>, or set this to <c>null</c> for <c>bind</c>.</param>
+        /// <param name="suffix">The suffix value. For example, set this to <c>value</c> for <c>bind-value</c>, or set this to <see langword="null" /> for <c>bind</c>.</param>
         /// <param name="valueAttribute">The name of the value attribute to be bound.</param>
         /// <param name="changeAttribute">The name of an attribute that will register an associated change event.</param>
         public BindElementAttribute(string element, string suffix, string valueAttribute, string changeAttribute)
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components
 
         /// <summary>
         /// Gets the suffix value.
-        /// For example, this will be <c>value</c> to mean <c>bind-value</c>, or <c>null</c> to mean <c>bind</c>.
+        /// For example, this will be <c>value</c> to mean <c>bind-value</c>, or <see langword="null" /> to mean <c>bind</c>.
         /// </summary>
         public string Suffix { get; }
 

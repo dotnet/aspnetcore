@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// Overridden to handle remote signout requests
         /// </summary>
-        /// <returns><c>true</c> if request processing should stop.</returns>
+        /// <returns><see langword="true" /> if request processing should stop.</returns>
         public override Task<bool> HandleRequestAsync()
         {
             // RemoteSignOutPath and CallbackPath may be the same, fall through if the message doesn't match.

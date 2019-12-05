@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// </param>
         /// <param name="contentRootPath">The path to the content root. This path can be either relative or absolute.
         /// In case the path is relative, the path will be combined with
-        /// <c><see cref="Directory.GetCurrentDirectory()"/></c></param>
+        /// <see cref="Directory.GetCurrentDirectory()"/></param>
         /// <param name="contentRootTest">
         /// A file that will be use as a marker to determine that the content root path for the given context is correct.
         /// </param>
