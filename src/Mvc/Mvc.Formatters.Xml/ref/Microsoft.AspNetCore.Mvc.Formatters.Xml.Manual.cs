@@ -11,4 +11,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     {
         internal new Microsoft.AspNetCore.Mvc.ValidationProblemDetails ProblemDetails { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    internal partial class ProblemDetailsWrapperProviderFactory : Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProviderFactory
+    {
+        public ProblemDetailsWrapperProviderFactory() { }
+        public Microsoft.AspNetCore.Mvc.Formatters.Xml.IWrapperProvider GetProvider(Microsoft.AspNetCore.Mvc.Formatters.Xml.WrapperProviderContext context) { throw null; }
+    }
+    internal static partial class FormattingUtilities
+    {
+        public static readonly int DefaultMaxDepth;
+        public static readonly System.Runtime.Serialization.XsdDataContractExporter XsdDataContractExporter;
+        public static System.Xml.XmlDictionaryReaderQuotas GetDefaultXmlReaderQuotas() { throw null; }
+        public static System.Xml.XmlWriterSettings GetDefaultXmlWriterSettings() { throw null; }
+    }
+}
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    internal sealed partial class XmlDataContractSerializerMvcOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>
+    {
+        public XmlDataContractSerializerMvcOptionsSetup(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public void Configure(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+    }
+    internal sealed partial class XmlSerializerMvcOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>
+    {
+        public XmlSerializerMvcOptionsSetup(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public void Configure(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+    }
 }
