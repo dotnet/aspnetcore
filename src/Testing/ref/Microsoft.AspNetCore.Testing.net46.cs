@@ -193,6 +193,8 @@ namespace Microsoft.AspNetCore.Testing
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=true)]
     public partial class OSSkipConditionAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
+        public OSSkipConditionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem) { }
+        [System.ObsoleteAttribute("Use the Minimum/MaximumOSVersionAttribute for version checks.", true)]
         public OSSkipConditionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, params string[] versions) { }
         public bool IsMet { get { throw null; } }
         public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -331,6 +333,7 @@ namespace Microsoft.AspNetCore.Testing
         public const string Win10_20H1 = "10.0.19033";
         public const string Win10_RS4 = "10.0.17134";
         public const string Win10_RS5 = "10.0.17763";
+        [System.ObsoleteAttribute("Use Win7 instead.", true)]
         public const string Win2008R2 = "6.1";
         public const string Win7 = "6.1";
         public const string Win8 = "6.2";

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
@@ -10,6 +12,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         public const string Win7 = "6.1";
 
+        [Obsolete("Use Win7 instead.", error: true)]
         public const string Win2008R2 = Win7;
 
         public const string Win8 = "6.2";

@@ -10,13 +10,12 @@ namespace Microsoft.AspNetCore.Testing
     public class OSSkipConditionAttributeTest
     {
         [Fact]
-        public void Skips_WhenOnlyOperatingSystemIsSupplied()
+        public void Skips_WhenOperatingSystemMatches()
         {
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Windows,
-                OperatingSystems.Windows,
-                "2.5");
+                OperatingSystems.Windows);
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
@@ -28,77 +27,18 @@ namespace Microsoft.AspNetCore.Testing
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Linux,
-                OperatingSystems.Windows,
-                "2.5");
+                OperatingSystems.Windows);
 
             // Assert
             Assert.True(osSkipAttribute.IsMet);
-        }
-
-        [Fact]
-        public void DoesNotSkip_WhenVersionsDoNotMatch()
-        {
-            // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(
-                OperatingSystems.Windows,
-                OperatingSystems.Windows,
-                "2.5",
-                "10.0");
-
-            // Assert
-            Assert.True(osSkipAttribute.IsMet);
-        }
-
-        [Fact]
-        public void DoesNotSkip_WhenOnlyVersionsMatch()
-        {
-            // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(
-                OperatingSystems.Linux,
-                OperatingSystems.Windows,
-                "2.5",
-                "2.5");
-
-            // Assert
-            Assert.True(osSkipAttribute.IsMet);
-        }
-
-        [Theory]
-        [InlineData("2.5", "2.5")]
-        [InlineData("blue", "Blue")]
-        public void Skips_WhenVersionsMatches(string currentOSVersion, string skipVersion)
-        {
-            // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(
-                OperatingSystems.Windows,
-                OperatingSystems.Windows,
-                currentOSVersion,
-                skipVersion);
-
-            // Assert
-            Assert.False(osSkipAttribute.IsMet);
-        }
-
-        [Fact]
-        public void Skips_WhenVersionsMatchesOutOfMultiple()
-        {
-            // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(
-                OperatingSystems.Windows,
-                OperatingSystems.Windows,
-                "2.5",
-                "10.0", "3.4", "2.5");
-
-            // Assert
-            Assert.False(osSkipAttribute.IsMet);
         }
 
         [Fact]
         public void Skips_BothMacOSXAndLinux()
         {
             // Act
-            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.Linux, string.Empty);
-            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.MacOSX, string.Empty);
+            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.Linux);
+            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.MacOSX);
 
             // Assert
             Assert.False(osSkipAttributeLinux.IsMet);
@@ -109,8 +49,8 @@ namespace Microsoft.AspNetCore.Testing
         public void Skips_BothMacOSXAndWindows()
         {
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.Windows, string.Empty);
-            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.MacOSX, string.Empty);
+            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.Windows);
+            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.MacOSX);
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
@@ -121,8 +61,8 @@ namespace Microsoft.AspNetCore.Testing
         public void Skips_BothWindowsAndLinux()
         {
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Windows, string.Empty);
-            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Linux, string.Empty);
+            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Windows);
+            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Linux);
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
