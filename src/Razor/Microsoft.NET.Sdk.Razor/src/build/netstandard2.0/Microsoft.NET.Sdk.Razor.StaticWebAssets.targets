@@ -506,14 +506,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot\%(BasePath)\%(RelativePath)'))'))</RelativePath>
-
       </_ExternalPublishStaticWebAsset>
 
       <!-- Remove any existing external static web asset that might have been added as part of the
            regular publish pipeline. -->
       <ResolvedFileToPublish Remove="@(_ExternalPublishStaticWebAsset)" />
 
-      <ResolvedFileToPublish Include="@(_ExternalPublishStaticWebAsset)" />
+      <ResolvedFileToPublish Include="@(_ExternalPublishStaticWebAsset)">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
     </ItemGroup>
 
   </Target>
