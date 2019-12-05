@@ -15,6 +15,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.KeyPerFile" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
