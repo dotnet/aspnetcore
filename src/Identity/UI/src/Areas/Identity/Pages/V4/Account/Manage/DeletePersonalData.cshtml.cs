@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
 
             await _signInManager.SignOutAsync();
 
-            _logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+            _logger.LogInformation($"User with ID '{userId}' deleted themselves.");
 
             return Redirect("~/");
         }
