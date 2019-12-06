@@ -73,4 +73,9 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         internal static void AddServicesCore(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
     }
+    internal partial class NewtonsoftJsonMvcOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>
+    {
+        public NewtonsoftJsonMvcOptionsSetup(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcNewtonsoftJsonOptions> jsonOptions, System.Buffers.ArrayPool<char> charPool, Microsoft.Extensions.ObjectPool.ObjectPoolProvider objectPoolProvider) { }
+        public void Configure(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+    }
 }
