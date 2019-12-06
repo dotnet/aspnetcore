@@ -938,6 +938,14 @@ namespace Microsoft.AspNetCore.Http2Cat
             return WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames, expectedLastStreamId, Http2ErrorCode.NO_ERROR);
         }
 
+        internal static void VerifyDataFrame(Http2Frame frame, int expectedStreamId, bool endOfStream, int length)
+        {
+            Assert.Equal(Http2FrameType.DATA, frame.Type);
+            Assert.Equal(expectedStreamId, frame.StreamId);
+            Assert.Equal(endOfStream ? Http2DataFrameFlags.END_STREAM : Http2DataFrameFlags.NONE, frame.DataFlags);
+            Assert.Equal(length, frame.PayloadLength);
+        }
+
         internal void VerifyGoAway(Http2Frame frame, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)
         {
             Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
@@ -946,6 +954,15 @@ namespace Microsoft.AspNetCore.Http2Cat
             Assert.Equal(0, frame.StreamId);
             Assert.Equal(expectedLastStreamId, frame.GoAwayLastStreamId);
             Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
+        }
+
+        internal static void VerifyResetFrame(Http2Frame frame, int expectedStreamId, Http2ErrorCode expectedErrorCode)
+        {
+            Assert.Equal(Http2FrameType.RST_STREAM, frame.Type);
+            Assert.Equal(expectedStreamId, frame.StreamId);
+            Assert.Equal(expectedErrorCode, frame.RstStreamErrorCode);
+            Assert.Equal(4, frame.PayloadLength);
+            Assert.Equal(0, frame.Flags);
         }
 
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode)

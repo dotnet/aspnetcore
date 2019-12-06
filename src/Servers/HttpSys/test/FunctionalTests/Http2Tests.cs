@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -115,9 +116,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                    Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
-                    Assert.Equal(0, dataFrame.PayloadLength);
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
@@ -165,10 +164,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     h2Connection.ResetHeaders();
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                    Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
-                    Assert.Equal(0, dataFrame.PayloadLength);
-                    Assert.Equal(streamId, dataFrame.StreamId);
+                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
                     // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
 
@@ -193,10 +189,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                         h2Connection.ResetHeaders();
 
                         dataFrame = await h2Connection.ReceiveFrameAsync();
-                        Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                        Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
-                        Assert.Equal(0, dataFrame.PayloadLength);
-                        Assert.Equal(streamId, dataFrame.StreamId);
+                        Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
                     }
 
                     streamId = 1 + (200 * 2); // Odds.
@@ -223,10 +216,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     h2Connection.ResetHeaders();
 
                     dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                    Assert.Equal(Http2DataFrameFlags.END_STREAM, dataFrame.DataFlags);
-                    Assert.Equal(0, dataFrame.PayloadLength);
-                    Assert.Equal(streamId, dataFrame.StreamId);
+                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -257,10 +247,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_STREAM, dataFrame.HeadersFlags);
-                    Assert.Equal(0, dataFrame.PayloadLength);
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
 
@@ -300,9 +287,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.RST_STREAM, resetFrame.Type);
-                    Assert.Equal(1, resetFrame.StreamId);
-                    Assert.Equal(Http2ErrorCode.CANCEL, resetFrame.RstStreamErrorCode);
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.CANCEL);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -337,13 +322,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.RST_STREAM, resetFrame.Type);
-                    Assert.Equal(1, resetFrame.StreamId);
-                    Assert.Equal(Http2ErrorCode.INTERNAL_ERROR, resetFrame.RstStreamErrorCode);
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
                 .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        public async Task Reset_Http1_NotSupported()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                Assert.Equal("HTTP/1.1", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.Null(feature);
+                return httpContext.Response.WriteAsync("Hello World");
+            });
+
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            using HttpClient client = new HttpClient(handler);
+            client.DefaultRequestVersion = HttpVersion.Version11;
+            var response = await client.GetStringAsync(address);
+            Assert.Equal("Hello World", response);
         }
 
         [ConditionalFact]
@@ -399,9 +401,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.RST_STREAM, resetFrame.Type);
-                    Assert.Equal(1, resetFrame.StreamId);
-                    Assert.Equal(1111, (int)resetFrame.RstStreamErrorCode);
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
                     // Any app errors?
                     Assert.Equal(0, await appResult.Task.DefaultTimeout());
@@ -455,9 +455,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.RST_STREAM, resetFrame.Type);
-                    Assert.Equal(1, resetFrame.StreamId);
-                    Assert.Equal(1111, (int)resetFrame.RstStreamErrorCode);
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -508,27 +506,227 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
-                    Assert.Equal(1, dataFrame.StreamId);
-                    Assert.Equal(Http2DataFrameFlags.NONE, dataFrame.DataFlags);
-                    Assert.Equal(11, dataFrame.PayloadLength);
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.RST_STREAM, resetFrame.Type);
-                    Assert.Equal(1, resetFrame.StreamId);
-                    Assert.Equal(1111, (int)resetFrame.RstStreamErrorCode);
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
                 .Build().RunAsync();
         }
 
-        // Response:
-        // After CompleteAsync (NO_ERROR) for GRPC
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19521", SkipReason = "Reset support was added in Win10_20H2.")]
+        public async Task Reset_AfterCompleteAsync_NoReset()
+        {
+            var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                    var feature = httpContext.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(feature);
+                    await httpContext.Response.WriteAsync("Hello World");
+                    await httpContext.Response.CompleteAsync();
+                    // The request and response are fully complete, the reset doesn't get sent.
+                    feature.Reset(1111);
+                    appResult.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appResult.SetException(ex);
+                }
+            });
 
-        // Request:
-        // After headers, before body
-        // Durring body, additional frames
-        // After body
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    // Any app errors?
+                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+
+                    var headersFrame = await h2Connection.ReceiveFrameAsync();
+                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                    Assert.Equal(1, headersFrame.StreamId);
+                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
+
+                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
+                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19521", SkipReason = "Reset support was added in Win10_20H2.")]
+        public async Task Reset_BeforeRequestBody_Resets()
+        {
+            var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                    var feature = httpContext.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(feature);
+                    var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+
+                    feature.Reset(1111);
+
+                    await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                    appResult.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appResult.SetException(ex);
+                }
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
+
+                    // Any app errors?
+                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+
+                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19521", SkipReason = "Reset support was added in Win10_20H2.")]
+        public async Task Reset_DurringRequestBody_Resets()
+        {
+            var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                    var feature = httpContext.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(feature);
+
+                    var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                    Assert.Equal(10, read);
+
+                    var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                    feature.Reset(1111);
+                    await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                    appResult.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appResult.SetException(ex);
+                }
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
+                    await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
+
+                    // Any app errors?
+                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+
+                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19521", SkipReason = "Reset support was added in Win10_20H2.")]
+        public async Task Reset_CompleteAsyncDurringRequestBody_Resets()
+        {
+            var appResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                    var feature = httpContext.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(feature);
+
+                    var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                    Assert.Equal(10, read);
+
+                    var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                    await httpContext.Response.CompleteAsync();
+                    feature.Reset(1111);
+                    await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                    appResult.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appResult.SetException(ex);
+                }
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.PostRequestHeaders, endStream: false);
+                    await h2Connection.SendDataAsync(1, new byte[10], endStream: false);
+
+                    // Any app errors?
+                    Assert.Equal(0, await appResult.Task.DefaultTimeout());
+
+                    var headersFrame = await h2Connection.ReceiveFrameAsync();
+                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                    Assert.Equal(1, headersFrame.StreamId);
+                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
+
+                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
+                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+
+                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
     }
 }
