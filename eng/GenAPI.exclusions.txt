@@ -14,3 +14,37 @@ M:Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.set
 P:Microsoft.AspNetCore.Routing.Matching.CandidateState.Values
 # Manually implemented - Need to include internal setter
 P:Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.KestrelServerOptions
+# Manually implemented - Need to include private fields in struct with sequential layout
+T:Microsoft.AspNetCore.Components.RenderHandle
+P:Microsoft.AspNetCore.Components.RenderHandle.Dispatcher
+P:Microsoft.AspNetCore.Components.RenderHandle.IsInitialized
+M:Microsoft.AspNetCore.Components.RenderHandle.get_Dispatcher
+M:Microsoft.AspNetCore.Components.RenderHandle.get_IsInitialized
+M:Microsoft.AspNetCore.Components.RenderHandle.Render(Microsoft.AspNetCore.Components.RenderFragment)
+T:Microsoft.AspNetCore.Components.ParameterView
+P:Microsoft.AspNetCore.Components.ParameterView.Empty
+M:Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary{System.String,System.Object})
+M:Microsoft.AspNetCore.Components.ParameterView.GetEnumerator
+M:Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault``1(System.String)
+M:Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault``1(System.String,``0)
+M:Microsoft.AspNetCore.Components.ParameterView.get_Empty
+M:Microsoft.AspNetCore.Components.ParameterView.SetParameterProperties(System.Object)
+M:Microsoft.AspNetCore.Components.ParameterView.ToDictionary
+M:Microsoft.AspNetCore.Components.ParameterView.TryGetValue``1(System.String,``0@)
+T:Microsoft.AspNetCore.Components.ParameterView.Enumerator
+P:Microsoft.AspNetCore.Components.ParameterView.Enumerator.Current
+M:Microsoft.AspNetCore.Components.ParameterView.Enumerator.get_Current
+M:Microsoft.AspNetCore.Components.ParameterView.Enumerator.MoveNext
+T:Microsoft.AspNetCore.Components.EventCallback
+F:Microsoft.AspNetCore.Components.EventCallback.Empty
+F:Microsoft.AspNetCore.Components.EventCallback.Factory
+M:Microsoft.AspNetCore.Components.EventCallback.#ctor(Microsoft.AspNetCore.Components.IHandleEvent,System.MulticastDelegate)
+P:Microsoft.AspNetCore.Components.EventCallback.HasDelegate
+M:Microsoft.AspNetCore.Components.EventCallback.get_HasDelegate
+M:Microsoft.AspNetCore.Components.EventCallback.InvokeAsync(System.Object)
+T:Microsoft.AspNetCore.Components.EventCallback`1
+F:Microsoft.AspNetCore.Components.EventCallback`1.Empty
+M:Microsoft.AspNetCore.Components.EventCallback`1.#ctor(Microsoft.AspNetCore.Components.IHandleEvent,System.MulticastDelegate)
+P:Microsoft.AspNetCore.Components.EventCallback`1.HasDelegate
+M:Microsoft.AspNetCore.Components.EventCallback`1.get_HasDelegate
+M:Microsoft.AspNetCore.Components.EventCallback`1.InvokeAsync(`0)
