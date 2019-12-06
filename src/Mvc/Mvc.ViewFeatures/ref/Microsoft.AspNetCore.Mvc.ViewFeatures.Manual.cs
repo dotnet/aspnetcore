@@ -3,6 +3,21 @@
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 {
+    internal partial class PagedBufferedTextWriter : System.IO.TextWriter
+    {
+        public PagedBufferedTextWriter(System.Buffers.ArrayPool<char> pool, System.IO.TextWriter inner) { }
+        public override System.Text.Encoding Encoding { get { throw null; } }
+        protected override void Dispose(bool disposing) { }
+        public override void Flush() { }
+        public override System.Threading.Tasks.Task FlushAsync() { throw null; }
+        public override void Write(char value) { }
+        public override void Write(char[] buffer) { }
+        public override void Write(char[] buffer, int index, int count) { }
+        public override void Write(string value) { }
+        public override System.Threading.Tasks.Task WriteAsync(char value) { throw null; }
+        public override System.Threading.Tasks.Task WriteAsync(char[] buffer, int index, int count) { throw null; }
+        public override System.Threading.Tasks.Task WriteAsync(string value) { throw null; }
+    }
     internal partial class CharArrayBufferSource : Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ICharBufferSource
     {
         public static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.CharArrayBufferSource Instance;
