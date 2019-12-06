@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Called by P/Invoke when returning SafeHandles
         private SafeLibraryHandle()
             : base(ownsHandle: true)
-        { }
+        {
+        }
 
         /// <summary>
         /// Returns a value stating whether the library exports a given proc.

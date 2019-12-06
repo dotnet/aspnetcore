@@ -40,38 +40,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                     await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_HEADERS) != 0);
-                    Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_STREAM) != 0);
-
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    // HTTP/2 filters out the connection header
-                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, endStream: true, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     // Send and receive a second request to ensure there is no GoAway frame on the wire yet.
 
                     await h2Connection.StartStreamAsync(3, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_HEADERS) != 0);
-                    Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_STREAM) != 0);
-
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    h2Connection.ResetHeaders();
-                    decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    // HTTP/2 filters out the connection header
-                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(3, endStream: true, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     await h2Connection.StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
@@ -102,18 +87,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     var goAwayFrame = await h2Connection.ReceiveFrameAsync();
                     h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    // HTTP/2 filters out the connection header
-                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
@@ -148,20 +127,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     var goAwayFrame = await h2Connection.ReceiveFrameAsync();
                     h2Connection.VerifyGoAway(goAwayFrame, int.MaxValue, Http2ErrorCode.NO_ERROR);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(streamId, headersFrame.StreamId);
-
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    // HTTP/2 filters out the connection header
-                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    h2Connection.ResetHeaders();
+                    await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
@@ -173,20 +144,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                         streamId = 1 + (i * 2); // Odds.
                         await h2Connection.StartStreamAsync(streamId, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                        headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                        Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                        Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                        Assert.Equal(streamId, headersFrame.StreamId);
-
-                        h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                        decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                        // HTTP/2 filters out the connection header
-                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                        h2Connection.ResetHeaders();
+                        await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
+                        {
+                            // HTTP/2 filters out the connection header
+                            Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                            Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                        });
 
                         dataFrame = await h2Connection.ReceiveFrameAsync();
                         Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
@@ -200,20 +163,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     h2Connection.VerifyGoAway(goAwayFrame, streamId, Http2ErrorCode.NO_ERROR);
 
                     // Normal response
-                    headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(streamId, headersFrame.StreamId);
-
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    // HTTP/2 filters out the connection header
-                    Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    h2Connection.ResetHeaders();
+                    await h2Connection.ReceiveHeadersAsync(streamId, decodedHeaders =>
+                    {
+                        // HTTP/2 filters out the connection header
+                        Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
@@ -241,17 +196,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                     await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("500", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-
-                    Assert.Equal("500", decodedHeaders[HeaderNames.Status]);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -278,13 +229,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                     await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.CANCEL);
@@ -313,13 +261,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
                     await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR);
@@ -445,14 +390,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     // Any app errors?
                     Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(1, headersFrame.StreamId);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
@@ -496,14 +437,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     // Any app errors?
                     Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(1, headersFrame.StreamId);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
@@ -552,14 +489,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     // Any app errors?
                     Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(1, headersFrame.StreamId);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
@@ -709,14 +642,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     // Any app errors?
                     Assert.Equal(0, await appResult.Task.DefaultTimeout());
 
-                    var headersFrame = await h2Connection.ReceiveFrameAsync();
-                    Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
-                    Assert.Equal(Http2HeadersFrameFlags.END_HEADERS, headersFrame.HeadersFlags);
-                    Assert.Equal(1, headersFrame.StreamId);
-                    h2Connection.Logger.LogInformation("Received headers in a single frame.");
-
-                    var decodedHeaders = h2Connection.DecodeHeaders(headersFrame);
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);

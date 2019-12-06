@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.HPack;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -936,6 +937,23 @@ namespace Microsoft.AspNetCore.Http2Cat
         public Task WaitForConnectionStopAsync(int expectedLastStreamId, bool ignoreNonGoAwayFrames)
         {
             return WaitForConnectionErrorAsync<Exception>(ignoreNonGoAwayFrames, expectedLastStreamId, Http2ErrorCode.NO_ERROR);
+        }
+
+        internal Task ReceiveHeadersAsync(int expectedStreamId, Action<IDictionary<string, string>> verifyHeaders = null)
+            => ReceiveHeadersAsync(expectedStreamId, endStream: false, verifyHeaders);
+
+        internal async Task ReceiveHeadersAsync(int expectedStreamId, bool endStream = false, Action<IDictionary<string, string>> verifyHeaders = null)
+        {
+            var headersFrame = await ReceiveFrameAsync();
+            Assert.Equal(Http2FrameType.HEADERS, headersFrame.Type);
+            Assert.Equal(expectedStreamId, headersFrame.StreamId);
+            Assert.True((headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_HEADERS) != 0);
+            Assert.Equal(endStream, (headersFrame.Flags & (byte)Http2HeadersFrameFlags.END_STREAM) != 0);
+            Logger.LogInformation("Received headers in a single frame.");
+
+            ResetHeaders();
+            DecodeHeaders(headersFrame);
+            verifyHeaders?.Invoke(_decodedHeaders);
         }
 
         internal static void VerifyDataFrame(Http2Frame frame, int expectedStreamId, bool endOfStream, int length)

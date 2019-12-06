@@ -132,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 HttpSetRequestProperty = HttpApiModule.GetProcAddress<HttpSetRequestPropertyInvoker>("HttpSetRequestProperty", throwIfNotFound: false);
 
                 SupportsReset = HttpSetRequestProperty != null;
+                // Trailers support was added in the same release as Reset, but there's no method we can export to check it directly.
                 SupportsTrailers = SupportsReset;
             }
         }
