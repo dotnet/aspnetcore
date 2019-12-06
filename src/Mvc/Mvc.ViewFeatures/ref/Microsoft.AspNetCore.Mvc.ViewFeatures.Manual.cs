@@ -99,6 +99,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 }
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 {
+    internal partial class SaveTempDataFilter : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IResourceFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter
+    {
+        internal static readonly object SaveTempDataFilterContextKey;
+        public SaveTempDataFilter(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory factory) { }
+        public void OnResourceExecuted(Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext context) { }
+        public void OnResourceExecuting(Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext context) { }
+        public void OnResultExecuted(Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext context) { }
+        public void OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) { }
+        private static System.Threading.Tasks.Task OnStarting(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
+        private static void SaveTempData(Microsoft.AspNetCore.Mvc.IActionResult result, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory factory, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> filters, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
+        internal partial class SaveTempDataContext
+        {
+            public SaveTempDataContext() { }
+            public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public bool RequestHasUnhandledException { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory TempDataDictionaryFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public bool TempDataSaved { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        }
+    }
+    internal partial class ControllerSaveTempDataPropertyFilter : Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.SaveTempDataPropertyFilterBase, Microsoft.AspNetCore.Mvc.Filters.IActionFilter, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    {
+        public ControllerSaveTempDataPropertyFilter(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory factory) : base (default(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory)) { }
+        public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) { }
+        public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
+    }
     internal partial class ViewDataAttributeApplicationModelProvider
     {
         public ViewDataAttributeApplicationModelProvider() { }
@@ -140,6 +165,143 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 }
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    internal partial class MemberExpressionCacheKeyComparer : System.Collections.Generic.IEqualityComparer<Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey>
+    {
+        public static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKeyComparer Instance;
+        public MemberExpressionCacheKeyComparer() { }
+        public bool Equals(Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey x, Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey y) { throw null; }
+        public int GetHashCode(Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey obj) { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal readonly partial struct MemberExpressionCacheKey
+    {
+        public MemberExpressionCacheKey(System.Type modelType, System.Linq.Expressions.MemberExpression memberExpression) { throw null; }
+        public MemberExpressionCacheKey(System.Type modelType, System.Reflection.MemberInfo[] members) { throw null; }
+        public System.Linq.Expressions.MemberExpression MemberExpression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.MemberInfo[] Members { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type ModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey.Enumerator GetEnumerator() { throw null; }
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey MakeCacheable() { throw null; }
+        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public partial struct Enumerator
+        {
+            private readonly System.Reflection.MemberInfo[] _members;
+            private int _index;
+            public Enumerator(in Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey key) { throw null; }
+            public System.Reflection.MemberInfo Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+            public bool MoveNext() { throw null; }
+        }
+    }
+    internal static partial class Resources
+    {
+        internal static string ArgumentCannotBeNullOrEmpty { get { throw null; } }
+        internal static string ArgumentPropertyUnexpectedType { get { throw null; } }
+        internal static string Common_PartialViewNotFound { get { throw null; } }
+        internal static string Common_PropertyNotFound { get { throw null; } }
+        internal static string Common_TriState_False { get { throw null; } }
+        internal static string Common_TriState_NotSet { get { throw null; } }
+        internal static string Common_TriState_True { get { throw null; } }
+        internal static string CreateModelExpression_NullModelMetadata { get { throw null; } }
+        internal static System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        internal static string DeserializingTempData { get { throw null; } }
+        internal static string Dictionary_DuplicateKey { get { throw null; } }
+        internal static string DynamicViewData_ViewDataNull { get { throw null; } }
+        internal static string ExpressionHelper_InvalidIndexerExpression { get { throw null; } }
+        internal static string HtmlGenerator_FieldNameCannotBeNullOrEmpty { get { throw null; } }
+        internal static string HtmlHelper_MissingSelectData { get { throw null; } }
+        internal static string HtmlHelper_NotContextualized { get { throw null; } }
+        internal static string HtmlHelper_NullModelMetadata { get { throw null; } }
+        internal static string HtmlHelper_SelectExpressionNotEnumerable { get { throw null; } }
+        internal static string HtmlHelper_TextAreaParameterOutOfRange { get { throw null; } }
+        internal static string HtmlHelper_TypeNotSupported_ForGetEnumSelectList { get { throw null; } }
+        internal static string HtmlHelper_WrongSelectDataType { get { throw null; } }
+        internal static string PropertyOfTypeCannotBeNull { get { throw null; } }
+        internal static string RemoteAttribute_NoUrlFound { get { throw null; } }
+        internal static string RemoteAttribute_RemoteValidationFailed { get { throw null; } }
+        internal static System.Resources.ResourceManager ResourceManager { get { throw null; } }
+        internal static string SerializingTempData { get { throw null; } }
+        internal static string TempDataProperties_InvalidType { get { throw null; } }
+        internal static string TempDataProperties_PublicGetterSetter { get { throw null; } }
+        internal static string TempData_CannotDeserializeType { get { throw null; } }
+        internal static string TempData_CannotSerializeType { get { throw null; } }
+        internal static string TemplatedExpander_PopulateValuesMustBeInvokedFirst { get { throw null; } }
+        internal static string TemplatedExpander_ValueFactoryCannotReturnNull { get { throw null; } }
+        internal static string TemplatedViewLocationExpander_NoReplacementToken { get { throw null; } }
+        internal static string TemplateHelpers_NoTemplate { get { throw null; } }
+        internal static string TemplateHelpers_TemplateLimitations { get { throw null; } }
+        internal static string Templates_TypeMustImplementIEnumerable { get { throw null; } }
+        internal static string TypeMethodMustReturnNotNullValue { get { throw null; } }
+        internal static string TypeMustDeriveFromType { get { throw null; } }
+        internal static string UnobtrusiveJavascript_ValidationParameterCannotBeEmpty { get { throw null; } }
+        internal static string UnobtrusiveJavascript_ValidationParameterMustBeLegal { get { throw null; } }
+        internal static string UnobtrusiveJavascript_ValidationTypeCannotBeEmpty { get { throw null; } }
+        internal static string UnobtrusiveJavascript_ValidationTypeMustBeLegal { get { throw null; } }
+        internal static string UnobtrusiveJavascript_ValidationTypeMustBeUnique { get { throw null; } }
+        internal static string ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated { get { throw null; } }
+        internal static string ViewComponentResult_NameOrTypeMustBeSet { get { throw null; } }
+        internal static string ViewComponent_AmbiguousMethods { get { throw null; } }
+        internal static string ViewComponent_AmbiguousTypeMatch { get { throw null; } }
+        internal static string ViewComponent_AmbiguousTypeMatch_Item { get { throw null; } }
+        internal static string ViewComponent_AsyncMethod_ShouldReturnTask { get { throw null; } }
+        internal static string ViewComponent_CannotFindComponent { get { throw null; } }
+        internal static string ViewComponent_CannotFindMethod { get { throw null; } }
+        internal static string ViewComponent_InvalidReturnValue { get { throw null; } }
+        internal static string ViewComponent_IViewComponentFactory_ReturnedNull { get { throw null; } }
+        internal static string ViewComponent_MustReturnValue { get { throw null; } }
+        internal static string ViewComponent_SyncMethod_CannotReturnTask { get { throw null; } }
+        internal static string ViewComponent_SyncMethod_ShouldReturnValue { get { throw null; } }
+        internal static string ViewData_ModelCannotBeNull { get { throw null; } }
+        internal static string ViewData_WrongTModelType { get { throw null; } }
+        internal static string ViewEnginesAreRequired { get { throw null; } }
+        internal static string ViewEngine_PartialViewNotFound { get { throw null; } }
+        internal static string ViewEngine_ViewNotFound { get { throw null; } }
+        internal static string FormatArgumentPropertyUnexpectedType(object p0, object p1, object p2) { throw null; }
+        internal static string FormatCommon_PartialViewNotFound(object p0, object p1) { throw null; }
+        internal static string FormatCommon_PropertyNotFound(object p0, object p1) { throw null; }
+        internal static string FormatCreateModelExpression_NullModelMetadata(object p0, object p1) { throw null; }
+        internal static string FormatDictionary_DuplicateKey(object p0) { throw null; }
+        internal static string FormatExpressionHelper_InvalidIndexerExpression(object p0, object p1) { throw null; }
+        internal static string FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(object p0, object p1, object p2, object p3, object p4) { throw null; }
+        internal static string FormatHtmlHelper_MissingSelectData(object p0, object p1) { throw null; }
+        internal static string FormatHtmlHelper_NullModelMetadata(object p0) { throw null; }
+        internal static string FormatHtmlHelper_SelectExpressionNotEnumerable(object p0) { throw null; }
+        internal static string FormatHtmlHelper_TypeNotSupported_ForGetEnumSelectList(object p0, object p1, object p2) { throw null; }
+        internal static string FormatHtmlHelper_WrongSelectDataType(object p0, object p1, object p2) { throw null; }
+        internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1) { throw null; }
+        internal static string FormatRemoteAttribute_RemoteValidationFailed(object p0) { throw null; }
+        internal static string FormatTempDataProperties_InvalidType(object p0, object p1, object p2, object p3) { throw null; }
+        internal static string FormatTempDataProperties_PublicGetterSetter(object p0, object p1, object p2) { throw null; }
+        internal static string FormatTempData_CannotDeserializeType(object p0) { throw null; }
+        internal static string FormatTempData_CannotSerializeType(object p0, object p1) { throw null; }
+        internal static string FormatTemplatedExpander_PopulateValuesMustBeInvokedFirst(object p0, object p1) { throw null; }
+        internal static string FormatTemplatedViewLocationExpander_NoReplacementToken(object p0) { throw null; }
+        internal static string FormatTemplateHelpers_NoTemplate(object p0) { throw null; }
+        internal static string FormatTemplates_TypeMustImplementIEnumerable(object p0, object p1, object p2) { throw null; }
+        internal static string FormatTypeMethodMustReturnNotNullValue(object p0, object p1) { throw null; }
+        internal static string FormatTypeMustDeriveFromType(object p0, object p1) { throw null; }
+        internal static string FormatUnobtrusiveJavascript_ValidationParameterCannotBeEmpty(object p0) { throw null; }
+        internal static string FormatUnobtrusiveJavascript_ValidationParameterMustBeLegal(object p0, object p1) { throw null; }
+        internal static string FormatUnobtrusiveJavascript_ValidationTypeCannotBeEmpty(object p0) { throw null; }
+        internal static string FormatUnobtrusiveJavascript_ValidationTypeMustBeLegal(object p0, object p1) { throw null; }
+        internal static string FormatUnobtrusiveJavascript_ValidationTypeMustBeUnique(object p0) { throw null; }
+        internal static string FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(object p0, object p1) { throw null; }
+        internal static string FormatViewComponentResult_NameOrTypeMustBeSet(object p0, object p1) { throw null; }
+        internal static string FormatViewComponent_AmbiguousMethods(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_AmbiguousTypeMatch(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_AmbiguousTypeMatch_Item(object p0, object p1) { throw null; }
+        internal static string FormatViewComponent_AsyncMethod_ShouldReturnTask(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_CannotFindComponent(object p0, object p1, object p2, object p3) { throw null; }
+        internal static string FormatViewComponent_CannotFindMethod(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_InvalidReturnValue(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_IViewComponentFactory_ReturnedNull(object p0) { throw null; }
+        internal static string FormatViewComponent_SyncMethod_CannotReturnTask(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewComponent_SyncMethod_ShouldReturnValue(object p0, object p1) { throw null; }
+        internal static string FormatViewData_ModelCannotBeNull(object p0) { throw null; }
+        internal static string FormatViewData_WrongTModelType(object p0, object p1) { throw null; }
+        internal static string FormatViewEnginesAreRequired(object p0, object p1, object p2) { throw null; }
+        internal static string FormatViewEngine_PartialViewNotFound(object p0, object p1) { throw null; }
+        internal static string FormatViewEngine_ViewNotFound(object p0, object p1) { throw null; }
+    }
     internal partial class TempDataApplicationModelProvider
     {
         public TempDataApplicationModelProvider(Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.TempDataSerializer tempDataSerializer) { }
@@ -201,5 +363,24 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public TempDataMvcOptionsSetup() { }
         public void Configure(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+    }
+}
+namespace Microsoft.AspNetCore.Components.Rendering
+{
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal readonly partial struct ComponentRenderedText
+    {
+        public ComponentRenderedText(int componentId, System.Collections.Generic.IEnumerable<string> tokens) { throw null; }
+        public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    internal partial class HtmlRenderer : Microsoft.AspNetCore.Components.RenderTree.Renderer
+    {
+        public HtmlRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Func<string, string> htmlEncoder) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
+        public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void HandleException(System.Exception exception) { }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) { throw null; }
     }
 }
