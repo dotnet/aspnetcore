@@ -7,5 +7,7 @@
     <Compile Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.netstandard2.1.cs" />
     <Reference Include="Microsoft.AspNetCore.DataProtection"  />
     <Reference Include="Microsoft.EntityFrameworkCore"  />
+    <Reference Include="Microsoft.Extensions.Caching.Memory"  />
+    <Reference Include="Microsoft.Extensions.DependencyInjection"  />
   </ItemGroup>
 </Project>

@@ -7,5 +7,7 @@
     <Compile Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.netcoreapp.cs" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
+    <Reference Include="Microsoft.Extensions.Caching.Memory"  />
+    <Reference Include="Microsoft.Extensions.DependencyInjection"  />
   </ItemGroup>
 </Project>
