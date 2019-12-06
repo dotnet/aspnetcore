@@ -1030,6 +1030,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public TValue? Value { get { throw null; } set { } }
     }
+    internal static partial class ParameterDefaultValues
+    {
+        public static object[] GetParameterDefaultValues(System.Reflection.MethodInfo methodInfo) { throw null; }
+        public static bool TryGetDeclaredParameterDefaultValue(System.Reflection.ParameterInfo parameterInfo, out object defaultValue) { throw null; }
+    }
     internal partial class ProblemDetailsClientErrorFactory : Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorFactory
     {
         public ProblemDetailsClientErrorFactory(Microsoft.AspNetCore.Mvc.Infrastructure.ProblemDetailsFactory problemDetailsFactory) { }
