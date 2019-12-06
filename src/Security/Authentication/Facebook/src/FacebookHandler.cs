@@ -71,8 +71,5 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             // http://tools.ietf.org/html/rfc6749#section-3.3
             return string.Join(",", scopes);
         }
-
-        protected override string FormatScope()
-            => base.FormatScope();
     }
 }
