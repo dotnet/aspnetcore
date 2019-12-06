@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         public FacebookHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions> options, Microsoft.Extensions.Logging.ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder, Microsoft.AspNetCore.Authentication.ISystemClock clock) : base (default(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Facebook.FacebookOptions>), default(Microsoft.Extensions.Logging.ILoggerFactory), default(System.Text.Encodings.Web.UrlEncoder), default(Microsoft.AspNetCore.Authentication.ISystemClock)) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket> CreateTicketAsync(System.Security.Claims.ClaimsIdentity identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens) { throw null; }
-        protected override string FormatScope() { throw null; }
         protected override string FormatScope(System.Collections.Generic.IEnumerable<string> scopes) { throw null; }
     }
     public partial class FacebookOptions : Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions
