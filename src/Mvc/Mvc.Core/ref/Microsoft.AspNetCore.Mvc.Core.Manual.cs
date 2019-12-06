@@ -1105,6 +1105,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
+    internal partial class ElementalValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
+    {
+        public ElementalValueProvider(string key, string value, System.Globalization.CultureInfo culture) { }
+        public System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool ContainsPrefix(string prefix) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult GetValue(string key) { throw null; }
+    }
     public partial class ModelAttributes
     {
         internal ModelAttributes(System.Collections.Generic.IEnumerable<object> typeAttributes, System.Collections.Generic.IEnumerable<object> propertyAttributes, System.Collections.Generic.IEnumerable<object> parameterAttributes) { }
@@ -1127,6 +1136,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static System.Threading.Tasks.Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix, Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator objectModelValidator) where TModel : class { throw null; }
         public static System.Threading.Tasks.Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix, Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator objectModelValidator, System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, bool> propertyFilter) where TModel : class { throw null; }
         public static System.Threading.Tasks.Task<bool> TryUpdateModelAsync<TModel>(TModel model, string prefix, Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator objectModelValidator, params System.Linq.Expressions.Expression<System.Func<TModel, object>>[] includeExpressions) where TModel : class { throw null; }
+    }
+    internal partial class NoOpBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
+    {
+        public static readonly Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder Instance;
+        public NoOpBinder() { }
+        public System.Threading.Tasks.Task BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
+    }
+    internal partial class PlaceholderBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
+    {
+        public PlaceholderBinder() { }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder Inner { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Threading.Tasks.Task BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
     }
     internal static partial class PropertyValueSetter
     {
