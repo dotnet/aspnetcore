@@ -302,9 +302,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         public System.Threading.Tasks.Task OnConnectionAsync(Microsoft.AspNetCore.Connections.ConnectionContext context) { throw null; }
     }
 }
-
+namespace Microsoft.AspNetCore.Server.Kestrel.Https
+{
+    public static partial class CertificateLoader
+    {
+        internal static bool DoesCertificateHaveAnAccessiblePrivateKey(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) { throw null; }
+        internal static bool IsCertificateAllowedForServerAuth(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
+    internal static partial class MemoryPoolExtensions
+    {
+        public static int GetMinimumAllocSize(this System.Buffers.MemoryPool<byte> pool) { throw null; }
+        public static int GetMinimumSegmentSize(this System.Buffers.MemoryPool<byte> pool) { throw null; }
+    }
+    internal partial class DuplexPipeStreamAdapter<TStream> : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.DuplexPipeStream, System.IO.Pipelines.IDuplexPipe where TStream : System.IO.Stream
+    {
+        public DuplexPipeStreamAdapter(System.IO.Pipelines.IDuplexPipe duplexPipe, System.Func<System.IO.Stream, TStream> createStream) : base (default(System.IO.Pipelines.PipeReader), default(System.IO.Pipelines.PipeWriter), default(bool)) { }
+        public DuplexPipeStreamAdapter(System.IO.Pipelines.IDuplexPipe duplexPipe, System.IO.Pipelines.StreamPipeReaderOptions readerOptions, System.IO.Pipelines.StreamPipeWriterOptions writerOptions, System.Func<System.IO.Stream, TStream> createStream) : base (default(System.IO.Pipelines.PipeReader), default(System.IO.Pipelines.PipeWriter), default(bool)) { }
+        public System.IO.Pipelines.PipeReader Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.IO.Pipelines.PipeWriter Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public TStream Stream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void Dispose(bool disposing) { }
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+    }
+    internal partial class DuplexPipeStream : System.IO.Stream
+    {
+        public DuplexPipeStream(System.IO.Pipelines.PipeReader input, System.IO.Pipelines.PipeWriter output, bool throwOnCancelled = false) { }
+        public override bool CanRead { get { throw null; } }
+        public override bool CanSeek { get { throw null; } }
+        public override bool CanWrite { get { throw null; } }
+        public override long Length { get { throw null; } }
+        public override long Position { get { throw null; } set { } }
+        public override System.IAsyncResult BeginRead(byte[] buffer, int offset, int count, System.AsyncCallback callback, object state) { throw null; }
+        public override System.IAsyncResult BeginWrite(byte[] buffer, int offset, int count, System.AsyncCallback callback, object state) { throw null; }
+        public void CancelPendingRead() { }
+        public override int EndRead(System.IAsyncResult asyncResult) { throw null; }
+        public override void EndWrite(System.IAsyncResult asyncResult) { }
+        public override void Flush() { }
+        public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override int Read(byte[] buffer, int offset, int count) { throw null; }
+        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override System.Threading.Tasks.ValueTask<int> ReadAsync(System.Memory<byte> destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
+        public override void SetLength(long value) { }
+        public override void Write(byte[] buffer, int offset, int count) { }
+        public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
+    internal partial class ConnectionLimitMiddleware
+    {
+        internal ConnectionLimitMiddleware(Microsoft.AspNetCore.Connections.ConnectionDelegate next, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter concurrentConnectionCounter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace) { }
+        public ConnectionLimitMiddleware(Microsoft.AspNetCore.Connections.ConnectionDelegate next, long connectionLimit, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace) { }
+        public System.Threading.Tasks.Task OnConnectionAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection) { throw null; }
+    }
     internal static partial class HttpConnectionBuilderExtensions
     {
         public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHttpServer<TContext>(this Microsoft.AspNetCore.Connections.IConnectionBuilder builder, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { throw null; }
@@ -1484,8 +1536,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     }
     internal partial class IntegerDecoder
     {
-        private int _i;
-        private int _m;
         public IntegerDecoder() { }
         public bool BeginTryDecode(byte b, int prefixLength, out int result) { throw null; }
         public static void ThrowIntegerTooBigException() { }
@@ -1834,7 +1884,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         TimeoutFeature = 6,
     }
 }
-
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+{
+    [System.Diagnostics.Tracing.EventSourceAttribute(Name="Microsoft-AspNetCore-Server-Kestrel")]
+    internal sealed partial class KestrelEventSource : System.Diagnostics.Tracing.EventSource
+    {
+        public static readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelEventSource Log;
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.Tracing.EventAttribute(5, Level=System.Diagnostics.Tracing.EventLevel.Verbose)]
+        public void ConnectionRejected(string connectionId) { }
+        [System.Diagnostics.Tracing.NonEventAttribute]
+        public void ConnectionStart(Microsoft.AspNetCore.Connections.ConnectionContext connection) { }
+        [System.Diagnostics.Tracing.NonEventAttribute]
+        public void ConnectionStop(Microsoft.AspNetCore.Connections.ConnectionContext connection) { }
+        [System.Diagnostics.Tracing.NonEventAttribute]
+        public void RequestStart(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol httpProtocol) { }
+        [System.Diagnostics.Tracing.NonEventAttribute]
+        public void RequestStop(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol httpProtocol) { }
+    }
+}
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers
 {
     internal sealed partial class ConcurrentPipeWriter : System.IO.Pipelines.PipeWriter

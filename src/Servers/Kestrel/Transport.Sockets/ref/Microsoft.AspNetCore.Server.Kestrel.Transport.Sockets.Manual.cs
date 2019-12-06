@@ -85,3 +85,10 @@ namespace System.Buffers
         public static System.Buffers.MemoryPool<byte> CreateSlabMemoryPool() { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+{
+    public partial class SocketTransportOptions
+    {
+        internal System.Func<System.Buffers.MemoryPool<byte>> MemoryPoolFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}

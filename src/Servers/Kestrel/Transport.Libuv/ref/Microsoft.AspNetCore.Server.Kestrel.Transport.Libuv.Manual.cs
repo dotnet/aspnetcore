@@ -18,6 +18,13 @@ namespace Microsoft.AspNetCore.Connections
         internal void ResetFeatureCollection() { }
     }
 }
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
+{
+    public partial class LibuvTransportOptions
+    {
+        internal System.Func<System.Buffers.MemoryPool<byte>> MemoryPoolFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal partial class LibuvConnectionListener : Microsoft.AspNetCore.Connections.IConnectionListener
@@ -431,7 +438,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             private readonly System.IntPtr _field0;
             private readonly System.IntPtr _field1;
-            public uv_buf_t(System.IntPtr memory, int len, bool IsWindows) { throw null; }
+            public uv_buf_t(System.IntPtr memory, int len, bool IsWindows) {
+                if (IsWindows) 
+                { 
+                    _field0 = (System.IntPtr)len; 
+                    _field1 = memory; 
+                } 
+                else 
+                { 
+                    _field0 = memory; 
+                    _field1 = (System.IntPtr)len; 
+                } 
+            } 
         }
         public delegate void uv_close_cb(System.IntPtr handle);
         public delegate void uv_connection_cb(System.IntPtr server, int status);
