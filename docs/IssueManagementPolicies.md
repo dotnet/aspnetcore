@@ -12,15 +12,15 @@ In general, we recommend you open a new issue if you have a bug, feature request
 
 If a contributor reviews an issue and determines that more information is needed from the author, they will post a comment requesting that information and apply the `Needs: Author Feedback` label. This label indicates that the author needs to post a response in order for us to continue investigating the issue.
 
-If the author does not post a response within **7 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, so if you post a response on a closed issue we're happy to take a look.
+If the author does not post a response within **7 days**, the issue will be automatically closed. If the author responds within **7 days** after the issue is closed, the issue will be automatically re-opened. We recognize that you may not be able to respond immediately to our requests, we're happy to hear from you whenever you're able to provide the new information.
 
 ## Duplicate issues
 
-If we determine that the issue is a duplicate of another, we will label it with the `Resolution: Duplicate` label. The issue will be automatically closed in 1 day.
+If we determine that the issue is a duplicate of another, we will label it with the `Resolution: Duplicate` label. The issue will be automatically closed in 1 day of inactivity.
 
 ## Answered questions
 
-If we determine that the issue is a question and have posted an answer, we will label it with the `Resolution: Answered` label. The issue will be automatically closed in 1 day.
+If we determine that the issue is a question and have posted an answer, we will label it with the `Resolution: Answered` label. The issue will be automatically closed in 1 day of inactivity.
 
 ## Locking closed issues
 
