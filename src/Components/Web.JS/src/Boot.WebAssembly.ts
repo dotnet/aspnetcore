@@ -54,7 +54,7 @@ async function boot(options?: any): Promise<void> {
   }
 
   // Start up the application
-  platform.callEntryPoint(bootConfig.entryAssembly);
+  return platform.callEntryPoint(bootConfig.entryAssembly);
 }
 
 async function fetchBootConfigAsync() {
@@ -73,5 +73,7 @@ interface BootJsonData {
 
 window['Blazor'].start = boot;
 if (shouldAutoStart()) {
-  boot();
+  boot().catch(error => {
+    Module.printErr(error); // Logs it, and causes the error UI to appear
+  });
 }
