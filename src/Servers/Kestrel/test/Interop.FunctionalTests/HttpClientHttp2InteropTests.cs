@@ -725,11 +725,9 @@ namespace Interop.FunctionalTests
 
             await serverReset.Task.DefaultTimeout();
             var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
-            var requestEx = await Assert.ThrowsAsync<HttpRequestException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
             Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
-            Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", requestEx.ToString());
-
-            await Assert.ThrowsAsync<IOException>(() => clientEcho.Task.DefaultTimeout());
+            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
 
             await host.StopAsync().DefaultTimeout();
         }
