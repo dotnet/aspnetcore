@@ -48,3 +48,5 @@ M:Microsoft.AspNetCore.Components.EventCallback`1.#ctor(Microsoft.AspNetCore.Com
 P:Microsoft.AspNetCore.Components.EventCallback`1.HasDelegate
 M:Microsoft.AspNetCore.Components.EventCallback`1.get_HasDelegate
 M:Microsoft.AspNetCore.Components.EventCallback`1.InvokeAsync(`0)
+# Manually implemented - Need to include internal setter
+P:Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions.Conventions

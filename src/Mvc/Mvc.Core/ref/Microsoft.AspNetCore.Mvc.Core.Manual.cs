@@ -1426,6 +1426,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public static string ResolvePath(string path) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Routing
+{
+    internal sealed partial class DataSourceDependentCache<T> : System.IDisposable where T : class
+    {
+        public DataSourceDependentCache(Microsoft.AspNetCore.Routing.EndpointDataSource dataSource, System.Func<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint>, T> initialize) { }
+        public T Value { get { throw null; } }
+        public void Dispose() { }
+        public T EnsureInitialized() { throw null; }
+    }
+}
 namespace Microsoft.Extensions.DependencyInjection
 {
     internal partial class ApiBehaviorOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>
