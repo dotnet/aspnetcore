@@ -326,6 +326,10 @@
     <Error
         Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND !$(HasReferenceAssembly) "
         Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
+    <Warning Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' != 'true' "
+        Text="Only implementation projects should set IsAspNetCoreApp=true." />
+    <Warning Condition=" '$(IsAspNetCoreApp)' != 'true' AND $(HasReferenceAssembly) "
+        Text="Only projects in the shared framework i.e. IsAspNetCoreApp==true should produce a reference assembly." />
 
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">

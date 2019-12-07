@@ -96,7 +96,8 @@
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
 
-    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true'">true</HasReferenceAssembly>
+    <HasReferenceAssembly
+        Condition=" '$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
 
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
