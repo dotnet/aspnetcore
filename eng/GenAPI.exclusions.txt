@@ -50,3 +50,7 @@ M:Microsoft.AspNetCore.Components.EventCallback`1.get_HasDelegate
 M:Microsoft.AspNetCore.Components.EventCallback`1.InvokeAsync(`0)
 # Manually implemented - Need to include internal setter
 P:Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions.Conventions
+# Break GenAPI - https://github.com/dotnet/arcade/issues/4488
+T:Microsoft.AspNetCore.Mvc.ApplicationModels.ActionAttributeRouteModel.<GetAttributeRoutes>d__3
+T:Microsoft.AspNetCore.Components.Rendering.HtmlRenderer.<CreateInitialRenderAsync>d__17
+T:Microsoft.AspNetCore.Components.Rendering.HtmlRenderer.<RenderComponentAsync>d__8
