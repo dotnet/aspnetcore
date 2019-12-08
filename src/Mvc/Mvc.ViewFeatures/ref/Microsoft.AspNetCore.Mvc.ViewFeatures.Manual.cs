@@ -1,6 +1,63 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Components
+{
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal partial struct ServerComponent
+    {
+        private object _dummy;
+        private int _dummyPrimitive;
+        public ServerComponent(int sequence, string assemblyName, string typeName, System.Guid invocationId) { throw null; }
+        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Guid InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string TypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal partial struct ServerComponentMarker
+    {
+        public const string ServerMarkerType = "server";
+        private object _dummy;
+        private int _dummyPrimitive;
+        public string Descriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string PrerenderId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int? Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Components.ServerComponentMarker GetEndRecord() { throw null; }
+        public static Microsoft.AspNetCore.Components.ServerComponentMarker NonPrerendered(int sequence, string descriptor) { throw null; }
+        public static Microsoft.AspNetCore.Components.ServerComponentMarker Prerendered(int sequence, string descriptor) { throw null; }
+    }
+    internal static partial class ServerComponentSerializationSettings
+    {
+        public static readonly System.TimeSpan DataExpiration;
+        public const string DataProtectionProviderPurpose = "Microsoft.AspNetCore.Components.ComponentDescriptorSerializer,V1";
+        public static readonly System.Text.Json.JsonSerializerOptions JsonSerializationOptions;
+    }
+}
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
+{
+    internal partial class DefaultViewComponentActivator : Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator
+    {
+        public DefaultViewComponentActivator(Microsoft.AspNetCore.Mvc.Infrastructure.ITypeActivatorCache typeActivatorCache) { }
+        public object Create(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) { throw null; }
+        public void Release(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context, object viewComponent) { }
+    }
+    public partial class DefaultViewComponentHelper : Microsoft.AspNetCore.Mvc.IViewComponentHelper, Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware
+    {
+        internal System.Collections.Generic.IDictionary<string, object> GetArgumentDictionary(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor descriptor, object arguments) { throw null; }
+    }
+    internal partial class DefaultViewComponentInvokerFactory : Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentInvokerFactory
+    {
+        public DefaultViewComponentInvokerFactory(Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentFactory viewComponentFactory, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentInvokerCache viewComponentInvokerCache, System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentInvoker CreateInstance(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext context) { throw null; }
+    }
+    internal partial class ViewComponentInvokerCache
+    {
+        public ViewComponentInvokerCache(Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentDescriptorCollectionProvider collectionProvider) { }
+        internal Microsoft.Extensions.Internal.ObjectMethodExecutor GetViewComponentMethodExecutor(Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext viewComponentContext) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 {
     internal partial class PagedBufferedTextWriter : System.IO.TextWriter
@@ -99,6 +156,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 }
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 {
+    internal partial class AutoValidateAntiforgeryTokenAuthorizationFilter : Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.ValidateAntiforgeryTokenAuthorizationFilter
+    {
+        public AutoValidateAntiforgeryTokenAuthorizationFilter(Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(Microsoft.AspNetCore.Antiforgery.IAntiforgery), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
+        protected override bool ShouldValidate(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext context) { throw null; }
+    }
+    internal partial class ControllerSaveTempDataPropertyFilterFactory : Microsoft.AspNetCore.Mvc.Filters.IFilterFactory, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    {
+        public ControllerSaveTempDataPropertyFilterFactory(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> properties) { }
+        public bool IsReusable { get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> TempDataProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata CreateInstance(System.IServiceProvider serviceProvider) { throw null; }
+    }
+    internal partial class ControllerViewDataAttributeFilter : Microsoft.AspNetCore.Mvc.Filters.IActionFilter, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.IViewDataValuesProviderFeature
+    {
+        public ControllerViewDataAttributeFilter(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> properties) { }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object Subject { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) { }
+        public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
+        public void ProvideViewDataValues(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData) { }
+    }
+    internal partial class ControllerViewDataAttributeFilterFactory : Microsoft.AspNetCore.Mvc.Filters.IFilterFactory, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    {
+        public ControllerViewDataAttributeFilterFactory(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> properties) { }
+        public bool IsReusable { get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewFeatures.Filters.LifecycleProperty> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata CreateInstance(System.IServiceProvider serviceProvider) { throw null; }
+    }
     internal partial class SaveTempDataFilter : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IResourceFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter
     {
         internal static readonly object SaveTempDataFilterContextKey;
@@ -107,8 +192,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         public void OnResourceExecuting(Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext context) { }
         public void OnResultExecuted(Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext context) { }
         public void OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) { }
-        private static System.Threading.Tasks.Task OnStarting(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
-        private static void SaveTempData(Microsoft.AspNetCore.Mvc.IActionResult result, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory factory, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> filters, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
         internal partial class SaveTempDataContext
         {
             public SaveTempDataContext() { }
@@ -123,6 +206,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         public ControllerSaveTempDataPropertyFilter(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory factory) : base (default(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory)) { }
         public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) { }
         public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
+    }
+    internal partial class ValidateAntiforgeryTokenAuthorizationFilter : Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.ViewFeatures.IAntiforgeryPolicy
+    {
+        public ValidateAntiforgeryTokenAuthorizationFilter(Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task OnAuthorizationAsync(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext context) { throw null; }
+        protected virtual bool ShouldValidate(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext context) { throw null; }
     }
     internal partial class ViewDataAttributeApplicationModelProvider
     {
@@ -165,6 +255,76 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 }
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
+    internal static partial class CachedExpressionCompiler
+    {
+        public static System.Func<TModel, object> Process<TModel, TResult>(System.Linq.Expressions.Expression<System.Func<TModel, TResult>> expression) { throw null; }
+    }
+    internal static partial class DefaultDisplayTemplates
+    {
+        public static Microsoft.AspNetCore.Html.IHtmlContent BooleanTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent CollectionTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent DecimalTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent EmailAddressTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent HiddenInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent HtmlTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent ObjectTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent StringTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        internal static System.Collections.Generic.List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> TriStateValues(bool? value) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent UrlTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+    }
+    internal static partial class DefaultEditorTemplates
+    {
+        public static Microsoft.AspNetCore.Html.IHtmlContent BooleanTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent CollectionTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent DateInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent DateTimeLocalInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent DateTimeOffsetTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent DecimalTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent EmailAddressInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent FileCollectionInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent FileInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent HiddenInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent MonthInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent MultilineTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent NumberInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent ObjectTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent PasswordTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent PhoneNumberInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent StringTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent TimeInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent UrlInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+        public static Microsoft.AspNetCore.Html.IHtmlContent WeekInputTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
+    }
+    internal static partial class ExpressionHelper
+    {
+        public static string GetExpressionText(System.Linq.Expressions.LambdaExpression expression, System.Collections.Concurrent.ConcurrentDictionary<System.Linq.Expressions.LambdaExpression, string> expressionTextCache) { throw null; }
+        public static string GetUncachedExpressionText(System.Linq.Expressions.LambdaExpression expression) { throw null; }
+        public static bool IsSingleArgumentIndexer(System.Linq.Expressions.Expression expression) { throw null; }
+    }
+    internal static partial class ExpressionMetadataProvider
+    {
+        public static Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer FromLambdaExpression<TModel, TResult>(System.Linq.Expressions.Expression<System.Func<TModel, TResult>> expression, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel> viewData, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider) { throw null; }
+        public static Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer FromStringExpression(string expression, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider) { throw null; }
+    }
+    internal partial class HtmlAttributePropertyHelper : Microsoft.Extensions.Internal.PropertyHelper
+    {
+        public HtmlAttributePropertyHelper(System.Reflection.PropertyInfo property) : base (default(System.Reflection.PropertyInfo)) { }
+        public override string Name { get { throw null; } protected set { } }
+        public static new Microsoft.Extensions.Internal.PropertyHelper[] GetProperties(System.Type type) { throw null; }
+    }
+    internal partial class HttpNavigationManager : Microsoft.AspNetCore.Components.NavigationManager, Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager
+    {
+        public HttpNavigationManager() { }
+        void Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) { }
+        protected override void NavigateToCore(string uri, bool forceLoad) { }
+    }
+    internal partial class LambdaExpressionComparer : System.Collections.Generic.IEqualityComparer<System.Linq.Expressions.LambdaExpression>
+    {
+        public static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.LambdaExpressionComparer Instance;
+        public LambdaExpressionComparer() { }
+        public bool Equals(System.Linq.Expressions.LambdaExpression lambdaExpression1, System.Linq.Expressions.LambdaExpression lambdaExpression2) { throw null; }
+        public int GetHashCode(System.Linq.Expressions.LambdaExpression lambdaExpression) { throw null; }
+    }
     internal partial class MemberExpressionCacheKeyComparer : System.Collections.Generic.IEqualityComparer<Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey>
     {
         public static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKeyComparer Instance;
@@ -188,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             private readonly System.Reflection.MemberInfo[] _members;
             private int _index;
             public Enumerator(in Microsoft.AspNetCore.Mvc.ViewFeatures.MemberExpressionCacheKey key) { throw null; }
-            public System.Reflection.MemberInfo Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+            public System.Reflection.MemberInfo Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
             public bool MoveNext() { throw null; }
         }
     }
@@ -302,6 +462,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal static string FormatViewEngine_PartialViewNotFound(object p0, object p1) { throw null; }
         internal static string FormatViewEngine_ViewNotFound(object p0, object p1) { throw null; }
     }
+    internal partial class ServerComponentInvocationSequence
+    {
+        public ServerComponentInvocationSequence() { }
+        public System.Guid Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Next() { throw null; }
+    }
+    internal partial class ServerComponentSerializer
+    {
+        public ServerComponentSerializer(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider) { }
+        internal System.Collections.Generic.IEnumerable<string> GetEpilogue(Microsoft.AspNetCore.Components.ServerComponentMarker record) { throw null; }
+        internal System.Collections.Generic.IEnumerable<string> GetPreamble(Microsoft.AspNetCore.Components.ServerComponentMarker record) { throw null; }
+        public Microsoft.AspNetCore.Components.ServerComponentMarker SerializeInvocation(Microsoft.AspNetCore.Mvc.ViewFeatures.ServerComponentInvocationSequence invocationId, System.Type type, bool prerendered) { throw null; }
+    }
     internal partial class TempDataApplicationModelProvider
     {
         public TempDataApplicationModelProvider(Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.TempDataSerializer tempDataSerializer) { }
@@ -327,10 +500,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     {
         public static string GetFormattedWeek(Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer) { throw null; }
     }
+    internal partial class UnsupportedJavaScriptRuntime : Microsoft.JSInterop.IJSRuntime
+    {
+        public UnsupportedJavaScriptRuntime() { }
+        public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, System.Threading.CancellationToken cancellationToken, object[] args) { throw null; }
+        System.Threading.Tasks.ValueTask<TValue> Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string identifier, object[] args) { throw null; }
+    }
+    public partial class ViewDataDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IDictionary<string, object>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.IEnumerable
+    {
+        internal ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider) { }
+        internal System.Collections.Generic.IDictionary<string, object> Data { get { throw null; } }
+    }
     internal static partial class ViewDataDictionaryFactory
     {
         public static System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary> CreateFactory(System.Reflection.TypeInfo modelType) { throw null; }
         public static System.Func<Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary> CreateNestedFactory(System.Reflection.TypeInfo modelType) { throw null; }
+    }
+    public partial class ViewDataDictionary<TModel> : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
+    {
+        internal ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider) : base (default(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider), default(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary)) { }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
@@ -343,6 +531,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
         public override byte[] Serialize(System.Collections.Generic.IDictionary<string, object> values) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
+{
+    internal partial class StaticComponentRenderer
+    {
+        public StaticComponentRenderer(System.Text.Encodings.Web.HtmlEncoder encoder) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> PrerenderComponentAsync(Microsoft.AspNetCore.Components.ParameterView parameters, Microsoft.AspNetCore.Http.HttpContext httpContext, System.Type componentType) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     internal partial class SystemTextJsonHelper : Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
@@ -353,6 +550,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public static partial class MvcViewFeaturesMvcCoreBuilderExtensions
+    {
+        internal static void AddViewComponentApplicationPartsProviders(Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager manager) { }
+        internal static void AddViewServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
+    }
     internal partial class MvcViewOptionsSetup
     {
         public MvcViewOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions, Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider validationAttributeAdapterProvider) { }
