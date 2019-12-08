@@ -1,10 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -17,57 +21,124 @@ namespace Microsoft.AspNetCore.WebSockets.Microbenchmarks
     {
         private static readonly string _cacheControl = $"{CacheControlHeaderValue.PublicString}, {CacheControlHeaderValue.MaxAgeString}={int.MaxValue}";
 
-        private readonly ResponseCachingMiddleware _middleware;
-        private readonly MemoryStream _memory;
+        private ResponseCachingMiddleware _middleware;
+        private readonly byte[] _data = new byte[1 * 1024 * 1024];
 
-        private long _counter = 0;
-
-        public ResponseCachingBenchmark()
-        {
-            _middleware = new ResponseCachingMiddleware(
-                    async context => {
-                        context.Response.Headers[HeaderNames.CacheControl] = _cacheControl;
-                        await context.Response.WriteAsync("Hello World!");
-                    },
-                    Options.Create(new ResponseCachingOptions {
-                        SizeLimit = int.MaxValue // 2GB
-                    }),
-                    NullLoggerFactory.Instance,
-                    new DefaultObjectPoolProvider()
-                );
-            _memory = new MemoryStream();
-        }
+        [Params(
+            100,
+            64 * 1024,
+            1 * 1024 * 1024
+        )]
+        public int Size { get; set; }
 
         [GlobalSetup]
         public void Setup()
         {
-            // call once to actually cache
-            // not async as the version of BenchmarkDotNet used here doesn't have support for async GlobalSetup
-            ServeFromCache().GetAwaiter().GetResult();
+            _middleware = new ResponseCachingMiddleware(
+                    async context => {
+                        context.Response.Headers[HeaderNames.CacheControl] = _cacheControl;
+                        await context.Response.BodyWriter.WriteAsync(new ReadOnlyMemory<byte>(_data, 0, Size));
+                    },
+                    Options.Create(new ResponseCachingOptions
+                    {
+                        SizeLimit = int.MaxValue, // ~2GB
+                        MaximumBodySize = 1 * 1024 * 1024,
+                    }),
+                    NullLoggerFactory.Instance,
+                    new DefaultObjectPoolProvider()
+                );
+
+            // no need to actually cache as there is a warm-up fase
         }
 
         [Benchmark]
         public async Task Cache()
         {
-            var context = new DefaultHttpContext();
+            var pipe = new Pipe();
+            var consumer = ConsumeAsync(pipe.Reader, CancellationToken.None);
+            DefaultHttpContext context = CreateHttpContext(pipe);
             context.Request.Method = HttpMethods.Get;
-            context.Request.Path = $"/{++_counter}";
+            context.Request.Path = "/a";
+
+            // don't serve from cache but store result
+            context.Request.Headers[HeaderNames.CacheControl] = CacheControlHeaderValue.NoCacheString;
 
             await _middleware.Invoke(context);
+
+            await pipe.Writer.CompleteAsync();
+            await consumer;
         }
 
         [Benchmark]
         public async Task ServeFromCache()
         {
-            _memory.Seek(0, SeekOrigin.Begin);
-            var context = new DefaultHttpContext();
-            context.Response.Body = _memory;
+            var pipe = new Pipe();
+            var consumer = ConsumeAsync(pipe.Reader, CancellationToken.None);
+            DefaultHttpContext context = CreateHttpContext(pipe);
             context.Request.Method = HttpMethods.Get;
-            context.Request.Path = "/cached";
+            context.Request.Path = "/b";
 
             await _middleware.Invoke(context);
 
-            context.Response.BodyWriter.Complete();
+            await pipe.Writer.CompleteAsync();
+            await consumer;
+        }
+
+        private static DefaultHttpContext CreateHttpContext(Pipe pipe)
+        {
+            var features = new FeatureCollection();
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+            features.Set<IHttpResponseBodyFeature>(new PipeResponseBodyFeature(pipe.Writer));
+            var context = new DefaultHttpContext(features);
+            return context;
+        }
+
+        private async ValueTask ConsumeAsync(PipeReader reader, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var result = await reader.ReadAsync(cancellationToken);
+                var buffer = result.Buffer;
+
+                reader.AdvanceTo(buffer.End, buffer.End);
+
+                if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+
+            await reader.CompleteAsync();
+        }
+
+        private class PipeResponseBodyFeature : IHttpResponseBodyFeature
+        {
+            public PipeResponseBodyFeature(PipeWriter pipeWriter)
+            {
+                Writer = pipeWriter;
+            }
+
+            public Stream Stream => Writer.AsStream();
+
+            public PipeWriter Writer { get; }
+
+            public Task CompleteAsync() => Writer.CompleteAsync().AsTask();
+
+            public void DisableBuffering()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task StartAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
