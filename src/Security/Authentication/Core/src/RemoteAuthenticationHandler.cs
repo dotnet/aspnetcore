@@ -299,13 +299,14 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         protected virtual Endpoint CreateEndpoint<THandler>(PathString path, string name, string httpMethod, Func<THandler, Task> func)
-            where THandler : RemoteAuthenticationHandler<TOptions>
+            where THandler : IAuthenticationHandler
         {
             var builder = new RouteEndpointBuilder(
-               context =>
+               async context =>
                {
-                   var handler = context.RequestServices.GetService<THandler>();
-                   return func(handler);
+                   var handlerProvider = context.RequestServices.GetService<IAuthenticationHandlerProvider>();
+                   var handler = (THandler)await handlerProvider.GetHandlerAsync(context, Scheme.Name);
+                   await func(handler);
                },
                RoutePatternFactory.Parse(path),
                0)
