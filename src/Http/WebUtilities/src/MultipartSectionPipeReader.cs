@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 _buffer = buffer;
             }
 
-            if(_metadataSkipped)
+            if (_metadataSkipped)
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private void ThrowIfCompleted()
         {
-            if(_isReaderComplete)
+            if (_isReaderComplete)
             {
                 throw new InvalidOperationException("No Reading Allowed");
             }
@@ -287,25 +287,21 @@ namespace Microsoft.AspNetCore.WebUtilities
                         {
                             continue;
                         }
-                        else
-                        {
-                            //no match - mark previous matches as read, the current one might be the begining of a new boundary
-                            read += i;
-                            sequence = sequence.Slice(sequenceReader.Consumed - 1);
-                            return (false, read);
-                        }
-                    }
-                    else
-                    {
-                        //end of sequence
-                        //There still might be a partial Match, we need to read more to know for sure
-                        _partialMatchIndex = i;
-                        sequence = sequence.Slice(read);
-                        //also slice partial read to insure _bufferedData is empty in the next check
-                        sequence = sequence.Slice(i);
+
+                        //no match - mark previous matches as read, the current one might be the begining of a new boundary
+                        read += i;
+                        sequence = sequence.Slice(sequenceReader.Consumed - 1);
                         return (false, read);
+
                     }
 
+                    //end of sequence
+                    //There still might be a partial Match, we need to read more to know for sure
+                    _partialMatchIndex = i;
+                    sequence = sequence.Slice(read);
+                    //also slice partial read to insure _bufferedData is empty in the next check
+                    sequence = sequence.Slice(i);
+                    return (false, read);
                 }
 
                 //boundary was found
@@ -347,12 +343,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                         return false;
                     }
                 }
-                else
-                {
-                    sequence = sequence.Slice(sequenceReader.Position);
-                    RawLength += sequenceReader.Consumed;
-                    return true;
-                }
+
+                sequence = sequence.Slice(sequenceReader.Position);
+                RawLength += sequenceReader.Consumed;
+                return true;
+
             }
             sequence = sequence.Slice(sequenceReader.Position);
             RawLength += sequenceReader.Consumed;
