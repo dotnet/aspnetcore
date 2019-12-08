@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":signalr" external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$/../../../../../.." external.system.id="GRADLE" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="android-gradle" name="Android-Gradle">
+      <configuration>
+        <option name="GRADLE_PROJECT_PATH" value=":signalr" />
+        <option name="LAST_SUCCESSFUL_SYNC_AGP_VERSION" />
+        <option name="LAST_KNOWN_AGP_VERSION" />
+      </configuration>
+    </facet>
+    <facet type="java-gradle" name="Java-Gradle">
+      <configuration>
+        <option name="BUILD_FOLDER_PATH" value="$MODULE_DIR$/../../../../../../signalr/build" />
+        <option name="BUILDABLE" value="true" />
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/../../../../../../signalr/build/classes/java/main" />
+    <output-test url="file://$MODULE_DIR$/../../../../../../signalr/build/classes/java/test" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/src/main/java">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/src/main/resources">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+    </content>
+    <content url="file://$MODULE_DIR$/src/test/java">
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/src/test/resources">
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../../../../signalr">
+      <sourceFolder url="file://$MODULE_DIR$/../../../../../../signalr/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../../../../signalr/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../../../../signalr/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../../../../signalr/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="Gradle: rxjava-2.2.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: gson-2.8.5" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: okhttp-3.11.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: slf4j-api-1.7.25" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: reactive-streams-1.0.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: okio-1.14.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: slf4j-jdk14-1.7.25" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit-jupiter-params-5.3.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit-jupiter-api-5.3.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit-platform-commons-1.3.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: apiguardian-api-1.0.0" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: opentest4j-1.1.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit-jupiter-engine-5.3.1" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Gradle: junit-platform-engine-1.3.1" level="project" />
+  </component>
+</module>
