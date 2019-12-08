@@ -3,12 +3,17 @@
 
 package com.microsoft.signalr;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import java.util.Collection;
 
 class InvocationMessage extends HubMessage {
+
     int type = HubMessageType.INVOCATION.value;
     private final String invocationId;
     private final String target;
+
+    @JsonAdapter(UserProvidedGsonType.class)
     private final Object[] arguments;
     private Collection<String> streamIds;
 

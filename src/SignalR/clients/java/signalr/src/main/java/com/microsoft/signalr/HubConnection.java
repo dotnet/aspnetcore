@@ -59,6 +59,7 @@ public class HubConnection {
     private String connectionId;
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
+    private final JsonHubProtocolOptions jsonHubProtocolOptions;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -124,13 +125,16 @@ public class HubConnection {
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
-                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum) {
+                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum, JsonHubProtocolOptions jsonHubProtocolOptions) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
 
         this.baseUrl = url;
-        this.protocol = new JsonHubProtocol();
+        this.protocol = new JsonHubProtocol(
+            null != jsonHubProtocolOptions
+                ? jsonHubProtocolOptions.getGsonBuilder()
+                : null);
 
         if (accessTokenProvider != null) {
             this.accessTokenProvider = accessTokenProvider;
@@ -156,6 +160,8 @@ public class HubConnection {
 
         this.headers = headers;
         this.skipNegotiate = skipNegotiate;
+
+        this.jsonHubProtocolOptions = jsonHubProtocolOptions;
 
         this.callback = (payload) -> {
             resetServerTimeout();

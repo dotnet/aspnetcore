@@ -20,6 +20,7 @@ public class HttpHubConnectionBuilder {
     private long handshakeResponseTimeout = 0;
     private Map<String, String> headers;
     private TransportEnum transportEnum;
+    private JsonHubProtocolOptions jsonHubProtocolOptions;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -113,12 +114,41 @@ public class HttpHubConnectionBuilder {
         return this;
     }
 
+
+    /**
+     * Assigns the instance of {@link JsonHubProtocolOptions} which should be used by this
+     * {@link HubConnectionBuilder} when the {@link HubConnection} instance is created.
+     * @return An instance of {@link HubConnectionBuilder} configured to create {@link HubConnection}
+     * instances with the supplied {@link JsonHubProtocolOptions}.
+     */
+    public HttpHubConnectionBuilder withJsonProtocolOptions(JsonHubProtocolOptions jsonHubProtocolOptions) {
+        this.jsonHubProtocolOptions = jsonHubProtocolOptions;
+        return this;
+    }
+
+    /**
+     * Gets the {@link JsonHubProtocolOptions} to be used when creating {@link HubConnection}
+     * instances with this builder.
+     */
+    public JsonHubProtocolOptions getJsonHubProtocolOptions() {
+        return jsonHubProtocolOptions;
+    }
+
+    /**
+     * Sets the {@link JsonHubProtocolOptions} to be used when creating {@link HubConnection}
+     * instances with this builder.
+     */
+    public void setJsonHubProtocolOptions(JsonHubProtocolOptions jsonHubProtocolOptions) {
+        this.jsonHubProtocolOptions = jsonHubProtocolOptions;
+    }
+
+
     /**
      * Builds a new instance of {@link HubConnection}.
      *
      * @return A new instance of {@link HubConnection}.
      */
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, httpClient, accessTokenProvider, handshakeResponseTimeout, headers, transportEnum);
+        return new HubConnection(url, transport, skipNegotiate, httpClient, accessTokenProvider, handshakeResponseTimeout, headers, transportEnum, jsonHubProtocolOptions);
     }
 }

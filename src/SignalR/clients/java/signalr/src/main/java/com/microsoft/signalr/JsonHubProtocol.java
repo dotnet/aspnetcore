@@ -3,22 +3,48 @@
 
 package com.microsoft.signalr;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+
 class JsonHubProtocol implements HubProtocol {
     private final JsonParser jsonParser = new JsonParser();
-    private final Gson gson = new Gson();
+    /**
+     * Used for protocol messages only (e.g. pings, transport negotiation)
+     */
+    private Gson internalGgson;
+    /**
+     * Used for user payloads always and exclusively, so that users can customise their
+     * deserialisation process.
+     */
+    private Gson userGson;
     private static final String RECORD_SEPARATOR = "\u001e";
+
+    JsonHubProtocol() {
+        this(null);
+    }
+
+    JsonHubProtocol(GsonBuilder gsonBuilder) {
+        if (null == gsonBuilder) {
+            gsonBuilder = new GsonBuilder();
+        }
+        userGson = gsonBuilder.create();
+
+        UserProvidedGsonType.gson = userGson;
+
+        internalGgson = new GsonBuilder()
+            .registerTypeAdapter(UserProvidedGsonType.class, new UserProvidedGsonTypeAdapter(userGson))
+            .create();
+    }
 
     @Override
     public String getName() {
@@ -80,7 +106,7 @@ class JsonHubProtocol implements HubProtocol {
                             if (invocationId == null || binder.getReturnType(invocationId) == null) {
                                 resultToken = jsonParser.parse(reader);
                             } else {
-                                result = gson.fromJson(reader, binder.getReturnType(invocationId));
+                                result = internalGgson.fromJson(reader, binder.getReturnType(invocationId));
                             }
                             break;
                         case "arguments":
@@ -144,14 +170,14 @@ class JsonHubProtocol implements HubProtocol {
                     case COMPLETION:
                         if (resultToken != null) {
                             Class<?> returnType = binder.getReturnType(invocationId);
-                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
+                            result = internalGgson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
                         hubMessages.add(new CompletionMessage(invocationId, result, error));
                         break;
                     case STREAM_ITEM:
                         if (resultToken != null) {
                             Class<?> returnType = binder.getReturnType(invocationId);
-                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
+                            result = internalGgson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
                         hubMessages.add(new StreamItem(invocationId, result));
                         break;
@@ -181,7 +207,7 @@ class JsonHubProtocol implements HubProtocol {
 
     @Override
     public String writeMessage(HubMessage hubMessage) {
-        return gson.toJson(hubMessage) + RECORD_SEPARATOR;
+        return internalGgson.toJson(hubMessage) + RECORD_SEPARATOR;
     }
 
     private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Class<?>> paramTypes) {
@@ -193,7 +219,7 @@ class JsonHubProtocol implements HubProtocol {
         if (paramTypes.size() >= 1) {
             arguments = new ArrayList<>();
             for (int i = 0; i < paramTypes.size(); i++) {
-                arguments.add(gson.fromJson(argumentsToken.get(i), paramTypes.get(i)));
+                arguments.add(userGson.fromJson(argumentsToken.get(i), paramTypes.get(i)));
             }
         }
 
@@ -207,7 +233,7 @@ class JsonHubProtocol implements HubProtocol {
         ArrayList<Object> arguments = new ArrayList<>();
         while (reader.peek() != JsonToken.END_ARRAY) {
             if (argCount < paramCount) {
-                arguments.add(gson.fromJson(reader, paramTypes.get(argCount)));
+                arguments.add(userGson.fromJson(reader, paramTypes.get(argCount)));
             } else {
                 reader.skipValue();
             }
