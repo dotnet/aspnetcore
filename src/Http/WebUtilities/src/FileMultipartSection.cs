@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,10 +51,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public MultipartSection Section { get; }
 
-        // <summary>
-        // Gets the file stream from the section body
-        // </summary>
-        //public Stream FileStream => Section.Body;
+        /// <summary>
+        /// Gets the file stream from the section body
+        /// </summary>
+        public Stream FileStream => Section.Body;
 
         /// <summary>
         /// Gets the name of the section
