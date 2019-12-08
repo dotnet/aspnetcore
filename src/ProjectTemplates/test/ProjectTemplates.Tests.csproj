@@ -46,6 +46,7 @@
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../BlazorWasm.ProjectTemplates/Microsoft.AspNetCore.Blazor.Templates.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,7 +80,7 @@
         <_Parameter1>ArtifactsLogDir</_Parameter1>
         <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log'))</_Parameter2>
       </AssemblyAttribute>
-      
+
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
         <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>

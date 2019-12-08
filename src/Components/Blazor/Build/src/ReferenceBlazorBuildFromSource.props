@@ -1,0 +1,25 @@
+<Project>
+  <!--
+  Importing this file is equivalent to having:
+    <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
+  ... except it's much more convenient when working in this repo, because it consumes the
+  Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
+
+  This is only intended for use by other projects in this repo.
+  -->
+
+  <PropertyGroup>
+    <ComponentsRoot Condition="'$(ComponentsRoot)'==''">$(MSBuildThisFileDirectory)..\..\..\</ComponentsRoot>
+    <BlazorJsPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorJsPath>
+    <BlazorJsMapPath>$(ComponentsRoot)Web.JS\dist\$(Configuration)\blazor.webassembly.js.map</BlazorJsMapPath>
+    <BlazorToolsDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\tools\</BlazorToolsDir>
+  </PropertyGroup>
+
+  <Target Name="CheckBlazorJSFiles" BeforeTargets="Build">
+    <Error Text="blazor.webassembly.js file could not be found at $(BlazorJsPath)" Condition="!Exists($(BlazorJsPath))" />
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+
+</Project>
