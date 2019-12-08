@@ -8,7 +8,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Microsoft.AspNetCore.WebUtilities
 {
     internal sealed class MultipartReaderStream : Stream
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;
         private readonly ArrayPool<byte> _bytePool;
-            
+
         private readonly long _innerOffset;
         private long _position;
         private long _observedLength;
