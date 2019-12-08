@@ -75,8 +75,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                     }
-
-
                     if (finishedParsing)
                     {
                         _bytesConsumed += headersLength;
@@ -189,15 +187,15 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             if (colon == -1)
             {
-                throw new InvalidDataException($"Invalid header line: {GetDecodedString(line)}");
+                throw new InvalidDataException($"Invalid header line: {GetTrimmedString(line)}");
             }
             else
             {
                 key = line.Slice(0, colon);
                 value = line.Slice(colon + ColonDelimiter.Length);
             }
-            var decodedKey = GetDecodedString(key).Trim();
-            var decodedValue = GetDecodedString(value).Trim();
+            var decodedKey = GetTrimmedString(key).Trim();
+            var decodedValue = GetTrimmedString(value).Trim();
             AppendAndVerify(ref accumulator, decodedKey, decodedValue);
         }
 
@@ -245,13 +243,13 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!lineReader.TryReadTo(out var key, ColonDelimiter))
                 {
-                    throw new InvalidDataException($"Invalid header line: {GetDecodedStringFromReadOnlySequence(line)}");
+                    throw new InvalidDataException($"Invalid header line: {GetStringFromReadOnlySequence(line)}");
                 }
                 value = line.Slice(lineReader.Position);
 
 
-                var decodedKey = GetDecodedStringFromReadOnlySequence(key).Trim();
-                var decodedValue = GetDecodedStringFromReadOnlySequence(value).Trim();
+                var decodedKey = GetStringFromReadOnlySequence(key);
+                var decodedValue = GetStringFromReadOnlySequence(value);
 
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
             }
@@ -272,18 +270,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
+        private string GetStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
         {
             if (ros.IsSingleSegment)
             {
-                return GetDecodedString(ros.First.Span);
+                return GetTrimmedString(ros.First.Span);
             }
 
             if (ros.Length < StackAllocThreshold)
             {
                 Span<byte> buffer = stackalloc byte[(int)ros.Length];
                 ros.CopyTo(buffer);
-                return GetDecodedString(buffer);
+                return GetTrimmedString(buffer);
             }
             else
             {
@@ -293,7 +291,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
                     ros.CopyTo(buffer);
-                    return GetDecodedString(buffer);
+                    return GetTrimmedString(buffer);
                 }
                 finally
                 {
@@ -302,7 +300,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        private string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
+        private string GetTrimmedString(ReadOnlySpan<byte> readOnlySpan)
         {
             if (readOnlySpan.Length == 0)
             {
@@ -313,7 +311,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-                return Encoding.UTF8.GetString(span);
+                return Encoding.UTF8.GetString(span.Trim((byte)' '));
             }
         }
     }
