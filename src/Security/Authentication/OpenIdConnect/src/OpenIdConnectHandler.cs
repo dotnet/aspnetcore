@@ -16,6 +16,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,8 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
@@ -76,7 +79,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
         protected virtual async Task<bool> HandleRemoteSignOutAsync()
         {
-            OpenIdConnectMessage message = null;
+            OpenIdConnectMessage message;
 
             if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
@@ -93,7 +96,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 var form = await Request.ReadFormAsync();
                 message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
+            else
+            {
+                message = null;
+            }
 
+            return await HandleRemoteSignOutInternalAsync(message);
+        }
+
+        protected virtual async Task<bool> HandleRemoteSignOutInternalAsync(OpenIdConnectMessage message)
+        {
             var remoteSignOutContext = new RemoteSignOutContext(Context, Scheme, Options, message);
             await Events.RemoteSignOut(remoteSignOutContext);
 
@@ -480,7 +492,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.EnteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync(GetType().FullName);
 
-            OpenIdConnectMessage authorizationResponse = null;
+            OpenIdConnectMessage authorizationResponse;
 
             if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
@@ -510,7 +522,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 var form = await Request.ReadFormAsync();
                 authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
+            else
+            {
+                authorizationResponse = null;
+            }
 
+            return await HandleRemoteAuthenticateInternalAsync(authorizationResponse);
+        }
+
+        protected virtual async Task<HandleRequestResult> HandleRemoteAuthenticateInternalAsync(OpenIdConnectMessage authorizationResponse)
+        {
             if (authorizationResponse == null)
             {
                 if (Options.SkipUnrecognizedRequests)
@@ -1319,6 +1340,147 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ex.Data["error_description"] = description;
             ex.Data["error_uri"] = errorUri;
             return ex;
+        }
+
+        protected override IEnumerable<Endpoint> GetEndpoints()
+        {
+            List<Endpoint> endpoints = new List<Endpoint>();
+
+            var getHandleEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.CallbackPath,
+               "AuthenticationHandlerGet" + Scheme.Name,
+               "GET",
+               async handler =>
+               {
+                   var result = await handler.HandleEndpointGetAsync();
+                   await handler.HandleAsync(result);
+               });
+
+            endpoints.Add(getHandleEndpoint);
+
+
+            var postHandleEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.CallbackPath,
+              "AuthenticationHandlerPost" + Scheme.Name,
+              "POST",
+              async handler =>
+              {
+                  var result = await handler.HandleEndpointPostAsync();
+                  await handler.HandleAsync(result);
+              });
+
+            endpoints.Add(postHandleEndpoint);
+
+            if (Options.RemoteSignOutPath.HasValue)
+            {
+                var getSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.RemoteSignOutPath,
+                    "RemoteSignOutPathGet" + Scheme.Name,
+                    "GET",
+                    x => x.HandleGetRemoteSignOutEndpoint());
+
+                endpoints.Add(getSignOutEndpoint);
+
+                var postSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.RemoteSignOutPath,
+                    "RemoteSignOutPathPost" + Scheme.Name,
+                    "GET",
+                    x => x.HandlePosttRemoteSignOutEndpoint());
+
+                endpoints.Add(getSignOutEndpoint);
+            }
+
+            if (Options.SignedOutCallbackPath.HasValue)
+            {
+                var getSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.SignedOutCallbackPath,
+                    "SignedOutCallbackPathGet" + Scheme.Name,
+                    "GET",
+                    x => x.HandleSignOutCallbackAsync());
+
+                endpoints.Add(getSignOutEndpoint);
+            }
+
+            return endpoints;
+        }
+
+        protected virtual async Task<HandleRequestResult> HandleEndpointGetAsync()
+        {
+            Logger.EnteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync(GetType().FullName);
+
+            OpenIdConnectMessage authorizationResponse;
+
+            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+
+                // response_mode=query (explicit or not) and a response_type containing id_token
+                // or token are not considered as a safe combination and MUST be rejected.
+                // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
+                if (!string.IsNullOrEmpty(authorizationResponse.IdToken) || !string.IsNullOrEmpty(authorizationResponse.AccessToken))
+                {
+                    if (Options.SkipUnrecognizedRequests)
+                    {
+                        // Not for us?
+                        return HandleRequestResult.SkipHandler();
+                    }
+
+                    return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
+                          "identity token or an access token when using response_mode=query");
+                }
+            }
+            else
+            {
+                authorizationResponse = null;
+            }
+
+            return await HandleRemoteAuthenticateInternalAsync(authorizationResponse);
+        }
+
+        protected virtual async Task<HandleRequestResult> HandleEndpointPostAsync()
+        {
+            Logger.EnteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync(GetType().FullName);
+
+            OpenIdConnectMessage authorizationResponse;
+
+            // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
+            if (!string.IsNullOrEmpty(Request.ContentType)
+              // May have media/type; charset=utf-8, allow partial match.
+              && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
+              && Request.Body.CanRead)
+            {
+                var form = await Request.ReadFormAsync();
+                authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            }
+            else
+            {
+                authorizationResponse = null;
+            }
+
+            return await HandleRemoteAuthenticateInternalAsync(authorizationResponse);
+        }
+
+        protected virtual Task<bool> HandleGetRemoteSignOutEndpoint()
+        {
+            OpenIdConnectMessage message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+
+            return HandleRemoteSignOutInternalAsync(message);
+        }
+
+        protected virtual async Task<bool> HandlePosttRemoteSignOutEndpoint()
+        {
+            OpenIdConnectMessage message;
+
+            // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
+            if (!string.IsNullOrEmpty(Request.ContentType)
+              // May have media/type; charset=utf-8, allow partial match.
+              && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
+              && Request.Body.CanRead)
+            {
+                var form = await Request.ReadFormAsync();
+                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            }
+            else
+            {
+                message = null;
+            }
+
+            return await HandleRemoteSignOutInternalAsync(message);
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -308,5 +309,19 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <remarks>Subclasses should rather override <see cref="FormatScope(IEnumerable{string})"/>.</remarks>
         protected virtual string FormatScope()
             => FormatScope(Options.Scope);
+
+        protected override IEnumerable<Endpoint> GetEndpoints()
+        {
+            var endpoint = CreateEndpoint<OAuthHandler<TOptions>>(Options.CallbackPath,
+                "AuthenticationHandler" + Scheme.Name,
+                "GET",
+                async handler =>
+                {
+                    var result = await handler.HandleRemoteAuthenticateAsync();
+                    await handler.HandleAsync(result);
+                });
+
+            return new[] { endpoint };
+        }
     }
 }

@@ -320,5 +320,19 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return Convert.ToBase64String(hash);
             }
         }
+
+        protected override IEnumerable<Endpoint> GetEndpoints()
+        {
+            var endpoint = CreateEndpoint<TwitterHandler>(Options.CallbackPath,
+                "AuthenticationHandler" + Scheme.Name,
+                "GET",
+                async handler =>
+                {
+                    var result = await handler.HandleRemoteAuthenticateAsync();
+                    await handler.HandleAsync(result);
+                });
+
+            return new[] { endpoint };
+        }
     }
 }

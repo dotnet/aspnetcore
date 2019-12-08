@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -48,12 +53,17 @@ namespace Microsoft.AspNetCore.Authentication
                 return false;
             }
 
+            var authResult = await HandleRemoteAuthenticateAsync();
+            return await HandleAsync(authResult);
+        }
+
+        protected virtual async Task<bool> HandleAsync(HandleRequestResult authResult)
+        {
             AuthenticationTicket ticket = null;
             Exception exception = null;
             AuthenticationProperties properties = null;
             try
             {
-                var authResult = await HandleRemoteAuthenticateAsync();
                 if (authResult == null)
                 {
                     exception = new InvalidOperationException("Invalid return state, unable to redirect.");
@@ -155,6 +165,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// The method process the request on the endpoint defined by CallbackPath.
         /// </summary>
         protected abstract Task<HandleRequestResult> HandleRemoteAuthenticateAsync();
+
+        protected abstract IEnumerable<Endpoint> GetEndpoints();
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -284,6 +296,25 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             return HandleRequestResult.NoResult();
+        }
+
+        protected virtual Endpoint CreateEndpoint<THandler>(PathString path, string name, string httpMethod, Func<THandler, Task> func)
+            where THandler : RemoteAuthenticationHandler<TOptions>
+        {
+            var builder = new RouteEndpointBuilder(
+               context =>
+               {
+                   var handler = context.RequestServices.GetService<THandler>();
+                   return func(handler);
+               },
+               RoutePatternFactory.Parse(path),
+               0)
+            {
+                DisplayName = name,
+                Metadata = { new HttpMethodMetadata(new[] { httpMethod }) }
+            };
+
+            return builder.Build();
         }
     }
 }

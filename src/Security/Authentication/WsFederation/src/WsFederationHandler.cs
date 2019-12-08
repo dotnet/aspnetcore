@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -420,6 +420,27 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             }
 
             return BuildRedirectUri(uri);
+        }
+
+        protected override IEnumerable<Endpoint> GetEndpoints()
+        {
+            var endpoint = CreateEndpoint<WsFederationHandler>(Options.RemoteSignOutPath,
+                "RemoteSignOutGet" + Scheme.Name,
+                "GET",
+                handler =>
+                {
+                    if (string.Equals(Request.Query[WsFederationConstants.WsFederationParameterNames.Wa],
+                    WsFederationConstants.WsFederationActions.SignOutCleanup, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return HandleRemoteSignOutAsync();
+                    }
+                    else
+                    {
+                        return Task.CompletedTask;
+                    }
+                });
+
+            return new[] { endpoint };
         }
     }
 }
