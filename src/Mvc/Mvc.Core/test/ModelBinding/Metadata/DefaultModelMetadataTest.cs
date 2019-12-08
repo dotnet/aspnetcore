@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.BinderType);
             Assert.Null(metadata.BindingSource);
             Assert.Null(metadata.PropertyFilterProvider);
+            Assert.False(metadata.CanTrim);
+            Assert.Equal(TrimType.Trim, metadata.TrimType);
         }
 
         [Fact]

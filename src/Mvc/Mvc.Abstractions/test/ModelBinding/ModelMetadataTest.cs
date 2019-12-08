@@ -728,6 +728,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     throw new NotImplementedException();
                 }
             }
+
+            public override bool CanTrim => throw new NotImplementedException();
+
+            public override TrimType TrimType => throw new NotImplementedException();
         }
 
         private class CollectionImplementation : ICollection<string>

@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private bool? _validateChildren;
         private bool? _hasValidators;
         private ReadOnlyCollection<object> _validatorMetadata;
+        private bool? _CanTrim;
 
         /// <summary>
         /// Creates a new <see cref="DefaultModelMetadata"/>.
@@ -520,6 +521,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 return _validatorMetadata;
             }
         }
+
+        public override bool CanTrim
+        {
+            get
+            {
+                if (!_CanTrim.HasValue)
+                {
+                    _CanTrim = BindingMetadata.CanTrim;
+                }
+
+                return _CanTrim.Value;
+            }
+        }
+
+        public override TrimType TrimType => BindingMetadata.TrimType;
 
         /// <inheritdoc />
         public override Func<object, object> PropertyGetter => _details.PropertyGetter;

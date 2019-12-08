@@ -97,5 +97,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// See <see cref="ModelMetadata.PropertyFilterProvider"/>.
         /// </summary>
         public IPropertyFilterProvider PropertyFilterProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the model is can trim.
+        /// </summary>
+        public bool CanTrim { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether model where to trim.
+        /// </summary>
+        public TrimType TrimType { get; set; }
     }
 }

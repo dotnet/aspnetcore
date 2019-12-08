@@ -21,13 +21,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             new List<Func<ModelMetadata, IModelBinder>>();
 
         public TestModelBinderProviderContext(Type modelType)
-            : this(modelType, bindingInfo: null)
+            : this(modelType, bindingInfo: null, modelMetadata: null)
         {
         }
 
-        public TestModelBinderProviderContext(Type modelType, BindingInfo bindingInfo)
+        public TestModelBinderProviderContext(Type modelType, ModelMetadata modelMetadata)
+            : this(modelType, bindingInfo: null, modelMetadata: modelMetadata)
         {
-            Metadata = CachedMetadataProvider.GetMetadataForType(modelType);
+
+        }
+
+        public TestModelBinderProviderContext(Type modelType, BindingInfo bindingInfo, ModelMetadata modelMetadata)
+        {
+            Metadata = modelMetadata ?? CachedMetadataProvider.GetMetadataForType(modelType);
             MetadataProvider = CachedMetadataProvider;
             _bindingInfo = bindingInfo ?? new BindingInfo
             {
@@ -39,6 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             (Services, MvcOptions) = GetServicesAndOptions();
         }
+
+
 
         public override BindingInfo BindingInfo => _bindingInfo;
 

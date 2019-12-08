@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Xunit;
@@ -658,6 +659,76 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
         }
 
+        
+        [Theory]
+        [MemberData(nameof(ForProperty))]
+        public void CreateBindingDetails_CanTrim_OnProperty(PropertyInfo propertyInfo, Type propertyType, TrimType trimType, bool canTrim)
+        {
+            // Arrange
+            var propertyAttributes = new object[]
+            {
+                new TrimAttribute(trimType)
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForProperty(propertyInfo, propertyType, typeof(ParameterInfos)),
+                new ModelAttributes(new object[0], propertyAttributes, null));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(canTrim, context.BindingMetadata.CanTrim);
+            Assert.Equal(trimType, context.BindingMetadata.TrimType);
+        }
+
+        [Theory]
+        [MemberData(nameof(ForParameter))]
+        public void CreateBindingDetails_CanTrim_FindTrimType_OnParameter(ParameterInfo parameterInfo, TrimType trimType, bool canTrim)
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new TrimAttribute(trimType),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(parameterInfo),
+                new ModelAttributes(Array.Empty<object>(), null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.Equal(canTrim, context.BindingMetadata.CanTrim);
+            Assert.Equal(trimType, context.BindingMetadata.TrimType);
+        }
+
+        public static IEnumerable<object[]> ForParameter()
+        {
+
+            IEnumerable<object[]> list = new List<object[]> {
+                new object[] { ParameterInfos.StringParameterInfo,TrimType.TrimEnd, true},
+                new object[] { ParameterInfos.SampleParameterInfo, TrimType.Trim, false}
+            };
+            return list;
+        }
+
+        public static IEnumerable<object[]> ForProperty()
+        {
+            IEnumerable<object[]> list = new List<object[]> {
+                new object[] { ParameterInfos.StringPropertyInfo, typeof(string), TrimType.Trim, true},
+                new object[] { ParameterInfos.StringPropertyInfo, typeof(string), TrimType.TrimStart, true},
+                new object[] { ParameterInfos.StringPropertyInfo, typeof(string), TrimType.Trim, true},
+                new object[] { ParameterInfos.IntPropertyInfo, typeof(int), TrimType.Trim, false}
+            };
+            return list;
+        }
+
         [BindNever]
         private class BindNeverOnClass
         {
@@ -687,16 +758,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
-        private class ParameterInfos
+        public class ParameterInfos
         {
             public void Method(object param1)
             {
             }
 
+            public void StringParamMethod(string param)
+            {
+            }
+
+            public int IntProperty { get; set; }
+
+            public string StringProperty { get; set; }
+
             public static ParameterInfo SampleParameterInfo
                 = typeof(ParameterInfos)
                     .GetMethod(nameof(ParameterInfos.Method))
                     .GetParameters()[0];
+
+            public static ParameterInfo StringParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.StringParamMethod))
+                    .GetParameters()[0];
+
+            public static PropertyInfo IntPropertyInfo => typeof(ParameterInfos).GetProperty(nameof(IntProperty));
+            public static PropertyInfo StringPropertyInfo => typeof(ParameterInfos).GetProperty(nameof(StringProperty));
         }
 
         private class CustomAttribute : Attribute
