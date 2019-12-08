@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly PipeReader _pipeReader;
         private long _bytesConsumed = 0;
         private readonly MultipartBoundary _boundary;
-        private MultipartSectionPipeReader _currentStream;
+        private MultipartSectionPipeReader _currentSection;
         private readonly bool _trackBaseOffsets;
 
         private static ReadOnlySpan<byte> ColonDelimiter => new byte[] { (byte)':' };
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentStream = new MultipartSectionPipeReader(_pipeReader, _boundary, trackBaseOffsets);
+            _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary, trackBaseOffsets);
             _trackBaseOffsets = trackBaseOffsets;
         }
 
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = default)
         {
-            await _currentStream.DrainAsync(cancellationToken);
-            _bytesConsumed += _currentStream.RawLength;
+            await _currentSection.DrainAsync(cancellationToken);
+            _bytesConsumed += _currentSection.RawLength;
 
 
             var headersAccumulator = new KeyValueAccumulator();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (!buffer.IsEmpty)
                 {
-                    var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength, readResult.IsCompleted);
+                    var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
                     if (headersLength > DefaultHeadersLengthLimit)
                     {
                         throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
@@ -81,9 +81,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
-                        _currentStream = new MultipartSectionPipeReader(_pipeReader, _boundary, _trackBaseOffsets);
+                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary, _trackBaseOffsets);
                         long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
-                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentStream, BaseStreamOffset = baseStreamOffset }; ;
+                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection, BaseStreamOffset = baseStreamOffset }; ;
+                    }
+                    if (readResult.IsCompleted)
+                    {
+                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                     }
 
                     _pipeReader.AdvanceTo(buffer.Start, buffer.End);
@@ -107,14 +111,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         internal bool TryParseHeadersToEnd(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
-            ref long headersLength,
-            bool isFinalBlock)
+            ref long headersLength)
         {
             if (buffer.IsSingleSegment)
             {
                 var didFinishParsing = TryParseHeadersToEndFast(buffer.First.Span,
                     ref accumulator,
-                    isFinalBlock,
                     HeadersLengthLimit - headersLength,
                     out var consumed);
                 headersLength += consumed;
@@ -124,14 +126,12 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             return TryParseHeadersToEndSlow(ref buffer,
                 ref accumulator,
-                ref headersLength,
-                isFinalBlock);
+                ref headersLength);
         }
 
         // Fast parsing for single span in ReadOnlySequence
         private bool TryParseHeadersToEndFast(ReadOnlySpan<byte> span,
             ref KeyValueAccumulator accumulator,
-            bool isFinalBlock,
             long lengthLimit,
             out int consumed)
         {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 // We can't know that what is currently read is the end of the header value, that's only the case if this is the final block
                 // If we're not in the final block, then consume nothing
-                else if (!isFinalBlock)
+                else
                 {
                     // Don't buffer indefinately
                     if (span.Length > lengthLimit)
@@ -160,10 +160,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                         throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
                     }
                     return false;
-                }
-                else
-                {
-                    throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
 
                 if (line.Length == 0) // an empty line means it's the end of the headers
@@ -209,8 +205,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private bool TryParseHeadersToEndSlow(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
-            ref long headersLength,
-            bool isFinalBlock)
+            ref long headersLength)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
 
@@ -218,11 +213,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> line, CrlfDelimiter))
                 {
-                    if (isFinalBlock)
-                    {
-                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
-                    }
-
                     // Don't buffer indefinately
                     if (headersLength + sequenceReader.Consumed > HeadersLengthLimit)
                     {
