@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class MultipartSectionPipeReader : PipeReader
+    internal class MultipartSectionPipeReader : PipeReader
     {
         private readonly PipeReader _pipeReader;
         private bool _finished = false;
