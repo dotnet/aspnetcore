@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
-using System.IO.Pipes;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
