@@ -138,8 +138,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <returns></returns>
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
-            WsFederationMessage wsFederationMessage = null;
-            AuthenticationProperties properties = null;
+            WsFederationMessage wsFederationMessage;
 
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
             if (HttpMethods.IsPost(Request.Method)
@@ -152,7 +151,38 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
 
                 wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
+            else
+            {
+                wsFederationMessage = null;
+            }
 
+            return await HandlePostAsync(wsFederationMessage);
+        }
+
+        protected virtual async Task<HandleRequestResult> HandleEndpointPostAsync()
+        {
+            WsFederationMessage wsFederationMessage;
+
+            // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
+            if (!string.IsNullOrEmpty(Request.ContentType)
+              // May have media/type; charset=utf-8, allow partial match.
+              && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
+              && Request.Body.CanRead)
+            {
+                var form = await Request.ReadFormAsync();
+
+                wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            }
+            else
+            {
+                wsFederationMessage = null;
+            }
+
+            return await HandlePostAsync(wsFederationMessage);
+        }
+
+        protected virtual async Task<HandleRequestResult> HandlePostAsync(WsFederationMessage wsFederationMessage)
+        {
             if (wsFederationMessage == null || !wsFederationMessage.IsSignInMessage)
             {
                 if (Options.SkipUnrecognizedRequests)
@@ -163,6 +193,8 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
 
                 return HandleRequestResult.Fail("No message.");
             }
+
+            AuthenticationProperties properties = null;
 
             try
             {
@@ -424,9 +456,17 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
 
         protected override IEnumerable<Endpoint> GetEndpoints()
         {
-            var endpoint = CreateEndpoint<WsFederationHandler>(Options.RemoteSignOutPath,
+            var postHandleEndpoint = CreateEndpoint<WsFederationHandler>(Options.CallbackPath,
+                "AuthenticationHandler" + Scheme.Name,
+                HttpMethods.Get,
+                handler =>
+                {
+                    return handler.HandleAsync(handler.HandleEndpointPostAsync);
+                });
+
+            var getSignOutEndpoint = CreateEndpoint<WsFederationHandler>(Options.RemoteSignOutPath,
                 "RemoteSignOutGet" + Scheme.Name,
-                "GET",
+                HttpMethods.Get,
                 handler =>
                 {
                     if (string.Equals(Request.Query[WsFederationConstants.WsFederationParameterNames.Wa],
@@ -440,7 +480,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
                     }
                 });
 
-            return new[] { endpoint };
+            return new[] { postHandleEndpoint, getSignOutEndpoint };
         }
     }
 }

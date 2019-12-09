@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Authentication
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
+        private static readonly Task<bool> _falseTask = Task.FromResult(false);
+
         protected string SignInScheme => Options.SignInScheme;
 
         /// <summary>
@@ -46,24 +48,47 @@ namespace Microsoft.AspNetCore.Authentication
         public virtual Task<bool> ShouldHandleRequestAsync()
             => Task.FromResult(Options.CallbackPath == Request.Path);
 
-        public virtual async Task<bool> HandleRequestAsync()
+        public virtual Task<bool> HandleRequestAsync()
         {
-            if (!await ShouldHandleRequestAsync())
+            var shouldHandle = ShouldHandleRequestAsync();
+
+            if (shouldHandle.IsCompletedSuccessfully)
+            {
+                if (shouldHandle.Result)
+                {
+                    return HandleAsync(HandleRemoteAuthenticateAsync);
+                }
+                else
+                {
+                    return _falseTask;
+                }
+            }
+
+            return HandleRequestAwaited(shouldHandle);
+        }
+
+        public async Task<bool> HandleRequestAwaited(Task<bool> shouldHandleTask)
+        {
+            var shouldHandle = await shouldHandleTask;
+
+            if (shouldHandle)
+            {
+                return await HandleAsync(HandleRemoteAuthenticateAsync);
+            }
+            else
             {
                 return false;
             }
-
-            var authResult = await HandleRemoteAuthenticateAsync();
-            return await HandleAsync(authResult);
         }
 
-        protected virtual async Task<bool> HandleAsync(HandleRequestResult authResult)
+        protected virtual async Task<bool> HandleAsync(Func<Task<HandleRequestResult>> func)
         {
             AuthenticationTicket ticket = null;
             Exception exception = null;
             AuthenticationProperties properties = null;
             try
             {
+                var authResult = await func();
                 if (authResult == null)
                 {
                     exception = new InvalidOperationException("Invalid return state, unable to redirect.");

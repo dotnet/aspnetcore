@@ -325,11 +325,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             var endpoint = CreateEndpoint<TwitterHandler>(Options.CallbackPath,
                 "AuthenticationHandler" + Scheme.Name,
-                "GET",
+                HttpMethods.Get,
                 async handler =>
                 {
-                    var result = await handler.HandleRemoteAuthenticateAsync();
-                    await handler.HandleAsync(result);
+                    await handler.HandleAsync(handler.HandleRemoteAuthenticateAsync);
                 });
 
             return new[] { endpoint };

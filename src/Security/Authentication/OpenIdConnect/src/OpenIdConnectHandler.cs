@@ -1348,11 +1348,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             var getHandleEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.CallbackPath,
                "AuthenticationHandlerGet" + Scheme.Name,
-               "GET",
+               HttpMethods.Get,
                async handler =>
                {
-                   var result = await handler.HandleEndpointGetAsync();
-                   await handler.HandleAsync(result);
+                   await handler.HandleAsync(handler.HandleEndpointGetAsync);
                });
 
             endpoints.Add(getHandleEndpoint);
@@ -1360,11 +1359,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             var postHandleEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.CallbackPath,
               "AuthenticationHandlerPost" + Scheme.Name,
-              "POST",
+              HttpMethods.Post,
               async handler =>
               {
-                  var result = await handler.HandleEndpointPostAsync();
-                  await handler.HandleAsync(result);
+                  await handler.HandleAsync(handler.HandleEndpointPostAsync);
               });
 
             endpoints.Add(postHandleEndpoint);
@@ -1373,14 +1371,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 var getSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.RemoteSignOutPath,
                     "RemoteSignOutPathGet" + Scheme.Name,
-                    "GET",
+                    HttpMethods.Get,
                     x => x.HandleGetRemoteSignOutEndpoint());
 
                 endpoints.Add(getSignOutEndpoint);
 
                 var postSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.RemoteSignOutPath,
                     "RemoteSignOutPathPost" + Scheme.Name,
-                    "GET",
+                    HttpMethods.Get,
                     x => x.HandlePosttRemoteSignOutEndpoint());
 
                 endpoints.Add(getSignOutEndpoint);
@@ -1390,7 +1388,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 var getSignOutEndpoint = CreateEndpoint<OpenIdConnectHandler>(Options.SignedOutCallbackPath,
                     "SignedOutCallbackPathGet" + Scheme.Name,
-                    "GET",
+                    HttpMethods.Get,
                     x => x.HandleSignOutCallbackAsync());
 
                 endpoints.Add(getSignOutEndpoint);
@@ -1403,30 +1401,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.EnteringOpenIdAuthenticationHandlerHandleRemoteAuthenticateAsync(GetType().FullName);
 
-            OpenIdConnectMessage authorizationResponse;
+            OpenIdConnectMessage authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
 
-            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            // response_mode=query (explicit or not) and a response_type containing id_token
+            // or token are not considered as a safe combination and MUST be rejected.
+            // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
+            if (!string.IsNullOrEmpty(authorizationResponse.IdToken) || !string.IsNullOrEmpty(authorizationResponse.AccessToken))
             {
-                authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
-
-                // response_mode=query (explicit or not) and a response_type containing id_token
-                // or token are not considered as a safe combination and MUST be rejected.
-                // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
-                if (!string.IsNullOrEmpty(authorizationResponse.IdToken) || !string.IsNullOrEmpty(authorizationResponse.AccessToken))
+                if (Options.SkipUnrecognizedRequests)
                 {
-                    if (Options.SkipUnrecognizedRequests)
-                    {
-                        // Not for us?
-                        return HandleRequestResult.SkipHandler();
-                    }
-
-                    return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
-                          "identity token or an access token when using response_mode=query");
+                    // Not for us?
+                    return HandleRequestResult.SkipHandler();
                 }
-            }
-            else
-            {
-                authorizationResponse = null;
+
+                return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
+                      "identity token or an access token when using response_mode=query");
             }
 
             return await HandleRemoteAuthenticateInternalAsync(authorizationResponse);

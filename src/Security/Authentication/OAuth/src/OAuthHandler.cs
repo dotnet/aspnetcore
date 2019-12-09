@@ -314,11 +314,10 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var endpoint = CreateEndpoint<OAuthHandler<TOptions>>(Options.CallbackPath,
                 "AuthenticationHandler" + Scheme.Name,
-                "GET",
-                async handler =>
+                HttpMethods.Get,
+                handler =>
                 {
-                    var result = await handler.HandleRemoteAuthenticateAsync();
-                    await handler.HandleAsync(result);
+                    return handler.HandleAsync(handler.HandleRemoteAuthenticateAsync);
                 });
 
             return new[] { endpoint };
