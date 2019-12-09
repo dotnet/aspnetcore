@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_HTTP2_TrailersAvailable()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_ProhibitedTrailers_Blocked()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_NoBody_TrailersSent()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_WithBody_TrailersSent()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_WithContentLengthBody_TrailersNotSent()
         {
             var body = "Hello World";
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_WithTrailersBeforeContentLengthBody_TrailersSent()
         {
             var body = "Hello World";
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_WithContentLengthBodyAndDeclared_TrailersSent()
         {
             var body = "Hello World";
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_WithContentLengthBodyAndDeclaredButMissingTrailers_Completes()
         {
             var body = "Hello World";
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent()
         {
             var trailersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent()
         {
             var trailersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_MultipleValues_SentAsSeperateHeaders()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_LargeTrailers_Success()
         {
             var values = new[] {
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalTheory, MemberData(nameof(NullHeaderData))]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19505", SkipReason = "Requires HTTP/2 Trailers support.")]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Requires HTTP/2 Trailers support.")]
         public async Task ResponseTrailers_NullValues_Ignored(string headerName, StringValues headerValue, StringValues expectedValue)
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>

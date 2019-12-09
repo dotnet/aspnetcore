@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -212,6 +213,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     Response.CancelLastWrite();
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // RequestQueueHandle may have been closed
+            }
+        }
+
+        // You must still call ForceCancelRequest after this.
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            if (!HttpApi.SupportsReset)
+            {
+                return;
+            }
+
+            try
+            {
+                var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
+                var statusCode =  HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
+                    (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
             }
             catch (ObjectDisposedException)
             {
