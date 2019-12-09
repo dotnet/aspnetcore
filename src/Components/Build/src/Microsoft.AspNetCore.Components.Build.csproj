@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
+    <TargetName>Microsoft.AspNetCore.Components.Build.Tasks</TargetName>
+    <AssemblyName>Microsoft.AspNetCore.Components.Build</AssemblyName>
+    <Description>Build mechanism for ASP.NET Core components libraries.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+  </ItemGroup>
+
+  <Target Name="CopyToToolsDir" AfterTargets="Build">
+    <ItemGroup>
+      <_AllFilesToCopy Condition="'$(MSBuildRuntimeType)' == 'Core'" Include="$(OutputPath)*" TargetPath="netcoreapp\" />
+      <_AllFilesToCopy Condition="'$(MSBuildRuntimeType)' != 'Core'" Include="$(OutputPath)*" TargetPath="netfx\" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)..\tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+</Project>

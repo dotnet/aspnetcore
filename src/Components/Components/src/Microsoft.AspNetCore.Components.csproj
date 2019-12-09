@@ -9,6 +9,12 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
+  <Import Project="..\..\Build\src\ReferenceFromSource.targets" />
+  <Target Name="MyTest" BeforeTargets="build">
+    <Message Importance="high" Text="Loading from $(ComponentsTasksPath) for TFM $(TargetFramework)" />
+    <PrintCoolMessage />
+  </Target>
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
   </ItemGroup>
