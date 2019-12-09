@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             try
             {
                 var entrypoint = FindUnderlyingEntrypoint(entrypointMethodHandleValue);
-                entrypointResult = entrypoint.Invoke(null, new object[] { args });
+                var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args } : new object[] { };
+                entrypointResult = entrypoint.Invoke(null, @params);
             }
             catch (Exception syncException)
             {
