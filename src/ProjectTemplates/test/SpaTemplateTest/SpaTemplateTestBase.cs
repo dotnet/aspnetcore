@@ -63,13 +63,13 @@ namespace Templates.Test.SpaTemplateTest
             using var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
             Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
 
-            using var lintResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npm run lint");
+            using var lintResult = await ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npm run lint");
             Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
 
             // The default behavior of angular tests is watch mode, which leaves the test process open after it finishes, which leads to delays/hangs.
             var testcommand = "npm run test" + template == "angular" ? "-- --watch=false" : "";
 
-            using var testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, testcommand);
+            using var testResult = await ProcessEx.RunViaShell(Output, clientAppSubdirPath, testcommand);
             Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
 
             using var publishResult = await Project.RunDotNetPublishAsync();
@@ -155,11 +155,11 @@ namespace Templates.Test.SpaTemplateTest
         {
             ProcessEx testResult = null;
             int? testResultExitCode = null;
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 try
                 {
-                    testResult = ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npx rimraf ./build");
+                    testResult = await ProcessEx.RunViaShell(Output, clientAppSubdirPath, "npx rimraf ./build");
                     testResultExitCode = testResult.ExitCode;
                     if (testResultExitCode == 0)
                     {

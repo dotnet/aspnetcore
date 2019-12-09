@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 
@@ -106,14 +107,14 @@ namespace Templates.Test.Helpers
             return new ProcessEx(output, proc);
         }
 
-        public static ProcessEx RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
+        public static async ValueTask<ProcessEx> RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
         {
             var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? ("cmd", "/c")
                 : ("bash", "-c");
 
             var result = Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"");
-            result.WaitForExit(assertSuccess: false);
+            await result.WaitForExit(assertSuccess: false);
             return result;
         }
 
@@ -170,20 +171,16 @@ namespace Templates.Test.Helpers
             return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
         }
 
-        public void WaitForExit(bool assertSuccess, TimeSpan? timeSpan = null)
+        public async ValueTask WaitForExit(bool assertSuccess, TimeSpan? timeSpan = null)
         {
-            if(!timeSpan.HasValue)
+            if (!timeSpan.HasValue)
             {
                 timeSpan = TimeSpan.FromSeconds(600);
             }
 
-            var exited = Exited.Wait(timeSpan.Value);
-            if (!exited)
-            {
-                _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
-                _process.Dispose();
-            }
-            else if (assertSuccess && _process.ExitCode != 0)
+            await Exited.TimeoutAfter(timeSpan.Value);
+
+            if (assertSuccess && _process.ExitCode != 0)
             {
                 throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
             }
