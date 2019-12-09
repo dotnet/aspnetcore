@@ -401,6 +401,10 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.1-servicing.19576.9" CoherentParentDependency="Microsoft.Extensions.Logging">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>f3f2dd583fffa254015fc21ff0e45784b333256d</Sha>
+    </Dependency>
     <!-- Keep these dependencies at the bottom of ProductDependencies, else they will be picked as the parent for CoherentParentDependencies -->
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
