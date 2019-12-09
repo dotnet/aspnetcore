@@ -200,8 +200,30 @@ function InstallDotNet {
   fi
   bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK (exit code '$exit_code')."
-    ExitWithExitCode $exit_code
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
+
+    if [[ -n "$runtimeArg" ]]; then
+      local runtimeSourceFeed=''
+      if [[ -n "${6:-}" ]]; then
+        runtimeSourceFeed="--azure-feed $6"
+      fi
+
+      local runtimeSourceFeedKey=''
+      if [[ -n "${7:-}" ]]; then
+        decodedFeedKey=`echo $7 | base64 --decode`
+        runtimeSourceFeedKey="--feed-credential $decodedFeedKey"
+      fi
+
+      if [[ -n "$runtimeSourceFeed" || -n "$runtimeSourceFeedKey" ]]; then
+        bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg $runtimeSourceFeed $runtimeSourceFeedKey || {
+          local exit_code=$?
+          Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from custom location '$runtimeSourceFeed' (exit code '$exit_code')."
+          ExitWithExitCode $exit_code
+        }
+      else
+        ExitWithExitCode $exit_code
+      fi
+    fi
   }
 }
 
