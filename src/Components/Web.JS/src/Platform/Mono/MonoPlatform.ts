@@ -51,10 +51,14 @@ export const monoPlatform: Platform = {
     Module.setValue(entrypointMethodHandleIntPtr, entrypointMethodHandle, 'i32');
 
     // Invoke Blazor's entrypoint invoker. This knows how to deal with async main.
-    const invokeEntrypointAsync = findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting', 'EntrypointInvoker', 'InvokeEntrypointAsync');
-    return this.callMethod(invokeEntrypointAsync, null, [
+    // Currently we disregard the return value from the entrypoint, whether it's sync or async.
+    // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
+    // outer promise reflects the startup process, and the inner one reflects the possibly-async
+    // .NET entrypoint method.
+    const invokeEntrypoint = findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting', 'EntrypointInvoker', 'InvokeEntrypoint');
+    this.callMethod(invokeEntrypoint, null, [
       entrypointMethodHandleIntPtr as any as System_Object,
-      mono_string_array_new(0) // In the future, we may have a way of supplying arg strings. For now, we always supply an empty array.
+      mono_string_array_new(0) // In the future, we may have a way of supplying arg strings. For now, we always supply an empty string[].
     ]);
   },
 
