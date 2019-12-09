@@ -11,7 +11,6 @@ let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
 let find_method: (typeHandle: number, methodName: string, unknownArg: number) => MethodHandle;
 let invoke_method: (method: MethodHandle, target: System_Object, argsArrayPtr: number, exceptionFlagIntPtr: number) => System_Object;
-let assembly_get_entry_point: (assembly: number) => MethodHandle;
 let mono_string_array_new: (length: number) => System_Array<System_String>;
 let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
@@ -42,22 +41,15 @@ export const monoPlatform: Platform = {
   findMethod: findMethod,
 
   callEntryPoint: function callEntryPoint(assemblyName: string) {
-    // Find entrypoint
-    const assembly = findAssembly(assemblyName);
-    const entrypointMethodHandle = assembly_get_entry_point(assembly);
-
-    // Create a boxed IntPtr referencing it
-    const entrypointMethodHandleIntPtr = Module.stackAlloc(4);
-    Module.setValue(entrypointMethodHandleIntPtr, entrypointMethodHandle, 'i32');
-
-    // Invoke Blazor's entrypoint invoker. This knows how to deal with async main.
+    // Instead of using Module.mono_call_assembly_entry_point, we have our own logic for invoking
+    // the entrypoint which adds support for async main.
     // Currently we disregard the return value from the entrypoint, whether it's sync or async.
     // In the future, we might want Blazor.start to return a Promise<Promise<value>>, where the
     // outer promise reflects the startup process, and the inner one reflects the possibly-async
     // .NET entrypoint method.
     const invokeEntrypoint = findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting', 'EntrypointInvoker', 'InvokeEntrypoint');
     this.callMethod(invokeEntrypoint, null, [
-      entrypointMethodHandleIntPtr as any as System_Object,
+      this.toDotNetString(assemblyName),
       mono_string_array_new(0) // In the future, we may have a way of supplying arg strings. For now, we always supply an empty string[].
     ]);
   },
@@ -278,10 +270,6 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
       'number',
       'number',
     ]);
-
-    // Instead of using Module.mono_call_assembly_entry_point, we have our own logic for invoking
-    // the entrypoint which adds support for async main
-    assembly_get_entry_point = Module.cwrap('mono_wasm_assembly_get_entry_point', 'number', ['number']);
 
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);

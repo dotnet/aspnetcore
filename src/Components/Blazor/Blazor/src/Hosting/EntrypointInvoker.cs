@@ -15,12 +15,13 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         // In the future we may want Blazor.start to return something that exposes the possibly-async
         // entrypoint result to the JS caller. There's no requirement to do that today, and if we
         // do change this it will be non-breaking.
-        public static void InvokeEntrypoint(IntPtr entrypointMethodHandleValue, string[] args)
+        public static void InvokeEntrypoint(string assemblyName, string[] args)
         {
             object entrypointResult;
             try
             {
-                var entrypoint = FindUnderlyingEntrypoint(entrypointMethodHandleValue);
+                var assembly = Assembly.Load(assemblyName);
+                var entrypoint = FindUnderlyingEntrypoint(assembly);
                 var @params = entrypoint.GetParameters().Length == 1 ? new object[] { args } : new object[] { };
                 entrypointResult = entrypoint.Invoke(null, @params);
             }
@@ -44,11 +45,11 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             }
         }
 
-        private static MethodBase FindUnderlyingEntrypoint(IntPtr metadataEntrypointMethodHandleValue)
+        private static MethodBase FindUnderlyingEntrypoint(Assembly assembly)
         {
             // This is the entrypoint declared in .NET metadata. In the case of async main, it's the
             // compiler-generated wrapper method. Otherwise it's the developer-defined method.
-            var metadataEntrypointMethodBase = CreateMethodBase(metadataEntrypointMethodHandleValue);
+            var metadataEntrypointMethodBase = assembly.EntryPoint;
 
             // For "async Task Main", the C# compiler generates a method called "<Main>"
             // that is marked as the assembly entrypoint. Detect this case, and instead of
@@ -83,13 +84,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         {
             // Logs to console, and causes the error UI to appear
             Console.Error.WriteLine(exception);
-        }
-
-        private static MethodBase CreateMethodBase(IntPtr methodHandleValue)
-        {
-            var methodHandleCtor = typeof(RuntimeMethodHandle).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(IntPtr) }, null);
-            var myConstructedMethodHandle = (RuntimeMethodHandle)methodHandleCtor.Invoke(new object[] { methodHandleValue });
-            return MethodBase.GetMethodFromHandle(myConstructedMethodHandle);
         }
     }
 }
