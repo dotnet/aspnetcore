@@ -211,7 +211,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, published: false, hasListeningUri: hasListeningUri);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
         internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)

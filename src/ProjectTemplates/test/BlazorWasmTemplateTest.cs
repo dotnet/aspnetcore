@@ -24,7 +24,7 @@ namespace Templates.Test
 
         public ProjectFactoryFixture ProjectFactory { get; set; }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/17681")]
+        [Fact]
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
@@ -42,7 +42,7 @@ namespace Templates.Test
             await BuildAndRunTest(project.ProjectName, project);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/17681")]
+        [Fact]
         public async Task BlazorWasmHostedTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
