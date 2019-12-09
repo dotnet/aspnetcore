@@ -54,7 +54,7 @@ async function boot(options?: any): Promise<void> {
   }
 
   // Start up the application
-  return platform.callEntryPoint(bootConfig.entryAssembly);
+  platform.callEntryPoint(bootConfig.entryAssembly);
 }
 
 async function fetchBootConfigAsync() {

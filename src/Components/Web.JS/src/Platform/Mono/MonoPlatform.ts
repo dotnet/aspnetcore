@@ -41,19 +41,21 @@ export const monoPlatform: Platform = {
 
   findMethod: findMethod,
 
-  callEntryPoint: function callEntryPoint(assemblyName: string): Promise<void> {
+  callEntryPoint: function callEntryPoint(assemblyName: string) {
     // Find entrypoint
     const assembly = findAssembly(assemblyName);
     const entrypointMethodHandle = assembly_get_entry_point(assembly);
 
-    // Since no .NET code has run yet, manually initialize JS interop
-    const ensureJsInteropInitializedMethod = this.findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Services', 'WebAssemblyJSRuntime', 'EnsureInitialized');
-    this.callMethod(ensureJsInteropInitializedMethod, null, []);
+    // Create a boxed IntPtr referencing it
+    const entrypointMethodHandleIntPtr = Module.stackAlloc(4);
+    Module.setValue(entrypointMethodHandleIntPtr, entrypointMethodHandle, 'i32');
 
-    // Use JS interop to call the entrypoint invoker, so that the result is coerced to a JS promise
-    // with correct exception handling behaviors
-    const args = []; // In the future, we may have a way of supplying arg strings
-    return DotNet.invokeMethodAsync<void>('Microsoft.AspNetCore.Blazor', 'InvokeEntrypointAsync', entrypointMethodHandle, args);
+    // Invoke Blazor's entrypoint invoker. This knows how to deal with async main.
+    const invokeEntrypointAsync = findMethod('Microsoft.AspNetCore.Blazor', 'Microsoft.AspNetCore.Blazor.Hosting', 'EntrypointInvoker', 'InvokeEntrypointAsync');
+    return this.callMethod(invokeEntrypointAsync, null, [
+      entrypointMethodHandleIntPtr as any as System_Object,
+      mono_string_array_new(0) // In the future, we may have a way of supplying arg strings. For now, we always supply an empty array.
+    ]);
   },
 
   callMethod: function callMethod(method: MethodHandle, target: System_Object, args: System_Object[]): System_Object {

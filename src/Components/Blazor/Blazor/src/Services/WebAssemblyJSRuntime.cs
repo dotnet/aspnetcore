@@ -16,12 +16,6 @@ namespace Microsoft.AspNetCore.Blazor.Services
             JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
         }
 
-        // Invoked from JS as part of the startup process
-        public void EnsureInitialized()
-        {
-            _ = Instance;
-        }
-
         public static WebAssemblyJSRuntime Instance
         {
             get

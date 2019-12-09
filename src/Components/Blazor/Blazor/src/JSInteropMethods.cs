@@ -25,14 +25,5 @@ namespace Microsoft.AspNetCore.Blazor
         {
             WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
         }
-
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(InvokeEntrypointAsync))]
-        public static Task InvokeEntrypointAsync(int entrypointMethodHandleValue, string[] args)
-        {
-            return EntrypointInvoker.InvokeEntrypointAsync(new IntPtr(entrypointMethodHandleValue), args);
-        }
     }
 }
