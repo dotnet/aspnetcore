@@ -13,10 +13,8 @@ namespace Microsoft.AspNetCore.Components.Build
 {
     internal static class LinkerConfigGenerator
     {
-        const string ComponentsAssemblyName = "Microsoft.AspNetCore.Components";
-        const string JSInteropAssemblyName = "Microsoft.JSInterop";
-        const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
-        const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
+        private const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
+        private const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
 
         public static void Generate(string assemblyPath, Stream outputStream)
         {
@@ -54,26 +52,24 @@ namespace Microsoft.AspNetCore.Components.Build
                     }
                 }
 
-                /*
                 // Preserve JSInterop-callable methods
-                var jsInteropMethods = GetJSInteropMethods(metadata).GroupBy(m => m.GetDeclaringType()).ToList();
+                var jsInteropMethods = GetJSInteropMethods(module).GroupBy(m => m.DeclaringType).ToList();
                 if (jsInteropMethods.Any())
                 {
                     xmlWriter.WriteComment(" JSInterop-callable methods are only called through reflection ");
                     foreach (var group in jsInteropMethods)
                     {
                         xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname", FullyQualifiedName(metadata, group.Key));
+                        xmlWriter.WriteAttributeString("fullname", group.Key.FullName);
                         foreach (var method in group)
                         {
                             xmlWriter.WriteStartElement("method");
-                            xmlWriter.WriteAttributeString("signature", ToSignatureString(metadata, method));
+                            xmlWriter.WriteAttributeString("signature", GetMethodSignature(method));
                             xmlWriter.WriteEndElement(); // method
                         }
                         xmlWriter.WriteEndElement(); // type
                     }
                 }
-                */
 
                 xmlWriter.WriteEndElement(); // assembly
                 xmlWriter.WriteEndElement(); // linker
@@ -122,41 +118,15 @@ namespace Microsoft.AspNetCore.Components.Build
             }
         }
 
-        /*
-        private static string FullyQualifiedName(MetadataReader metadata, EntityHandle entityHandle)
+        private static IEnumerable<MethodDefinition> GetJSInteropMethods(ModuleDefinition module)
         {
-            if (entityHandle.IsNil)
+            foreach (var typeDefinition in module.Types)
             {
-                return "NIL";
-            }
-
-            switch (entityHandle.Kind)
-            {
-                case HandleKind.TypeDefinition:
-                    var typeDefinitionHandle = (TypeDefinitionHandle)entityHandle;
-                    var typeDefinition = metadata.GetTypeDefinition(typeDefinitionHandle);
-                    return $"{metadata.GetString(typeDefinition.Namespace)}.{metadata.GetString(typeDefinition.Name)}";
-                case HandleKind.TypeReference:
-                    var typeReferenceHandle = (TypeReferenceHandle)entityHandle;
-                    var typeReference = metadata.GetTypeReference(typeReferenceHandle);
-                    return $"{metadata.GetString(typeReference.Namespace)}.{metadata.GetString(typeReference.Name)}";
-                default:
-                    return $"[Unsupported handle kind: {entityHandle.Kind}]";
-            }           
-        }
-
-        private static IEnumerable<MethodDefinition> GetJSInteropMethods(MetadataReader metadata)
-        {
-            foreach (var methodDefinition in metadata.MethodDefinitions.Select(m => metadata.GetMethodDefinition(m)))
-            {
-                foreach (var customAttribute in methodDefinition.GetCustomAttributes().Select(a => metadata.GetCustomAttribute(a)))
+                foreach (var methodDefinition in typeDefinition.Methods)
                 {
-                    var ctor = customAttribute.Constructor;
-                    if (ctor.Kind == HandleKind.MemberReference)
+                    foreach (var customAttribute in methodDefinition.CustomAttributes)
                     {
-                        var ctorMethod = metadata.GetMemberReference((MemberReferenceHandle)ctor);
-                        var ctorTypeHandle = ctorMethod.Parent;
-                        if (FullyQualifiedName(metadata, ctorTypeHandle).Equals(JSInvokableAttributeName, StringComparison.Ordinal))
+                        if (customAttribute.AttributeType.FullName.Equals(JSInvokableAttributeName, StringComparison.Ordinal))
                         {
                             yield return methodDefinition;
                         }
@@ -164,6 +134,33 @@ namespace Microsoft.AspNetCore.Components.Build
                 }
             }
         }
-        */
+
+        // The output from this must correspond exactly to https://github.com/mono/linker/blob/master/src/linker/Linker.Steps/ResolveFromXmlStep.cs#L471
+        // which is the whole reason we're using Cecil here. This isn't going to be maintainable in the long run, so we
+        // either need the linker to be a regular NuGet package so we can reference its signature-generation code properly,
+        // or we need some other way to indicate that methods with [JSInvokable] should always be preserved.
+        //
+        // The following method is shared source. Do not change the code style to match ASP.NET Core repo conventions,
+        // because we want to be able to paste updated versions from the Mono repo and reason about the diff.
+        static string GetMethodSignature(MethodDefinition meth)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(meth.ReturnType.FullName);
+            sb.Append(" ");
+            sb.Append(meth.Name);
+            sb.Append("(");
+            if (meth.HasParameters)
+            {
+                for (int i = 0; i < meth.Parameters.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(",");
+
+                    sb.Append(meth.Parameters[i].ParameterType.FullName);
+                }
+            }
+            sb.Append(")");
+            return sb.ToString();
+        }
     }
 }
