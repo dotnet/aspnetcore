@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Components.Build
             using (var xmlWriter = XmlWriter.Create(outputStream, writerSettings))
             {
                 xmlWriter.WriteStartDocument();
+                xmlWriter.WriteComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY ");
+
                 xmlWriter.WriteStartElement("linker");
                 xmlWriter.WriteStartElement("assembly");
                 xmlWriter.WriteAttributeString("fullname", assemblyDefinition.Name.Name);
