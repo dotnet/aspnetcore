@@ -7,6 +7,8 @@
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
+  <Import Project="..\..\..\Build\src\AddLinkerConfigGeneration.targets" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
   </ItemGroup>

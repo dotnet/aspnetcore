@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -9,6 +9,8 @@
     <IsShippingPackage>true</IsShippingPackage>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
   </PropertyGroup>
+
+  <Import Project="..\..\Build\src\AddLinkerConfigGeneration.targets" />
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />

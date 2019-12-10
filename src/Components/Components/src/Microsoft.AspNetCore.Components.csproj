@@ -9,6 +9,8 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
+  <Import Project="..\..\Build\src\AddLinkerConfigGeneration.targets" />
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
   </ItemGroup>

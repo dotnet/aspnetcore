@@ -9,6 +9,8 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
+  <Import Project="..\..\Build\src\AddLinkerConfigGeneration.targets" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
