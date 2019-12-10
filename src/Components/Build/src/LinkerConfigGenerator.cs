@@ -39,20 +39,21 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteStartElement("assembly");
                 xmlWriter.WriteAttributeString("fullname", metadata.GetString(metadata.GetAssemblyDefinition().Name));
 
-                /*
                 // Preserve component types
-                var componentTypes = GetComponentTypes(assembly).ToList();
+                var componentTypes = GetComponentTypes(metadata).ToList();
                 if (componentTypes.Any())
                 {
                     xmlWriter.WriteComment(" Components must be preserved in full, otherwise their constructors and parameter properties will be removed ");
                     foreach (var componentType in componentTypes)
                     {
                         xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname", componentType.FullName);
+                        xmlWriter.WriteAttributeString("fullname",
+                            metadata.GetString(componentType.Namespace) + "." + metadata.GetString(componentType.Name));
                         xmlWriter.WriteEndElement();
                     }
                 }
 
+                /*
                 // Preserve JSInterop-callable methods
                 var jsInteropMethods = GetJSInteropMethods(assembly).GroupBy(m => m.DeclaringType).ToList();
                 if (jsInteropMethods.Any())
@@ -86,19 +87,40 @@ namespace Microsoft.AspNetCore.Components.Build
             return method.ToString();
         }
 
-        private static IEnumerable<Type> GetComponentTypes(Assembly assembly)
+        private static IEnumerable<TypeDefinition> GetComponentTypes(MetadataReader metadata)
         {
-            foreach (var type in assembly.GetTypes())
+            foreach (var typeDefinition in metadata.TypeDefinitions.Select(d => metadata.GetTypeDefinition(d)))
             {
-                foreach (var @interface in type.GetInterfaces())
+                foreach (var @interface in typeDefinition.GetInterfaceImplementations().Select(i => metadata.GetInterfaceImplementation(i).Interface))
                 {
-                    if (@interface.Assembly.GetName().Name.Equals(ComponentsAssemblyName, StringComparison.OrdinalIgnoreCase)
-                        && @interface.FullName.Equals(ComponentInterfaceName, StringComparison.OrdinalIgnoreCase))
+                    if (FullyQualifiedName(metadata, @interface).Equals(ComponentInterfaceName, StringComparison.Ordinal))
                     {
-                        yield return type;
+                        yield return typeDefinition;
                     }
                 }
             }
+        }
+
+        private static string FullyQualifiedName(MetadataReader metadata, EntityHandle entityHandle)
+        {
+            if (entityHandle.IsNil)
+            {
+                return "NIL";
+            }
+
+            switch (entityHandle.Kind)
+            {
+                case HandleKind.TypeDefinition:
+                    var typeDefinitionHandle = (TypeDefinitionHandle)entityHandle;
+                    var typeDefinition = metadata.GetTypeDefinition(typeDefinitionHandle);
+                    return $"{metadata.GetString(typeDefinition.Namespace)}.{metadata.GetString(typeDefinition.Name)}";
+                case HandleKind.TypeReference:
+                    var typeReferenceHandle = (TypeReferenceHandle)entityHandle;
+                    var typeReference = metadata.GetTypeReference(typeReferenceHandle);
+                    return $"{metadata.GetString(typeReference.Namespace)}.{metadata.GetString(typeReference.Name)}";
+                default:
+                    return $"[Unsupported handle kind: {entityHandle.Kind}]";
+            }           
         }
 
         private static IEnumerable<MethodInfo> GetJSInteropMethods(Assembly assembly)
@@ -109,8 +131,8 @@ namespace Microsoft.AspNetCore.Components.Build
                 {
                     foreach (var attribute in method.GetCustomAttributes(true))
                     {
-                        if (attribute.GetType().Assembly.GetName().Name.Equals(JSInteropAssemblyName, StringComparison.OrdinalIgnoreCase)
-                            && attribute.GetType().FullName.Equals(JSInvokableAttributeName, StringComparison.OrdinalIgnoreCase))
+                        if (attribute.GetType().Assembly.GetName().Name.Equals(JSInteropAssemblyName, StringComparison.Ordinal)
+                            && attribute.GetType().FullName.Equals(JSInvokableAttributeName, StringComparison.Ordinal))
                         {
                             yield return method;
                         }
