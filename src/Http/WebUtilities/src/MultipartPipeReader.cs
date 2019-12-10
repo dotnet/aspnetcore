@@ -69,41 +69,45 @@ namespace Microsoft.AspNetCore.WebUtilities
             while (true)
             {
                 var readResult = await _pipeReader.ReadAsync(cancellationToken);
+
+                if (readResult.IsCanceled)
+                {
+                    throw new OperationCanceledException("Read was canceled");
+                }
+
                 var buffer = readResult.Buffer;
 
-                if (!buffer.IsEmpty)
+                if (buffer.IsEmpty)
                 {
-                    var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
-                    if (headersLength > DefaultHeadersLengthLimit)
-                    {
-                        throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
-                    }
-                    if (finishedParsing)
-                    {
-                        _bytesConsumed += headersLength;
-                        _pipeReader.AdvanceTo(buffer.Start);
-                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
-                        long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
-                        return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection, BaseStreamOffset = baseStreamOffset }; ;
-                    }
                     if (readResult.IsCompleted)
                     {
-                        throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
+                        return null;
                     }
-
-                    _pipeReader.AdvanceTo(buffer.Start, buffer.End);
+                    // This is a buggy PipeReader implementation that returns 0 byte reads even though the PipeReader
+                    // isn't completed or canceled - still think it should continue
+                    continue;
                 }
 
+                var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
+                if (headersLength > DefaultHeadersLengthLimit)
+                {
+                    throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
+                }
+                if (finishedParsing)
+                {
+                    _bytesConsumed += headersLength;
+                    _pipeReader.AdvanceTo(buffer.Start);
+                    _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
+                    long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
+                    return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection, BaseStreamOffset = baseStreamOffset }; ;
+                }
                 if (readResult.IsCompleted)
                 {
-                    _pipeReader.AdvanceTo(buffer.End);
-
-                    if (!buffer.IsEmpty)
-                    {
-                        throw new InvalidOperationException("End of body before form was fully parsed.");
-                    }
-                    return null;
+                    _pipeReader.AdvanceTo(buffer.End); // free memory 
+                    throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
+                _pipeReader.AdvanceTo(buffer.Start, buffer.End);
+
             }
 
         }

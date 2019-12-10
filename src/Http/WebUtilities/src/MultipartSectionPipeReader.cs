@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public long RawLength { get; private set; } = 0;
 
         public long? LengthLimit { get; private set; }
-        public long Length { get; private set; } = 0;
+       // public long Length { get; private set; } = 0;
 
         internal MultipartSectionPipeReader(PipeReader pipeReader, MultipartBoundary boundary)
         {
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private void UpdateLength(long read)
         {
-            Length += read;
+            //Length += read;
             RawLength += read;
-            if (LengthLimit.HasValue && Length > LengthLimit.GetValueOrDefault())
+            if (LengthLimit.HasValue && RawLength > LengthLimit.GetValueOrDefault())
             {
                 throw new InvalidDataException($"Multipart body length limit {LengthLimit.GetValueOrDefault()} exceeded.");
             }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override Stream AsStream(bool leaveOpen = false)
         {
-            return new PipeReaderStream(this, Length, leaveOpen);
+            return new PipeReaderStream(this, leaveOpen);
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
 
-                return new ReadResult(default, false, isCurrentCompleted);
+                return new ReadResult(default, readResult.IsCanceled, isCurrentCompleted);
             }
 
             //currently there is no handling of a finished read cancellation, so we set false for isCanceled
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
 
-                result = new ReadResult(default, false, isCurrentCompleted);
+                result = new ReadResult(default, result.IsCanceled, isCurrentCompleted);
                 return true;
             }
 

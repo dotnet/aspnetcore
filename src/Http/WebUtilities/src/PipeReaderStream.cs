@@ -19,12 +19,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly PipeReader _pipeReader;
         private long _length;
 
-        public PipeReaderStream(PipeReader pipeReader, long length, bool leaveOpen)
+        public PipeReaderStream(PipeReader pipeReader, bool leaveOpen)
         {
             Debug.Assert(pipeReader != null);
             _pipeReader = pipeReader;
             LeaveOpen = leaveOpen;
-            _length = length;
         }
 
         protected override void Dispose(bool disposing)

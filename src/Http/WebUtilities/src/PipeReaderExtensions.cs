@@ -70,10 +70,14 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var stringBuilder = new StringBuilder();
             ReadResult readResult;
-
             do
             {
                 readResult = await pipeReader.ReadAsync(cancellationToken);
+                if (readResult.IsCanceled)
+                {
+                    throw new OperationCanceledException("Read was canceled");
+                }
+
                 var sequence = readResult.Buffer;
                 stringBuilder.Append(GetDecodedStringFromReadOnlySequence(ref sequence));
                 pipeReader.AdvanceTo(sequence.Start);
@@ -89,6 +93,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             do
             {
                 readResult = await pipeReader.ReadAsync(cancellationToken);
+
+                if (readResult.IsCanceled)
+                {
+                    throw new OperationCanceledException("Read was canceled");
+                }
+
                 pipeReader.AdvanceTo(readResult.Buffer.End);
             } while (!readResult.IsCompleted);
         }
