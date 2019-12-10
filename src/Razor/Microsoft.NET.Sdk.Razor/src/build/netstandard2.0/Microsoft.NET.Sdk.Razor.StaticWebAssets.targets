@@ -54,23 +54,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GetCurrentProjectStaticWebAssetsDependsOn)
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
-    <AssignTargetPathsDependsOn>
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      $(GetCopyToOutputDirectoryItemsDependsOn);
       GenerateStaticWebAssetsManifest;
-      $(AssignTargetPathsDependsOn)
-    </AssignTargetPathsDependsOn>
+    </GetCopyToOutputDirectoryItemsDependsOn>
 
     <ResolveStaticWebAssetsInputsDependsOn>
       ResolveCurrentProjectStaticWebAssetsInputs;
-      $(ResolveStaticWebAssetsInputsDependsOn)
-    </ResolveStaticWebAssetsInputsDependsOn>
-
-    <ResolveStaticWebAssetsInputsDependsOn Condition="$(NoBuild) != 'true'">
       ResolveReferencedProjectsStaticWebAssets;
       $(ResolveStaticWebAssetsInputsDependsOn)
     </ResolveStaticWebAssetsInputsDependsOn>
 
     <ResolveReferencedProjectsStaticWebAssetsDependsOn>
-      ResolveReferences;
+      PrepareProjectReferences;
       $(ResolveReferencedProjectsStaticWebAssetsDependsOn)
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
 
@@ -187,14 +183,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
-      <Content
+      <ContentWithTargetPath
         Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
-        Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
-        Link="$(TargetName).StaticWebAssets.xml">
+        Condition="'@(_ExternalStaticWebAsset->Count())' != '0'">
 
+        <TargetPath>$(TargetName).StaticWebAssets.xml</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-      </Content>
+      </ContentWithTargetPath>
     </ItemGroup>
 
     <ItemGroup>
