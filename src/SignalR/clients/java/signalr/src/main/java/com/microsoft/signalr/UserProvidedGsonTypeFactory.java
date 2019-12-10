@@ -9,12 +9,18 @@ import com.google.gson.reflect.TypeToken;
  * This interface is just used to register the type of the user provided Gson instance,
  * so that we can retrieve it from another Gson instance when required
  */
-class UserProvidedGsonType implements TypeAdapterFactory {
+class UserProvidedGsonTypeFactory implements TypeAdapterFactory {
 
-    public static Gson gson;
+    private UserProvidedGsonTypeAdapter typeAdapter;
+
+    public UserProvidedGsonTypeFactory(Gson userProvidedGson) {
+        this.typeAdapter = new UserProvidedGsonTypeAdapter(userProvidedGson);
+    }
 
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        return (TypeAdapter<T>) new UserProvidedGsonTypeAdapter(gson);
+        if (type.getRawType() != Object[].class) return null;
+        return (TypeAdapter<T>) typeAdapter;
     }
+
 }

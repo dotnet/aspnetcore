@@ -13,7 +13,7 @@ class InvocationMessage extends HubMessage {
     private final String invocationId;
     private final String target;
 
-    @JsonAdapter(UserProvidedGsonType.class)
+    @JsonAdapter(UserProvidedGsonTypeFactory.class)
     private final Object[] arguments;
     private Collection<String> streamIds;
 

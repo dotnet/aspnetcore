@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
@@ -39,10 +40,8 @@ class JsonHubProtocol implements HubProtocol {
         }
         userGson = gsonBuilder.create();
 
-        UserProvidedGsonType.gson = userGson;
-
         internalGgson = new GsonBuilder()
-            .registerTypeAdapter(UserProvidedGsonType.class, new UserProvidedGsonTypeAdapter(userGson))
+            .registerTypeAdapterFactory(new UserProvidedGsonTypeFactory(userGson))
             .create();
     }
 
