@@ -312,6 +312,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             return (false, read);
         }
 
+        /// <summary>
+        /// Skips the following metadata - 
+        /// "The boundary may be followed by zero or more characters of
+        /// linear whitespace. It is then terminated by either another CRLF
+        /// or -- for the final boundary."
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="isFinalBlock"></param>
+        /// <returns></returns>
         private bool TrySkipMetadata(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
