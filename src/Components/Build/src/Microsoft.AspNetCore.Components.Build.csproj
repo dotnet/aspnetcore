@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net46</TargetFrameworks>
@@ -16,8 +16,8 @@
 
   <Target Name="CopyToToolsDir" AfterTargets="Build">
     <ItemGroup>
-      <_AllFilesToCopy Condition="'$(MSBuildRuntimeType)' == 'Core'" Include="$(OutputPath)*" TargetPath="netcoreapp\" />
-      <_AllFilesToCopy Condition="'$(MSBuildRuntimeType)' != 'Core'" Include="$(OutputPath)*" TargetPath="netfx\" />
+      <_AllFilesToCopy Condition="'$(TargetFramework)' != 'net46'" Include="$(OutputPath)*" TargetPath="netcoreapp\" />
+      <_AllFilesToCopy Condition="'$(TargetFramework)' == 'net46'" Include="$(OutputPath)*" TargetPath="netfx\" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_AllFilesToCopy)" DestinationFiles="@(_AllFilesToCopy->'$(OutputPath)..\tools\%(TargetPath)%(FileName)%(Extension)')" SkipUnchangedFiles="true" Retries="1" ContinueOnError="true">

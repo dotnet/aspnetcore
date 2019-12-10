@@ -7,22 +7,21 @@
   -->
 
   <PropertyGroup>
-    <_ComponentsTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_ComponentsTasksTFM>
-    <_ComponentsTasksTFM Condition=" '$(_ComponentsTasksTFM)' == ''">netfx</_ComponentsTasksTFM>
-    <ComponentsTasksPath>$(OutDir)..\tools\$(_ComponentsTasksTFM)\Microsoft.AspNetCore.Components.Build.Tasks.dll</ComponentsTasksPath>
+    <_ComponentsTasksTFM Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_ComponentsTasksTFM>
+    <_ComponentsTasksTFM Condition="'$(MSBuildRuntimeType)' != 'Core'">netfx</_ComponentsTasksTFM>
+    <ComponentsTasksPath>$(OutDir)bin\$(Configuration)\tools\$(_ComponentsTasksTFM)\Microsoft.AspNetCore.Components.Build.Tasks.dll</ComponentsTasksPath>
   </PropertyGroup>
 
   <UsingTask TaskName="PrintCoolMessage" AssemblyFile="$(ComponentsTasksPath)" />
 
   <ItemGroup>
-    <!-- Enforce build order
+    <!-- This reference is to enforce the build order only -->
     <ProjectReference
       Include="$(RepoRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
-      Private="false" />
-      -->
+      Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
 </Project>
