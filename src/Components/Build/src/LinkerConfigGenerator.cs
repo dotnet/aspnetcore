@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Build
                 var componentTypes = GetComponentTypes(assembly).ToList();
                 if (componentTypes.Any())
                 {
-                    xmlWriter.WriteComment("Component must be preserved in full, otherwise their constructors and parameter properties will be removed");
+                    xmlWriter.WriteComment(" Components must be preserved in full, otherwise their constructors and parameter properties will be removed ");
                     foreach (var componentType in componentTypes)
                     {
                         xmlWriter.WriteStartElement("type");
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Build
                 var jsInteropMethods = GetJSInteropMethods(assembly).GroupBy(m => m.DeclaringType).ToList();
                 if (jsInteropMethods.Any())
                 {
-                    xmlWriter.WriteComment("JSInterop-callable methods are only called through reflection");
+                    xmlWriter.WriteComment(" JSInterop-callable methods are only called through reflection ");
                     foreach (var group in jsInteropMethods)
                     {
                         xmlWriter.WriteStartElement("type");
