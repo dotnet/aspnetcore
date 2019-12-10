@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public Dictionary<string, StringValues> Headers { get; set; }
 
-        public Stream Body {
+        public Stream Body
+        {
             get
             {
                 if (_body == null && _bodyReader != null)
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             get
             {
-                if(_bodyReader == null && _body != null)
+                if (_bodyReader == null && _body != null)
                 {
                     _bodyReader = PipeReader.Create(_body);
                 }

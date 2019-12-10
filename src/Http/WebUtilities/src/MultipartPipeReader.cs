@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -11,13 +10,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
     public class MultipartPipeReader
     {
-
         public const int DefaultHeadersCountLimit = 16;
         public const int DefaultHeadersLengthLimit = 1024 * 16;
         private const int StackAllocThreshold = 128;
