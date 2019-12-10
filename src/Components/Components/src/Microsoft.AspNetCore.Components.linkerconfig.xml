@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY -->
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components">
+    <!-- Components must be preserved in full, otherwise their constructors and parameter properties will be removed -->
+    <type fullname="Microsoft.AspNetCore.Components.CascadingValue`1" />
+    <type fullname="Microsoft.AspNetCore.Components.ComponentBase" />
+    <type fullname="Microsoft.AspNetCore.Components.LayoutComponentBase" />
+    <type fullname="Microsoft.AspNetCore.Components.LayoutView" />
+    <type fullname="Microsoft.AspNetCore.Components.OwningComponentBase" />
+    <type fullname="Microsoft.AspNetCore.Components.OwningComponentBase`1" />
+    <type fullname="Microsoft.AspNetCore.Components.RouteView" />
+    <type fullname="Microsoft.AspNetCore.Components.Routing.Router" />
+  </assembly>
+</linker>

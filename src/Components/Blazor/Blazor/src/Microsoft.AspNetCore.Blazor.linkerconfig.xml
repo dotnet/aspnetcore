@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY -->
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Blazor">
+    <!-- JSInterop-callable methods are only called through reflection -->
+    <type fullname="Microsoft.AspNetCore.Blazor.JSInteropMethods">
+      <method signature="System.Void NotifyLocationChanged(System.String,System.Boolean)" />
+    </type>
+    <type fullname="Microsoft.AspNetCore.Blazor.Rendering.WebAssemblyEventDispatcher">
+      <method signature="System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor,System.String)" />
+    </type>
+  </assembly>
+</linker>
