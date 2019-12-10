@@ -13,11 +13,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class PerformanceTest
-        : ServerTestBase<DevHostServerFixture<Blazor.E2EPerformance.Program>>
+        : ServerTestBase<DevHostServerFixture<Wasm.Performance.TestApp.Program>>
     {
         public PerformanceTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Blazor.E2EPerformance.Program> serverFixture,
+            DevHostServerFixture<Wasm.Performance.TestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {

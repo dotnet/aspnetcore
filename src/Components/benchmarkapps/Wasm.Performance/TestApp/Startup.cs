@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Blazor.E2EPerformance
+namespace Wasm.Performance.TestApp
 {
     public class Startup
     {

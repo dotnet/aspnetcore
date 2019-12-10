@@ -3,7 +3,7 @@
 
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Blazor.E2EPerformance
+namespace Wasm.Performance.TestApp
 {
     public static class BenchmarkEvent
     {
