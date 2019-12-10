@@ -177,6 +177,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "..\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Blazor.Templates", "BlazorWasm.ProjectTemplates\Microsoft.AspNetCore.Blazor.Templates.csproj", "{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1231,6 +1233,18 @@ Global
 		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x64.Build.0 = Release|Any CPU
 		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x86.ActiveCfg = Release|Any CPU
 		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x86.Build.0 = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|x64.Build.0 = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Debug|x86.Build.0 = Debug|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|x64.ActiveCfg = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|x64.Build.0 = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6D371A8-D8EA-4CF4-844E-8C6DFDF61642}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

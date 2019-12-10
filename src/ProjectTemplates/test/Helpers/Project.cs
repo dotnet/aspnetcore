@@ -110,7 +110,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -121,7 +121,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
@@ -132,7 +132,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null, string additionalArgs = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -143,7 +143,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug /bl {additionalArgs}", packageOptions);
                 await result.Exited;
                 CaptureBinLogOnFailure(result);
                 return result;
