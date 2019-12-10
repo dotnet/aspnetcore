@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http
 {
@@ -11,15 +13,22 @@ namespace Microsoft.Extensions.Http
     internal class LoggingHttpMessageHandlerBuilderFilter : IHttpMessageHandlerBuilderFilter
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IOptionsMonitor<HttpClientFactoryOptions> _optionsMonitor;
 
-        public LoggingHttpMessageHandlerBuilderFilter(ILoggerFactory loggerFactory)
+        public LoggingHttpMessageHandlerBuilderFilter(ILoggerFactory loggerFactory, IOptionsMonitor<HttpClientFactoryOptions> optionsMonitor)
         {
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (optionsMonitor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsMonitor));
+            }
+
             _loggerFactory = loggerFactory;
+            _optionsMonitor = optionsMonitor;
         }
 
         public Action<HttpMessageHandlerBuilder> Configure(Action<HttpMessageHandlerBuilder> next)
@@ -41,12 +50,15 @@ namespace Microsoft.Extensions.Http
                 var outerLogger = _loggerFactory.CreateLogger($"System.Net.Http.HttpClient.{loggerName}.LogicalHandler");
                 var innerLogger = _loggerFactory.CreateLogger($"System.Net.Http.HttpClient.{loggerName}.ClientHandler");
 
+                var options = _optionsMonitor.Get(builder.Name);
+                var logSensitiveHeaders = new ReadOnlyCollection<string>(_optionsMonitor.Get(builder.Name).LogSensitiveHeaders);
+
                 // The 'scope' handler goes first so it can surround everything.
-                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(outerLogger));
+                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(outerLogger, logSensitiveHeaders));
 
                 // We want this handler to be last so we can log details about the request after
                 // service discovery and security happen.
-                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(innerLogger));
+                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(innerLogger, logSensitiveHeaders));
 
             };
         }

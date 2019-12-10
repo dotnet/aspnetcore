@@ -15,15 +15,22 @@ namespace Microsoft.Extensions.Http.Logging
     public class LoggingScopeHttpMessageHandler : DelegatingHandler
     {
         private ILogger _logger;
+        private readonly IReadOnlyList<string> _logSensitiveHeaders;
 
-        public LoggingScopeHttpMessageHandler(ILogger logger)
+        public LoggingScopeHttpMessageHandler(ILogger logger, IReadOnlyList<string> logSensitiveHeaders)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (logSensitiveHeaders == null)
+            {
+                throw new ArgumentNullException(nameof(logSensitiveHeaders));
+            }
+
             _logger = logger;
+            _logSensitiveHeaders = logSensitiveHeaders;
         }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -37,14 +44,14 @@ namespace Microsoft.Extensions.Http.Logging
 
             using (Log.BeginRequestPipelineScope(_logger, request))
             {
-                Log.RequestPipelineStart(_logger, request);
+                Log.RequestPipelineStart(_logger, request, _logSensitiveHeaders);
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                Log.RequestPipelineEnd(_logger, response, stopwatch.GetElapsedTime());
+                Log.RequestPipelineEnd(_logger, response, stopwatch.GetElapsedTime(), _logSensitiveHeaders);
 
                 return response;
             }
         }
-        
+
         private static class Log
         {
             public static class EventIds
@@ -59,8 +66,8 @@ namespace Microsoft.Extensions.Http.Logging
             private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(
-                LogLevel.Information, 
-                EventIds.PipelineStart, 
+                LogLevel.Information,
+                EventIds.PipelineStart,
                 "Start processing HTTP request {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, double, int, Exception> _requestPipelineEnd = LoggerMessage.Define<double, int>(
@@ -73,7 +80,7 @@ namespace Microsoft.Extensions.Http.Logging
                 return _beginRequestPipelineScope(logger, request.Method, request.RequestUri);
             }
 
-            public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request)
+            public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request, IReadOnlyList<string> logSensitiveHeaders)
             {
                 _requestPipelineStart(logger, request.Method, request.RequestUri, null);
 
@@ -82,13 +89,13 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.RequestHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers, logSensitiveHeaders),
                         null,
                         (state, ex) => state.ToString());
                 }
             }
 
-            public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration)
+            public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, IReadOnlyList<string> logSensitiveHeaders)
             {
                 _requestPipelineEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 
@@ -97,7 +104,7 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.ResponseHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers, logSensitiveHeaders),
                         null,
                         (state, ex) => state.ToString());
                 }

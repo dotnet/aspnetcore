@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,22 +12,24 @@ namespace Microsoft.Extensions.Http.Logging
     internal class HttpHeadersLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly Kind _kind;
+        private readonly IReadOnlyList<string> _logSensitiveHeaders;
 
         private string _formatted;
         private List<KeyValuePair<string, object>> _values;
 
-        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders)
+        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, IReadOnlyList<string> logSensitiveHeaders)
         {
             _kind = kind;
 
             Headers = headers;
             ContentHeaders = contentHeaders;
+            _logSensitiveHeaders = logSensitiveHeaders;
         }
 
         public HttpHeaders Headers { get; }
 
         public HttpHeaders ContentHeaders { get; }
-        
+
         private List<KeyValuePair<string, object>> Values
         {
             get
@@ -35,7 +37,7 @@ namespace Microsoft.Extensions.Http.Logging
                 if (_values == null)
                 {
                     var values = new List<KeyValuePair<string, object>>();
-                    
+
                     foreach (var kvp in Headers)
                     {
                         values.Add(new KeyValuePair<string, object>(kvp.Key, kvp.Value));
@@ -90,9 +92,25 @@ namespace Microsoft.Extensions.Http.Logging
 
                 for (var i = 0; i < Values.Count; i++)
                 {
+                    var isLogSensitiveHeader = false;
                     var kvp = Values[i];
                     builder.Append(kvp.Key);
                     builder.Append(": ");
+
+                    for (int headerIndex = 0; headerIndex < _logSensitiveHeaders.Count; headerIndex++)
+                    {
+                        if (kvp.Key.Equals(_logSensitiveHeaders[headerIndex], StringComparison.OrdinalIgnoreCase))
+                        {
+                            builder.Append("*");
+                            isLogSensitiveHeader = true;
+                            break;
+                        }
+                    }
+
+                    if (isLogSensitiveHeader)
+                    {
+                        continue;
+                    }
 
                     foreach (var value in (IEnumerable<object>)kvp.Value)
                     {

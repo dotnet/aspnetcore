@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -522,6 +523,35 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HandlerLifetime = handlerLifetime);
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the HTTP headers collection which values should not be logged.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="logSensitiveHeaders">The HTTP headers collection which values should not be logged.</param>
+        /// <returns></returns>
+        public static IHttpClientBuilder SetLogSensitiveHeaders(this IHttpClientBuilder builder, ICollection<string> logSensitiveHeaders)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (logSensitiveHeaders == null)
+            {
+                throw new ArgumentNullException(nameof(logSensitiveHeaders));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                foreach (var logSensitiveHeader in logSensitiveHeaders)
+                {
+                    options.LogSensitiveHeaders.Add(logSensitiveHeader);
+                }
+            });
+
             return builder;
         }
 
