@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
+            _serverFixture.PathBase = ServerPathBase;
         }
 
         [Theory]
