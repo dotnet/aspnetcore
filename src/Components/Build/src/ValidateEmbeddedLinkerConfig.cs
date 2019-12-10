@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Build
             var actualConfig = streamReader.ReadToEnd();
 
             using var ms = new MemoryStream();
-            LinkerConfigGenerator.Generate(assembly, ms);
+            LinkerConfigGenerator.Generate(AssemblyPath, ms);
             var expectedConfig = Encoding.UTF8.GetString(ms.ToArray());
 
             if (!actualConfig.Equals(expectedConfig, StringComparison.OrdinalIgnoreCase))

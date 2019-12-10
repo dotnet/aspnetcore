@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Xml;
 
@@ -18,8 +20,12 @@ namespace Microsoft.AspNetCore.Components.Build
         const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
         const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
 
-        public static void Generate(Assembly assembly, Stream outputStream)
+        public static void Generate(string assemblyPath, Stream outputStream)
         {
+            using var assemblyReadStream = File.OpenRead(assemblyPath);
+            using var peReader = new PEReader(assemblyReadStream);
+            var metadata = peReader.GetMetadataReader();
+
             var writerSettings = new XmlWriterSettings
             {
                 Indent = true,
@@ -31,8 +37,9 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("linker");
                 xmlWriter.WriteStartElement("assembly");
-                xmlWriter.WriteAttributeString("fullname", assembly.GetName().Name);
+                xmlWriter.WriteAttributeString("fullname", metadata.GetString(metadata.GetAssemblyDefinition().Name));
 
+                /*
                 // Preserve component types
                 var componentTypes = GetComponentTypes(assembly).ToList();
                 if (componentTypes.Any())
@@ -64,6 +71,7 @@ namespace Microsoft.AspNetCore.Components.Build
                         xmlWriter.WriteEndElement(); // type
                     }
                 }
+                */
 
                 xmlWriter.WriteEndElement(); // assembly
                 xmlWriter.WriteEndElement(); // linker

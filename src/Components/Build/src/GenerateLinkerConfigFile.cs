@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -18,11 +17,9 @@ namespace Microsoft.AspNetCore.Components.Build
 
         public override bool Execute()
         {
-            var assembly = Assembly.LoadFrom(AssemblyPath);
-
             using (var outputStream = new FileStream(OutputPath, FileMode.Create))
             {
-                LinkerConfigGenerator.Generate(assembly, outputStream);
+                LinkerConfigGenerator.Generate(AssemblyPath, outputStream);
             }
 
             return true;
