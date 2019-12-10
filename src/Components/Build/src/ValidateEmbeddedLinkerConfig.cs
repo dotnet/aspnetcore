@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Build
             var embeddedConfig = assembly.GetManifestResourceStream(expectedName);
             if (embeddedConfig == null)
             {
-               Log.LogError($"Could not find linker config resource '{expectedName}' inside assembly at path '{AssemblyPath}'");
+               Log.LogError($"Could not find linker config resource '{expectedName}' inside assembly at path '{AssemblyPath}'.\n\nTo fix this, run the build with /p:RegenerateLinkerConfig=true");
                return false;
             }
 
@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Components.Build
 
             if (!actualConfig.Equals(expectedConfig, StringComparison.OrdinalIgnoreCase))
             {
-                Log.LogError($"Embedded linker config is not up-to-date in assembly at path {AssemblyPath}");
+
+                Log.LogError($"Embedded linker config is not up-to-date in assembly at path '{AssemblyPath}'.\n\nTo fix this, run the build with /p:RegenerateLinkerConfig=true");
                 return false;
             }
 

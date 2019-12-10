@@ -1,0 +1,56 @@
+<Project>
+
+  <!--
+    If this .targets file is referenced from a project in our sources, then:
+
+    - On a normal build,
+      - We attach any file called <AssemblyName>.linkerconfig.xml as an embedded resource
+      - We verify that there is such an embedded resource in the compiled assembly, and
+        that its contents are up-to-date with respect to the compiled assembly. If not,
+        the build fails.
+
+    - If you pass /t:RegenerateLinkerConfig=true,
+      - We emit a file called <AssemblyName>.linkerconfig.xml matching the compiled
+        assembly. This should be stored in source control, so that it can be embedded
+        on subsequent builds, and you can check the diffs to ensure they look right.
+  -->
+
+  <PropertyGroup>
+    <_ComponentsTasksTFM Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp</_ComponentsTasksTFM>
+    <_ComponentsTasksTFM Condition="'$(MSBuildRuntimeType)' != 'Core'">netfx</_ComponentsTasksTFM>
+    <ComponentsTasksPath>$(OutDir)bin\$(Configuration)\tools\$(_ComponentsTasksTFM)\Microsoft.AspNetCore.Components.Build.Tasks.dll</ComponentsTasksPath>
+    <LinkerConfigPath>$(MSBuildProjectDirectory)\$(AssemblyName).linkerconfig.xml</LinkerConfigPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This reference is to enforce the build order only -->
+    <ProjectReference
+      Include="$(RepoRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  </ItemGroup>
+
+  <!-- Embed the linker config, if it exists -->
+  <ItemGroup>
+    <EmbeddedResource
+      Include="$(LinkerConfigPath)"
+      LogicalName="$(AssemblyName).xml"
+      Condition="Exists('$(LinkerConfigPath)')" />
+  </ItemGroup>
+
+  <!-- Either generate or verify the linker config -->
+  <UsingTask TaskName="GenerateLinkerConfigFile" AssemblyFile="$(ComponentsTasksPath)" />
+  <UsingTask TaskName="ValidateEmbeddedLinkerConfig" AssemblyFile="$(ComponentsTasksPath)" />
+  <Target Name="ProcessComponentsLinkerDescriptorFile" AfterTargets="CoreBuild">
+    <GenerateLinkerConfigFile
+      Condition="'$(RegenerateLinkerConfig)' == 'true'"
+      AssemblyPath="@(TargetPathWithTargetPlatformMoniker)"
+      OutputPath="$(LinkerConfigPath)" />
+    <ValidateEmbeddedLinkerConfig
+      Condition="'$(RegenerateLinkerConfig)' != 'true'"
+      AssemblyPath="@(TargetPathWithTargetPlatformMoniker)" />
+  </Target>
+
+</Project>

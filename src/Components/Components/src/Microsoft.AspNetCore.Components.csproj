@@ -7,10 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <GenerateComponentsLinkerDescriptor>true</GenerateComponentsLinkerDescriptor>
   </PropertyGroup>
-
-  <Import Project="..\..\Build\src\ReferenceFromSource.targets" />
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />

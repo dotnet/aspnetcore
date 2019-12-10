@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 
 namespace Microsoft.AspNetCore.Components.Build
@@ -19,7 +20,13 @@ namespace Microsoft.AspNetCore.Components.Build
 
         public static void Generate(Assembly assembly, Stream outputStream)
         {
-            using (var xmlWriter = XmlWriter.Create(outputStream, new XmlWriterSettings { Indent = true }))
+            var writerSettings = new XmlWriterSettings
+            {
+                Indent = true,
+                Encoding = new UTF8Encoding(false) // No BOM
+            };
+
+            using (var xmlWriter = XmlWriter.Create(outputStream, writerSettings))
             {
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("linker");
