@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Xml;
+using Mono.Cecil;
 
 namespace Microsoft.AspNetCore.Components.Build
 {
@@ -22,9 +20,13 @@ namespace Microsoft.AspNetCore.Components.Build
 
         public static void Generate(string assemblyPath, Stream outputStream)
         {
-            using var assemblyReadStream = File.OpenRead(assemblyPath);
-            using var peReader = new PEReader(assemblyReadStream);
-            var metadata = peReader.GetMetadataReader();
+            var assemblyResolver = new DefaultAssemblyResolver();
+            assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(assemblyPath));
+            var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath, new ReaderParameters
+            {
+                AssemblyResolver = assemblyResolver
+            });
+            var module = assemblyDefinition.MainModule;
 
             var writerSettings = new XmlWriterSettings
             {
@@ -37,36 +39,35 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteStartElement("linker");
                 xmlWriter.WriteStartElement("assembly");
-                xmlWriter.WriteAttributeString("fullname", metadata.GetString(metadata.GetAssemblyDefinition().Name));
+                xmlWriter.WriteAttributeString("fullname", assemblyDefinition.Name.Name);
 
                 // Preserve component types
-                var componentTypes = GetComponentTypes(metadata).ToList();
+                var componentTypes = GetComponentTypes(module).ToList();
                 if (componentTypes.Any())
                 {
                     xmlWriter.WriteComment(" Components must be preserved in full, otherwise their constructors and parameter properties will be removed ");
                     foreach (var componentType in componentTypes)
                     {
                         xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname",
-                            metadata.GetString(componentType.Namespace) + "." + metadata.GetString(componentType.Name));
+                        xmlWriter.WriteAttributeString("fullname", componentType.FullName);
                         xmlWriter.WriteEndElement();
                     }
                 }
 
                 /*
                 // Preserve JSInterop-callable methods
-                var jsInteropMethods = GetJSInteropMethods(assembly).GroupBy(m => m.DeclaringType).ToList();
+                var jsInteropMethods = GetJSInteropMethods(metadata).GroupBy(m => m.GetDeclaringType()).ToList();
                 if (jsInteropMethods.Any())
                 {
                     xmlWriter.WriteComment(" JSInterop-callable methods are only called through reflection ");
                     foreach (var group in jsInteropMethods)
                     {
                         xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname", group.Key.FullName);
+                        xmlWriter.WriteAttributeString("fullname", FullyQualifiedName(metadata, group.Key));
                         foreach (var method in group)
                         {
                             xmlWriter.WriteStartElement("method");
-                            xmlWriter.WriteAttributeString("signature", ToSignatureString(method));
+                            xmlWriter.WriteAttributeString("signature", ToSignatureString(metadata, method));
                             xmlWriter.WriteEndElement(); // method
                         }
                         xmlWriter.WriteEndElement(); // type
@@ -80,20 +81,13 @@ namespace Microsoft.AspNetCore.Components.Build
             }
         }
 
-        private static string ToSignatureString(MethodInfo method)
+        private static IEnumerable<TypeDefinition> GetComponentTypes(ModuleDefinition module)
         {
-            // This produces a result that slightly differs from Mono linker docs
-            // For example, it represents void as "Void", whereas Mono linker docs say "System.Void"
-            return method.ToString();
-        }
-
-        private static IEnumerable<TypeDefinition> GetComponentTypes(MetadataReader metadata)
-        {
-            foreach (var typeDefinition in metadata.TypeDefinitions.Select(d => metadata.GetTypeDefinition(d)))
+            foreach (var typeDefinition in module.Types)
             {
-                foreach (var @interface in typeDefinition.GetInterfaceImplementations().Select(i => metadata.GetInterfaceImplementation(i).Interface))
+                foreach (var @interface in InterfacesIncludingInherited(typeDefinition, skipUnresolvable: true))
                 {
-                    if (FullyQualifiedName(metadata, @interface).Equals(ComponentInterfaceName, StringComparison.Ordinal))
+                    if (@interface.InterfaceType.FullName.Equals(ComponentInterfaceName, StringComparison.Ordinal))
                     {
                         yield return typeDefinition;
                     }
@@ -101,6 +95,34 @@ namespace Microsoft.AspNetCore.Components.Build
             }
         }
 
+        private static IEnumerable<InterfaceImplementation> InterfacesIncludingInherited(this TypeDefinition typeDefinition, bool skipUnresolvable)
+            => typeDefinition.BaseClasses(skipUnresolvable).SelectMany(c => c.Interfaces);
+
+        public static IEnumerable<TypeDefinition> BaseClasses(this TypeDefinition typeDefinition, bool skipUnresolvable)
+        {
+            while (typeDefinition != null)
+            {
+                yield return typeDefinition;
+
+                try
+                {
+                    typeDefinition = typeDefinition.BaseType?.Resolve();
+                }
+                catch (AssemblyResolutionException)
+                {
+                    if (skipUnresolvable)
+                    {
+                        typeDefinition = null;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+        /*
         private static string FullyQualifiedName(MetadataReader metadata, EntityHandle entityHandle)
         {
             if (entityHandle.IsNil)
@@ -123,22 +145,25 @@ namespace Microsoft.AspNetCore.Components.Build
             }           
         }
 
-        private static IEnumerable<MethodInfo> GetJSInteropMethods(Assembly assembly)
+        private static IEnumerable<MethodDefinition> GetJSInteropMethods(MetadataReader metadata)
         {
-            foreach (var type in assembly.GetTypes())
+            foreach (var methodDefinition in metadata.MethodDefinitions.Select(m => metadata.GetMethodDefinition(m)))
             {
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                foreach (var customAttribute in methodDefinition.GetCustomAttributes().Select(a => metadata.GetCustomAttribute(a)))
                 {
-                    foreach (var attribute in method.GetCustomAttributes(true))
+                    var ctor = customAttribute.Constructor;
+                    if (ctor.Kind == HandleKind.MemberReference)
                     {
-                        if (attribute.GetType().Assembly.GetName().Name.Equals(JSInteropAssemblyName, StringComparison.Ordinal)
-                            && attribute.GetType().FullName.Equals(JSInvokableAttributeName, StringComparison.Ordinal))
+                        var ctorMethod = metadata.GetMemberReference((MemberReferenceHandle)ctor);
+                        var ctorTypeHandle = ctorMethod.Parent;
+                        if (FullyQualifiedName(metadata, ctorTypeHandle).Equals(JSInvokableAttributeName, StringComparison.Ordinal))
                         {
-                            yield return method;
+                            yield return methodDefinition;
                         }
                     }
                 }
             }
         }
+        */
     }
 }
