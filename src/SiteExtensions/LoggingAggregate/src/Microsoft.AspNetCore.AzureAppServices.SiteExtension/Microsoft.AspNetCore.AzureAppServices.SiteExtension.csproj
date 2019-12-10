@@ -26,6 +26,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
+    <!-- When updating this add the previous SiteExtension(s) to the list above -->
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(PackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +50,9 @@
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
+    <!-- This will copy the Microsoft.AspNetCore.AzureAppServices.HostingStartup.deps.json file -->
+    <!-- I think we only technically need one of these and the other one produces a warning about trying to copy an already existing file -->
+    <!-- But it might be safer to leave it in case there is ever architecture specific files that need to be copied. -->
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86"
           Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
