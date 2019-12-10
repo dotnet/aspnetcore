@@ -245,7 +245,7 @@
     <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
-    <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
+    <MonoCecilPackageVersion>0.11.0</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>

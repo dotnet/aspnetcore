@@ -29,6 +29,7 @@
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
+      PrivateAssets="all"
       Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
