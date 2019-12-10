@@ -28,14 +28,10 @@ namespace Microsoft.AspNetCore.Components.Build
 
             using var streamReader = new StreamReader(embeddedConfig);
             var actualConfig = streamReader.ReadToEnd();
-
-            using var ms = new MemoryStream();
-            LinkerConfigGenerator.Generate(AssemblyPath, ms);
-            var expectedConfig = Encoding.UTF8.GetString(ms.ToArray());
+            var expectedConfig = LinkerConfigGenerator.Generate(AssemblyPath);
 
             if (!actualConfig.Equals(expectedConfig, StringComparison.OrdinalIgnoreCase))
             {
-
                 Log.LogError($"Embedded linker config is not up-to-date in assembly at path '{AssemblyPath}'.\n\nTo fix this, run the build with /p:RegenerateLinkerConfig=true");
                 return false;
             }

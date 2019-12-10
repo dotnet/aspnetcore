@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Build
         private const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
         private const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
 
-        public static void Generate(string assemblyPath, Stream outputStream)
+        public static string Generate(string assemblyPath)
         {
             var assemblyResolver = new DefaultAssemblyResolver();
             assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(assemblyPath));
@@ -26,13 +26,8 @@ namespace Microsoft.AspNetCore.Components.Build
             });
             var module = assemblyDefinition.MainModule;
 
-            var writerSettings = new XmlWriterSettings
-            {
-                Indent = true,
-                Encoding = new UTF8Encoding(false) // No BOM
-            };
-
-            using (var xmlWriter = XmlWriter.Create(outputStream, writerSettings))
+            using (var memoryStream = new MemoryStream())
+            using (var xmlWriter = XmlWriter.Create(memoryStream, new XmlWriterSettings { Indent = true }))
             {
                 xmlWriter.WriteStartDocument();
                 xmlWriter.WriteComment(" THIS IS A GENERATED FILE - DO NOT EDIT MANUALLY ");
@@ -76,6 +71,10 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteEndElement(); // assembly
                 xmlWriter.WriteEndElement(); // linker
                 xmlWriter.WriteEndDocument();
+                xmlWriter.Flush();
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new StreamReader(memoryStream).ReadToEnd();
             }
         }
 
