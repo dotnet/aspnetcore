@@ -25,18 +25,15 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> CrlfDelimiter => new byte[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> EndOfFileDelimiter => new byte[] { (byte)'-', (byte)'-' };
 
-        public bool CanSeek { get; }
-
         public long RawLength { get; private set; } = 0;
 
         public long? LengthLimit { get; private set; }
         public long Length { get; private set; } = 0;
 
-        internal MultipartSectionPipeReader(PipeReader pipeReader, MultipartBoundary boundary, bool canSeek)
+        internal MultipartSectionPipeReader(PipeReader pipeReader, MultipartBoundary boundary)
         {
             _pipeReader = pipeReader;
             _boundary = boundary;
-            CanSeek = canSeek;
         }
 
         private void UpdateLength(long read)

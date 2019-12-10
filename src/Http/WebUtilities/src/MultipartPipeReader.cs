@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // This stream will drain any preamble data and remove the first boundary marker. 
             // TODO: HeadersLengthLimit can't be modified until after the constructor. 
-            _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary, trackBaseOffsets);
+            _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
             _trackBaseOffsets = trackBaseOffsets;
         }
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         _bytesConsumed += headersLength;
                         _pipeReader.AdvanceTo(buffer.Start);
-                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary, _trackBaseOffsets);
+                        _currentSection = new MultipartSectionPipeReader(_pipeReader, _boundary);
                         long? baseStreamOffset = _trackBaseOffsets ? (long?)_bytesConsumed : null;
                         return new MultipartSection() { Headers = headersAccumulator.GetResults(), BodyReader = _currentSection, BaseStreamOffset = baseStreamOffset }; ;
                     }
