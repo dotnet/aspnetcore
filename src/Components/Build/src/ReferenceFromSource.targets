@@ -22,10 +22,10 @@
       Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
-  <UsingTask TaskName="GenerateLinkerConfigFile" AssemblyFile="$(ComponentsTasksPath)" />
+  <UsingTask TaskName="ValidateEmbeddedLinkerConfig" AssemblyFile="$(ComponentsTasksPath)" />
 
   <Target Name="GenerateComponentsLinkerDescriptorFile" AfterTargets="CoreBuild" Condition="'$(GenerateComponentsLinkerDescriptor)' == 'true'">
-    <GenerateLinkerConfigFile AssemblyPath="@(TargetPathWithTargetPlatformMoniker)" />
+    <ValidateEmbeddedLinkerConfig AssemblyPath="@(TargetPathWithTargetPlatformMoniker)" />
   </Target>
 
 </Project>

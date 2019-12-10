@@ -7,27 +7,18 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Components.Build
 {
-    public class GenerateLinkerConfigFile : Task
+    internal static class LinkerConfigGenerator
     {
         const string ComponentsAssemblyName = "Microsoft.AspNetCore.Components";
         const string JSInteropAssemblyName = "Microsoft.JSInterop";
         const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
         const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
 
-        [Required]
-        public string AssemblyPath { get; set; }
-
-        public override bool Execute()
+        public static void Generate(Assembly assembly, Stream outputStream)
         {
-            var assembly = Assembly.LoadFrom(AssemblyPath);
-            using (var outputStream = new FileStream(
-                Path.ChangeExtension(AssemblyPath, ".linkerconfig.xml"),
-                FileMode.Create))
             using (var xmlWriter = XmlWriter.Create(outputStream, new XmlWriterSettings { Indent = true }))
             {
                 xmlWriter.WriteStartDocument();
@@ -71,8 +62,6 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteEndElement(); // linker
                 xmlWriter.WriteEndDocument();
             }
-
-            return true;
         }
 
         private static string ToSignatureString(MethodInfo method)
