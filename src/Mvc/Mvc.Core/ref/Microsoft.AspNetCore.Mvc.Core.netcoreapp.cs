@@ -2735,6 +2735,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public System.Type Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext context) { }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
+    public sealed partial class TrimAttribute : System.Attribute
+    {
+        public TrimAttribute(Microsoft.AspNetCore.Mvc.ModelBinding.TrimType trimType = Microsoft.AspNetCore.Mvc.ModelBinding.TrimType.Trim) { }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.TrimType TrimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }
     public partial class UnsupportedContentTypeException : System.Exception
     {
         public UnsupportedContentTypeException(string message) { }
@@ -2963,6 +2969,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public SimpleTypeModelBinderProvider() { }
         public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
+    public partial class TrimModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
+    {
+        public TrimModelBinder(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public System.Threading.Tasks.Task BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
+    }
+    public partial class TrimModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
+    {
+        public TrimModelBinderProvider() { }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+    }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -2972,11 +2988,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public string BinderModelName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Type BinderType { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool CanTrim { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsBindingAllowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsBindingRequired { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? IsReadOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelBindingMessageProvider ModelBindingMessageProvider { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider PropertyFilterProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.TrimType TrimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class BindingMetadataProviderContext
     {
@@ -3045,6 +3063,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public override System.Type BinderType { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata BindingMetadata { get { throw null; } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } }
+        public override bool CanTrim { get { throw null; } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata ContainerMetadata { get { throw null; } }
         public override bool ConvertEmptyStringToNull { get { throw null; } }
         public override string DataTypeName { get { throw null; } }
@@ -3079,6 +3098,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public override bool ShowForEdit { get { throw null; } }
         public override string SimpleDisplayProperty { get { throw null; } }
         public override string TemplateHint { get { throw null; } }
+        public override Microsoft.AspNetCore.Mvc.ModelBinding.TrimType TrimType { get { throw null; } }
         public override bool ValidateChildren { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata ValidationMetadata { get { throw null; } }
         public override System.Collections.Generic.IReadOnlyList<object> ValidatorMetadata { get { throw null; } }

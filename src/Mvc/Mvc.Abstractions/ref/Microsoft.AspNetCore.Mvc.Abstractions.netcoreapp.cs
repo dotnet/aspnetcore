@@ -632,6 +632,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string BinderModelName { get; }
         public abstract System.Type BinderType { get; }
         public abstract Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get; }
+        public abstract bool CanTrim { get; }
         public virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata ContainerMetadata { get { throw null; } }
         public System.Type ContainerType { get { throw null; } }
         public abstract bool ConvertEmptyStringToNull { get; }
@@ -678,6 +679,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract bool ShowForEdit { get; }
         public abstract string SimpleDisplayProperty { get; }
         public abstract string TemplateHint { get; }
+        public abstract Microsoft.AspNetCore.Mvc.ModelBinding.TrimType TrimType { get; }
         public System.Type UnderlyingOrModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public abstract bool ValidateChildren { get; }
         public abstract System.Collections.Generic.IReadOnlyList<object> ValidatorMetadata { get; }
@@ -830,6 +832,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public partial class TooManyModelErrorsException : System.Exception
     {
         public TooManyModelErrorsException(string message) { }
+    }
+    public enum TrimType
+    {
+        Trim = 0,
+        TrimEnd = 1,
+        TrimStart = 2,
     }
     public sealed partial class ValueProviderException : System.Exception
     {
