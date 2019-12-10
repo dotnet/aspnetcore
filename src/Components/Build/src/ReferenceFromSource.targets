@@ -12,8 +12,6 @@
     <ComponentsTasksPath>$(OutDir)bin\$(Configuration)\tools\$(_ComponentsTasksTFM)\Microsoft.AspNetCore.Components.Build.Tasks.dll</ComponentsTasksPath>
   </PropertyGroup>
 
-  <UsingTask TaskName="PrintCoolMessage" AssemblyFile="$(ComponentsTasksPath)" />
-
   <ItemGroup>
     <!-- This reference is to enforce the build order only -->
     <ProjectReference
@@ -23,5 +21,11 @@
       UndefineProperties="TargetFramework"
       Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
+
+  <UsingTask TaskName="GenerateLinkerConfigFile" AssemblyFile="$(ComponentsTasksPath)" />
+
+  <Target Name="GenerateComponentsLinkerDescriptorFile" AfterTargets="CoreBuild" Condition="'$(GenerateComponentsLinkerDescriptor)' == 'true'">
+    <GenerateLinkerConfigFile AssemblyPath="@(TargetPathWithTargetPlatformMoniker)" />
+  </Target>
 
 </Project>
