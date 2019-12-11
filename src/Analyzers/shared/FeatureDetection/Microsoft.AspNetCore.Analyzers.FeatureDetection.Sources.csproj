@@ -22,11 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="_._">
-      <Pack>True</Pack>
-      <PackagePath>lib\$(DefaultNetCoreTargetFramework)\_._</PackagePath>
-    </None>
-
     <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(DefaultExcludeItems)">
       <Pack>true</Pack>
       <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
