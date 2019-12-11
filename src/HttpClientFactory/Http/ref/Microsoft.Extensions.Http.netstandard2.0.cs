@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder ConfigurePrimaryHttpMessageHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Func<System.Net.Http.HttpMessageHandler> configureHandler) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder ConfigurePrimaryHttpMessageHandler<THandler>(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder) where THandler : System.Net.Http.HttpMessageHandler { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder SetHandlerLifetime(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.TimeSpan handlerLifetime) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder SetLogSensitiveHeaders(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Collections.Generic.ICollection<string> logSensitiveHeaders) { throw null; }
     }
     public static partial class HttpClientFactoryServiceCollectionExtensions
     {
@@ -53,6 +54,7 @@ namespace Microsoft.Extensions.Http
         public System.TimeSpan HandlerLifetime { get { throw null; } set { } }
         public System.Collections.Generic.IList<System.Action<System.Net.Http.HttpClient>> HttpClientActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IList<System.Action<Microsoft.Extensions.Http.HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<string> LogSensitiveHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool SuppressHandlerScope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class HttpMessageHandlerBuilder
@@ -78,13 +80,13 @@ namespace Microsoft.Extensions.Http.Logging
 {
     public partial class LoggingHttpMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public LoggingHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger) { }
+        public LoggingHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, System.Collections.Generic.IReadOnlyList<string> logSensitiveHeaders) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public partial class LoggingScopeHttpMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public LoggingScopeHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger) { }
+        public LoggingScopeHttpMessageHandler(Microsoft.Extensions.Logging.ILogger logger, System.Collections.Generic.IReadOnlyList<string> logSensitiveHeaders) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
