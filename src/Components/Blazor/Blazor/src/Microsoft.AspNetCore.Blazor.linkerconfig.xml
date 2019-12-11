@@ -9,5 +9,12 @@
     <type fullname="Microsoft.AspNetCore.Blazor.Rendering.WebAssemblyEventDispatcher">
       <method signature="System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor,System.String)" />
     </type>
+    <!-- Types with [LinkerPreserve] -->
+    <type fullname="Microsoft.AspNetCore.Blazor.Services.WebAssemblyConsoleLogger`1" />
+    <type fullname="Microsoft.AspNetCore.Blazor.Services.WebAssemblyJSRuntime" />
+    <type fullname="Microsoft.AspNetCore.Blazor.Services.WebAssemblyLoggerFactory" />
+    <type fullname="Microsoft.AspNetCore.Blazor.Services.WebAssemblyNavigationInterception" />
+    <type fullname="Microsoft.AspNetCore.Blazor.Services.WebAssemblyNavigationManager" />
+    <type fullname="Microsoft.AspNetCore.Blazor.Hosting.WebAssemblyHost" />
   </assembly>
 </linker>

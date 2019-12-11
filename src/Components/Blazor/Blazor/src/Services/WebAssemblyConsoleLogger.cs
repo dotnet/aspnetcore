@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {
+    [LinkerPreserve] // DI service
     internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     {
         public IDisposable BeginScope<TState>(TState state)

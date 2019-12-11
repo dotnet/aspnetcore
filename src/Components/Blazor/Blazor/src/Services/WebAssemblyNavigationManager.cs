@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
     /// <summary>
     /// Default client-side implementation of <see cref="NavigationManager"/>.
     /// </summary>
+    [LinkerPreserve] // DI service
     internal class WebAssemblyNavigationManager : NavigationManager
     {
         /// <summary>

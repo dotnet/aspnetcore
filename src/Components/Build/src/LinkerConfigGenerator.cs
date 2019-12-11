@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Build
     {
         private const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
         private const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
+        private const string LinkerPreserveAttributeName = "Microsoft.AspNetCore.Components.LinkerPreserveAttribute";
         private readonly static string EventArgsTypeName = typeof(EventArgs).FullName;
 
         public static string Generate(string assemblyPath)
@@ -52,7 +53,10 @@ namespace Microsoft.AspNetCore.Components.Build
                     GetJSInteropMethods(module).ToList(),
                     "JSInterop-callable methods are only called through reflection");
 
-                // TODO: Preserve all DI service constructors
+                PreserveTypes(
+                    xmlWriter,
+                    GetLinkerPreserveTypes(module).ToList(),
+                    "Types with [LinkerPreserve]");
 
                 xmlWriter.WriteEndElement(); // assembly
                 xmlWriter.WriteEndElement(); // linker
@@ -116,6 +120,12 @@ namespace Microsoft.AspNetCore.Components.Build
         {
             return module.Types.Where(t => BaseClasses(t, skipUnresolvable: true).Any(
                 baseClass => baseClass.FullName.Equals(EventArgsTypeName, StringComparison.Ordinal)));
+        }
+
+        private static IEnumerable<TypeDefinition> GetLinkerPreserveTypes(ModuleDefinition module)
+        {
+            return module.Types.Where(t => t.CustomAttributes.Any(
+                a => a.AttributeType.FullName.Equals(LinkerPreserveAttributeName, StringComparison.Ordinal)));
         }
 
         private static IEnumerable<InterfaceImplementation> InterfacesIncludingInherited(this TypeDefinition typeDefinition, bool skipUnresolvable)

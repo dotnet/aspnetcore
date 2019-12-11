@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {
+    [LinkerPreserve] // DI service
     internal sealed class WebAssemblyNavigationInterception : INavigationInterception
     {
         public static readonly WebAssemblyNavigationInterception Instance = new WebAssemblyNavigationInterception();

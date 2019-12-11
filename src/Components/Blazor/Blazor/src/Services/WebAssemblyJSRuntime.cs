@@ -6,6 +6,7 @@ using Mono.WebAssembly.Interop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {
+    [LinkerPreserve] // DI service
     internal sealed class WebAssemblyJSRuntime : MonoWebAssemblyJSRuntime
     {
         private static readonly WebAssemblyJSRuntime _instance = new WebAssemblyJSRuntime();

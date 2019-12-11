@@ -5,11 +5,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Rendering;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
+    [LinkerPreserve] // DI service
     internal class WebAssemblyHost : IWebAssemblyHost
     {
         private readonly IJSRuntime _runtime;

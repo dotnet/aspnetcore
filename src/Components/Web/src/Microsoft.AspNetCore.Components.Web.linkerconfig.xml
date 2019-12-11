@@ -25,5 +25,7 @@
     <type fullname="Microsoft.AspNetCore.Components.Web.ProgressEventArgs" />
     <type fullname="Microsoft.AspNetCore.Components.Web.TouchEventArgs" />
     <type fullname="Microsoft.AspNetCore.Components.Web.WheelEventArgs" />
+    <!-- Types with [LinkerPreserve] -->
+    <type fullname="Microsoft.AspNetCore.Components.RenderTree.WebEventDescriptor" />
   </assembly>
 </linker>
