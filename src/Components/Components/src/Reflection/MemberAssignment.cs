@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 cascading);
         }
 
+        [LinkerPreserve] // Invoked through reflection
         class PropertySetter<TTarget, TValue> : IPropertySetter
         {
             private readonly Action<TTarget, TValue> _setterDelegate;
