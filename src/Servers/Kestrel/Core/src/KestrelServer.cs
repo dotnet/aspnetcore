@@ -22,8 +22,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     public class KestrelServer : IServer
     {
         private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
+        private readonly List<(IMultiplexedConnectionListener, Task)> _multiplexedTransports = new List<(IMultiplexedConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly List<IConnectionListenerFactory> _transportFactories;
+        private readonly List<IConnectionListenerFactory> _multiplexedTransportFactories;
 
         private bool _hasStarted;
         private int _stopping;

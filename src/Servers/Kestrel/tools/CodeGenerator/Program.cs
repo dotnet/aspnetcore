@@ -71,6 +71,7 @@ namespace CodeGenerator
             UpdateFile(knownHeadersPath, knownHeadersContent);
             UpdateFile(httpProtocolFeatureCollectionPath, httpProtocolFeatureCollectionContent);
             UpdateFile(httpUtilitiesPath, httpUtilitiesContent);
+            UpdateFile(http2ConnectionPath, http2ConnectionContent);
             UpdateFile(transportMultiplexedConnectionFeatureCollectionPath, transportMultiplexedConnectionFeatureCollectionContent);
             UpdateFile(transportConnectionFeatureCollectionPath, transportConnectionFeatureCollectionContent);
             UpdateFile(transportStreamFeatureCollectionPath, transportStreamFeatureCollectionContent);
@@ -84,10 +85,10 @@ namespace CodeGenerator
                 File.WriteAllText(path, content);
             }
 
-            var existingHttp2Connection = File.Exists(http2ConnectionPath) ? File.ReadAllText(http2ConnectionPath) : "";
-            if (!string.Equals(http2ConnectionContent, existingHttp2Connection))
+            var existingHttp2Connection = File.Exists(path) ? File.ReadAllText(path) : "";
+            if (!string.Equals(content, existingHttp2Connection))
             {
-                File.WriteAllText(http2ConnectionPath, http2ConnectionContent);
+                File.WriteAllText(path, content);
             }
         }
     }

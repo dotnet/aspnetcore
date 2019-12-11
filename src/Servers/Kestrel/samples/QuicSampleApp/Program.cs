@@ -45,25 +45,18 @@ namespace QuicSampleApp
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
                          listenOptions.Protocols = HttpProtocols.Http3;
-                         listenOptions.Use((next) =>
+                         listenOptions.UseMultiplexed((next) =>
                          {
                              return async connection =>
                              {
-                                 if (connection is MultiplexedConnectionContext)
+                                 while (true)
                                  {
-                                     while (true)
+                                     var streamContext = await connection.AcceptAsync();
+                                     if (streamContext == null)
                                      {
-                                         var streamContext = await ((MultiplexedConnectionContext)connection).AcceptAsync();
-                                         if (streamContext == null)
-                                         {
-                                             return;
-                                         }
-                                         _ = next(streamContext);
+                                         return;
                                      }
-                                 }
-                                 else
-                                 {
-                                     await next(connection);
+                                     _ = next(streamContext);
                                  }
                              };
                          });

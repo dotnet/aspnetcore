@@ -34,11 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public Http3Connection(HttpConnectionContext context)
         {
-            if (!(context.ConnectionContext is MultiplexedConnectionContext))
-            {
-                throw new ArgumentException("Must pass an MultiplexedConnectionContext into Http3Connection.");
-            }
-            _multiplexedContext = (MultiplexedConnectionContext)context.ConnectionContext;
+            _multiplexedContext = context.MultiplexedConnectionContext;
             Context = context;
             DynamicTable = new DynamicTable(0);
         }

@@ -25,7 +25,7 @@ namespace QuicSampleClient
                })
                .ConfigureServices(services =>
                {
-                   services.AddSingleton<IConnectionFactory, QuicConnectionFactory>();
+                   services.AddSingleton<IMultiplexedConnectionFactory, QuicConnectionFactory>();
                    services.AddSingleton<QuicClientService>();
                    services.AddOptions<QuicTransportOptions>();
                    services.Configure<QuicTransportOptions>((options) =>
@@ -42,9 +42,9 @@ namespace QuicSampleClient
 
         private class QuicClientService
         {
-            private readonly IConnectionFactory _connectionFactory;
+            private readonly IMultiplexedConnectionFactory _connectionFactory;
             private readonly ILogger<QuicClientService> _logger;
-            public QuicClientService(IConnectionFactory connectionFactory, ILogger<QuicClientService> logger)
+            public QuicClientService(IMultiplexedConnectionFactory connectionFactory, ILogger<QuicClientService> logger)
             {
                 _connectionFactory = connectionFactory;
                 _logger = logger;
@@ -54,7 +54,7 @@ namespace QuicSampleClient
             {
                 Console.WriteLine("Starting");
                 var connectionContext = await _connectionFactory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
-                var streamContext = await (connectionContext as MultiplexedConnectionContext).ConnectAsync();
+                var streamContext = await connectionContext.ConnectAsync();
 
                 Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
                 {
