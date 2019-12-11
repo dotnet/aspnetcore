@@ -14,5 +14,16 @@
     <type fullname="Microsoft.AspNetCore.Components.Forms.InputTextArea" />
     <type fullname="Microsoft.AspNetCore.Components.Forms.ValidationMessage`1" />
     <type fullname="Microsoft.AspNetCore.Components.Forms.ValidationSummary" />
+    <!-- EventArgs subclasses must be preserved in full, as their property setters are only called through JSON deserialization -->
+    <type fullname="Microsoft.AspNetCore.Components.Web.ClipboardEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.DragEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.ErrorEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.FocusEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.KeyboardEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.MouseEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.PointerEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.ProgressEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.TouchEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Web.WheelEventArgs" />
   </assembly>
 </linker>

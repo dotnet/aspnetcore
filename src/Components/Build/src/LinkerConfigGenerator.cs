@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Build
     {
         private const string ComponentInterfaceName = "Microsoft.AspNetCore.Components.IComponent";
         private const string JSInvokableAttributeName = "Microsoft.JSInterop.JSInvokableAttribute";
+        private readonly static string EventArgsTypeName = typeof(EventArgs).FullName;
 
         public static string Generate(string assemblyPath)
         {
@@ -36,37 +37,22 @@ namespace Microsoft.AspNetCore.Components.Build
                 xmlWriter.WriteStartElement("assembly");
                 xmlWriter.WriteAttributeString("fullname", assemblyDefinition.Name.Name);
 
-                // Preserve component types
-                var componentTypes = GetComponentTypes(module).ToList();
-                if (componentTypes.Any())
-                {
-                    xmlWriter.WriteComment(" Components must be preserved in full, otherwise their constructors and parameter properties will be removed ");
-                    foreach (var componentType in componentTypes)
-                    {
-                        xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname", componentType.FullName);
-                        xmlWriter.WriteEndElement();
-                    }
-                }
+                PreserveTypes(
+                    xmlWriter,
+                    GetComponentTypes(module).ToList(),
+                    "Components must be preserved in full, otherwise their constructors and parameter properties will be removed");
 
-                // Preserve JSInterop-callable methods
-                var jsInteropMethods = GetJSInteropMethods(module).GroupBy(m => m.DeclaringType).ToList();
-                if (jsInteropMethods.Any())
-                {
-                    xmlWriter.WriteComment(" JSInterop-callable methods are only called through reflection ");
-                    foreach (var group in jsInteropMethods)
-                    {
-                        xmlWriter.WriteStartElement("type");
-                        xmlWriter.WriteAttributeString("fullname", group.Key.FullName);
-                        foreach (var method in group)
-                        {
-                            xmlWriter.WriteStartElement("method");
-                            xmlWriter.WriteAttributeString("signature", GetMethodSignature(method));
-                            xmlWriter.WriteEndElement(); // method
-                        }
-                        xmlWriter.WriteEndElement(); // type
-                    }
-                }
+                PreserveTypes(
+                    xmlWriter,
+                    GetEventArgsTypes(module).ToList(),
+                    "EventArgs subclasses must be preserved in full, as their property setters are only called through JSON deserialization");
+
+                PreserveMethods(
+                    xmlWriter,
+                    GetJSInteropMethods(module).ToList(),
+                    "JSInterop-callable methods are only called through reflection");
+
+                // TODO: Preserve all DI service constructors
 
                 xmlWriter.WriteEndElement(); // assembly
                 xmlWriter.WriteEndElement(); // linker
@@ -75,6 +61,40 @@ namespace Microsoft.AspNetCore.Components.Build
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 return new StreamReader(memoryStream).ReadToEnd();
+            }
+        }
+
+        private static void PreserveMethods(XmlWriter xmlWriter, IReadOnlyCollection<MethodDefinition> methods, string comment)
+        {
+            if (methods.Any())
+            {
+                xmlWriter.WriteComment($" {comment} ");
+                foreach (var group in methods.GroupBy(m => m.DeclaringType))
+                {
+                    xmlWriter.WriteStartElement("type");
+                    xmlWriter.WriteAttributeString("fullname", group.Key.FullName);
+                    foreach (var method in group)
+                    {
+                        xmlWriter.WriteStartElement("method");
+                        xmlWriter.WriteAttributeString("signature", GetMethodSignature(method));
+                        xmlWriter.WriteEndElement(); // method
+                    }
+                    xmlWriter.WriteEndElement(); // type
+                }
+            }
+        }
+
+        private static void PreserveTypes(XmlWriter writer, IReadOnlyCollection<TypeDefinition> types, string comment)
+        {
+            if (types.Any())
+            {
+                writer.WriteComment($" {comment} ");
+                foreach (var componentType in types)
+                {
+                    writer.WriteStartElement("type");
+                    writer.WriteAttributeString("fullname", componentType.FullName);
+                    writer.WriteEndElement();
+                }
             }
         }
 
@@ -90,6 +110,12 @@ namespace Microsoft.AspNetCore.Components.Build
                     }
                 }
             }
+        }
+
+        private static IEnumerable<TypeDefinition> GetEventArgsTypes(ModuleDefinition module)
+        {
+            return module.Types.Where(t => BaseClasses(t, skipUnresolvable: true).Any(
+                baseClass => baseClass.FullName.Equals(EventArgsTypeName, StringComparison.Ordinal)));
         }
 
         private static IEnumerable<InterfaceImplementation> InterfacesIncludingInherited(this TypeDefinition typeDefinition, bool skipUnresolvable)

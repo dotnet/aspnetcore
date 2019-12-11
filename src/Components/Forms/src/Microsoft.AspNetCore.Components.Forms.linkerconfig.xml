@@ -4,5 +4,9 @@
   <assembly fullname="Microsoft.AspNetCore.Components.Forms">
     <!-- Components must be preserved in full, otherwise their constructors and parameter properties will be removed -->
     <type fullname="Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator" />
+    <!-- EventArgs subclasses must be preserved in full, as their property setters are only called through JSON deserialization -->
+    <type fullname="Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs" />
   </assembly>
 </linker>

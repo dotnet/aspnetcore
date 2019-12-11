@@ -11,5 +11,8 @@
     <type fullname="Microsoft.AspNetCore.Components.OwningComponentBase`1" />
     <type fullname="Microsoft.AspNetCore.Components.RouteView" />
     <type fullname="Microsoft.AspNetCore.Components.Routing.Router" />
+    <!-- EventArgs subclasses must be preserved in full, as their property setters are only called through JSON deserialization -->
+    <type fullname="Microsoft.AspNetCore.Components.ChangeEventArgs" />
+    <type fullname="Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs" />
   </assembly>
 </linker>
