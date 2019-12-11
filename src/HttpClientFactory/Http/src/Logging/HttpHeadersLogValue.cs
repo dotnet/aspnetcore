@@ -102,6 +102,7 @@ namespace Microsoft.Extensions.Http.Logging
                         if (kvp.Key.Equals(_logSensitiveHeaders[headerIndex], StringComparison.OrdinalIgnoreCase))
                         {
                             builder.Append("*");
+                            builder.AppendLine();
                             isLogSensitiveHeader = true;
                             break;
                         }
