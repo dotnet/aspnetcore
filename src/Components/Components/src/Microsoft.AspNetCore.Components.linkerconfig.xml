@@ -14,5 +14,7 @@
     <!-- EventArgs subclasses must be preserved in full, as their property setters are only called through JSON deserialization -->
     <type fullname="Microsoft.AspNetCore.Components.ChangeEventArgs" />
     <type fullname="Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs" />
+    <!-- Types with [LinkerPreserve] -->
+    <type fullname="Microsoft.AspNetCore.Components.Reflection.MemberAssignment/PropertySetter`2" />
   </assembly>
 </linker>

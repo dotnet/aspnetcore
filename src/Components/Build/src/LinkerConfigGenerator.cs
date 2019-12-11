@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 using Mono.Cecil;
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Build
 
         private static IEnumerable<TypeDefinition> GetComponentTypes(ModuleDefinition module)
         {
-            foreach (var typeDefinition in module.Types)
+            foreach (var typeDefinition in TypesIncludingNested(module))
             {
                 foreach (var @interface in InterfacesIncludingInherited(typeDefinition, skipUnresolvable: true))
                 {
@@ -118,20 +119,20 @@ namespace Microsoft.AspNetCore.Components.Build
 
         private static IEnumerable<TypeDefinition> GetEventArgsTypes(ModuleDefinition module)
         {
-            return module.Types.Where(t => BaseClasses(t, skipUnresolvable: true).Any(
+            return TypesIncludingNested(module).Where(t => BaseClasses(t, skipUnresolvable: true).Any(
                 baseClass => baseClass.FullName.Equals(EventArgsTypeName, StringComparison.Ordinal)));
         }
 
         private static IEnumerable<TypeDefinition> GetLinkerPreserveTypes(ModuleDefinition module)
         {
-            return module.Types.Where(t => t.CustomAttributes.Any(
+            return TypesIncludingNested(module).Where(t => t.CustomAttributes.Any(
                 a => a.AttributeType.FullName.Equals(LinkerPreserveAttributeName, StringComparison.Ordinal)));
         }
 
         private static IEnumerable<InterfaceImplementation> InterfacesIncludingInherited(this TypeDefinition typeDefinition, bool skipUnresolvable)
             => typeDefinition.BaseClasses(skipUnresolvable).SelectMany(c => c.Interfaces);
 
-        public static IEnumerable<TypeDefinition> BaseClasses(this TypeDefinition typeDefinition, bool skipUnresolvable)
+        private static IEnumerable<TypeDefinition> BaseClasses(this TypeDefinition typeDefinition, bool skipUnresolvable)
         {
             while (typeDefinition != null)
             {
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Build
 
         private static IEnumerable<MethodDefinition> GetJSInteropMethods(ModuleDefinition module)
         {
-            foreach (var typeDefinition in module.Types)
+            foreach (var typeDefinition in TypesIncludingNested(module))
             {
                 foreach (var methodDefinition in typeDefinition.Methods)
                 {
@@ -169,6 +170,20 @@ namespace Microsoft.AspNetCore.Components.Build
                         }
                     }
                 }
+            }
+        }
+
+        private static IEnumerable<TypeDefinition> TypesIncludingNested(ModuleDefinition module)
+        {
+            return module.Types.SelectMany(TypesIncludingNested);
+        }
+
+        private static IEnumerable<TypeDefinition> TypesIncludingNested(TypeDefinition type)
+        {
+            yield return type;
+            foreach (var nestedType in type.NestedTypes.SelectMany(TypesIncludingNested))
+            {
+                yield return nestedType;
             }
         }
 
