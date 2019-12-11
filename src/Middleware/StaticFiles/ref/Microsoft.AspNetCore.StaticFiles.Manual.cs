@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public StaticFileContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.StaticFileOptions options, Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string contentType, Microsoft.AspNetCore.Http.PathString subPath) { throw null; }
         public bool IsGetMethod { get { throw null; } }
         public bool IsHeadMethod { get { throw null; } }
-        public bool IsRangeRequest { get { throw null; } private set { } }
+        public bool IsRangeRequest { get { throw null; } }
         public string PhysicalPath { get { throw null; } }
         public string SubPath { get { throw null; } }
         public void ApplyResponseHeaders(int statusCode) { }

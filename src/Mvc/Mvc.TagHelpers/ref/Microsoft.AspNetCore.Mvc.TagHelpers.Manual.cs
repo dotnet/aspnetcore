@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-src-include")]
     public partial class ScriptTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper
     {
-        internal Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        internal Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     internal partial class ModeAttributes<TMode>
     {
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     }
     internal static partial class AttributeMatcher
     {
-        private static bool HasMissingAttributes(Microsoft.AspNetCore.Razor.TagHelpers.ReadOnlyTagHelperAttributeList allAttributes, string[] requiredAttributes) { throw null; }
         public static bool TryDetermineMode<TMode>(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.TagHelpers.ModeAttributes<TMode>> modeInfos, System.Func<TMode, TMode, int> compare, out TMode result) { throw null; }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-append-version", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-href-include", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     public partial class LinkTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper
     {
-        internal Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]private set { } }
+        internal Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider FileVersionProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class CacheTagHelper : Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperBase
     {
