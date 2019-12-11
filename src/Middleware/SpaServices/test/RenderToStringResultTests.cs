@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.SpaServices.Tests
         public void HandlesNullGlobals()
         {
             // Arrange
+#pragma warning disable CS0618 // Type or member is obsolete
             var renderToStringResult = new RenderToStringResult();
+#pragma warning restore CS0618 // Type or member is obsolete
             renderToStringResult.Globals = null;
 
             // Act
@@ -29,7 +31,9 @@ namespace Microsoft.AspNetCore.SpaServices.Tests
         public void HandlesGlobalsWithMultipleProperties()
         {
             // Arrange
+#pragma warning disable CS0618 // Type or member is obsolete
             var renderToStringResult = new RenderToStringResult();
+#pragma warning restore CS0618 // Type or member is obsolete
             renderToStringResult.Globals = ToJObject(new
             {
                 FirstProperty = "first value",
@@ -49,7 +53,9 @@ namespace Microsoft.AspNetCore.SpaServices.Tests
         public void HandlesGlobalsWithCorrectStringEncoding()
         {
             // Arrange
+#pragma warning disable CS0618 // Type or member is obsolete
             var renderToStringResult = new RenderToStringResult();
+#pragma warning restore CS0618 // Type or member is obsolete
             renderToStringResult.Globals = ToJObject(new Dictionary<string, object>
             {
                 { "Va<l'u\"e", "</tag>\"'}\u260E" }

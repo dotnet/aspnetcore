@@ -22,11 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Workaround missing entries in deps files. Still under investigation -->
-    <RuntimeHostConfigurationOption
-      Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"
-      Value="true" />
-
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />

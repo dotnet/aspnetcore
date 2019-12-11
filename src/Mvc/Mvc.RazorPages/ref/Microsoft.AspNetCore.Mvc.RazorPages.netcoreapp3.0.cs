@@ -637,7 +637,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public partial class RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>, System.Collections.IEnumerable
     {
         public RazorPagesOptions() { }
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageConventionCollection Conventions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string RootDirectory { get { throw null; } set { } }
         System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
@@ -694,7 +693,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     }
     public partial class PageResultExecutor : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor
     {
-        public PageResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine compositeViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine razorViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator razorPageActivator, System.Diagnostics.DiagnosticListener diagnosticListener, System.Text.Encodings.Web.HtmlEncoder htmlEncoder) : base (default(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory), default(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine), default(System.Diagnostics.DiagnosticListener)) { }
+        public PageResultExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine compositeViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine razorViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator razorPageActivator, System.Diagnostics.DiagnosticListener diagnosticListener, System.Text.Encodings.Web.HtmlEncoder htmlEncoder) : base (default(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>), default(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory), default(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine), default(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory), default(System.Diagnostics.DiagnosticListener), default(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider)) { }
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.RazorPages.PageContext pageContext, Microsoft.AspNetCore.Mvc.RazorPages.PageResult result) { throw null; }
     }
     public partial class PageViewLocationExpander : Microsoft.AspNetCore.Mvc.Razor.IViewLocationExpander

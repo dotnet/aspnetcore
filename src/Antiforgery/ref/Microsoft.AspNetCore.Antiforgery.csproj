@@ -2,15 +2,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Antiforgery.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities"  />
-    <Reference Include="Microsoft.Extensions.ObjectPool"  />
+    <Compile Include="Microsoft.AspNetCore.Antiforgery.Manual.cs" />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
   </ItemGroup>
 </Project>

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     public class AssemblyPartExtensionTest
     {
-        [Fact(Skip = "Deps file generation is incorrect, investigation ongoing.")]
+        [Fact]
         public void GetReferencePaths_ReturnsReferencesFromDependencyContext_IfPreserveCompilationContextIsSet()
         {
             // Arrange

@@ -2,12 +2,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Cryptography.Internal.netstandard2.0.cs" />
     <Compile Include="Microsoft.AspNetCore.Cryptography.Internal.Manual.cs" />
-    
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
   </ItemGroup>
 </Project>

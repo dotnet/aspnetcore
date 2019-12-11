@@ -1,13 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Mvc, PublicKey=0024000004800000940000000602000000240000525341310004000001000100f33a29044fa9d740c9b3213a93e57c84b472c84e0b8a0e1ae48e67a9f8f6de9d5f7f3d52ac23e48ac51801f1dc950abe901da34d2a9e3baadb141a17c77ef3c565dd5ee5054b91cf63bb3c6ab83f72ab3aafe93d0fc3c2348b764fafb0b1c0733de51459aeab46580384bf9d74c4e28164b7cde247f891ba07891c9d872ad2bb")]
-[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Mvc.RazorPages, PublicKey=0024000004800000940000000602000000240000525341310004000001000100f33a29044fa9d740c9b3213a93e57c84b472c84e0b8a0e1ae48e67a9f8f6de9d5f7f3d52ac23e48ac51801f1dc950abe901da34d2a9e3baadb141a17c77ef3c565dd5ee5054b91cf63bb3c6ab83f72ab3aafe93d0fc3c2348b764fafb0b1c0733de51459aeab46580384bf9d74c4e28164b7cde247f891ba07891c9d872ad2bb")]
-[assembly: InternalsVisibleTo("Microsoft.AspNetCore.Mvc.TagHelpers, PublicKey=0024000004800000940000000602000000240000525341310004000001000100f33a29044fa9d740c9b3213a93e57c84b472c84e0b8a0e1ae48e67a9f8f6de9d5f7f3d52ac23e48ac51801f1dc950abe901da34d2a9e3baadb141a17c77ef3c565dd5ee5054b91cf63bb3c6ab83f72ab3aafe93d0fc3c2348b764fafb0b1c0733de51459aeab46580384bf9d74c4e28164b7cde247f891ba07891c9d872ad2bb")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7")]
-
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     internal partial class RazorCompiledItemFeatureProvider
@@ -16,6 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void PopulateFeature(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart> parts, Microsoft.AspNetCore.Mvc.Razor.Compilation.ViewsFeature feature) { }
     }
 }
+
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public partial class RazorPageActivator : Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator
@@ -24,14 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     internal partial class DefaultTagHelperFactory : Microsoft.AspNetCore.Mvc.Razor.ITagHelperFactory
     {
-        private readonly Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator _activator;
-        private static readonly System.Func<System.Reflection.PropertyInfo, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>> _createActivateInfo;
-        private readonly System.Func<System.Type, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[]> _getPropertiesToActivate;
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<System.Type, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[]> _injectActions;
         public DefaultTagHelperFactory(Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator activator) { }
-        private static Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext> CreateActivateInfo(System.Reflection.PropertyInfo property) { throw null; }
         public TTagHelper CreateTagHelper<TTagHelper>(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) where TTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper { throw null; }
-        private static void InitializeTagHelper<TTagHelper>(TTagHelper tagHelper, Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) where TTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper { }
     }
     public partial class RazorView
     {
@@ -39,22 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     internal partial class RazorPagePropertyActivator
     {
-        private readonly Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider _metadataProvider;
-        private readonly System.Func<Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary> _nestedFactory;
-        private readonly Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[] _propertyActivators;
-        private readonly System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary> _rootFactory;
-        private readonly System.Type _viewDataDictionaryType;
         public RazorPagePropertyActivator(System.Type pageType, System.Type declaredModelType, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Razor.RazorPagePropertyActivator.PropertyValueAccessors propertyValueAccessors) { }
         public void Activate(object page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) { }
-        private static Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext> CreateActivateInfo(System.Reflection.PropertyInfo property, Microsoft.AspNetCore.Mvc.Razor.RazorPagePropertyActivator.PropertyValueAccessors valueAccessors) { throw null; }
         internal Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary CreateViewDataDictionary(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) { throw null; }
         public partial class PropertyValueAccessors
         {
-            private System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> _DiagnosticSourceAccessor_k__BackingField;
-            private System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> _HtmlEncoderAccessor_k__BackingField;
-            private System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> _JsonHelperAccessor_k__BackingField;
-            private System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> _ModelExpressionProviderAccessor_k__BackingField;
-            private System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> _UrlHelperAccessor_k__BackingField;
             public PropertyValueAccessors() { }
             public System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> DiagnosticSourceAccessor { get { throw null; } set { } }
             public System.Func<Microsoft.AspNetCore.Mvc.Rendering.ViewContext, object> HtmlEncoderAccessor { get { throw null; } set { } }
@@ -69,7 +46,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     internal static partial class RazorFileHierarchy
     {
-        private const string ViewStartFileName = "_ViewStart.cshtml";
         public static System.Collections.Generic.IEnumerable<string> GetViewStartPaths(string path) { throw null; }
     }
     internal partial class RazorViewEngineOptionsSetup
@@ -79,12 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     internal partial class DefaultViewCompiler : Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler
     {
-        private readonly System.Collections.Generic.Dictionary<string, System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor>> _compiledViews;
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _normalizedPathCache;
         public DefaultViewCompiler(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> compiledViews, Microsoft.Extensions.Logging.ILogger logger) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> CompileAsync(string relativePath) { throw null; }
-        private string GetNormalizedPath(string relativePath) { throw null; }
     }
     internal static partial class ViewPath
     {
@@ -97,14 +69,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     internal partial class TagHelperComponentManager : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentManager
     {
-        private readonly System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent> _Components_k__BackingField;
         public TagHelperComponentManager(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent> tagHelperComponents) { }
         public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent> Components { get { throw null; } }
     }
     internal static partial class Resources
     {
-        private static System.Resources.ResourceManager s_resourceManager;
-        private static System.Globalization.CultureInfo _Culture_k__BackingField;
         internal static string ArgumentCannotBeNullOrEmpty { get { throw null; } }
         internal static string CompilationFailed { get { throw null; } }
         internal static string Compilation_MissingReferences { get { throw null; } }
@@ -155,20 +124,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         internal static string FormatViewContextMustBeSet(object p0, object p1) { throw null; }
         internal static string FormatViewLocationFormatsIsRequired(object p0) { throw null; }
         internal static string GetResourceString(string resourceKey, string defaultValue = null) { throw null; }
-        private static string GetResourceString(string resourceKey, string[] formatterNames) { throw null; }
-    }
-    internal partial class DefaultRazorPageFactoryProvider : Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider
-    {
-        private readonly Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider _viewCompilerProvider;
-        public DefaultRazorPageFactoryProvider(Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider viewCompilerProvider) { }
-        private Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler Compiler { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult CreateFactory(string relativePath) { throw null; }
     }
     public partial class RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine
     {
         internal System.Collections.Generic.IEnumerable<string> GetViewLocationFormats(Microsoft.AspNetCore.Mvc.Razor.ViewLocationExpanderContext context) { throw null; }
     }
 }
+
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+{
+    internal partial class DefaultRazorPageFactoryProvider : Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider
+    {
+        public DefaultRazorPageFactoryProvider(Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider viewCompilerProvider) { }
+        public Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult CreateFactory(string relativePath) { throw null; }
+    }
+}
+
 namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 {
     internal static partial class CryptographyAlgorithms
@@ -178,65 +149,50 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
 
     internal partial class DefaultFileVersionProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider
     {
-        private static readonly char[] QueryStringAndFragmentTokens;
-        private const string VersionKey = "v";
-        private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _Cache_k__BackingField;
-        private readonly Microsoft.Extensions.FileProviders.IFileProvider _FileProvider_k__BackingField;
         public DefaultFileVersionProvider(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider) { }
         public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { get { throw null; } }
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { get { throw null; } }
         public string AddFileVersionToPath(Microsoft.AspNetCore.Http.PathString requestPathBase, string path) { throw null; }
-        private static string GetHashForFile(Microsoft.Extensions.FileProviders.IFileInfo fileInfo) { throw null; }
     }
     internal partial class DefaultTagHelperActivator : Microsoft.AspNetCore.Mvc.Razor.ITagHelperActivator
     {
-        private readonly Microsoft.AspNetCore.Mvc.Infrastructure.ITypeActivatorCache _typeActivatorCache;
         public DefaultTagHelperActivator(Microsoft.AspNetCore.Mvc.Infrastructure.ITypeActivatorCache typeActivatorCache) { }
         public TTagHelper Create<TTagHelper>(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) where TTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper { throw null; }
     }
     public sealed partial class TagHelperMemoryCacheProvider
     {
-        private Microsoft.Extensions.Caching.Memory.IMemoryCache _Cache_k__BackingField;
         public TagHelperMemoryCacheProvider() { }
         public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { get { throw null; } internal set { } }
     }
 }
+
 namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 {
     internal partial class TagHelperComponentPropertyActivator : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.ITagHelperComponentPropertyActivator
     {
-        private static readonly System.Func<System.Reflection.PropertyInfo, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>> _createActivateInfo;
-        private readonly System.Func<System.Type, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[]> _getPropertiesToActivate;
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<System.Type, Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[]> _propertiesToActivate;
         public TagHelperComponentPropertyActivator() { }
         public void Activate(Microsoft.AspNetCore.Mvc.Rendering.ViewContext context, Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent tagHelperComponent) { }
-        private static Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext> CreateActivateInfo(System.Reflection.PropertyInfo property) { throw null; }
-        private static Microsoft.Extensions.Internal.PropertyActivator<Microsoft.AspNetCore.Mvc.Rendering.ViewContext>[] GetPropertiesToActivate(System.Type type) { throw null; }
     }
 }
+
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     internal partial class DefaultViewCompilerProvider : Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider
     {
-        private readonly Microsoft.AspNetCore.Mvc.Razor.Compilation.DefaultViewCompiler _compiler;
         public DefaultViewCompilerProvider(Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager applicationPartManager, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler GetCompiler() { throw null; }
     }
     internal partial class DefaultViewCompiler : Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompiler
     {
-        private readonly System.Collections.Generic.Dictionary<string, System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor>> _compiledViews;
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _normalizedPathCache;
         public DefaultViewCompiler(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> compiledViews, Microsoft.Extensions.Logging.ILogger logger) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor> CompileAsync(string relativePath) { throw null; }
-        private string GetNormalizedPath(string relativePath) { throw null; }
     }
 }
+
 namespace Microsoft.Extensions.DependencyInjection
 {
     internal partial class MvcRazorMvcViewOptionsSetup
     {
-        private readonly Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine _razorViewEngine;
         public MvcRazorMvcViewOptionsSetup(Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine razorViewEngine) { }
         public void Configure(Microsoft.AspNetCore.Mvc.MvcViewOptions options) { }
     }
