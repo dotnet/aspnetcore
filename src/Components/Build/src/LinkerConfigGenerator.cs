@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Build
             });
             var module = assemblyDefinition.MainModule;
 
-            using (var memoryStream = new MemoryStream())
+            using (var memoryStream = new MemoryStream()) // Avoiding StringWriter so we get UTF-8 output
             using (var xmlWriter = XmlWriter.Create(memoryStream, new XmlWriterSettings { Indent = true }))
             {
                 xmlWriter.WriteStartDocument();
