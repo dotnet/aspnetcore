@@ -8,6 +8,8 @@
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
     <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <InProcessTestSite>true</InProcessTestSite>
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +35,8 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <Target Name="VerifyPrecompiledViews" AfterTargets="Publish">
