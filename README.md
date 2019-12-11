@@ -9,6 +9,8 @@ Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-star
 
 Also check out the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
+See the [Issue Management Policies](https://github.com/aspnet/AspNetCore/blob/anurse/issue-policies/docs/IssueManagementPolicies.md) document for more information on how we handle incoming issues.
+
 ## How to Engage, Contribute, and Give Feedback
 
 Some of the best ways to contribute are to try things out, file issues, join in design conversations,
