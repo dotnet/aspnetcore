@@ -28,9 +28,9 @@
       Include="$(RepoRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
+      Properties="TargetFramework=$(DefaultNetCoreTargetFramework)"
       PrivateAssets="all"
-      Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+      Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(MSBuildRuntimeType)' == 'Core'" />
   </ItemGroup>
 
   <!-- Embed the linker config, if it exists -->
