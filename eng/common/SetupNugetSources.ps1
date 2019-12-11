@@ -16,7 +16,7 @@
 #    condition: eq(variables['Agent.OS'], 'Windows_NT')
 #    inputs:
 #      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-#      arguments: -ConfigFile ${Env:BUILD_SOURCESDIRECTORY}/NuGet.config -Password $Env:Token
+#      arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
 #    env:
 #      Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
@@ -83,7 +83,7 @@ function AddCredential($creds, $source, $username, $password) {
     $passwordElement.SetAttribute("value", $Password)
 }
 
-function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Password) {
+function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Username, $Password) {
     $maestroPrivateSources = $Sources.SelectNodes("add[contains(@key,'darc-int')]")
 
     Write-Host "Inserting credentials for $($maestroPrivateSources.Count) Maestro's private feeds."
@@ -95,8 +95,13 @@ function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Password) {
 }
 
 if (!(Test-Path $ConfigFile -PathType Leaf)) {
-  Write-Host "Couldn't find the file NuGet config file: $ConfigFile"
+  Write-PipelineTelemetryError -Category 'Build' -Message "Eng/common/SetupNugetSources.ps1 returned a non-zero exit code. Couldn't find the NuGet config file: $ConfigFile"
   ExitWithExitCode 1
+}
+
+if (!$Password) {
+    Write-PipelineTelemetryError -Category 'Build' -Message 'Eng/common/SetupNugetSources.ps1 returned a non-zero exit code. Please supply a valid PAT'
+    ExitWithExitCode 1
 }
 
 # Load NuGet.config
@@ -118,10 +123,21 @@ if ($creds -eq $null) {
     $doc.DocumentElement.AppendChild($creds) | Out-Null
 }
 
-# Insert credential nodes for Maestro's private feeds
-InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Password $Password
+$userName = "dn-bot"
 
-AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
-AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
+# Insert credential nodes for Maestro's private feeds
+InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Username $userName -Password $Password
+
+$dotnet3Source = $sources.SelectSingleNode("add[@key='dotnet3']")
+if ($dotnet3Source -ne $null) {
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username $userName -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username $userName -Password $Password
+}
+
+$dotnet31Source = $sources.SelectSingleNode("add[@key='dotnet3.1']")
+if ($dotnet31Source -ne $null) {
+    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v2" -Creds $creds -Username $userName -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -Password $Password
+}
 
 $doc.Save($filename)
