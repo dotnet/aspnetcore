@@ -207,6 +207,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context) { }
         public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
     }
+    internal partial class TempDataApplicationModelProvider
+    {
+        public TempDataApplicationModelProvider(Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.TempDataSerializer tempDataSerializer) { }
+        public int Order { get { throw null; } }
+        public void OnProvidersExecuted(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
+        public void OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
+    }
     internal partial class ValidateAntiforgeryTokenAuthorizationFilter : Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.ViewFeatures.IAntiforgeryPolicy
     {
         public ValidateAntiforgeryTokenAuthorizationFilter(Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
@@ -474,13 +481,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal System.Collections.Generic.IEnumerable<string> GetEpilogue(Microsoft.AspNetCore.Components.ServerComponentMarker record) { throw null; }
         internal System.Collections.Generic.IEnumerable<string> GetPreamble(Microsoft.AspNetCore.Components.ServerComponentMarker record) { throw null; }
         public Microsoft.AspNetCore.Components.ServerComponentMarker SerializeInvocation(Microsoft.AspNetCore.Mvc.ViewFeatures.ServerComponentInvocationSequence invocationId, System.Type type, bool prerendered) { throw null; }
-    }
-    internal partial class TempDataApplicationModelProvider
-    {
-        public TempDataApplicationModelProvider(Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.TempDataSerializer tempDataSerializer) { }
-        public int Order { get { throw null; } }
-        public void OnProvidersExecuted(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
-        public void OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext context) { }
     }
     internal partial class NullView : Microsoft.AspNetCore.Mvc.ViewEngines.IView
     {

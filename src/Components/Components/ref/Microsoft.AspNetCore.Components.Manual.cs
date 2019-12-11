@@ -59,6 +59,14 @@ namespace Microsoft.AspNetCore.Components
             public bool MoveNext() { throw null; }
         }
     }
+    internal static partial class RouteTableFactory
+    {
+        public static readonly System.Collections.Generic.IComparer<Microsoft.AspNetCore.Components.Routing.RouteEntry> RoutePrecedence;
+        internal static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.Dictionary<System.Type, string[]> templatesByHandler) { throw null; }
+        public static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.IEnumerable<System.Reflection.Assembly> assemblies) { throw null; }
+        internal static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.IEnumerable<System.Type> componentTypes) { throw null; }
+        internal static int RouteComparison(Microsoft.AspNetCore.Components.Routing.RouteEntry x, Microsoft.AspNetCore.Components.Routing.RouteEntry y) { throw null; }
+    }
     internal partial interface IEventCallback
     {
         bool HasDelegate { get; }
@@ -327,14 +335,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         public RouteTable(Microsoft.AspNetCore.Components.Routing.RouteEntry[] routes) { }
         public Microsoft.AspNetCore.Components.Routing.RouteEntry[] Routes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal void Route(Microsoft.AspNetCore.Components.Routing.RouteContext routeContext) { }
-    }
-    internal static partial class RouteTableFactory
-    {
-        public static readonly System.Collections.Generic.IComparer<Microsoft.AspNetCore.Components.Routing.RouteEntry> RoutePrecedence;
-        internal static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.Dictionary<System.Type, string[]> templatesByHandler) { throw null; }
-        public static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.IEnumerable<System.Reflection.Assembly> assemblies) { throw null; }
-        internal static Microsoft.AspNetCore.Components.Routing.RouteTable Create(System.Collections.Generic.IEnumerable<System.Type> componentTypes) { throw null; }
-        internal static int RouteComparison(Microsoft.AspNetCore.Components.Routing.RouteEntry x, Microsoft.AspNetCore.Components.Routing.RouteEntry y) { throw null; }
     }
     internal abstract partial class RouteConstraint
     {

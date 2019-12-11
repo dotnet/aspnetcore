@@ -125,14 +125,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         internal static string FormatViewLocationFormatsIsRequired(object p0) { throw null; }
         internal static string GetResourceString(string resourceKey, string defaultValue = null) { throw null; }
     }
+    public partial class RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine
+    {
+        internal System.Collections.Generic.IEnumerable<string> GetViewLocationFormats(Microsoft.AspNetCore.Mvc.Razor.ViewLocationExpanderContext context) { throw null; }
+    }
+}
+
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+{
     internal partial class DefaultRazorPageFactoryProvider : Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider
     {
         public DefaultRazorPageFactoryProvider(Microsoft.AspNetCore.Mvc.Razor.Compilation.IViewCompilerProvider viewCompilerProvider) { }
         public Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult CreateFactory(string relativePath) { throw null; }
-    }
-    public partial class RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine
-    {
-        internal System.Collections.Generic.IEnumerable<string> GetViewLocationFormats(Microsoft.AspNetCore.Mvc.Razor.ViewLocationExpanderContext context) { throw null; }
     }
 }
 
