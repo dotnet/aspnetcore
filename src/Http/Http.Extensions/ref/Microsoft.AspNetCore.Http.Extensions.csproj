@@ -2,13 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Http.Extensions.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
-    <Reference Include="Microsoft.Net.Http.Headers"  />
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
   </ItemGroup>
 </Project>

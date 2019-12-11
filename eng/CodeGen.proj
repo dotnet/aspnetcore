@@ -3,6 +3,7 @@
   <PropertyGroup>
     <BuildManaged>true</BuildManaged>
     <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <BuildMainlyReferenceProviders>true</BuildMainlyReferenceProviders>
   </PropertyGroup>
 
   <Import Project="Build.props" />
@@ -15,7 +16,6 @@
              BuildInParallel="true"
              SkipNonexistentTargets="true"
              SkipNonexistentProjects="true" >
-
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectReferenceProvider"/>
     </MSBuild>
 

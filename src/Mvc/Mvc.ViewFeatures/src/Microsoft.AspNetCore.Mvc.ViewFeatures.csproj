@@ -34,7 +34,6 @@
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
-    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\**\*.cs" />
   </ItemGroup>
 
 </Project>

@@ -2,20 +2,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Server.Kestrel.Core.netcoreapp3.0.cs" />
     <Compile Include="Microsoft.AspNetCore.Server.Kestrel.Core.Manual.cs" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.Http"  />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities"  />
-    <Reference Include="Microsoft.Extensions.Configuration.Binder"  />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
-    <Reference Include="Microsoft.Net.Http.Headers"  />
-    <Reference Include="System.Security.Cryptography.Cng"  />
+    <Compile Include="../src/Properties/AssemblyInfo.cs" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+    <Reference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 </Project>

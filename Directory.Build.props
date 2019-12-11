@@ -84,14 +84,14 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- 3.0.1 is a special servicing release since we're building the targeting pack. We need this condition in a few places. -->
-    <IsTargetingPackPatching Condition="'$(VersionPrefix)' == '3.0.1'">true</IsTargetingPackPatching>
-
-    <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
-    <IsTargetingPackBuilding Condition="'$(AspNetCorePatchVersion)' != '0' OR '$(DotNetBuildFromSource)' == 'true'">false</IsTargetingPackBuilding>
-
-    <!-- We need to build the targeting pack in 3.0.1. We can remove this line from any branch other than release/3.0 -->
-    <IsTargetingPackBuilding Condition="'$(IsTargetingPackPatching)' == 'true' AND '$(DotNetBuildFromSource)' != 'true'">true</IsTargetingPackBuilding>
+    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.0.1. -->
+    <!-- We can remove the 3.0.1 line from any branch other than release/3.0 and from here after 3.0.1 is released. -->
+    <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(VersionPrefix)' == '3.0.1' ">true</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--
       Archives and installers using this prefix are intended for internal-use only.
