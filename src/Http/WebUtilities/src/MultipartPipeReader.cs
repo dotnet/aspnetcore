@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var finishedParsing = TryParseHeadersToEnd(ref buffer, ref headersAccumulator, ref headersLength);
                 if (headersLength > DefaultHeadersLengthLimit)
                 {
+                    _pipeReader.AdvanceTo(buffer.Start, buffer.End); // free memory 
                     throw new InvalidDataException($"Multipart headers length limit {HeadersLengthLimit} exceeded.");
                 }
                 if (finishedParsing)
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 if (readResult.IsCompleted)
                 {
-                    _pipeReader.AdvanceTo(buffer.End); // free memory 
+                    _pipeReader.AdvanceTo(buffer.Start, buffer.End); // free memory 
                     throw new InvalidDataException("Unexpected end of Stream, the content may have already been read by another component. ");
                 }
                 _pipeReader.AdvanceTo(buffer.Start, buffer.End);
