@@ -732,7 +732,65 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        // ServerReset_BeforeRequestBodyEnd_ClientBodyThrows
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ServerReset_BeforeRequestBodyEnd_ClientBodyThrows(string scheme)
+        {
+            var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverReset = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseHeadersReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        var count = await context.Request.Body.ReadAsync(new byte[11], 0, 11);
+                        Assert.Equal(11, count);
+
+                        context.Response.ContentType = "text/plain";
+                        await context.Response.BodyWriter.FlushAsync();
+                        await responseHeadersReceived.Task.DefaultTimeout();
+                        context.Features.Get<IHttpResetFeature>().Reset(8); // Cancel
+                        serverReset.SetResult(0);
+
+                        try
+                        {
+                            using var streamReader = new StreamReader(context.Request.Body);
+                            var read = await streamReader.ReadToEndAsync().DefaultTimeout();
+                            clientEcho.SetResult(read);
+                        }
+                        catch (Exception ex)
+                        {
+                            clientEcho.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var streamingContent = new StreamingContent();
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
+            var requestTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            await streamingContent.SendAsync("Hello World");
+            using var response = await requestTask;
+            responseHeadersReceived.SetResult(0);
+
+            Assert.Equal(HttpVersion.Version20, response.Version);
+
+            await serverReset.Task.DefaultTimeout();
+            var responseEx = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync().DefaultTimeout());
+            Assert.Contains("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8)", responseEx.ToString());
+            await Assert.ThrowsAsync<TaskCanceledException>(() => streamingContent.SendAsync("Hello World").DefaultTimeout());
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => clientEcho.Task.DefaultTimeout());
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
         // ClientReset_BeforeRequestData_ReadThrows
         // ClientReset_BeforeRequestDataEnd_ReadThrows
         // ClientReset_BeforeResponse_ResponseSuppressed
