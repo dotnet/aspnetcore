@@ -257,7 +257,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             return true;
         }
 
-        // Try to find a match to the boundary bytes
+        /// <summary>
+        /// Scan for matches to boundary bytes - updates sequence to after the partial or full match
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="isFinalBlock"></param>
+        /// <returns>return true only if found a full match</returns>
         private (bool reachedEnd, long consumed) TryAdvanceToBoundaryBytes(ref ReadOnlySequence<byte> sequence, bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(sequence);
