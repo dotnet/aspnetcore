@@ -520,11 +520,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all connections in the specified group excluding the specified connections.
         /// </summary>
         /// <param name="hubClients">The abstraction that provides access to connections.</param>
+        /// <param name="groupName">The group name.</param>
         /// <param name="excludedConnectionIds">The connection IDs to exclude.</param>
         /// <returns>A <typeparamref name="T" /> representing the methods that can be invoked on the clients.</returns>
-        public static T GroupExcept<T>(this IHubClients<T> hubClients, IEnumerable<string> excludedConnectionIds)
+        public static T GroupExcept<T>(this IHubClients<T> hubClients, string groupName, IEnumerable<string> excludedConnectionIds)
         {
-            return hubClients.GroupExcept(excludedConnectionIds.ToList());
+            return hubClients.GroupExcept(groupName, excludedConnectionIds.ToList());
         }
 
         /// <summary>

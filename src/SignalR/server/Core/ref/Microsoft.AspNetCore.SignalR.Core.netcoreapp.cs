@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.SignalR
         public static T Clients<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string connection1, string connection2, string connection3, string connection4, string connection5, string connection6) { throw null; }
         public static T Clients<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string connection1, string connection2, string connection3, string connection4, string connection5, string connection6, string connection7) { throw null; }
         public static T Clients<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string connection1, string connection2, string connection3, string connection4, string connection5, string connection6, string connection7, string connection8) { throw null; }
-        public static T GroupExcept<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, System.Collections.Generic.IEnumerable<string> excludedConnectionIds) { throw null; }
+        public static T GroupExcept<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string groupName, System.Collections.Generic.IEnumerable<string> excludedConnectionIds) { throw null; }
         public static T GroupExcept<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string groupName, string excludedConnectionId1) { throw null; }
         public static T GroupExcept<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string groupName, string excludedConnectionId1, string excludedConnectionId2) { throw null; }
         public static T GroupExcept<T>(this Microsoft.AspNetCore.SignalR.IHubClients<T> hubClients, string groupName, string excludedConnectionId1, string excludedConnectionId2, string excludedConnectionId3) { throw null; }
