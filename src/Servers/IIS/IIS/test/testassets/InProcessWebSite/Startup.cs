@@ -1339,6 +1339,13 @@ namespace TestSite
             await _resetDuringRequestBodyResetsCts.Task;
         }
 
+        public async Task SlowOnCompleted(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
+            await context.Response.WriteAsync("SlowOnCompleted");
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
