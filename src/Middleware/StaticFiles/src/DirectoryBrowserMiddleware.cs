@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             _next = next;
             _options = options.Value;
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
-            _formatter = options.Value.Formatter ?? new HtmlDirectoryFormatter(encoder);
+            _formatter = _options.Formatter ?? new HtmlDirectoryFormatter(encoder);
             _matchUrl = _options.RequestPath;
         }
 
