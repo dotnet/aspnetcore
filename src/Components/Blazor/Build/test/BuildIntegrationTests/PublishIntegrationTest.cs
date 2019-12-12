@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = "netcoreapp5.0";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
             Assert.BuildPassed(result);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "standalone", "razorclasslibrary", });
-            project.TargetFramework = "netcoreapp3.1";
+            project.TargetFramework = "netcoreapp5.0";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Build");
 
             Assert.BuildPassed(result);

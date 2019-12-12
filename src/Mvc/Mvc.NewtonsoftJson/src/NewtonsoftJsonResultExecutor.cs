@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private readonly MvcOptions _mvcOptions;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
         private readonly IArrayPool<char> _charPool;
-        private readonly AsyncEnumerableReader _asyncEnumerableReader;
+        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         /// <summary>
         /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
             _jsonOptions = jsonOptions.Value;
             _charPool = new JsonArrayPool<char>(charPool);
-            _asyncEnumerableReader = new AsyncEnumerableReader(_mvcOptions);
+            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(_mvcOptions);
         }
 
         /// <summary>
@@ -133,10 +132,10 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
                     var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
                     var value = result.Value;
-                    if (result.Value is IAsyncEnumerable<object> asyncEnumerable)
+                    if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
                     {
-                        Log.BufferingAsyncEnumerable(_logger, asyncEnumerable);
-                        value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+                        Log.BufferingAsyncEnumerable(_logger, value);
+                        value = await reader(value);
                     }
 
                     jsonSerializer.Serialize(jsonWriter, value);
@@ -201,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 _jsonResultExecuting(logger, type, null);
             }
 
-            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
                 => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }

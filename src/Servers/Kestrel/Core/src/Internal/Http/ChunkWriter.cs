@@ -6,12 +6,14 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ChunkWriter
     {
-        private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
+        // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+        private static ReadOnlySpan<byte> Hex => new byte[16] { (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f' };
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             count = (total >> 2) + 3;
 
             var offset = 0;
-            ref var startHex = ref _hex[0];
+            ref var startHex = ref MemoryMarshal.GetReference(Hex);
 
             for (shift = total; shift >= 0; shift -= 4)
             {

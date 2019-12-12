@@ -42,7 +42,7 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 . "$scriptroot/tools.sh"
 
 if [ ! -f "$ConfigFile" ]; then
-    echo "Couldn't find the file NuGet config file: $ConfigFile"
+    Write-PipelineTelemetryError -Category 'Build' -Message "Couldn't find the file NuGet config file: $ConfigFile"
     ExitWithExitCode 1
 fi
 

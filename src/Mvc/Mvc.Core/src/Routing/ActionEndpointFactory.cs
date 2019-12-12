@@ -132,7 +132,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(resolvedRoutePattern, resolvedRouteValues);
                 if (updatedRoutePattern == null)
                 {
-                    throw new InvalidOperationException("Failed to update route pattern with required values.");
+                    // This kind of thing can happen when a route pattern uses a *reserved* route value such as `action`.
+                    // See: https://github.com/aspnet/AspNetCore/issues/14789
+                    var formattedRouteKeys = string.Join(", ", resolvedRouteValues.Keys.Select(k => $"'{k}'"));
+                    throw new InvalidOperationException(
+                        $"Failed to update the route pattern '{resolvedRoutePattern.RawText}' with required route values. " +
+                        $"This can occur when the route pattern contains parameters with reserved names such as: {formattedRouteKeys} " +
+                        $"and also uses route constraints such as '{{action:int}}'. " +
+                        $"To fix this error, choose a different parmaeter name.");
                 }
 
                 var builder = new RouteEndpointBuilder(_requestDelegate, updatedRoutePattern, action.AttributeRouteInfo.Order)

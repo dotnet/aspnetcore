@@ -155,6 +155,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return HttpUtilities.Http2Version;
                 }
+                if (_httpVersion == Http.HttpVersion.Http3)
+                {
+                    return HttpUtilities.Http3Version;
+                }
 
                 return string.Empty;
             }
@@ -175,6 +179,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (ReferenceEquals(value, HttpUtilities.Http2Version))
                 {
                     _httpVersion = Http.HttpVersion.Http2;
+                }
+                else if (ReferenceEquals(value, HttpUtilities.Http3Version))
+                {
+                    _httpVersion = Http.HttpVersion.Http3;
                 }
                 else
                 {
@@ -197,6 +205,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (value == HttpUtilities.Http2Version)
             {
                 _httpVersion = Http.HttpVersion.Http2;
+            }
+            else if (value == HttpUtilities.Http3Version)
+            {
+                _httpVersion = Http.HttpVersion.Http3;
             }
             else
             {
@@ -492,7 +504,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
@@ -503,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.Append(name, value);
         }
 
-        public void OnTrailer(Span<byte> name, Span<byte> value)
+        public void OnTrailer(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // Trailers still count towards the limit.
             _requestHeadersParsed++;
@@ -1044,7 +1056,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteSuffix()
         {
-            if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
+            if (_autoChunk || _httpVersion >= Http.HttpVersion.Http2)
             {
                 // For the same reason we call CheckLastWrite() in Content-Length responses.
                 PreventRequestAbortedCancellation();
@@ -1160,7 +1172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             responseHeaders.SetReadOnly();
 
-            if (!hasConnection && _httpVersion != Http.HttpVersion.Http2)
+            if (!hasConnection && _httpVersion < Http.HttpVersion.Http2)
             {
                 if (!_keepAlive)
                 {

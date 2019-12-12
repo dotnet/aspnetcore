@@ -16,7 +16,7 @@ export default function configureStore(history: History, initialState?: Applicat
     });
 
     const enhancers = [];
-    const windowIfDefined = typeof window === 'undefined' ? null : window as any;
+    const windowIfDefined = typeof window === 'undefined' ? null : window as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (windowIfDefined && windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__) {
         enhancers.push(windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__());
     }

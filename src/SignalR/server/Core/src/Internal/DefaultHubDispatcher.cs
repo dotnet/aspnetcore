@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             {
                                 if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
                                 {
-                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
                                     arguments[parameterPointer] = cts.Token;
                                 }
                                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             return;
                         }
 
-                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted, default);
                         connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
                         var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, typeof(THub), hubMethodName, hubMethodArguments));
         }
 
         private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)
@@ -547,6 +547,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
+                if (methodInfo.IsGenericMethod)
+                {
+                    throw new NotSupportedException($"Method '{methodInfo.Name}' is a generic method which is not supported on a Hub.");
+                }
+
                 var methodName =
                     methodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
                     methodInfo.Name;

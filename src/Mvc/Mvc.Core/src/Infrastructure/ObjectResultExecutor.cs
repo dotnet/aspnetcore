@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
-        private readonly AsyncEnumerableReader _asyncEnumerableReader;
+        private readonly AsyncEnumerableReader _asyncEnumerableReaderFactory;
 
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
             var options = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
-            _asyncEnumerableReader = new AsyncEnumerableReader(options);
+            _asyncEnumerableReaderFactory = new AsyncEnumerableReader(options);
         }
 
         /// <summary>
@@ -117,19 +118,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var value = result.Value;
 
-            if (value is IAsyncEnumerable<object> asyncEnumerable)
+            if (value != null && _asyncEnumerableReaderFactory.TryGetReader(value.GetType(), out var reader))
             {
-                return ExecuteAsyncEnumerable(context, result, asyncEnumerable);
+                return ExecuteAsyncEnumerable(context, result, value, reader);
             }
 
             return ExecuteAsyncCore(context, result, objectType, value);
         }
 
-        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, IAsyncEnumerable<object> asyncEnumerable)
+        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, object asyncEnumerable, Func<object, Task<ICollection>> reader)
         {
             Log.BufferingAsyncEnumerable(Logger, asyncEnumerable);
 
-            var enumerated = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+            var enumerated = await reader(asyncEnumerable);
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                    "Buffering IAsyncEnumerable instance of type '{Type}'.");
             }
 
-            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+            public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
                 => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }

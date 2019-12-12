@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// Determines if a given <paramref name="typeInfo"/> is a controller.
         /// </summary>
         /// <param name="typeInfo">The <see cref="TypeInfo"/> candidate.</param>
-        /// <returns><code>true</code> if the type is a controller; otherwise <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if the type is a controller; otherwise <see langword="false" />.</returns>
         protected virtual bool IsController(TypeInfo typeInfo)
         {
             if (!typeInfo.IsClass)
