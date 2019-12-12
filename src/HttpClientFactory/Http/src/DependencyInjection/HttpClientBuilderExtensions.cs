@@ -487,6 +487,60 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Sets the <see cref="Predicate{T}"/> which determines whether to log HTTP header value or redact before logging
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="isSensitiveHeader">The <see cref="Predicate{T}"/> which determines whether to log HTTP header value or redact before logging.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Predicate<string> isSensitiveHeader)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (isSensitiveHeader == null)
+            {
+                throw new ArgumentNullException(nameof(isSensitiveHeader));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                options.IsSensitiveHeader = isSensitiveHeader;
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the HTTP headers collection which values should be redacted before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="redactedLoggedHeaderNames">The HTTP headers collection which values should not be logged.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, ICollection<string> redactedLoggedHeaderNames)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (redactedLoggedHeaderNames == null)
+            {
+                throw new ArgumentNullException(nameof(redactedLoggedHeaderNames));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                var sensitiveHeaders = new HashSet<string>(redactedLoggedHeaderNames, StringComparer.OrdinalIgnoreCase);
+
+                options.IsSensitiveHeader = (header) => sensitiveHeaders.Contains(header);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
         /// Sets the length of time that a <see cref="HttpMessageHandler"/> instance can be reused. Each named
         /// client can have its own configured handler lifetime value. The default value is two minutes. Set the lifetime to
         /// <see cref="Timeout.InfiniteTimeSpan"/> to disable handler expiry.
@@ -523,35 +577,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HandlerLifetime = handlerLifetime);
-            return builder;
-        }
-
-        /// <summary>
-        /// Sets the HTTP headers collection which values should not be logged.
-        /// </summary>
-        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="logSensitiveHeaders">The HTTP headers collection which values should not be logged.</param>
-        /// <returns></returns>
-        public static IHttpClientBuilder SetLogSensitiveHeaders(this IHttpClientBuilder builder, ICollection<string> logSensitiveHeaders)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (logSensitiveHeaders == null)
-            {
-                throw new ArgumentNullException(nameof(logSensitiveHeaders));
-            }
-
-            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
-            {
-                foreach (var logSensitiveHeader in logSensitiveHeaders)
-                {
-                    options.LogSensitiveHeaders.Add(logSensitiveHeader);
-                }
-            });
-
             return builder;
         }
 

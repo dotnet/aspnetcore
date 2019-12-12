@@ -12,18 +12,18 @@ namespace Microsoft.Extensions.Http.Logging
     internal class HttpHeadersLogValue : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly Kind _kind;
-        private readonly IReadOnlyList<string> _logSensitiveHeaders;
+        private readonly Predicate<string> _isSensitiveHeader;
 
         private string _formatted;
         private List<KeyValuePair<string, object>> _values;
 
-        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, IReadOnlyList<string> logSensitiveHeaders)
+        public HttpHeadersLogValue(Kind kind, HttpHeaders headers, HttpHeaders contentHeaders, Predicate<string> isSensitiveHeader)
         {
             _kind = kind;
+            _isSensitiveHeader = isSensitiveHeader;
 
             Headers = headers;
             ContentHeaders = contentHeaders;
-            _logSensitiveHeaders = logSensitiveHeaders;
         }
 
         public HttpHeaders Headers { get; }
@@ -92,36 +92,27 @@ namespace Microsoft.Extensions.Http.Logging
 
                 for (var i = 0; i < Values.Count; i++)
                 {
-                    var isLogSensitiveHeader = false;
                     var kvp = Values[i];
                     builder.Append(kvp.Key);
                     builder.Append(": ");
 
-                    for (int headerIndex = 0; headerIndex < _logSensitiveHeaders.Count; headerIndex++)
+                    if (_isSensitiveHeader(kvp.Key))
                     {
-                        if (kvp.Key.Equals(_logSensitiveHeaders[headerIndex], StringComparison.OrdinalIgnoreCase))
+                        builder.Append("*");
+                        builder.AppendLine();
+                    }
+                    else
+                    {
+                        foreach (var value in (IEnumerable<object>)kvp.Value)
                         {
-                            builder.Append("*");
-                            builder.AppendLine();
-                            isLogSensitiveHeader = true;
-                            break;
+                            builder.Append(value);
+                            builder.Append(", ");
                         }
-                    }
 
-                    if (isLogSensitiveHeader)
-                    {
-                        continue;
+                        // Remove the extra ', '
+                        builder.Remove(builder.Length - 2, 2);
+                        builder.AppendLine();
                     }
-
-                    foreach (var value in (IEnumerable<object>)kvp.Value)
-                    {
-                        builder.Append(value);
-                        builder.Append(", ");
-                    }
-
-                    // Remove the extra ', '
-                    builder.Remove(builder.Length - 2, 2);
-                    builder.AppendLine();
                 }
 
                 _formatted = builder.ToString();

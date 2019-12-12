@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -51,14 +50,14 @@ namespace Microsoft.Extensions.Http
                 var innerLogger = _loggerFactory.CreateLogger($"System.Net.Http.HttpClient.{loggerName}.ClientHandler");
 
                 var options = _optionsMonitor.Get(builder.Name);
-                var logSensitiveHeaders = new ReadOnlyCollection<string>(_optionsMonitor.Get(builder.Name).LogSensitiveHeaders);
+                var isSensitiveHeaderPredicate = options.IsSensitiveHeader;
 
                 // The 'scope' handler goes first so it can surround everything.
-                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(outerLogger, logSensitiveHeaders));
+                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(outerLogger, isSensitiveHeaderPredicate));
 
                 // We want this handler to be last so we can log details about the request after
                 // service discovery and security happen.
-                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(innerLogger, logSensitiveHeaders));
+                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(innerLogger, isSensitiveHeaderPredicate));
 
             };
         }

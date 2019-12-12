@@ -70,9 +70,9 @@ namespace Microsoft.Extensions.Http
         }
 
         /// <summary>
-        /// Gets a list of sensitive headers.
+        /// The predicate which determines whether to log HTTP header value or redact before logging.
         /// </summary>
-        public IList<string> LogSensitiveHeaders { get; } = new List<string>();
+        public Predicate<string> IsSensitiveHeader { get; set; }
 
         /// <summary>
         /// <para>

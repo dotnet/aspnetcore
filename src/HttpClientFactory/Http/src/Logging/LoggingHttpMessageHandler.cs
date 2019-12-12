@@ -19,22 +19,22 @@ namespace Microsoft.Extensions.Http.Logging
     public class LoggingHttpMessageHandler : DelegatingHandler
     {
         private ILogger _logger;
-        private readonly IReadOnlyList<string> _logSensitiveHeaders;
+        private readonly Predicate<string> _isSensitiveHeader;
 
-        public LoggingHttpMessageHandler(ILogger logger, IReadOnlyList<string> logSensitiveHeaders)
+        public LoggingHttpMessageHandler(ILogger logger, Predicate<string> isSensitiveHeader)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (logSensitiveHeaders == null)
+            if (isSensitiveHeader == null)
             {
-                throw new ArgumentNullException(nameof(logSensitiveHeaders));
+                throw new ArgumentNullException(nameof(isSensitiveHeader));
             }
 
             _logger = logger;
-            _logSensitiveHeaders = logSensitiveHeaders;
+            _isSensitiveHeader = isSensitiveHeader;
         }
 
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -48,9 +48,9 @@ namespace Microsoft.Extensions.Http.Logging
 
             // Not using a scope here because we always expect this to be at the end of the pipeline, thus there's
             // not really anything to surround.
-            Log.RequestStart(_logger, request, _logSensitiveHeaders);
+            Log.RequestStart(_logger, request, _isSensitiveHeader);
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            Log.RequestEnd(_logger, response, stopwatch.GetElapsedTime(), _logSensitiveHeaders);
+            Log.RequestEnd(_logger, response, stopwatch.GetElapsedTime(), _isSensitiveHeader);
 
             return response;
         }
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.RequestEnd,
                 "Received HTTP response headers after {ElapsedMilliseconds}ms - {StatusCode}");
 
-            public static void RequestStart(ILogger logger, HttpRequestMessage request, IReadOnlyList<string> logSensitiveHeaders)
+            public static void RequestStart(ILogger logger, HttpRequestMessage request, Predicate<string> isSensitiveHeader)
             {
                 _requestStart(logger, request.Method, request.RequestUri, null);
 
@@ -85,13 +85,13 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.RequestHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers, logSensitiveHeaders),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers, isSensitiveHeader),
                         null,
                         (state, ex) => state.ToString());
                 }
             }
 
-            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, IReadOnlyList<string> logSensitiveHeaders)
+            public static void RequestEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration, Predicate<string> isSensitiveHeader)
             {
                 _requestEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Http.Logging
                     logger.Log(
                         LogLevel.Trace,
                         EventIds.ResponseHeader,
-                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers, logSensitiveHeaders),
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers, isSensitiveHeader),
                         null,
                         (state, ex) => state.ToString());
                 }

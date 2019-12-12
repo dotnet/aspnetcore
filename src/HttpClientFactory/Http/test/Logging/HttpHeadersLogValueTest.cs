@@ -25,12 +25,16 @@ namespace Microsoft.Extensions.Http.Tests.Logging
                 { "unsecureHeader2", "value2" },
                 { "secureHeader2", "value2" }
             };
-            var logSensitiveHeaders = new List<string>
+            var logSensitiveHeaders = new HashSet<string>
             {
                 "secureHeader1",
                 "secureHeader2",
             };
-            var httpHeadersLogValue = new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, headers, contentHeaders, logSensitiveHeaders);
+            var sensitiveHeaders = new HashSet<string>(logSensitiveHeaders, StringComparer.OrdinalIgnoreCase);
+
+            Predicate<string> isSensitiveHeader = (header) => sensitiveHeaders.Contains(header);
+
+            var httpHeadersLogValue = new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, headers, contentHeaders, isSensitiveHeader);
 
             // Act
             var result = httpHeadersLogValue.ToString();
