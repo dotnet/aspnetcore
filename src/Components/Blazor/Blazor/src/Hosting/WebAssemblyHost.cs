@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
         public WebAssemblyHost(IServiceProvider services, IJSRuntime runtime)
         {
+            // To ensure [JSInterop] methods don't get linked out, have a reference to their enclosing types
+            GC.KeepAlive(typeof(JSInteropMethods));
+            GC.KeepAlive(typeof(WebAssemblyEventDispatcher));
+
             Services = services ?? throw new ArgumentNullException(nameof(services));
             _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         }

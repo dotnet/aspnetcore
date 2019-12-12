@@ -112,6 +112,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Tasks
                     args.Append(action);
                     args.Append(" ").AppendLine(Quote(assemblyName));
                 }
+
+                var actionflag = assembly.GetMetadata("actionflag");
+                if ((actionflag != null) && (actionflag.Length > 0))
+                {
+                    args.Append("-f ");
+                    args.Append(actionflag);
+                    args.Append(" ").AppendLine(Quote(assemblyName));
+                }
             }
 
             if (ReferenceAssemblyPaths != null)
