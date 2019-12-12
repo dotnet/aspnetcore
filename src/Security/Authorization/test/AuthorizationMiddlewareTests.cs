@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
-        public async Task HasEndpointWithAuth_AnonymousUser_ChallengesAuthenticationSchemes()
+        public async Task HasEndpointWithAuth_ChallengesAuthenticationSchemes()
         {
             // Arrange
             var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var authenticationService = new TestAuthenticationService();
 
             var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-            var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute() { AuthenticationSchemes = "whatever"}), authenticationService: authenticationService);
+            var context = GetHttpContext(endpoint: CreateEndpoint(new AuthorizeAttribute() { AuthenticationSchemes = "whatever"}), authenticationService: authenticationService);
 
             // Act
             await middleware.Invoke(context);
