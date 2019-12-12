@@ -24,11 +24,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             var memoryPoolFeature = connectionContext.Features.Get<IMemoryPoolFeature>();
 
-            var httpConnectionContext = new HttpConnectionContext
+            var http3ConnectionContext = new Http3ConnectionContext
             {
                 ConnectionId = connectionContext.ConnectionId,
                 MultiplexedConnectionContext = connectionContext,
-                Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 MemoryPool = memoryPoolFeature.MemoryPool,
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };
 
-            var connection = new HttpConnection(httpConnectionContext);
+            var connection = new Http3ConnectionTemp(http3ConnectionContext);
 
             return connection.ProcessRequestsAsync(_application);
         }

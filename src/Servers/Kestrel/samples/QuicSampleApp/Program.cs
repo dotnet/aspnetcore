@@ -45,46 +45,37 @@ namespace QuicSampleApp
                      options.Listen(IPAddress.Any, basePort, listenOptions =>
                      {
                          listenOptions.Protocols = HttpProtocols.Http3;
-                         listenOptions.UseMultiplexed((next) =>
-                         {
-                             return async connection =>
-                             {
-                                 while (true)
-                                 {
-                                     var streamContext = await connection.AcceptAsync();
-                                     if (streamContext == null)
-                                     {
-                                         return;
-                                     }
-                                     _ = next(streamContext);
-                                 }
-                             };
-                         });
 
-                         async Task EchoServer(ConnectionContext connection)
+                         async Task EchoServer(MultiplexedConnectionContext connection)
                          {
                              // For graceful shutdown
-                             try
+
+                             while (true)
                              {
-                                 while (true)
+                                 var stream = await connection.AcceptAsync();
+                                 try
                                  {
-                                     var result = await connection.Transport.Input.ReadAsync();
-
-                                     if (result.IsCompleted)
+                                     while (true)
                                      {
-                                         break;
+                                         var result = await stream.Transport.Input.ReadAsync();
+
+                                         if (result.IsCompleted)
+                                         {
+                                             break;
+                                         }
+
+                                         await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
+
+                                         stream.Transport.Input.AdvanceTo(result.Buffer.End);
                                      }
-
-                                     await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
-
-                                     connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                                 }
+                                 catch (OperationCanceledException)
+                                 {
                                  }
                              }
-                             catch (OperationCanceledException)
-                             {
-                             }
                          }
-                         listenOptions.Run(EchoServer);
+
+                         listenOptions.RunMultiplexed(EchoServer);
                      });
                  })
                  .UseStartup<Startup>();

@@ -96,18 +96,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _multiplexedContext = new TestMultiplexedConnectionContext(this);
 
-            var httpConnectionContext = new HttpConnectionContext
+            var httpConnectionContext = new Http3ConnectionContext
             {
                 MultiplexedConnectionContext = _multiplexedContext,
                 ConnectionFeatures = features,
                 ServiceContext = _serviceContext,
                 MemoryPool = _memoryPool,
-                Transport = null, // Make sure it's null
                 TimeoutControl = _mockTimeoutControl.Object
             };
 
             _connection = new Http3Connection(httpConnectionContext);
-            var httpConnection = new HttpConnection(httpConnectionContext);
+            var httpConnection = new Http3ConnectionTemp(httpConnectionContext);
             httpConnection.Initialize(_connection);
             _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));

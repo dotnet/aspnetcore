@@ -25,14 +25,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private readonly List<(IMultiplexedConnectionListener, Task)> _multiplexedTransports = new List<(IMultiplexedConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly List<IConnectionListenerFactory> _transportFactories;
-        private readonly List<IConnectionListenerFactory> _multiplexedTransportFactories;
+        private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
 
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
-            : this(transportFactories, CreateServiceContext(options, loggerFactory))
+            : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
+        {
+        }
+        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ILoggerFactory loggerFactory)
+            : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
+        {
+        }
+
+        // For testing
+        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, ServiceContext serviceContext)
+            : this(transportFactories, null, serviceContext)
         {
         }
 
@@ -45,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             _transportFactories = transportFactories.ToList();
+            _multiplexedTransportFactories = multiplexedFactories?.ToList();
 
             if (_transportFactories.Count == 0)
             {
@@ -132,32 +143,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 async Task OnBind(ListenOptions options)
                 {
                     // Add the HTTP middleware as the terminal connection middleware
-                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1)
+                    if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1
+                        || (options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2)
                     {
-                        options.UseHttp1Server(ServiceContext, application, options.Protocols);
+                        options.UseHttpServer(ServiceContext, application, options.Protocols);
                         var connectionDelegate = options.Build();
-                    }
 
-                    if ((options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2)
-                    {
-                        options.UseHttp2Server(ServiceContext, application, options.Protocols);
-                        var connectionDelegate = options.Build();
+                        // Add the connection limit middleware
+                        if (Options.Limits.MaxConcurrentConnections.HasValue)
+                        {
+                            connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                        }
+
+                        var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
+                        var factory = _transportFactories.Last();
+                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
+
+                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
+
+                        _transports.Add((transport, acceptLoopTask));
+                        options.EndPoint = transport.EndPoint;
                     }
 
                     if ((options.Protocols & HttpProtocols.Http3) == HttpProtocols.Http3)
                     {
                         options.UseHttp3Server(ServiceContext, application, options.Protocols);
-                        var connectionDelegate = options.Build();
-                    }
+                        var multiplxedConnectionDelegate = options.BuildMultiplexed();
+                        var multiplexedFactory = _multiplexedTransportFactories.Last();
+                        var multiplexedTransport = await multiplexedFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
+                        var connectionDispatcher = new MultiplexedConnectionDispatcher(ServiceContext, multiplxedConnectionDelegate);
+                        var factory = _multiplexedTransportFactories.Last();
+                        var transport = await factory.BindAsync(options.EndPoint).ConfigureAwait(false);
+                        var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
+                        _multiplexedTransports.Add((transport, acceptLoopTask));
 
-                    // Add the HTTP middleware as the terminal connection middleware
-
-                    var multiplxedConnectionDelegate = options.BuildMultiplexed();
-
-                    // Add the connection limit middleware
-                    if (Options.Limits.MaxConcurrentConnections.HasValue)
-                    {
-                        connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                        options.EndPoint = multiplexedTransport.EndPoint;
                     }
 
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);

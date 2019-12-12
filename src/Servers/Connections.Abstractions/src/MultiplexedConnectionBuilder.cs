@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Connections
             ApplicationServices = applicationServices;
         }
 
-        public IMultiplexedConnectionBuilder Use(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
+        public IMultiplexedConnectionBuilder UseMultiplexed(Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate> middleware)
         {
             _components.Add(middleware);
             return this;
         }
 
-        public MultiplexedConnectionDelegate Build()
+        public MultiplexedConnectionDelegate BuildMultiplexed()
         {
             MultiplexedConnectionDelegate app = features =>
             {

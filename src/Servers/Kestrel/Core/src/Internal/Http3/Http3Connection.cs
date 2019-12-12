@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 {
     internal class Http3Connection : IRequestProcessor
     {
-        public HttpConnectionContext Context { get; private set; }
+        public Http3ConnectionContext Context { get; private set; }
 
         public DynamicTable DynamicTable { get; set; }
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private MultiplexedConnectionContext _multiplexedContext;
         //private volatile bool _haveSentGoAway;
 
-        public Http3Connection(HttpConnectionContext context)
+        public Http3Connection(Http3ConnectionContext context)
         {
             _multiplexedContext = context.MultiplexedConnectionContext;
             Context = context;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
                     {
                         ConnectionId = streamContext.ConnectionId,
                         ConnectionContext = streamContext,
-                        Protocols = Context.Protocols,
+                        Protocols = HttpProtocols.Http3,
                         ServiceContext = Context.ServiceContext,
                         ConnectionFeatures = streamContext.Features,
                         MemoryPool = Context.MemoryPool,
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             {
                 //ConnectionId = "", TODO getting stream ID from stream that isn't started throws an exception.
                 ConnectionContext = connectionContext,
-                Protocols = Context.Protocols,
+                Protocols = HttpProtocols.Http3,
                 ServiceContext = Context.ServiceContext,
                 ConnectionFeatures = connectionContext.Features,
                 MemoryPool = Context.MemoryPool,
