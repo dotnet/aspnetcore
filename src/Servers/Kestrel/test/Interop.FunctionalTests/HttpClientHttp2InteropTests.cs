@@ -791,11 +791,221 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        // ClientReset_BeforeRequestData_ReadThrows
-        // ClientReset_BeforeRequestDataEnd_ReadThrows
-        // ClientReset_BeforeResponse_ResponseSuppressed
-        // ClientReset_BeforeAfterEndStream_WritesSuppressed
-        // ClientReset_BeforeAfterTrailers_TrailersSuppressed
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ClientReset_BeforeRequestData_ReadThrows(string scheme)
+        {
+            var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        try
+                        {
+                            var readTask = context.Request.Body.ReadAsync(new byte[11], 0, 11);
+                            requestReceived.SetResult(0);
+                            var ex = await Assert.ThrowsAsync<IOException>(() => readTask).DefaultTimeout();
+                            serverResult.SetResult(0);
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var streamingContent = new StreamingContent();
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
+            var requestCancellation = new CancellationTokenSource();
+            var requestTask = client.SendAsync(request, requestCancellation.Token);
+            await requestReceived.Task.DefaultTimeout();
+            requestCancellation.Cancel();
+            await serverResult.Task.DefaultTimeout();
+            await Assert.ThrowsAsync<TaskCanceledException>(() => requestTask).DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ClientReset_BeforeRequestDataEnd_ReadThrows(string scheme)
+        {
+            var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        try
+                        {
+                            var read = await context.Request.Body.ReadAsync(new byte[11], 0, 11);
+                            Assert.Equal(11, read);
+                            var readTask = context.Request.Body.ReadAsync(new byte[11], 0, 11);
+                            requestReceived.SetResult(0);
+                            var ex = await Assert.ThrowsAsync<IOException>(() => readTask).DefaultTimeout();
+                            serverResult.SetResult(0);
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var streamingContent = new StreamingContent();
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
+            var requestCancellation = new CancellationTokenSource();
+            var requestTask = client.SendAsync(request, requestCancellation.Token);
+            await streamingContent.SendAsync("Hello World").DefaultTimeout();
+            await requestReceived.Task.DefaultTimeout();
+            requestCancellation.Cancel();
+            await serverResult.Task.DefaultTimeout();
+            await Assert.ThrowsAsync<TaskCanceledException>(() => requestTask).DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ClientReset_BeforeResponse_ResponseSuppressed(string scheme)
+        {
+            var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        try
+                        {
+                            context.RequestAborted.Register(() => serverResult.SetResult(0));
+                            requestReceived.SetResult(0);
+                            await serverResult.Task.DefaultTimeout();
+                            await context.Response.WriteAsync("Hello World").DefaultTimeout();
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var requestCancellation = new CancellationTokenSource();
+            var requestTask = client.GetAsync(url, requestCancellation.Token);
+            await requestReceived.Task.DefaultTimeout();
+            requestCancellation.Cancel();
+            await serverResult.Task.DefaultTimeout();
+            await Assert.ThrowsAsync<TaskCanceledException>(() => requestTask).DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ClientReset_BeforeEndStream_WritesSuppressed(string scheme)
+        {
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        try
+                        {
+                            context.RequestAborted.Register(() => serverResult.SetResult(0));
+                            await context.Response.WriteAsync("Hello World").DefaultTimeout();
+                            await serverResult.Task.DefaultTimeout();
+                            await context.Response.WriteAsync("Hello World").DefaultTimeout();
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+            var read = await responseStream.ReadAsync(new byte[11], 0, 11).DefaultTimeout();
+            Assert.Equal(11, read);
+            responseStream.Dispose(); // Sends reset
+            await serverResult.Task.DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ClientReset_BeforeTrailers_TrailersSuppressed(string scheme)
+        {
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(async context =>
+                    {
+                        try
+                        {
+                            context.RequestAborted.Register(() => serverResult.SetResult(0));
+                            await context.Response.WriteAsync("Hello World").DefaultTimeout();
+                            await serverResult.Task.DefaultTimeout();
+                            context.Response.AppendTrailer("foo", "bar");
+                            await context.Response.CompleteAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            var responseStream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+            var read = await responseStream.ReadAsync(new byte[11], 0, 11).DefaultTimeout();
+            Assert.Equal(11, read);
+            responseStream.Dispose(); // Sends reset
+            await serverResult.Task.DefaultTimeout();
+
+            await host.StopAsync().DefaultTimeout();
+        }
 
         private static HttpClient CreateClient()
         {
