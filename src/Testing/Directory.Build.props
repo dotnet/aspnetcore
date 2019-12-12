@@ -4,5 +4,6 @@
   <PropertyGroup>
     <!-- These projects depend on a 3rd party source -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 </Project>
