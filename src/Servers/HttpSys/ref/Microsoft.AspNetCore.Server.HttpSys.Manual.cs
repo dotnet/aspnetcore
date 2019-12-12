@@ -16,6 +16,11 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         internal static System.Version V2;
         internal const string Zero = "0";
     }
+    internal sealed partial class HeapAllocHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid
+    {
+        private HeapAllocHandle() : base (default(bool)) { }
+        protected override bool ReleaseHandle() { throw null; }
+    }
     internal enum HttpSysRequestHeader
     {
         CacheControl = 0,
@@ -59,6 +64,20 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         Te = 38,
         Translate = 39,
         UserAgent = 40,
+    }
+    internal partial class SafeLocalFreeChannelBinding : System.Security.Authentication.ExtendedProtection.ChannelBinding
+    {
+        public SafeLocalFreeChannelBinding() { }
+        public override bool IsInvalid { get { throw null; } }
+        public override int Size { get { throw null; } }
+        public static Microsoft.AspNetCore.HttpSys.Internal.SafeLocalFreeChannelBinding LocalAlloc(int cb) { throw null; }
+        protected override bool ReleaseHandle() { throw null; }
+    }
+    internal sealed partial class SafeLocalMemHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid
+    {
+        internal SafeLocalMemHandle() : base (default(bool)) { }
+        internal SafeLocalMemHandle(System.IntPtr existingHandle, bool ownsHandle) : base (default(bool)) { }
+        protected override bool ReleaseHandle() { throw null; }
     }
     internal partial class SocketAddress
     {
@@ -180,6 +199,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal ushort* pAbsPath;
             internal ushort* pQueryString;
         }
+        [System.FlagsAttribute]
+        internal enum HTTP_CREATE_REQUEST_QUEUE_FLAG : uint
+        {
+            None = (uint)0,
+            OpenExisting = (uint)1,
+            Controller = (uint)2,
+        }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
         internal partial struct HTTP_DATA_CHUNK
         {
@@ -212,6 +238,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA = (uint)4,
             HTTP_SEND_RESPONSE_FLAG_RAW_HEADER = (uint)4,
             HTTP_SEND_RESPONSE_FLAG_OPAQUE = (uint)64,
+            HTTP_SEND_RESPONSE_FLAG_GOAWAY = (uint)256,
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         internal partial struct HTTP_KNOWN_HEADER
@@ -787,9 +814,129 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         public static void ValidateHeaderCharacters(Microsoft.Extensions.Primitives.StringValues headerValues) { }
         public static void ValidateHeaderCharacters(string headerCharacters) { }
     }
+    internal static partial class UnsafeNclNativeMethods
+    {
+        [System.Runtime.InteropServices.DllImport("api-ms-win-core-io-l1-1-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint CancelIoEx(System.Runtime.InteropServices.SafeHandle handle, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped overlapped);
+        [System.Runtime.InteropServices.DllImport("api-ms-win-core-heap-L1-2-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern System.IntPtr GetProcessHeap();
+        [System.Runtime.InteropServices.DllImport("api-ms-win-core-heap-L1-2-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern bool HeapFree(System.IntPtr hHeap, uint dwFlags, System.IntPtr lpMem);
+        [System.Runtime.InteropServices.DllImport("api-ms-win-core-kernel32-legacy-l1-1-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern bool SetFileCompletionNotificationModes(System.Runtime.InteropServices.SafeHandle handle, Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods.FileCompletionNotificationModes modes);
+        [System.Runtime.InteropServices.DllImport("tokenbinding.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]public unsafe static extern int TokenBindingVerifyMessage(byte* tokenBindingMessage, uint tokenBindingMessageSize, char* keyType, byte* tlsUnique, uint tlsUniqueSize, out Microsoft.AspNetCore.HttpSys.Internal.HeapAllocHandle resultList);
+        internal static partial class ErrorCodes
+        {
+            internal const uint ERROR_ACCESS_DENIED = (uint)5;
+            internal const uint ERROR_ALREADY_EXISTS = (uint)183;
+            internal const uint ERROR_CONNECTION_INVALID = (uint)1229;
+            internal const uint ERROR_FILE_NOT_FOUND = (uint)2;
+            internal const uint ERROR_HANDLE_EOF = (uint)38;
+            internal const uint ERROR_INVALID_NAME = (uint)123;
+            internal const uint ERROR_INVALID_PARAMETER = (uint)87;
+            internal const uint ERROR_IO_PENDING = (uint)997;
+            internal const uint ERROR_MORE_DATA = (uint)234;
+            internal const uint ERROR_NOT_FOUND = (uint)1168;
+            internal const uint ERROR_NOT_SUPPORTED = (uint)50;
+            internal const uint ERROR_OPERATION_ABORTED = (uint)995;
+            internal const uint ERROR_SHARING_VIOLATION = (uint)32;
+            internal const uint ERROR_SUCCESS = (uint)0;
+        }
+        [System.FlagsAttribute]
+        internal enum FileCompletionNotificationModes : byte
+        {
+            None = (byte)0,
+            SkipCompletionPortOnSuccess = (byte)1,
+            SkipSetEventOnHandle = (byte)2,
+        }
+        internal static partial class SafeNetHandles
+        {
+            [System.Runtime.InteropServices.DllImport("api-ms-win-core-handle-l1-1-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern bool CloseHandle(System.IntPtr handle);
+            [System.Runtime.InteropServices.DllImport("sspicli.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern int FreeContextBuffer(System.IntPtr contextBuffer);
+            [System.Runtime.InteropServices.DllImport("api-ms-win-core-heap-obsolete-L1-1-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern Microsoft.AspNetCore.HttpSys.Internal.SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, System.UIntPtr sizetdwBytes);
+            [System.Runtime.InteropServices.DllImport("api-ms-win-core-heap-obsolete-L1-1-0.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern System.IntPtr LocalFree(System.IntPtr handle);
+        }
+        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        internal partial class SECURITY_ATTRIBUTES
+        {
+            public bool bInheritHandle;
+            public Microsoft.AspNetCore.HttpSys.Internal.SafeLocalMemHandle lpSecurityDescriptor;
+            public int nLength;
+            public SECURITY_ATTRIBUTES() { }
+        }
+        internal static partial class TokenBinding
+        {
+            internal enum TOKENBINDING_EXTENSION_FORMAT
+            {
+                TOKENBINDING_EXTENSION_FORMAT_UNDEFINED = 0,
+            }
+            internal enum TOKENBINDING_HASH_ALGORITHM : byte
+            {
+                TOKENBINDING_HASH_ALGORITHM_SHA256 = (byte)4,
+            }
+            [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+            internal partial struct TOKENBINDING_IDENTIFIER
+            {
+                public TOKENBINDING_TYPE bindingType;
+                public TOKENBINDING_HASH_ALGORITHM hashAlgorithm;
+                public TOKENBINDING_SIGNATURE_ALGORITHM signatureAlgorithm;
+            }
+            [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+            internal partial struct TOKENBINDING_RESULT_DATA
+            {
+                public uint identifierSize;
+                public unsafe TOKENBINDING_IDENTIFIER* identifierData;
+                public TOKENBINDING_EXTENSION_FORMAT extensionFormat;
+                public uint extensionSize;
+                public System.IntPtr extensionData;
+            }
+            [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+            internal partial struct TOKENBINDING_RESULT_LIST
+            {
+                public uint resultCount;
+                public unsafe TOKENBINDING_RESULT_DATA* resultData;
+            }
+            internal enum TOKENBINDING_SIGNATURE_ALGORITHM : byte
+            {
+                TOKENBINDING_SIGNATURE_ALGORITHM_RSA = (byte)1,
+                TOKENBINDING_SIGNATURE_ALGORITHM_ECDSAP256 = (byte)3,
+            }
+            internal enum TOKENBINDING_TYPE : byte
+            {
+                TOKENBINDING_TYPE_PROVIDED = (byte)0,
+                TOKENBINDING_TYPE_REFERRED = (byte)1,
+            }
+        }
+    }
 }
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    internal static partial class HttpApi
+    {
+        internal static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_API_VERSION ApiVersion { get { throw null; } }
+        internal static bool Supported { get { throw null; } }
+        internal static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTPAPI_VERSION Version { get { throw null; } }
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpAddUrlToUrlGroup(ulong urlGroupId, string pFullyQualifiedUrl, ulong context, uint pReserved);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpCancelHttpRequest(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong requestId, System.IntPtr pOverlapped);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpCloseRequestQueue(System.IntPtr pReqQueueHandle);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpCloseServerSession(ulong serverSessionId);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpCloseUrlGroup(ulong urlGroupId);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpCreateRequestQueue(Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTPAPI_VERSION version, string pName, Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods.SECURITY_ATTRIBUTES pSecurityAttributes, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG flags, out Microsoft.AspNetCore.Server.HttpSys.HttpRequestQueueV2Handle pReqQueueHandle);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpCreateServerSession(Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTPAPI_VERSION version, ulong* serverSessionId, uint reserved);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpCreateUrlGroup(ulong serverSessionId, ulong* urlGroupId, uint reserved);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpInitialize(Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTPAPI_VERSION version, uint flags, void* pReserved);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpReceiveClientCertificate(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong connectionId, uint flags, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pSslClientCertInfo, uint sslClientCertInfoSize, uint* pBytesReceived, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpReceiveClientCertificate(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong connectionId, uint flags, byte* pSslClientCertInfo, uint sslClientCertInfoSize, uint* pBytesReceived, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpReceiveHttpRequest(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong requestId, uint flags, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_REQUEST* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpReceiveRequestEntityBody(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong requestId, uint flags, System.IntPtr pEntityBuffer, uint entityBufferLength, out uint bytesReturned, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpRemoveUrlFromUrlGroup(ulong urlGroupId, string pFullyQualifiedUrl, uint flags);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpSendHttpResponse(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong requestId, uint flags, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_RESPONSE_V2* pHttpResponse, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, System.IntPtr pReserved1, uint Reserved2, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped, System.IntPtr pLogData);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal unsafe static extern uint HttpSendResponseEntityBody(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, System.IntPtr pReserved1, uint Reserved2, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped pOverlapped, System.IntPtr pLogData);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpSetRequestQueueProperty(System.Runtime.InteropServices.SafeHandle requestQueueHandle, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SERVER_PROPERTY serverProperty, System.IntPtr pPropertyInfo, uint propertyInfoLength, uint reserved, System.IntPtr pReserved);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpSetUrlGroupProperty(ulong urlGroupId, Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes.HTTP_SERVER_PROPERTY serverProperty, System.IntPtr pPropertyInfo, uint propertyInfoLength);
+        [System.Runtime.InteropServices.DllImport("httpapi.dll")][System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.PreserveSig)]internal static extern uint HttpWaitForDisconnectEx(System.Runtime.InteropServices.SafeHandle requestQueueHandle, ulong connectionId, uint reserved, Microsoft.AspNetCore.HttpSys.Internal.SafeNativeOverlapped overlapped);
+    }
+    internal sealed partial class HttpRequestQueueV2Handle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid
+    {
+        private HttpRequestQueueV2Handle() : base (default(bool)) { }
+        protected override bool ReleaseHandle() { throw null; }
+    }
     internal partial class ResponseBody : System.IO.Stream
     {
         internal ResponseBody(Microsoft.AspNetCore.Server.HttpSys.RequestContext requestContext) { }

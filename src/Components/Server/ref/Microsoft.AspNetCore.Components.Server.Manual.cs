@@ -4,11 +4,27 @@
 namespace Microsoft.AspNetCore.Components
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal partial struct ComponentParameter
+    {
+        private object _dummy;
+        public string Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string TypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public static (System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> parameterDefinitions, System.Collections.Generic.IList<object> parameterValues) FromParameterView(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
+    }
+    internal partial class ComponentParametersTypeCache
+    {
+        public ComponentParametersTypeCache() { }
+        public System.Type GetParameterType(string assembly, string type) { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct ServerComponent
     {
-        public ServerComponent(int sequence, string assemblyName, string typeName, System.Guid invocationId) { throw null; }
+        public ServerComponent(int sequence, string assemblyName, string typeName, System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> parametersDefinitions, System.Collections.Generic.IList<object> parameterValues, System.Guid invocationId) { throw null; }
         public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Guid InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> ParameterDefinitions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<object> ParameterValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string TypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
@@ -55,15 +71,16 @@ namespace Microsoft.AspNetCore.Components.Server
     }
     internal partial class ServerComponentDeserializer
     {
-        public ServerComponentDeserializer(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Server.ServerComponentDeserializer> logger, Microsoft.AspNetCore.Components.ServerComponentTypeCache rootComponentTypeCache) { }
+        public ServerComponentDeserializer(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Server.ServerComponentDeserializer> logger, Microsoft.AspNetCore.Components.ServerComponentTypeCache rootComponentTypeCache, Microsoft.AspNetCore.Components.Server.ComponentParameterDeserializer parametersDeserializer) { }
         public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out System.Collections.Generic.List<Microsoft.AspNetCore.Components.Server.ComponentDescriptor> descriptors) { throw null; }
     }
     internal partial class ComponentDescriptor
     {
         public ComponentDescriptor() { }
         public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Components.ParameterView Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public void Deconstruct(out System.Type componentType, out int sequence) { throw null; }
+        public void Deconstruct(out System.Type componentType, out Microsoft.AspNetCore.Components.ParameterView parameters, out int sequence) { throw null; }
     }
     internal sealed partial class ComponentHub : Microsoft.AspNetCore.SignalR.Hub
     {
@@ -84,6 +101,11 @@ namespace Microsoft.AspNetCore.Components.Server
         public System.Threading.Tasks.ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords) { throw null; }
+    }
+    internal partial class ComponentParameterDeserializer
+    {
+        public ComponentParameterDeserializer(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Server.ComponentParameterDeserializer> logger, Microsoft.AspNetCore.Components.ComponentParametersTypeCache parametersCache) { }
+        public bool TryDeserializeParameters(System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> parametersDefinitions, System.Collections.Generic.IList<object> parameterValues, out Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Server.BlazorPack

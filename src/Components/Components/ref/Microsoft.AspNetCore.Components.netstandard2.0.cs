@@ -294,8 +294,39 @@ namespace Microsoft.AspNetCore.Components
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ParameterView
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
+        public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
+        public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName) { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue) { throw null; }
+        public void SetParameterProperties(object target) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
+        public bool TryGetValue<TValue>(string parameterName, out TValue result) { throw null; }
+        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public partial struct Enumerator
+        {
+            private object _dummy;
+            private int _dummyPrimitive;
+            public Microsoft.AspNetCore.Components.ParameterValue Current { get { throw null; } }
+            public bool MoveNext() { throw null; }
+        }
+    }
     public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
     public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<TValue>(TValue value);
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct RenderHandle
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
+        public bool IsInitialized { get { throw null; } }
+        public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public sealed partial class RouteAttribute : System.Attribute
     {

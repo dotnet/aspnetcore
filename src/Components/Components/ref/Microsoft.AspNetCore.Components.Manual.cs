@@ -15,15 +15,9 @@ namespace Microsoft.AspNetCore.Components
     {
         internal static string NormalizeBaseUri(string baseUri) { throw null; }
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderHandle
     {
-        private readonly Microsoft.AspNetCore.Components.RenderTree.Renderer _renderer;
-        private readonly int _componentId;
         internal RenderHandle(Microsoft.AspNetCore.Components.RenderTree.Renderer renderer, int componentId) { throw null; }
-        public Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
-        public bool IsInitialized { get { throw null; } }
-        public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
     internal partial class ComponentFactory
     {
@@ -31,33 +25,13 @@ namespace Microsoft.AspNetCore.Components
         public ComponentFactory() { }
         public Microsoft.AspNetCore.Components.IComponent InstantiateComponent(System.IServiceProvider serviceProvider, System.Type componentType) { throw null; }
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ParameterView
     {
-        private readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame[] _frames;
-        private readonly int _ownerIndex;
-        private readonly System.Collections.Generic.IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
-        internal ParameterView(Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame[] frames, int ownerIndex) { throw null; }
-        public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
+        internal ParameterView(in Microsoft.AspNetCore.Components.Rendering.ParameterViewLifetime lifetime, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame[] frames, int ownerIndex) { throw null; }
+        internal Microsoft.AspNetCore.Components.Rendering.ParameterViewLifetime Lifetime { get { throw null; } }
         internal void CaptureSnapshot(Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> builder) { }
         internal bool DefinitelyEquals(Microsoft.AspNetCore.Components.ParameterView oldParameters) { throw null; }
-        public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
-        public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
-        public TValue GetValueOrDefault<TValue>(string parameterName) { throw null; }
-        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue) { throw null; }
-        public void SetParameterProperties(object target) { }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
-        public bool TryGetValue<TValue>(string parameterName, out TValue result) { throw null; }
         internal Microsoft.AspNetCore.Components.ParameterView WithCascadingParameters(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.CascadingParameterState> cascadingParameters) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            internal Enumerator(Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame[] frames, int ownerIndex, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.CascadingParameterState> cascadingParameters) { throw null; }
-            public Microsoft.AspNetCore.Components.ParameterValue Current { get { throw null; } }
-            public bool MoveNext() { throw null; }
-        }
     }
     internal static partial class RouteTableFactory
     {
@@ -72,29 +46,31 @@ namespace Microsoft.AspNetCore.Components
         bool HasDelegate { get; }
         object UnpackForRenderTree();
     }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback : Microsoft.AspNetCore.Components.IEventCallback
     {
-        internal readonly MulticastDelegate Delegate;
-        internal readonly IHandleEvent Receiver;
-        internal bool RequiresExplicitReceiver { get { throw null; } }
-        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
         public static readonly Microsoft.AspNetCore.Components.EventCallback Empty;
         public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
-        public bool HasDelegate { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
-    }
-    public readonly partial struct EventCallback<TValue> : Microsoft.AspNetCore.Components.IEventCallback
-    {
         internal readonly MulticastDelegate Delegate;
         internal readonly IHandleEvent Receiver;
-        internal bool RequiresExplicitReceiver { get { throw null; } }
-        internal Microsoft.AspNetCore.Components.EventCallback AsUntyped() { throw null; }
-        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
-        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
+        internal bool RequiresExplicitReceiver { get { throw null; } }
+        public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
+        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct EventCallback<TValue> : Microsoft.AspNetCore.Components.IEventCallback
+    {
+        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
+        internal readonly MulticastDelegate Delegate;
+        internal readonly IHandleEvent Receiver;
+        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
+        public bool HasDelegate { get { throw null; } }
+        internal bool RequiresExplicitReceiver { get { throw null; } }
+        internal Microsoft.AspNetCore.Components.EventCallback AsUntyped() { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
+        object Microsoft.AspNetCore.Components.IEventCallback.UnpackForRenderTree() { throw null; }
     }
     internal partial interface ICascadingValueComponent
     {
@@ -239,6 +215,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Rendering
 {
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal readonly partial struct ParameterViewLifetime
+    {
+        public static readonly ParameterViewLifetime Unbound = default;
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public ParameterViewLifetime(Microsoft.AspNetCore.Components.Rendering.RenderBatchBuilder owner) { throw null; }
+        public void AssertNotExpired() { }
+    }
     [System.Diagnostics.DebuggerDisplayAttribute("{_state,nq}")]
     internal partial class RendererSynchronizationContext : System.Threading.SynchronizationContext
     {
@@ -269,10 +254,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<ulong> DisposedEventHandlerIds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> EditsBuffer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         internal Microsoft.AspNetCore.Components.RenderTree.StackObjectPool<System.Collections.Generic.Dictionary<object, Microsoft.AspNetCore.Components.Rendering.KeyedItemInfo>> KeyedItemInfoDictionaryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int ParameterViewValidityStamp { get { throw null; } }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> ReferenceFramesBuffer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayBuilder<Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff> UpdatedComponentDiffs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void ClearStateForCurrentBatch() { }
         public void Dispose() { }
+        public void InvalidateParameterViews() { }
         public Microsoft.AspNetCore.Components.RenderTree.RenderBatch ToBatch() { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]

@@ -4,13 +4,24 @@
 namespace Microsoft.AspNetCore.Components
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal partial struct ComponentParameter
+    {
+        private object _dummy;
+        public string Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string TypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public static (System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> parameterDefinitions, System.Collections.Generic.IList<object> parameterValues) FromParameterView(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal partial struct ServerComponent
     {
         private object _dummy;
         private int _dummyPrimitive;
-        public ServerComponent(int sequence, string assemblyName, string typeName, System.Guid invocationId) { throw null; }
+        public ServerComponent(int sequence, string assemblyName, string typeName, System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> parametersDefinitions, System.Collections.Generic.IList<object> parameterValues, System.Guid invocationId) { throw null; }
         public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Guid InvocationId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Components.ComponentParameter> ParameterDefinitions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<object> ParameterValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int Sequence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string TypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
@@ -266,6 +277,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     {
         public static System.Func<TModel, object> Process<TModel, TResult>(System.Linq.Expressions.Expression<System.Func<TModel, TResult>> expression) { throw null; }
     }
+    internal partial class ComponentRenderer : Microsoft.AspNetCore.Mvc.ViewFeatures.IComponentRenderer
+    {
+        public ComponentRenderer(Microsoft.AspNetCore.Mvc.ViewFeatures.StaticComponentRenderer staticComponentRenderer, Microsoft.AspNetCore.Mvc.ViewFeatures.ServerComponentSerializer serverComponentSerializer) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, System.Type componentType, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, object parameters) { throw null; }
+    }
     internal static partial class DefaultDisplayTemplates
     {
         public static Microsoft.AspNetCore.Html.IHtmlContent BooleanTemplate(Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) { throw null; }
@@ -324,6 +341,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public HttpNavigationManager() { }
         void Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
+    }
+    internal partial interface IComponentRenderer
+    {
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, System.Type componentType, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, object parameters);
     }
     internal partial class LambdaExpressionComparer : System.Collections.Generic.IEqualityComparer<System.Linq.Expressions.LambdaExpression>
     {
@@ -482,6 +503,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal System.Collections.Generic.IEnumerable<string> GetPreamble(Microsoft.AspNetCore.Components.ServerComponentMarker record) { throw null; }
         public Microsoft.AspNetCore.Components.ServerComponentMarker SerializeInvocation(Microsoft.AspNetCore.Mvc.ViewFeatures.ServerComponentInvocationSequence invocationId, System.Type type, bool prerendered) { throw null; }
     }
+    internal partial class StaticComponentRenderer
+    {
+        public StaticComponentRenderer(System.Text.Encodings.Web.HtmlEncoder encoder) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> PrerenderComponentAsync(Microsoft.AspNetCore.Components.ParameterView parameters, Microsoft.AspNetCore.Http.HttpContext httpContext, System.Type componentType) { throw null; }
+    }
     internal partial class NullView : Microsoft.AspNetCore.Mvc.ViewEngines.IView
     {
         public static readonly Microsoft.AspNetCore.Mvc.ViewFeatures.NullView Instance;
@@ -529,15 +556,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
         public override bool CanSerializeType(System.Type type) { throw null; }
         public override System.Collections.Generic.IDictionary<string, object> Deserialize(byte[] value) { throw null; }
         public override byte[] Serialize(System.Collections.Generic.IDictionary<string, object> values) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
-{
-    internal partial class StaticComponentRenderer
-    {
-        public StaticComponentRenderer(System.Text.Encodings.Web.HtmlEncoder encoder) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> PrerenderComponentAsync(Microsoft.AspNetCore.Components.ParameterView parameters, Microsoft.AspNetCore.Http.HttpContext httpContext, System.Type componentType) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Rendering

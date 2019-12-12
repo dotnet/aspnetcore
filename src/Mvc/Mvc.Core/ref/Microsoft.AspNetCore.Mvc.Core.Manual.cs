@@ -36,11 +36,6 @@ namespace Microsoft.AspNetCore.Mvc
     {
         internal static void EnsureValid(System.Type conventionType) { }
     }
-    internal partial class ApiDescriptionActionData
-    {
-        public ApiDescriptionActionData() { }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
     internal static partial class MvcCoreDiagnosticListenerExtensions
     {
         public static void AfterAction(this System.Diagnostics.DiagnosticListener diagnosticListener, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteData routeData) { }
@@ -640,6 +635,13 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct FilterCursorItem<TFilter, TFilterAsync>
     {
+        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+        private readonly TFilter _Filter_k__BackingField;
+        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+        private readonly TFilterAsync _FilterAsync_k__BackingField;
+        private readonly int _dummyPrimitive;
         public FilterCursorItem(TFilter filter, TFilterAsync filterAsync) { throw null; }
         public TFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public TFilterAsync FilterAsync { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -1105,6 +1107,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
+    public partial class CompositeValueProvider : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider>, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IEnumerableValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IKeyRewriterValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
+    {
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        internal static System.Threading.Tasks.ValueTask<System.ValueTuple<bool, Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider>> TryCreateAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory> factories) { throw null; }
+    }
     internal partial class ElementalValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
     {
         public ElementalValueProvider(string key, string value, System.Globalization.CultureInfo culture) { }

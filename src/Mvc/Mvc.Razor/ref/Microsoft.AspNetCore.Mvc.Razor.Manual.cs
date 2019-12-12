@@ -161,7 +161,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Infrastructure
     }
     public sealed partial class TagHelperMemoryCacheProvider
     {
-        public TagHelperMemoryCacheProvider() { }
         public Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { get { throw null; } internal set { } }
     }
 }
