@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         public async Task Invoke(HttpContext context)
         {
-            if (string.Equals(context.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsPost(context.Request.Method))
             {
                 if (_options.FormFieldName != null)
                 {
