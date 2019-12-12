@@ -1007,6 +1007,115 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
+        {
+            var oneKbString = new string('a', 1024);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        try
+                        {
+                            for (var i = 0; i < 20; i++)
+                            {
+                                Assert.Equal(oneKbString + i, context.Request.Headers["header" + i]);
+                            }
+                            serverResult.SetResult(0);
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+
+            var request = CreateRequestMessage(HttpMethod.Get, url, content: null);
+            // The default frame size limit is 16kb, and the total header size limit is 32kb.
+            for (var i = 0; i < 20; i++)
+            {
+                request.Headers.Add("header" + i, oneKbString + i);
+            }
+            var requestTask = client.SendAsync(request);
+            var response = await requestTask.DefaultTimeout();
+            await serverResult.Task.DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received HEADERS frame for stream ID 1 with length 16384 and flags END_STREAM")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("received CONTINUATION frame for stream ID 1 with length 4395 and flags END_HEADERS")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedSchemes))]
+        public async Task ResponseHeaders_MultipleFrames_Accepted(string scheme)
+        {
+            var oneKbString = new string('a', 1024);
+            var serverResult = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    ConfigureKestrel(webHostBuilder, scheme);
+                    webHostBuilder.ConfigureServices(AddTestLogging)
+                    .Configure(app => app.Run(context =>
+                    {
+                        try
+                        {
+                            // The default frame size limit is 16kb, and the total header size limit is 64kb.
+                            for (var i = 0; i < 59; i++)
+                            {
+                                context.Response.Headers.Append("header" + i, oneKbString + i);
+                            }
+                            serverResult.SetResult(0);
+                        }
+                        catch (Exception ex)
+                        {
+                            serverResult.SetException(ex);
+                        }
+                        return Task.CompletedTask;
+                    }));
+                });
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+            var url = host.MakeUrl(scheme);
+
+            using var client = CreateClient();
+            var response = await client.GetAsync(url).DefaultTimeout();
+            await serverResult.Task.DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            for (var i = 0; i < 59; i++)
+            {
+                Assert.Equal(oneKbString + i, response.Headers.GetValues("header" + i).Single());
+            }
+
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15636 and flags END_STREAM")));
+            Assert.Equal(2, TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 15585 and flags NONE")).Count());
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 14546 and flags END_HEADERS")));
+
+            await host.StopAsync().DefaultTimeout();
+        }
+
+        // Settings_Concurrent request limit
+        // Settings_FrameSizeLimit
+        // Settings_HeaderTableSize
+        // Settings_WindowSize
+        // Settings_MaxHeaderListSize
+        // UnicodeRequestHost
+        // Url encoding
+        // Header encoding
+
         private static HttpClient CreateClient()
         {
             var handler = new HttpClientHandler();
