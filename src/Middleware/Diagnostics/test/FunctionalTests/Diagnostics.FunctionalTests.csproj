@@ -22,6 +22,7 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
     <Reference Include="Microsoft.Extensions.Logging"  />
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
 </Project>
