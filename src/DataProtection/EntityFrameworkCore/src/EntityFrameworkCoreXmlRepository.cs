@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             }
             catch (Exception e)
             {
-                logger?.LogExceptionWhileParsingKeyXml(xml, e);
+                logger.LogExceptionWhileParsingKeyXml(xml, e);
                 return null;
             }
         }
