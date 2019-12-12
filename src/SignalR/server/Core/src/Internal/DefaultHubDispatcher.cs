@@ -28,12 +28,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
 
-        public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, IOptions<HubOptions<THub>> hubOptions,
-            IOptions<HubOptions> globalHubOptions, ILogger<DefaultHubDispatcher<THub>> logger)
+        public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors, ILogger<DefaultHubDispatcher<THub>> logger)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _hubContext = hubContext;
-            _enableDetailedErrors = hubOptions.Value.EnableDetailedErrors ?? globalHubOptions.Value.EnableDetailedErrors ?? false;
+            _enableDetailedErrors = enableDetailedErrors;
             _logger = logger;
             DiscoverHubMethods();
         }
@@ -265,7 +264,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
                             if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
-                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType()))
+                                (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
+                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType())))
                             {
                                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];

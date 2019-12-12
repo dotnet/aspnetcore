@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We are a package that depends on the shared framework, this allows us to
          avoid errors during restore -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>

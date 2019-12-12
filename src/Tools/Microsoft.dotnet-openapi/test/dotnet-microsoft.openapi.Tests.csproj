@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Open.Api.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetAddOpenAPIReferenceToolsTests</TestGroupName>

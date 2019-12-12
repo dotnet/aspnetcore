@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core web server for writing and running tests.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting;testing</PackageTags>

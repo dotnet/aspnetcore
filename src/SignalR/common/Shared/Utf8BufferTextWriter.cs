@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Internal
             // this should be an exceptional case
             var bytesUsed = 0;
             var charsUsed = 0;
-#if NETCOREAPP3_0
+#if NETCOREAPP
             _encoder.Convert(new Span<char>(&value, 1), destination, false, out charsUsed, out bytesUsed, out _);
 #else
             fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destination))
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Internal
 
                 var bytesUsed = 0;
                 var charsUsed = 0;
-#if NETCOREAPP3_0
+#if NETCOREAPP
                 _encoder.Convert(buffer, destination, false, out charsUsed, out bytesUsed, out _);
 #else
                 unsafe

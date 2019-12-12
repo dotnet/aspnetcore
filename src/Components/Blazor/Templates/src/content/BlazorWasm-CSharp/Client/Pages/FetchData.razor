@@ -38,7 +38,7 @@ else
 }
 
 @code {
-    WeatherForecast[] forecasts;
+    private WeatherForecast[] forecasts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,5 +60,5 @@ else
 
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
-     #endif*@
+    #endif*@
 }

@@ -3,7 +3,7 @@
   <Import Project="..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 

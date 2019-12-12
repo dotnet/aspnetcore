@@ -14,6 +14,8 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 version='Latest'
 architecture=''
 runtime='dotnet'
+runtimeSourceFeed=''
+runtimeSourceFeedKey=''
 while [[ $# > 0 ]]; do
   opt="$(echo "$1" | awk '{print tolower($0)}')"
   case "$opt" in
@@ -29,9 +31,16 @@ while [[ $# > 0 ]]; do
       shift
       runtime="$1"
       ;;
+    -runtimesourcefeed)
+      shift
+      runtimeSourceFeed="$1"
+      ;;
+    -runtimesourcefeedkey)
+      shift
+      runtimeSourceFeedKey="$1"
+      ;;
     *)
       echo "Invalid argument: $1"
-      usage
       exit 1
       ;;
   esac
@@ -40,7 +49,7 @@ done
 
 . "$scriptroot/tools.sh"
 dotnetRoot="$repo_root/.dotnet"
-InstallDotNet $dotnetRoot $version "$architecture" $runtime true || {
+InstallDotNet $dotnetRoot $version "$architecture" $runtime true $runtimeSourceFeed $runtimeSourceFeedKey || {
   local exit_code=$?
   echo "dotnet-install.sh failed (exit code '$exit_code')." >&2
   ExitWithExitCode $exit_code

@@ -4,7 +4,7 @@
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
@@ -33,6 +33,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Ignitor" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,10 +44,7 @@
     <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
-    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
-    <ProjectReference Include="..\testassets\Ignitor\Ignitor.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
@@ -56,8 +54,15 @@
   <ItemGroup>
     <!-- Shared descriptor infrastructure with MVC -->
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsTestAssetProject>true</IsTestAssetProject>
@@ -10,7 +10,7 @@
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" />
   </ItemGroup>
-    
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />

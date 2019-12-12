@@ -58,9 +58,9 @@ namespace Templates.Test.Helpers
 
             var arguments = published ? $"exec {dllPath}" : "run";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
-            if(hasListeningUri)
+            if (hasListeningUri)
             {
-                ListeningUri = GetListeningUri(output);
+                ListeningUri = GetListeningUri(output) ?? throw new InvalidOperationException("Couldn't find the listening URL.");
             }
         }
 
@@ -104,11 +104,13 @@ namespace Templates.Test.Helpers
 
         public async Task ContainsLinks(Page page)
         {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri(ListeningUri, page.Url));
-
-            var response = await _httpClient.SendAsync(request);
+            var response = await RequestWithRetries(client =>
+            {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    new Uri(ListeningUri, page.Url));
+                return client.SendAsync(request);
+            }, _httpClient);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
@@ -141,7 +143,7 @@ namespace Templates.Test.Helpers
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
                     var result = await RetryHelper.RetryRequest(async () =>
                     {
-                        return await _httpClient.GetAsync(anchor.Href);
+                        return await RequestWithRetries(client => client.GetAsync(anchor.Href), _httpClient);
                     }, logger: NullLogger.Instance);
 
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
@@ -149,20 +151,41 @@ namespace Templates.Test.Helpers
             }
         }
 
+        private async Task<T> RequestWithRetries<T>(Func<HttpClient, Task<T>> requester, HttpClient client, int retries = 3, TimeSpan initialDelay = default)
+        {
+            var currentDelay = initialDelay == default ? TimeSpan.FromSeconds(30) : initialDelay;
+            for (int i = 0; i <= retries; i++)
+            {
+                try
+                {
+                    return await requester(client);
+                }
+                catch (Exception)
+                {
+                    if (i == retries)
+                    {
+                        throw;
+                    }
+                    await Task.Delay(currentDelay);
+                    currentDelay *= 2;
+                }
+            }
+            throw new InvalidOperationException("Max retries reached.");
+        }
+
         private Uri GetListeningUri(ITestOutputHelper output)
         {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
-            var listeningMessage = Process
-                .OutputLinesAsEnumerable
-                .Where(line => line != null)
-                .FirstOrDefault(line => line.Trim().StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
+            var listeningMessage = GetListeningMessage();
 
             if (!string.IsNullOrEmpty(listeningMessage))
             {
                 listeningMessage = listeningMessage.Trim();
                 // Verify we have a valid URL to make requests to
-                var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
+                var listeningUrlString = listeningMessage.Substring(listeningMessage.IndexOf(
+                    ListeningMessagePrefix, StringComparison.Ordinal) + ListeningMessagePrefix.Length);
+
                 output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
                 listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
                     "://localhost" +
@@ -172,6 +195,25 @@ namespace Templates.Test.Helpers
                 return new Uri(listeningUrlString, UriKind.Absolute);
             }
             else
+            {
+                return null;
+            }
+        }
+
+        private string GetListeningMessage()
+        {
+            try
+            {
+                return Process
+                    // This will timeout at most after 5 minutes.
+                    .OutputLinesAsEnumerable
+                    .Where(line => line != null)
+                    // This used to do StartsWith, but this is less strict and can prevent issues (very rare) where
+                    // console logging interleaves with other console output in a bad way. For example:
+                    // dbugNow listening on: http://127.0.0.1:12857
+                    .FirstOrDefault(line => line.Trim().Contains(ListeningMessagePrefix, StringComparison.Ordinal));
+            }
+            catch (OperationCanceledException)
             {
                 return null;
             }
@@ -190,21 +232,23 @@ namespace Templates.Test.Helpers
 
         internal Task<HttpResponseMessage> SendRequest(string path)
         {
-            return _httpClient.GetAsync(new Uri(ListeningUri, path));
+            return RequestWithRetries(client => client.GetAsync(new Uri(ListeningUri, path)), _httpClient);
         }
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri(ListeningUri, requestUrl));
+            var response = await RequestWithRetries(client => {
+                var request = new HttpRequestMessage(
+                    HttpMethod.Get,
+                    new Uri(ListeningUri, requestUrl));
 
-            if (!string.IsNullOrEmpty(acceptContentType))
-            {
-                request.Headers.Add("Accept", acceptContentType);
-            }
+                if (!string.IsNullOrEmpty(acceptContentType))
+                {
+                    request.Headers.Add("Accept", acceptContentType);
+                }
 
-            var response = await _httpClient.SendAsync(request);
+                return client.SendAsync(request);
+            }, _httpClient);
             Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 

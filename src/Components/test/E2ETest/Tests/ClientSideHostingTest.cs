@@ -18,21 +18,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     /// Tests for various MapFallbackToClientSideBlazor overloads. We're just verifying that things render correctly.
     /// That means that routing and file serving is working for the startup pattern under test.
     /// </summary>
-    public class ClientSideHostingTest : ServerTestBase<AspNetSiteServerFixture>
+    public class ClientSideHostingTest :
+        ServerTestBase<BasicTestAppServerSiteFixture<TestServer.StartupWithMapFallbackToClientSideBlazor>>
     {
         public ClientSideHostingTest(
             BrowserFixture browserFixture,
-            AspNetSiteServerFixture serverFixture,
+            BasicTestAppServerSiteFixture<TestServer.StartupWithMapFallbackToClientSideBlazor> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            serverFixture.ApplicationAssembly = typeof(TestServer.Program).Assembly;
-            serverFixture.BuildWebHostMethod = BuildWebHost;
-        }
-
-        private IWebHost BuildWebHost(string[] args)
-        {
-            return TestServer.Program.BuildWebHost<TestServer.StartupWithMapFallbackToClientSideBlazor>(args);
         }
 
         [Fact]

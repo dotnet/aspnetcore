@@ -3591,6 +3591,64 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task StreamHubMethodCanAcceptNullableParameter()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.StreamNullableParameter), 5, null).OrTimeout();
+                    // Wait for the stream method to start
+                    var firstArgument = await tcsService.StartedMethod.Task.OrTimeout();
+                    Assert.Equal(5, firstArgument);
+
+                    var secondArgument = await tcsService.EndMethod.Task.OrTimeout();
+                    Assert.Null(secondArgument);
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task StreamHubMethodCanAcceptNullableParameterWithCancellationToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStreamNullableParameter), 5, null).OrTimeout();
+                    // Wait for the stream method to start
+                    var firstArgument = await tcsService.StartedMethod.Task.OrTimeout();
+                    Assert.Equal(5, firstArgument);
+
+                    // Cancel the stream which should trigger the CancellationToken in the hub method
+                    await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
+
+                    var secondArgument = await tcsService.EndMethod.Task.OrTimeout();
+                    Assert.Null(secondArgument);
+                }
+            }
+        }
+
+        [Fact]
         public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
         {
             using (StartVerifiableLog())
@@ -3772,6 +3830,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => task).OrTimeout();
                 Assert.Equal("The underlying connection was closed.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SpecificHubOptionForMaximumReceiveMessageSizeIsUsedOverGlobalHubOption()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(serviceBuilder =>
+            {
+                serviceBuilder.AddSignalR(o =>
+                {
+                    // ConnectAsync would fail if this value was used
+                    o.MaximumReceiveMessageSize = 1;
+                }).AddHubOptions<MethodHub>(o =>
+                {
+                    // null is treated as both no-limit and not set, this test verifies that we track if the user explicitly sets the value
+                    o.MaximumReceiveMessageSize = null;
+                });
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (StartVerifiableLog())
+            {
+                using var client = new TestClient();
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                await client.DisposeAsync().OrTimeout();
+
+                await connectionHandlerTask.OrTimeout();
             }
         }
 

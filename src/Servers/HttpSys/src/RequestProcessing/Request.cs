@@ -2,15 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -30,6 +34,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
+
+        private IReadOnlyDictionary<int, ReadOnlyMemory<byte>> _requestInfo;
 
         private bool _isDisposed = false;
 
@@ -52,8 +58,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
@@ -63,19 +67,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            // These paths are both unescaped already.
-            else if (originalPath.Length == prefix.Path.Length - 1)
+            else if (requestContext.Server.RequestQueue.Created)
             {
-                // They matched exactly except for the trailing slash.
-                PathBase = originalPath;
-                Path = string.Empty;
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+
+                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                {
+                    // They matched exactly except for the trailing slash.
+                    PathBase = originalPath;
+                    Path = string.Empty;
+                }
+                else
+                {
+                    // url: /base/path, prefix: /base/, base: /base, path: /path
+                    // url: /, prefix: /, base: , path: /
+                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                }
             }
             else
             {
-                // url: /base/path, prefix: /base/, base: /base, path: /path
-                // url: /, prefix: /, base: , path: /
-                PathBase = originalPath.Substring(0, prefix.Path.Length - 1);
-                Path = originalPath.Substring(prefix.Path.Length - 1);
+                // When attaching to an existing queue, the UrlContext hint may not match our configuration. Search manualy.
+                if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                {
+                    PathBase = pathBase;
+                    Path = path;
+                }
+                else
+                {
+                    PathBase = string.Empty;
+                    Path = originalPath;
+                }
             }
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
@@ -252,6 +274,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public int KeyExchangeStrength { get; private set; }
 
+        public IReadOnlyDictionary<int, ReadOnlyMemory<byte>> RequestInfo
+        {
+            get
+            {
+                if (_requestInfo == null)
+                {
+                    _requestInfo = _nativeRequestContext.GetRequestInfo();
+                }
+                return _requestInfo;
+            }
+        }
+
         private void GetTlsHandshakeResults()
         {
             var handshake = _nativeRequestContext.GetTlsHandshake();
@@ -290,6 +324,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             HashStrength = (int)handshake.HashStrength;
             KeyExchangeAlgorithm = handshake.KeyExchangeType;
             KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+        }
+
+        public X509Certificate2 ClientCertificate
+        {
+            get
+            {
+                if (_clientCert == null && SslStatus == SslStatus.ClientCert)
+                {
+                    try
+                    {
+                        _clientCert = _nativeRequestContext.GetClientCertificate();
+                    }
+                    catch (CryptographicException ce)
+                    {
+                        RequestContext.Logger.LogDebug(ce, "An error occurred reading the client certificate.");
+                    }
+                    catch (SecurityException se)
+                    {
+                        RequestContext.Logger.LogDebug(se, "An error occurred reading the client certificate.");
+                    }
+                }
+
+                return _clientCert;
+            }
         }
 
         // Populates the client certificate.  The result may be null if there is no client cert.

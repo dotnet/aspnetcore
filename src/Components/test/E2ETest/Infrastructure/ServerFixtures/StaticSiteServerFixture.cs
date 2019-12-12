@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
     {
         public string SampleSiteName { get; set; }
 
-        protected override IWebHost CreateWebHost()
+        protected override IHost CreateWebHost()
         {
             if (string.IsNullOrEmpty(SampleSiteName))
             {
@@ -25,12 +26,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
             var sampleSitePath = FindSampleOrTestSitePath(SampleSiteName);
 
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(sampleSitePath)
-                .UseWebRoot(string.Empty)
-                .UseStartup<StaticSiteStartup>()
-                .UseUrls("http://127.0.0.1:0")
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder => webHostBuilder
+                    .UseKestrel()
+                    .UseContentRoot(sampleSitePath)
+                    .UseWebRoot(string.Empty)
+                    .UseStartup<StaticSiteStartup>()
+                    .UseUrls("http://127.0.0.1:0"))
                 .Build();
         }
 

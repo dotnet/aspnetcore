@@ -67,6 +67,6 @@
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>$(TargetName)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(TargetName)_$(PackageVersion)$(TargetExt)</PackageFileName>
   </PropertyGroup>
 </Project>

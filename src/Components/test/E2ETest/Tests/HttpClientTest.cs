@@ -1,23 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
-    public class HttpClientTest : BasicTestAppTestBase, IClassFixture<AspNetSiteServerFixture>
+    public class HttpClientTest : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>,
+        IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>
     {
-        readonly ServerFixture _apiServerFixture;
+        private readonly ServerFixture _apiServerFixture;
         IWebElement _appElement;
         IWebElement _responseStatus;
         IWebElement _responseBody;
@@ -25,19 +27,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         public HttpClientTest(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<BasicTestApp.Program> devHostServerFixture,
-            AspNetSiteServerFixture apiServerFixture,
+            DevHostServerFixture<BasicTestApp.Program> devHostServerFixture,
+            BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
             ITestOutputHelper output)
             : base(browserFixture, devHostServerFixture, output)
         {
-            apiServerFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
+            _serverFixture.PathBase = "/subdir";
             _apiServerFixture = apiServerFixture;
         }
 
         protected override void InitializeAsyncCore()
         {
-            Navigate(ServerPathBase, noReload: true);
-            _appElement = MountTestComponent<HttpRequestsComponent>();
+            base.InitializeAsyncCore();
+
+            Browser.Navigate(_serverFixture.RootUri, "/subdir", noReload: true);
+            _appElement = Browser.MountTestComponent<HttpRequestsComponent>();
         }
 
         [Fact]
@@ -47,14 +51,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Note that the HttpClient we're instantiating here is *not* the
             // one under test. This is not related to Blazor in any way.
             var httpClient = new HttpClient { BaseAddress = _apiServerFixture.RootUri };
-            var responseText = await httpClient.GetStringAsync("/api/greeting/sayhello");
+            var responseText = await httpClient.GetStringAsync("/subdir/api/greeting/sayhello");
             Assert.Equal("Hello", responseText);
         }
 
         [Fact]
         public void CanPerformGetRequest()
         {
-            IssueRequest("GET", "/api/person");
+            IssueRequest("GET", "/subdir/api/person");
             Assert.Equal("OK", _responseStatus.Text);
             Assert.Equal("[\"value1\",\"value2\"]", _responseBody.Text);
         }
@@ -63,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanPerformPostRequestWithBody()
         {
             var testMessage = $"The value is {Guid.NewGuid()}";
-            IssueRequest("POST", "/api/person", testMessage);
+            IssueRequest("POST", "/subdir/api/person", testMessage);
             Assert.Equal("OK", _responseStatus.Text);
             Assert.Equal($"You posted: {testMessage}", _responseBody.Text);
         }
@@ -71,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanReadResponseHeaders()
         {
-            IssueRequest("GET", "/api/person");
+            IssueRequest("GET", "/subdir/api/person");
             Assert.Equal("OK", _responseStatus.Text);
 
             // Note that we only see header names case insensitively. The 'fetch' API
@@ -85,11 +89,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CanSendRequestHeaders()
         {
-            AddRequestHeader("TestHeader", "Value from test");
+            AddRequestHeader("testheader", "Value from test");
             AddRequestHeader("another-header", "Another value");
-            IssueRequest("DELETE", "/api/person");
+            IssueRequest("DELETE", "/subdir/api/person");
             Assert.Equal("OK", _responseStatus.Text);
-            Assert.Contains("TestHeader: Value from test", _responseBody.Text);
+            Assert.Contains("testheader: Value from test", _responseBody.Text);
             Assert.Contains("another-header: Another value", _responseBody.Text);
         }
 
@@ -97,28 +101,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanSendAndReceiveJson()
         {
             AddRequestHeader("Content-Type", "application/json");
-            IssueRequest("PUT", "/api/person", "{\"Name\": \"Bert\", \"Id\": 123}");
+            IssueRequest("PUT", "/subdir/api/person", "{\"Name\": \"Bert\", \"Id\": 123}");
             Assert.Equal("OK", _responseStatus.Text);
             Assert.Contains("Content-Type: application/json", _responseHeaders.Text, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
         }
 
         [Fact]
-        public void CanSetRequestReferer()
-        {
-            SetValue("request-referrer", "/test-referrer");
-            IssueRequest("GET", "/api/person/referrer");
-            Assert.Equal("OK", _responseStatus.Text);
-            Assert.EndsWith("/test-referrer", _responseBody.Text);
-        }
-
-        [Fact]
         public void CanSendAndReceiveCookies()
         {
-            var app = MountTestComponent<CookieCounterComponent>();
+            var app = Browser.MountTestComponent<CookieCounterComponent>();
             var deleteButton = app.FindElement(By.Id("delete"));
             var incrementButton = app.FindElement(By.Id("increment"));
-            app.FindElement(By.TagName("input")).SendKeys(_apiServerFixture.RootUri.ToString());
+            var baseUri = _apiServerFixture.RootUri.ToString() + "subdir/";
+            app.FindElement(By.TagName("input")).SendKeys(baseUri);
 
             // Ensure we're starting from a clean state
             deleteButton.Click();

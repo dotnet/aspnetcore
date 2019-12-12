@@ -252,7 +252,20 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         if (m_pConfig->QueryCallStartupHook())
         {
-            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+            PWSTR startupHookValue = NULL;
+            // Will get property not found if the enviroment variable isn't set.
+            context->m_hostFxr.GetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, &startupHookValue);
+            
+            if (startupHookValue == NULL)
+            {
+                RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+            }
+            else
+            {
+                std::wstring startupHook(startupHookValue);
+                startupHook.append(L";").append(ASPNETCORE_STARTUP_ASSEMBLY);
+                RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, startupHook.c_str()));
+            }
         }
 
         RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));

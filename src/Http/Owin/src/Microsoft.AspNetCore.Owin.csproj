@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core component for running OWIN middleware in an ASP.NET Core application, and to run ASP.NET Core middleware in an OWIN application.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;owin</PackageTags>

@@ -109,6 +109,11 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool ShouldMatch(string currentUriAbsolute)
         {
+            if (_hrefAbsolute == null)
+            {
+                return false;
+            }
+
             if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
             {
                 return true;
@@ -125,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
         {
-            if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.Ordinal))
+            if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -141,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 // for http://host/vdir as they do for host://host/vdir/ as it's no
                 // good to display a blank page in that case.
                 if (_hrefAbsolute[_hrefAbsolute.Length - 1] == '/'
-                    && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.Ordinal))
+                    && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -170,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             var prefixLength = prefix.Length;
             if (value.Length > prefixLength)
             {
-                return value.StartsWith(prefix, StringComparison.Ordinal)
+                return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                     && (
                         // Only match when there's a separator character either at the end of the
                         // prefix or right after it.

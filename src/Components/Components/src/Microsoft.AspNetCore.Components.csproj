@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <Description>Components feature for ASP.NET Core.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
@@ -46,7 +46,7 @@
   <!-- Pack settings -->
   <PropertyGroup>
     <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
-    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp3.0.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp.nuspec</NuspecFile>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
   </PropertyGroup>
 

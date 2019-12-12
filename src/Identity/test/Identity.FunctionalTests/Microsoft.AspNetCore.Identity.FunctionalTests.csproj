@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
     <SkipHelixArm>true</SkipHelixArm>
     <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
@@ -65,9 +65,9 @@
 
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
-      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
-      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\$(DefaultNetCoreTargetFramework)\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Identity.DefaultUI.WebSite.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\$(DefaultNetCoreTargetFramework)\Identity.DefaultUI.WebSite.deps.json" />
       <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
       <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
       <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />

@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We have tests that test runtime view compilation. -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <IsTestAssetProject>true</IsTestAssetProject>
@@ -20,5 +19,7 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
   </ItemGroup>
+
+  <Import Project="..\..\..\Mvc.Razor.RuntimeCompilation\src\targets\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.targets" />
 
 </Project>

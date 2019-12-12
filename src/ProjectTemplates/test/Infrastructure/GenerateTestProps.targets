@@ -36,6 +36,7 @@
         MicrosoftAspNetCoreAppRefPackageVersion=$(MicrosoftAspNetCoreAppRefPackageVersion);
         MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
         SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
+        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       </PropsProperties>
     </PropertyGroup>
 

@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public IdentityUIScriptsTest(ITestOutputHelper output)
         {
             _output = output;
-            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler() { }));
+            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler() { }, output, TimeSpan.FromSeconds(1), 5));
         }
 
         public static IEnumerable<object[]> ScriptWithIntegrityData
@@ -187,26 +186,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             while (directoryInfo.Parent != null);
 
             throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
-        }
-
-        class RetryHandler : DelegatingHandler
-        {
-            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
-
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                HttpResponseMessage result = null;
-                for (var i = 0; i < 10; i++)
-                {
-                    result = await base.SendAsync(request, cancellationToken);
-                    if (result.IsSuccessStatusCode)
-                    {
-                        return result;
-                    }
-                    await Task.Delay(1000);
-                }
-                return result;
-            }
         }
     }
 }

@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
         }
 
+        /// <summary>
+        /// When attaching to an existing queue this setting must match the one used to create the queue.
+        /// </summary>
         public AuthenticationSchemes Schemes
         {
             get { return _authSchemes; }

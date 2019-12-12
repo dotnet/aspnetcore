@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFrameworks>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>

@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var source = _utf8Buffer.First.Span;
             var bytesUsed = 0;
             var charsUsed = 0;
-#if NETCOREAPP3_0
+#if NETCOREAPP
             var destination = new Span<char>(buffer, index, count);
             _decoder.Convert(source, destination, false, out bytesUsed, out charsUsed, out var completed);
 #else

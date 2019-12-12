@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.OpenApi.Tests
         protected readonly TextWriter _output = new StringWriter();
         protected readonly TextWriter _error = new StringWriter();
         protected readonly ITestOutputHelper _outputHelper;
+        protected const string TestTFM = "netcoreapp3.1";
+
 
         protected const string Content = @"{""x-generator"": ""NSwag""}";
         protected const string ActualUrl = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/api-with-examples.yaml";
@@ -61,7 +63,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
             var nswagJsonFile = "openapi.json";
             var project = _tempDir
                 .WithCSharpProject("testproj", sdk: "Microsoft.NET.Sdk.Web")
-                .WithTargetFrameworks("netcoreapp3.0");
+                .WithTargetFrameworks(TestTFM);
             var tmp = project.Dir();
 
             if (withOpenApi)

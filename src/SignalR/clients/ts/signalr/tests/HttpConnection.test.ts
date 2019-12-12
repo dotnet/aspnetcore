@@ -13,6 +13,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
+import { TestEvent, TestWebSocket } from "./TestWebSocket";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -20,6 +21,7 @@ const commonOptions: IHttpConnectionOptions = {
 };
 
 const defaultConnectionId = "abc123";
+const defaultConnectionToken = "123abc";
 const defaultNegotiateResponse: INegotiateResponse = {
     availableTransports: [
         { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
@@ -27,6 +29,8 @@ const defaultNegotiateResponse: INegotiateResponse = {
         { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
     ],
     connectionId: defaultConnectionId,
+    connectionToken: defaultConnectionToken,
+    negotiateVersion: 1,
 };
 
 registerUnhandledRejectionHandler();
@@ -571,7 +575,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => {
+                .on("POST", /\/negotiate/, () => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
                         return { url: "https://another.domain.url/chat" };
@@ -602,8 +606,8 @@ describe("HttpConnection", () => {
                 await connection.start(TransferFormat.Text);
 
                 expect(httpClient.sentRequests.length).toBe(4);
-                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
+                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
                 expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
             } finally {
@@ -615,7 +619,7 @@ describe("HttpConnection", () => {
     it("fails to start if negotiate redirects more than 100 times", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => ({ url: "https://another.domain.url/chat" }));
+                .on("POST", /\/negotiate/, () => ({ url: "https://another.domain.url/chat" }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -637,7 +641,7 @@ describe("HttpConnection", () => {
             let firstNegotiate = true;
             let firstPoll = true;
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, (r) => {
+                .on("POST", /\/negotiate/, (r) => {
                     if (firstNegotiate) {
                         firstNegotiate = false;
 
@@ -683,8 +687,8 @@ describe("HttpConnection", () => {
                 await connection.start(TransferFormat.Text);
 
                 expect(httpClient.sentRequests.length).toBe(4);
-                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate");
-                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate");
+                expect(httpClient.sentRequests[0].url).toBe("http://tempuri.org/negotiate?negotiateVersion=1");
+                expect(httpClient.sentRequests[1].url).toBe("https://another.domain.url/chat/negotiate?negotiateVersion=1");
                 expect(httpClient.sentRequests[2].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
                 expect(httpClient.sentRequests[3].url).toMatch(/^https:\/\/another\.domain\.url\/chat\?id=0rge0d00-0040-0030-0r00-000q00r00e00/i);
             } finally {
@@ -696,7 +700,7 @@ describe("HttpConnection", () => {
     it("throws error if negotiate response has error", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
-                .on("POST", /negotiate$/, () => ({ error: "Negotiate error." }));
+                .on("POST", /\/negotiate/, () => ({ error: "Negotiate error." }));
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
@@ -873,6 +877,253 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("missing negotiateVersion ignores connectionToken", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiate version 0 ignores connectionToken", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", negotiateVersion: 0, availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiate version 1 uses connectionToken for url and connectionId for property", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            let connectUrl = "";
+            const transport = {
+                connect(url: string, transferFormat: TransferFormat) {
+                    connectUrl = url;
+                    return Promise.resolve();
+                },
+                send(data: any) {
+                    return Promise.resolve();
+                },
+                stop() {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            } as ITransport;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", connectionToken: "token", negotiateVersion: 1, availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+                expect(connection.connectionId).toBe("42");
+                expect(connectUrl).toBe("http://tempuri.org?id=token");
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiateVersion query string not added if already present", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connectUrl = new PromiseSource<string>();
+            const fakeTransport: ITransport = {
+                connect(url: string): Promise<void> {
+                    connectUrl.resolve(url);
+                    return Promise.resolve();
+                },
+                send(): Promise<void> {
+                    return Promise.resolve();
+                },
+                stop(): Promise<void> {
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=42", () => "{ \"connectionId\": \"42\" }")
+                    .on("GET", () => ""),
+                logger,
+                transport: fakeTransport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?negotiateVersion=42", options);
+            try {
+                const startPromise = connection.start(TransferFormat.Text);
+
+                expect(await connectUrl).toBe("http://tempuri.org?negotiateVersion=42&id=42");
+
+                await startPromise;
+            } finally {
+                (options.transport as ITransport).onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("negotiateVersion query string not added if already present after redirect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connectUrl = new PromiseSource<string>();
+            const fakeTransport: ITransport = {
+                connect(url: string): Promise<void> {
+                    connectUrl.resolve(url);
+                    return Promise.resolve();
+                },
+                send(): Promise<void> {
+                    return Promise.resolve();
+                },
+                stop(): Promise<void> {
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+            };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1", () => "{ \"url\": \"http://redirect.org\" }")
+                    .on("POST", "http://redirect.org/negotiate?negotiateVersion=1", () => "{ \"connectionId\": \"42\"}")
+                    .on("GET", () => ""),
+                logger,
+                transport: fakeTransport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                const startPromise = connection.start(TransferFormat.Text);
+
+                expect(await connectUrl).toBe("http://redirect.org?id=42");
+
+                await startPromise;
+            } finally {
+                (options.transport as ITransport).onclose!();
+                await connection.stop();
+            }
+        });
+    });
+
+    it("fallback changes connectionId property", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransports = [{ transport: "WebSockets", transferFormats: ["Text"] }, { transport: "LongPolling", transferFormats: ["Text"] }];
+            let negotiateCount: number = 0;
+            let getCount: number = 0;
+            let connection: HttpConnection;
+            let connectionId: string | undefined;
+            const options: IHttpConnectionOptions = {
+                WebSocket: TestWebSocket,
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return ({ connectionId: negotiateCount.toString(), connectionToken: "token", negotiateVersion: 1, availableTransports });
+                    })
+                    .on("GET", () => {
+                        getCount++;
+                        if (getCount === 1) {
+                            return new HttpResponse(200);
+                        }
+                        connectionId = connection.connectionId;
+                        return new HttpResponse(204);
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger,
+            } as IHttpConnectionOptions;
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            connection = new HttpConnection("http://tempuri.org", options);
+            const startPromise = connection.start(TransferFormat.Text);
+
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.closeSet;
+            TestWebSocket.webSocket.onerror(new TestEvent());
+
+            try {
+                await startPromise;
+            } catch { }
+
+            expect(negotiateCount).toEqual(2);
+            expect(connectionId).toEqual("2");
+        },
+        "Failed to start the transport 'WebSockets': Error: There was an error with the transport.");
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)
@@ -921,7 +1172,7 @@ describe("HttpConnection", () => {
 
         it("uses WebSocket constructor from options if provided", async () => {
             await VerifyLogger.run(async (logger) => {
-                class TestWebSocket {
+                class BadConstructorWebSocket {
                     // The "_" prefix tell TypeScript not to worry about unused parameter, but tslint doesn't like it.
                     // tslint:disable-next-line:variable-name
                     constructor(_url: string, _protocols?: string | string[]) {
@@ -931,7 +1182,7 @@ describe("HttpConnection", () => {
 
                 const options: IHttpConnectionOptions = {
                     ...commonOptions,
-                    WebSocket: TestWebSocket as WebSocketConstructor,
+                    WebSocket: BadConstructorWebSocket as WebSocketConstructor,
                     logger,
                     skipNegotiation: true,
                     transport: HttpTransportType.WebSockets,

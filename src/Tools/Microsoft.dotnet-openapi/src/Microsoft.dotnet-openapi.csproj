@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to add an OpenAPI service reference</Description>
     <RootNamespace>Microsoft.DotNet.Openapi.Tools</RootNamespace>

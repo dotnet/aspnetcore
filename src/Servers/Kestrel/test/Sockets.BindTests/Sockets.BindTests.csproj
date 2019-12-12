@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Sockets.BindTests</TestGroupName>
   </PropertyGroup>

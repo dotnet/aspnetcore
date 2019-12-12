@@ -3,7 +3,11 @@
 
 using System;
 
+#if IGNITOR
+namespace Ignitor
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     internal static class ArrayBuilderExtensions
     {

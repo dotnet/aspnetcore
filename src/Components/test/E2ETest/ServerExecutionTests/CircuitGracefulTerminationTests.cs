@@ -11,18 +11,19 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class CircuitGracefulTerminationTests : BasicTestAppTestBase, IDisposable
+    public class CircuitGracefulTerminationTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>, IDisposable
     {
         public CircuitGracefulTerminationTests(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+            : base(browserFixture, serverFixture, output)
         {
         }
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            MountTestComponent<CounterComponent>();
+            Browser.MountTestComponent<CounterComponent>();
             Browser.Equal("Current count: 0", () => Browser.FindElement(By.TagName("p")).Text);
 
             GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);

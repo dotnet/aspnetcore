@@ -165,7 +165,7 @@ namespace Microsoft.Net.Http.Headers
 
                 var header8 = new SetCookieHeaderValue("name8", "value8")
                 {
-                    SameSite = (SameSiteMode)(-1) // Unspecified
+                    SameSite = SameSiteMode.Unspecified
                 };
                 var string8a = "name8=value8; samesite";
                 var string8b = "name8=value8; samesite=invalid";

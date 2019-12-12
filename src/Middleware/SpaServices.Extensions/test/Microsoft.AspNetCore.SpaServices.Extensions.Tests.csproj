@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestDependsOnNode>true</TestDependsOnNode>
   </PropertyGroup>
 
@@ -13,5 +13,5 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Content Include="js\**\*" />
   </ItemGroup>
-  
+
 </Project>

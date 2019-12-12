@@ -24,7 +24,7 @@ namespace BasicTestApp.AuthTest
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var uri = new Uri(_httpClient.BaseAddress, "/api/User");
+            var uri = new Uri(_httpClient.BaseAddress, "/subdir/api/User");
             var data = await _httpClient.GetJsonAsync<ClientSideAuthenticationStateData>(uri.AbsoluteUri);
             ClaimsIdentity identity;
             if (data.IsAuthenticated)

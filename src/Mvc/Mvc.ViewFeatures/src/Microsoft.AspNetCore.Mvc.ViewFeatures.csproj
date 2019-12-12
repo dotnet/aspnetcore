@@ -8,7 +8,7 @@
       Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute
       Microsoft.AspNetCore.Mvc.ViewComponent
     </Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -34,6 +34,7 @@
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
   </ItemGroup>
 
 </Project>

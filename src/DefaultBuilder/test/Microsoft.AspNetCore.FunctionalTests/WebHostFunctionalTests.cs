@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp3.1",
                 HostingModel =  HostingModel.InProcess
             };
 
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Tests
         {
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
-                TargetFramework = "netcoreapp3.0",
+                TargetFramework = "netcoreapp3.1",
             };
 
             if (setTestEnvVars)

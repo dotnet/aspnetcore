@@ -17,12 +17,12 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components
 {
     // Base class for Ignitor-based tests.
-    public abstract class IgnitorTest<TFixture> : IClassFixture<TFixture>, IAsyncLifetime
-        where TFixture : ServerFixture
+    public abstract class IgnitorTest<TStartup> : IClassFixture<BasicTestAppServerSiteFixture<TStartup>>, IAsyncLifetime
+        where TStartup: class
     {
         private static readonly TimeSpan DefaultTimeout = Debugger.IsAttached ? TimeSpan.MaxValue : TimeSpan.FromSeconds(30);
 
-        protected IgnitorTest(TFixture serverFixture, ITestOutputHelper output)
+        protected IgnitorTest(BasicTestAppServerSiteFixture<TStartup> serverFixture, ITestOutputHelper output)
         {
             ServerFixture = serverFixture;
             Output = output;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
 
         protected ITestOutputHelper Output { get; }
 
-        protected TFixture ServerFixture { get; }
+        protected BasicTestAppServerSiteFixture<TStartup> ServerFixture { get; }
 
         protected TimeSpan Timeout { get; set; } = DefaultTimeout;
 
@@ -47,11 +47,6 @@ namespace Microsoft.AspNetCore.Components
         protected IReadOnlyCollection<string> Errors => Client?.Operations?.Errors;
 
         protected IReadOnlyCollection<CapturedJSInteropCall> JSInteropCalls => Client?.Operations?.JSInteropCalls;
-
-        // Called to initialize the fixture as part of InitializeAsync.
-        protected virtual void InitializeFixture(TFixture serverFixture)
-        {
-        }
 
         async Task IAsyncLifetime.InitializeAsync()
         {
@@ -66,8 +61,7 @@ namespace Microsoft.AspNetCore.Components
                 var logs = string.Join(Environment.NewLine, Logs);
                 return new Exception(error + Environment.NewLine + logs);
             };
-
-            InitializeFixture(ServerFixture);
+            
             _ = ServerFixture.RootUri; // This is needed for the side-effects of starting the server.
 
             if (ServerFixture is WebHostServerFixture hostFixture)
@@ -81,11 +75,6 @@ namespace Microsoft.AspNetCore.Components
 
         async Task IAsyncLifetime.DisposeAsync()
         {
-            if (TestSink != null)
-            {
-                TestSink.MessageLogged -= TestSink_MessageLogged;
-            }
-
             await DisposeAsync();
         }
 
@@ -94,16 +83,32 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        protected virtual Task DisposeAsync()
+        protected async virtual Task DisposeAsync()
         {
-            return Task.CompletedTask;
+            if (TestSink != null)
+            {
+                TestSink.MessageLogged -= TestSink_MessageLogged;
+            }
+
+            await Client.DisposeAsync();
         }
 
         private void TestSink_MessageLogged(WriteContext context)
         {
             var log = new LogMessage(context.LogLevel, context.EventId, context.Message, context.Exception);
             Logs.Enqueue(log);
-            Output.WriteLine(log.ToString());
+            try
+            {
+                // This might produce an InvalidOperationException when the logger tries to log a message after
+                // the test has completed but before the handler has been removed.
+                //  ---> System.InvalidOperationException: There is no currently active test.
+                // For that reason, we capture the exception here and silence it, as the message is captured inside the Logs
+                // variable anyway.
+                Output.WriteLine(log.ToString());
+            }
+            catch (Exception)
+            {
+            }
         }
 
         [DebuggerDisplay("{LogLevel.ToString(),nq} - {Message ?? \"null\",nq} - {Exception?.Message,nq}")]

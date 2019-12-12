@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Sockets.FunctionalTests</TestGroupName>

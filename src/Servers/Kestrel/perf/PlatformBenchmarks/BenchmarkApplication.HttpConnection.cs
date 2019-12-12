@@ -191,8 +191,8 @@ namespace PlatformBenchmarks
 
             public void OnHeadersComplete()
                 => RequestHandler.OnHeadersComplete();
-#if !NETCOREAPP3_0
-#error This is a .NET Core 3.0 application and needs to be compiled for <TargetFramework>netcoreapp3.0</TargetFramework>
+#if !NETCOREAPP
+#error This is a .NET Core 3.0 application and needs to be compiled for <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 #endif
         }
     }

@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             };
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(ClassWithDataMemberIsRequiredTrue).GetProperty(nameof(ClassWithDataMemberIsRequiredTrue.StringProperty)),
                 typeof(string),
-                nameof(ClassWithDataMemberIsRequiredTrue.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrue));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
@@ -50,8 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             };
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(ClassWithDataMemberIsRequiredFalse).GetProperty(nameof(ClassWithDataMemberIsRequiredFalse.StringProperty)),
                 typeof(string),
-                nameof(ClassWithDataMemberIsRequiredFalse.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredFalse));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 
@@ -98,8 +98,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var provider = new DataMemberRequiredBindingMetadataProvider();
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(ClassWithoutAttributes).GetProperty(nameof(ClassWithoutAttributes.StringProperty)),
                 typeof(string),
-                nameof(ClassWithoutAttributes.StringProperty),
                 typeof(ClassWithoutAttributes));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], new object[0]));
 
@@ -126,8 +126,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             };
 
             var key = ModelMetadataIdentity.ForProperty(
+                typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract).GetProperty(nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty)),
                 typeof(string),
-                nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract));
             var context = new BindingMetadataProviderContext(key, GetModelAttributes(new object[0], attributes));
 

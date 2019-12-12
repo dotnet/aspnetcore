@@ -378,9 +378,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
         }
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
             {

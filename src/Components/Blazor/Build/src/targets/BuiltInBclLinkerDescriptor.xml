@@ -18,4 +18,10 @@
     <type fullname="System.ComponentModel.GuidConverter" />
     <type fullname="System.ComponentModel.TimeSpanConverter" />
   </assembly>
+
+  <assembly fullname="WebAssembly.Net.Http">
+    <!-- Without this, the setter for DefaultCredentials would be removed, but we need it -->
+    <type fullname="WebAssembly.Net.Http.HttpClient.FetchCredentialsOption" />
+    <type fullname="WebAssembly.Net.Http.HttpClient.WasmHttpMessageHandler" />
+  </assembly>
 </linker>

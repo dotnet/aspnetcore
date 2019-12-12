@@ -142,8 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
                 try
                 {
-                    var certificateManager = new CertificateManager();
-                    DefaultCertificate = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
+                    DefaultCertificate = CertificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
                         .FirstOrDefault();
 
                     if (DefaultCertificate != null)

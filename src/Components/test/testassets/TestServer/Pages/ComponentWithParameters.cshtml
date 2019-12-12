@@ -1,0 +1,37 @@
+@page
+
+<component type="typeof(ComponentWithParameters)"
+           render-mode="ServerPrerendered"
+           param-Param1="ComponentWithParameters.TestModelValues"
+           param-Param2="ComponentWithParameters.DerivedModelValue"
+           param-key1="QueryValue"
+           param-key2="43" />
+
+@*
+    So that E2E tests can make assertions about both the prerendered and
+    interactive states, we only load the .js file when told to.
+*@
+<hr />
+
+<button id="load-boot-script" onclick="start()">Load boot script</button>
+
+<script src="_framework/blazor.server.js" autostart="false"></script>
+<script>
+        // Used by InteropOnInitializationComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function start() {
+            Blazor.start({
+                logLevel: 1 // LogLevel.Debug
+            });
+        }
+</script>
+
+@functions
+{
+    [BindProperty(SupportsGet = true)]
+    public string QueryValue { get; set; }
+}

@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
@@ -9,9 +9,11 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>
 
+  <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion}" Condition="'$(IndividualB2CAuth)' == 'True'" />
   </ItemGroup>
+  <!--#endif -->
 
 </Project>

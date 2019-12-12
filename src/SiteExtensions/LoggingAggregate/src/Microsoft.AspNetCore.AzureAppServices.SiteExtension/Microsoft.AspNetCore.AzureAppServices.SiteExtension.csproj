@@ -48,10 +48,10 @@
     </MSBuild>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86"
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86"
           Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
           PrivateAssets="All" />
-      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64"
+      <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64"
           Version="%(_ResolvedPackageVersionInfo.PackageVersion)"
           PrivateAssets="All" />
     </ItemGroup>

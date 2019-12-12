@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // V2 initialization sequence:
             // 1. Create server session
             // 2. Create url group
-            // 3. Create request queue - Done in Start()
+            // 3. Create request queue
             // 4. Add urls to url group - Done in Start()
             // 5. Attach request queue to url group - Done in Start()
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 _urlGroup = new UrlGroup(_serverSession, Logger);
 
-                _requestQueue = new RequestQueue(_urlGroup, Logger);
+                _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
 
                 _disconnectListener = new DisconnectListener(_requestQueue, Logger);
             }
@@ -147,20 +147,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Options.Apply(UrlGroup, RequestQueue);
-
-                    _requestQueue.AttachToUrlGroup();
-
-                    // All resources are set up correctly. Now add all prefixes.
-                    try
+                    // If this instance created the queue then configure it.
+                    if (_requestQueue.Created)
                     {
-                        Options.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
-                    }
-                    catch (HttpSysException)
-                    {
-                        // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
-                        throw;
+                        Options.Apply(UrlGroup, RequestQueue);
+
+                        _requestQueue.AttachToUrlGroup();
+
+                        // All resources are set up correctly. Now add all prefixes.
+                        try
+                        {
+                            Options.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
+                        }
+                        catch (HttpSysException)
+                        {
+                            // If an error occurred while adding prefixes, free all resources allocated by previous steps.
+                            _requestQueue.DetachFromUrlGroup();
+                            throw;
+                        }
                     }
 
                     _state = State.Started;
@@ -188,11 +192,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Options.UrlPrefixes.UnregisterAllPrefixes();
+                    // If this instance created the queue then remove the URL prefixes before shutting down.
+                    if (_requestQueue.Created)
+                    {
+                        Options.UrlPrefixes.UnregisterAllPrefixes();
+                        _requestQueue.DetachFromUrlGroup();
+                    }
 
                     _state = State.Stopped;
 
-                    _requestQueue.DetachFromUrlGroup();
                 }
             }
             catch (Exception exception)

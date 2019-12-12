@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         private static string[] GetAdditionalArguments() =>
-            new string[] { "--circuit-detailed-errors", "true" };
+            new string[] { "--detailedErrors", "true" };
     }
 
     public class ServerRoutingTest : RoutingTest

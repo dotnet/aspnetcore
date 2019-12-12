@@ -78,18 +78,28 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions, int negotiateVersion = 0)
         {
+            string connectionToken;
             var id = MakeNewConnectionId();
+            if (negotiateVersion > 0)
+            {
+                connectionToken = MakeNewConnectionId();
+            }
+            else
+            {
+                connectionToken = id;
+            }
 
             Log.CreatedNewConnection(_logger, id);
             var connectionTimer = HttpConnectionsEventSource.Log.ConnectionStart(id);
-            var connection = new HttpConnectionContext(id, _connectionLogger);
+            var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger);
             var pair = DuplexPipe.CreateConnectionPair(transportPipeOptions, appPipeOptions);
             connection.Transport = pair.Application;
             connection.Application = pair.Transport;
 
-            _connections.TryAdd(id, (connection, connectionTimer));
+            _connections.TryAdd(connectionToken, (connection, connectionTimer));
+
             return connection;
         }
 
@@ -205,7 +215,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 // Remove it from the list after disposal so that's it's easy to see
                 // connections that might be in a hung state via the connections list
-                RemoveConnection(connection.ConnectionId);
+                RemoveConnection(connection.ConnectionToken);
             }
         }
     }

@@ -17,7 +17,7 @@ namespace E2ETests
     {
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.Kestrel)
-                .WithTfms(Tfm.NetCoreApp30);
+                .WithTfms(Tfm.NetCoreApp31);
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]

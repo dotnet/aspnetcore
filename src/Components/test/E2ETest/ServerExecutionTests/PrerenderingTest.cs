@@ -10,19 +10,20 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     [Collection("auth")] // Because auth uses cookies, this can't run in parallel with other auth tests
-    public class PrerenderingTest : BasicTestAppTestBase
+    public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<PrerenderedStartup>>
     {
         public PrerenderingTest(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            BasicTestAppServerSiteFixture<PrerenderedStartup> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
+            : base(browserFixture, serverFixture, output)
         {
         }
 
@@ -119,5 +120,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
         }
+
+        private void SignInAs(string userName, string roles, bool useSeparateTab = false) =>
+            Browser.SignInAs(new Uri(_serverFixture.RootUri, "/prerendered/"), userName, roles, useSeparateTab);
     }
 }

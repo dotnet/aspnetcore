@@ -3,7 +3,6 @@
 
 using System;
 using BasicTestApp;
-using ComponentsApp.App.Pages;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void ThrowsIfRenderIsRequestedOutsideSyncContext()
         {
-            var appElement = MountTestComponent<DispatchingComponent>();
+            var appElement = Browser.MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
 
             appElement.FindElement(By.Id("run-without-dispatch")).Click();

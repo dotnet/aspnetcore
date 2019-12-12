@@ -2,7 +2,7 @@
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
@@ -16,6 +16,7 @@
   <ItemGroup>
     <Compile Include="..\..\Mvc.Formatters.Xml\test\XmlAssert.cs" />
     <EmbeddedResource Include="compiler\resources\**\*" />
+    <None Remove="compiler\resources\TagHelpersWebSite.Home.GlobbingTagHelpers.html" />
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

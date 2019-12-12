@@ -237,12 +237,11 @@
 
   <!--
     Update metadata of implementation projects to include information about associated ref assembly (if any).
-    !!! Use $(DefaultNetCoreTargetFramework) instead of specific TFM in 'release/3.1' and 'master' branches. !!!
   -->
   <PropertyGroup>
     <_CompileTfmUsingReferenceAssemblies>false</_CompileTfmUsingReferenceAssemblies>
     <_CompileTfmUsingReferenceAssemblies
-        Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == 'netcoreapp3.0' ">true</_CompileTfmUsingReferenceAssemblies>
+        Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" $(HasReferenceAssembly) AND $(_CompileTfmUsingReferenceAssemblies) ">
     <_ReferenceProjectFile>$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)</_ReferenceProjectFile>

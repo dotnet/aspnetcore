@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -41,6 +42,45 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public void CanParseSingleMarkerWithParameters()
+        {
+            // Arrange
+            var markers = SerializeMarkers(CreateMarkers(
+                (typeof(TestComponent), new Dictionary<string, object> { ["Parameter"] = "Value" })));
+            var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+            // Act & assert
+            Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+            var deserializedDescriptor = Assert.Single(descriptors);
+            Assert.Equal(typeof(TestComponent).FullName, deserializedDescriptor.ComponentType.FullName);
+            Assert.Equal(0, deserializedDescriptor.Sequence);
+            var parameters = deserializedDescriptor.Parameters.ToDictionary();
+            Assert.Single(parameters);
+            Assert.Contains("Parameter", parameters.Keys);
+            Assert.Equal("Value", parameters["Parameter"]);
+        }
+
+        [Fact]
+        public void CanParseSingleMarkerWithNullParameters()
+        {
+            // Arrange
+            var markers = SerializeMarkers(CreateMarkers(
+                (typeof(TestComponent), new Dictionary<string, object> { ["Parameter"] = null })));
+            var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+            // Act & assert
+            Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+            var deserializedDescriptor = Assert.Single(descriptors);
+            Assert.Equal(typeof(TestComponent).FullName, deserializedDescriptor.ComponentType.FullName);
+            Assert.Equal(0, deserializedDescriptor.Sequence);
+
+            var parameters = deserializedDescriptor.Parameters.ToDictionary();
+            Assert.Single(parameters);
+            Assert.Contains("Parameter", parameters.Keys);
+            Assert.Null(parameters["Parameter"]);
+        }
+
+        [Fact]
         public void CanParseMultipleMarkers()
         {
             // Arrange
@@ -58,6 +98,65 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var secondDescriptor = descriptors[1];
             Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
             Assert.Equal(1, secondDescriptor.Sequence);
+        }
+
+        [Fact]
+        public void CanParseMultipleMarkersWithParameters()
+        {
+            // Arrange
+            var markers = SerializeMarkers(CreateMarkers(
+                (typeof(TestComponent), new Dictionary<string, object> { ["First"] = "Value" }),
+                (typeof(TestComponent), new Dictionary<string, object> { ["Second"] = null })));
+            var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+            // Act & assert
+            Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+            Assert.Equal(2, descriptors.Count);
+
+            var firstDescriptor = descriptors[0];
+            Assert.Equal(typeof(TestComponent).FullName, firstDescriptor.ComponentType.FullName);
+            Assert.Equal(0, firstDescriptor.Sequence);
+            var firstParameters = firstDescriptor.Parameters.ToDictionary();
+            Assert.Single(firstParameters);
+            Assert.Contains("First", firstParameters.Keys);
+            Assert.Equal("Value", firstParameters["First"]);
+
+
+            var secondDescriptor = descriptors[1];
+            Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
+            Assert.Equal(1, secondDescriptor.Sequence);
+            var secondParameters = secondDescriptor.Parameters.ToDictionary();
+            Assert.Single(secondParameters);
+            Assert.Contains("Second", secondParameters.Keys);
+            Assert.Null(secondParameters["Second"]);
+        }
+
+        [Fact]
+        public void CanParseMultipleMarkersWithAndWithoutParameters()
+        {
+            // Arrange
+            var markers = SerializeMarkers(CreateMarkers(
+                (typeof(TestComponent), new Dictionary<string, object> { ["First"] = "Value" }),
+                (typeof(TestComponent), null)));
+            var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+            // Act & assert
+            Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+            Assert.Equal(2, descriptors.Count);
+
+            var firstDescriptor = descriptors[0];
+            Assert.Equal(typeof(TestComponent).FullName, firstDescriptor.ComponentType.FullName);
+            Assert.Equal(0, firstDescriptor.Sequence);
+            var firstParameters = firstDescriptor.Parameters.ToDictionary();
+            Assert.Single(firstParameters);
+            Assert.Contains("First", firstParameters.Keys);
+            Assert.Equal("Value", firstParameters["First"]);
+
+
+            var secondDescriptor = descriptors[1];
+            Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
+            Assert.Equal(1, secondDescriptor.Sequence);
+            Assert.Empty(secondDescriptor.Parameters.ToDictionary());
         }
 
         [Fact]
@@ -213,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private string SerializeComponent(string assembly, string type) =>
             JsonSerializer.Serialize(
-                new ServerComponent(0, assembly, type, Guid.NewGuid()),
+                new ServerComponent(0, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
                 ServerComponentSerializationSettings.JsonSerializationOptions);
 
         private ServerComponentDeserializer CreateServerComponentDeserializer()
@@ -221,7 +320,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new ServerComponentDeserializer(
                 _ephemeralDataProtectionProvider,
                 NullLogger<ServerComponentDeserializer>.Instance,
-                new ServerComponentTypeCache());
+                new ServerComponentTypeCache(),
+                new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
         }
 
         private string SerializeMarkers(ServerComponentMarker[] markers) =>
@@ -233,7 +333,24 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var markers = new ServerComponentMarker[types.Length];
             for (var i = 0; i < types.Length; i++)
             {
-                markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], false);
+                markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, false);
+            }
+
+            return markers;
+        }
+
+        private ServerComponentMarker[] CreateMarkers(params (Type, Dictionary<string,object>)[] types)
+        {
+            var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
+            var markers = new ServerComponentMarker[types.Length];
+            for (var i = 0; i < types.Length; i++)
+            {
+                var (type, parameters) = types[i];
+                markers[i] = serializer.SerializeInvocation(
+                    _invocationSequence,
+                    type,
+                    parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
+                    false);
             }
 
             return markers;
@@ -245,7 +362,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var markers = new ServerComponentMarker[types.Length];
             for (var i = 0; i < types.Length; i++)
             {
-                markers[i] = serializer.SerializeInvocation(sequence, types[i], false);
+                markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, false);
             }
 
             return markers;

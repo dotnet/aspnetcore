@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.Spa.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
     <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
@@ -11,6 +11,7 @@
     <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
+      DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreRelationalPackageVersion=$(MicrosoftEntityFrameworkCoreRelationalPackageVersion);
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);

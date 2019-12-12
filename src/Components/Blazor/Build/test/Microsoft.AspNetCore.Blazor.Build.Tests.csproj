@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- Exclude the TestFiles directory from default wildcards -->
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
@@ -44,6 +44,7 @@
     <ItemGroup>
       <_BclDirectory Include="$(MonoBaseClassLibraryPath)" />
       <_BclDirectory Include="$(MonoBaseClassLibraryFacadesPath)" />
+      <_BclDirectory Include="$(MonoWasmFrameworkPath)" />
     </ItemGroup>
 
     <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />

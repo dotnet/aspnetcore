@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
     <IsPackable>false</IsPackable>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
-    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->

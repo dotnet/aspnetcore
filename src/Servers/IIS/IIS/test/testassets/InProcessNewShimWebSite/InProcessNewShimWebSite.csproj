@@ -3,14 +3,14 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
     <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=$(DefaultNetCoreTargetFramework)" />
     <TestAssetPublishProfile Condition="'$(TargetArchitecture)' != 'arm'" Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
   </ItemGroup>
 

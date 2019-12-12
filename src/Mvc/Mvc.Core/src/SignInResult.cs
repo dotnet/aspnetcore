@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:AuthenticationManager.SignInAsync"/>.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="M:HttpContext.SignInAsync"/>.
     /// </summary>
     public class SignInResult : ActionResult
     {
@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="principal">The claims principal containing the user claims.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
         public SignInResult(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
-        {      
-            AuthenticationScheme = authenticationScheme ?? throw new ArgumentNullException(nameof(authenticationScheme)); 
+        {
+            AuthenticationScheme = authenticationScheme ?? throw new ArgumentNullException(nameof(authenticationScheme));
             Principal = principal ?? throw new ArgumentNullException(nameof(principal));
             Properties = properties;
         }

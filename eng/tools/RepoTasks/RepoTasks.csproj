@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net472</TargetFrameworks>
     <DefineConstants Condition="'$(TargetFramework)' == 'net472'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
     <Optimize>false</Optimize>
@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.3.0" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" />

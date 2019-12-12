@@ -1,8 +1,7 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,32 +20,7 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddNewtonsoftJson();
-            services.AddCors(options =>
-            {
-                // It's not enough just to return "Access-Control-Allow-Origin: *", because
-                // browsers don't allow wildcards in conjunction with credentials. So we must
-                // specify explicitly which origin we want to allow.
-                options.AddPolicy("AllowAll", policy =>
-                    policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
-                    .AllowAnyHeader()
-                    .WithExposedHeaders("MyCustomHeader")
-                    .AllowAnyMethod()
-                    .AllowCredentials());
-            });
-            services.AddServerSideBlazor()
-                .AddCircuitOptions(o =>
-                {
-                    var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
-                    o.DetailedErrors = detailedErrors;
-                });
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("NameMustStartWithB", policy =>
-                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
-            });
+            services.AddSingleton<TestAppInfo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,78 +31,45 @@ namespace TestServer
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseAuthentication();
-
-            // Mount the server-side Blazor app on /subdir
-            app.Map("/subdir", app =>
+            app.Run(async ctx =>
             {
-                app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
-
-                app.UseRequestLocalization(options =>
+                var appsInfo = ctx.RequestServices.GetRequiredService<TestAppInfo>();
+                var response = ctx.Response.ContentType = "text/html;charset=utf-8";
+                using var writer = new StringWriter();
+                await writer.WriteAsync(@"<!DOCTYPE html>
+<html>
+  <head>
+    <title>Blazor test server index</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <th>Scenario</th>
+        <th>
+          <Link>Link</Link>
+        </th>
+      </tr>
+");
+                foreach (var scenario in appsInfo.Scenarios)
                 {
-                    options.AddSupportedCultures("en-US", "fr-FR");
-                    options.AddSupportedUICultures("en-US", "fr-FR");
-
-                    // Cookie culture provider is included by default, but we want it to be the only one.
-                    options.RequestCultureProviders.Clear();
-                    options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
-
-                    // We want the default to be en-US so that the tests for bind can work consistently.
-                    options.SetDefaultCulture("en-US");
-                });
-
-                app.MapWhen(ctx => ctx.Request.Cookies.TryGetValue("__blazor_execution_mode", out var value) && value == "server",
-                    child =>
-                    {
-                        child.UseRouting();
-                        child.UseEndpoints(childEndpoints =>
-                        {
-                            childEndpoints.MapBlazorHub();
-                            childEndpoints.MapFallbackToPage("/_ServerHost");
-                        });
-                    });
-
-                app.MapWhen(ctx => !ctx.Request.Query.ContainsKey("__blazor_execution_mode"),
-                    child =>
-                    {
-                        child.UseRouting();
-                        child.UseEndpoints(childEndpoints =>
-                        {
-                            childEndpoints.MapBlazorHub();
-                            childEndpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
-                        });
-                    });
-            });
-
-            // Separately, mount a prerendered server-side Blazor app on /prerendered
-            app.Map("/prerendered", app =>
-            {
-                app.UsePathBase("/prerendered");
-                app.UseStaticFiles();
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub();
-                });
-            });
-
-            app.UseRouting();
-            
-            app.UseCors();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapRazorPages();
-
-                // Redirect for convenience when testing locally since we're hosting the app at /subdir/
-                endpoints.Map("/", context =>
-                {
-                    context.Response.Redirect("/subdir");
-                    return Task.CompletedTask;
-                });
+                    await writer.WriteAsync(@$"
+      <tr>
+        <td>{scenario.Key}</td>
+        <td><a href=""{scenario.Value}"">{scenario.Value}</a></td>
+      </tr>
+");
+                }
+                await writer.WriteAsync(@"
+    </table>
+    <style>
+        table, th, td, tr { border: 1px solid black; }
+        th { font-weight: bold; }
+    <style>
+  </body>
+</html>");
+                var content = writer.ToString();
+                ctx.Response.ContentLength = content.Length;
+                await ctx.Response.WriteAsync(content);
             });
         }
     }

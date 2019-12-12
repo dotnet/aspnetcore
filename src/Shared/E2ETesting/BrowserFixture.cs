@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             var instance = await SeleniumStandaloneServer.GetInstanceAsync(output);
 
             var attempt = 0;
-            var maxAttempts = 3;
+            const int maxAttempts = 3;
             do
             {
                 try
@@ -132,18 +132,16 @@ namespace Microsoft.AspNetCore.E2ETesting
 
                     return (driver, logs);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    if (attempt >= maxAttempts)
-                    {
-                        throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
-                    }
+                    output.WriteLine($"Error initializing RemoteWebDriver: {ex.Message}");
                 }
+
                 attempt++;
+
             } while (attempt < maxAttempts);
 
-            // We will never get here. Keeping the compiler happy.
-            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is unresponsive");
+            throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
         }
     }
 }

@@ -3,7 +3,7 @@
   <Import Project="..\..\build\assets.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>$(MSBuildProjectName).$(TargetRuntimeIdentifier)</PackageId>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <IsPackable>$(PackNativeAssets)</IsPackable>
@@ -20,6 +20,13 @@
       AddPackNativeComponents
     </TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="_._">
+      <Pack>True</Pack>
+      <PackagePath>lib\$(DefaultNetCoreTargetFramework)\_._</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(VCTargetsPath)' != ''">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="$(NativeVCPlatform)" />

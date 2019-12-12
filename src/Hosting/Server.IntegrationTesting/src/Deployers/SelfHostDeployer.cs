@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
 
+        private const int RetryCount = 5;
         public Process HostProcess { get; private set; }
 
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
@@ -55,23 +56,33 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                var hintUrl = TestUriHelper.BuildTestUri(
-                    DeploymentParameters.ServerType,
-                    DeploymentParameters.Scheme,
-                    DeploymentParameters.ApplicationBaseUriHint,
-                    DeploymentParameters.StatusMessagesEnabled);
-
                 // Launch the host process.
-                var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
+                for (var i = 0; i < RetryCount; i++)
+                {
+                    var hintUrl = TestUriHelper.BuildTestUri(
+                        DeploymentParameters.ServerType,
+                        DeploymentParameters.Scheme,
+                        DeploymentParameters.ApplicationBaseUriHint,
+                        DeploymentParameters.StatusMessagesEnabled);
+                    var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
-                Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
+                    if (DeploymentParameters.ServerType == ServerType.HttpSys && hostExitToken.IsCancellationRequested)
+                    {
+                        // Retry HttpSys deployments due to port conflicts.
+                        continue;
+                    }
 
-                return new DeploymentResult(
-                    LoggerFactory,
-                    DeploymentParameters,
-                    applicationBaseUri: actualUrl.ToString(),
-                    contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
-                    hostShutdownToken: hostExitToken);
+                    Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
+
+                    return new DeploymentResult(
+                        LoggerFactory,
+                        DeploymentParameters,
+                        applicationBaseUri: actualUrl.ToString(),
+                        contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
+                        hostShutdownToken: hostExitToken);
+                }
+
+                throw new Exception($"Failed to start Self hosted application after {RetryCount} retries.");
             }
         }
 
@@ -165,8 +176,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
-
                     TriggerHostShutdown(hostExitTokenSource);
                 };
 
@@ -178,7 +187,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     Logger.LogError("Error occurred while starting the process. Exception: {exception}", ex.ToString());
                 }
-
                 if (HostProcess.HasExited)
                 {
                     Logger.LogError("Host process {processName} {pid} exited with code {exitCode} or failed to start.", startInfo.FileName, HostProcess.Id, HostProcess.ExitCode);

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -22,10 +21,13 @@ namespace Templates.Test.Helpers
     {
         private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
-        public const string DefaultFramework = "netcoreapp3.0";
+        public const string DefaultFramework = "netcoreapp3.1";
 
         public static bool IsCIEnvironment => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Any(a => a.Key == "ContinuousIntegrationBuild");
+
+        public static string ArtifactsLogDir => typeof(Project).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(a => a.Key == "ArtifactsLogDir")?.Value;
 
         public SemaphoreSlim DotNetNewLock { get; set; }
         public SemaphoreSlim NodeLock { get; set; }
@@ -112,11 +114,6 @@ namespace Templates.Test.Helpers
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
-            // Workaround for issue with runtime store not yet being published
-            // https://github.com/aspnet/Home/issues/2254#issuecomment-339709628
-            var extraArgs = "-p:PublishWithAspNetCoreTargetManifest=false";
-
-
             // This is going to trigger a build, so we need to acquire the lock like in the other cases.
             // We want to take the node lock as some builds run NPM as part of the build and we want to make sure
             // it's run without interruptions.
@@ -124,8 +121,9 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release /bl", packageOptions);
                 await result.Exited;
+                CaptureBinLogOnFailure(result);
                 return result;
             }
             finally
@@ -145,8 +143,9 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug", packageOptions);
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug /bl", packageOptions);
                 await result.Exited;
+                CaptureBinLogOnFailure(result);
                 return result;
             }
             finally
@@ -205,7 +204,10 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development",
-                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
@@ -217,7 +219,10 @@ namespace Templates.Test.Helpers
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
+                ["ASPNETCORE_Logging__Console__LogLevel__Default"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__System"] = "Debug",
+                ["ASPNETCORE_Logging__Console__LogLevel__Microsoft"] = "Debug",
+                ["ASPNETCORE_Logging__Console__IncludeScopes"] = "true",
             };
 
             var projectDll = $"{ProjectName}.dll";
@@ -282,7 +287,7 @@ namespace Templates.Test.Helpers
             try
             {
                 output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                var result = await ProcessEx.RunViaShellAsync(output, workingDirectory, "npm install");
+                var result = ProcessEx.RunViaShell(output, workingDirectory, "npm install");
                 return result;
             }
             finally
@@ -504,6 +509,17 @@ namespace Templates.Test.Helpers
                         _nodeLockTaken = false;
                     }
                 }
+            }
+        }
+
+        private void CaptureBinLogOnFailure(ProcessEx result)
+        {
+            if (result.ExitCode != 0 && !string.IsNullOrEmpty(ArtifactsLogDir))
+            {
+                var sourceFile = Path.Combine(TemplateOutputDir, "msbuild.binlog");
+                Assert.True(File.Exists(sourceFile), $"Log for '{ProjectName}' not found in '{sourceFile}'.");
+                var destination = Path.Combine(ArtifactsLogDir, ProjectName + ".binlog");
+                File.Move(sourceFile, destination);
             }
         }
 

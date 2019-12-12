@@ -2,7 +2,7 @@
 var results = {};
 var assemblyName = 'BasicTestApp';
 
-function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetObjectByRef, instanceMethodsTarget) {
+async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetObjectByRef, instanceMethodsTarget, genericDotNetObjectByRef) {
   if (shouldSupportSyncInterop) {
     console.log('Invoking void sync methods.');
     DotNet.invokeMethod(assemblyName, 'VoidParameterless');
@@ -14,6 +14,7 @@ function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetObjectB
     DotNet.invokeMethod(assemblyName, 'VoidWithSixParameters', ...createArgumentList(6, dotNetObjectByRef));
     DotNet.invokeMethod(assemblyName, 'VoidWithSevenParameters', ...createArgumentList(7, dotNetObjectByRef));
     DotNet.invokeMethod(assemblyName, 'VoidWithEightParameters', ...createArgumentList(8, dotNetObjectByRef));
+
 
     console.log('Invoking returning sync methods.');
     results['result1'] = DotNet.invokeMethod(assemblyName, 'ReturnArray');
@@ -40,75 +41,73 @@ function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetObjectB
   }
 
   console.log('Invoking void async methods.');
-  return DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync')
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef)))
-    .then(() => DotNet.invokeMethodAsync(assemblyName, 'VoidWithEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef)))
-    .then(() => {
-      console.log('Invoking returning async methods.');
-      return DotNet.invokeMethodAsync(assemblyName, 'ReturnArrayAsync')
-        .then(r => results['result1Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef)))
-        .then(r => results['result2Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef)))
-        .then(r => results['result3Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef)))
-        .then(r => results['result4Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef)))
-        .then(r => results['result5Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef)))
-        .then(r => results['result6Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef)))
-        .then(r => results['result7Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef)))
-        .then(r => results['result8Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef)))
-        .then(r => results['result9Async'] = r)
-        .then(() => DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync'))
-        .then(r => DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', r['Some async instance']))
-        .then(r => {
-          results['resultReturnDotNetObjectByRefAsync'] = r;
-        })
-        .then(() => instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
-          stringValue: 'My string',
-          dtoByRef: dotNetObjectByRef
-        }))
-        .then(r => {
-          results['instanceMethodThisTypeNameAsync'] = r.thisTypeName;
-          results['instanceMethodStringValueUpperAsync'] = r.stringValueUpper;
-          results['instanceMethodIncomingByRefAsync'] = r.incomingByRef;
-          return DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', r.outgoingByRef);
-        }).then(r => {
-          results['instanceMethodOutgoingByRefAsync'] = r;
-        })
-    })
-    .then(() => {
-      console.log('Invoking methods that throw exceptions');
-      try {
-        shouldSupportSyncInterop && DotNet.invokeMethod(assemblyName, 'ThrowException');
-      } catch (e) {
-        results['ThrowException'] = e.message;
-      }
 
-      return DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowSyncException')
-        .catch(e => {
-          results['AsyncThrowSyncException'] = e.message;
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync');
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
+  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
 
-          return DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowAsyncException');
-        }).catch(e => {
-          results['AsyncThrowAsyncException'] = e.message;
+  console.log('Invoking returning async methods.');
+  results['result1Async'] = await DotNet.invokeMethodAsync(assemblyName, 'ReturnArrayAsync');
+  results['result2Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
+  results['result3Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
+  results['result4Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
+  results['result5Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
+  results['result6Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
+  results['result7Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
+  results['result8Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
+  results['result9Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
 
-          console.log('Done invoking interop methods');
-        });
-    });
+  const returnDotNetObjectByRefAsync = await DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync');
+  results['resultReturnDotNetObjectByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefAsync['Some async instance']);
+
+  const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
+    stringValue: 'My string',
+    dtoByRef: dotNetObjectByRef
+  });
+
+  results['instanceMethodThisTypeNameAsync'] = instanceMethodAsync.thisTypeName;
+  results['instanceMethodStringValueUpperAsync'] = instanceMethodAsync.stringValueUpper;
+  results['instanceMethodIncomingByRefAsync'] = instanceMethodAsync.incomingByRef;
+  results['instanceMethodOutgoingByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', instanceMethodAsync.outgoingByRef);
+
+  console.log('Invoking generic type instance methods.');
+
+  results['syncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('Update', 'Updated value 1');
+  results['asyncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('UpdateAsync', 'Updated value 2');
+
+  if (shouldSupportSyncInterop) {
+    results['genericInstanceMethod'] = genericDotNetObjectByRef.invokeMethod('Update', 'Updated Value 3');
+  }
+
+  console.log('Invoking methods that throw exceptions');
+  try {
+    shouldSupportSyncInterop && DotNet.invokeMethod(assemblyName, 'ThrowException');
+  } catch (e) {
+    results['ThrowException'] = e.message;
+  }
+
+  try {
+    await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowSyncException');
+  } catch (e) {
+    results['AsyncThrowSyncException'] = e.message;
+  }
+
+  try {
+    await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowAsyncException');
+  } catch (e) {
+    results['AsyncThrowAsyncException'] = e.message;
+  }
+
+  console.log('Done invoking interop methods');
 }
 
-function createArgumentList(argumentNumber, dotNetObjectByRef){
+function createArgumentList(argumentNumber, dotNetObjectByRef) {
   const array = new Array(argumentNumber);
   if (argumentNumber === 0) {
     return [];
@@ -149,7 +148,7 @@ function createArgumentList(argumentNumber, dotNetObjectByRef){
           source: `Some random text with at least ${i} characters`,
           start: argumentNumber + 1,
           length: argumentNumber + 1
-        }
+        };
         break;
       default:
         console.log(i);
@@ -169,7 +168,7 @@ window.jsInteropTests = {
   returnPrimitive: returnPrimitive,
   returnPrimitiveAsync: returnPrimitiveAsync,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
-  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
+  receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
 };
 
 function returnPrimitive() {
@@ -211,9 +210,9 @@ function asyncFunctionThrowsAsyncException() {
 }
 
 function asyncFunctionTakesLongerThanDefaultTimeoutToResolve() {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => resolve(undefined), 5000);
-    });
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(undefined), 5000);
+  });
 }
 
 function collectInteropResults() {

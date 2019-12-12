@@ -581,6 +581,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         public void OpenRegion(int sequence)
         {
+            // We are entering a new scope, since we track the "duplicate attributes" per
+            // element/component we might need to clean them up now.
+            if (_hasSeenAddMultipleAttributes)
+            {
+                var indexOfLastElementOrComponent = _openElementIndices.Peek();
+                ProcessDuplicateAttributes(first: indexOfLastElementOrComponent + 1);
+            }
+
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));
         }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Identity
         /* =======================
          * HASHED PASSWORD FORMATS
          * =======================
-         * 
+         *
          * Version 2:
          * PBKDF2 with HMAC-SHA1, 128-bit salt, 256-bit subkey, 1000 iterations.
          * (See also: SDL crypto guidelines v5.1, Part III)
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Identity
             byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
 #if NETSTANDARD2_0
             return ByteArraysEqual(actualSubkey, expectedSubkey);
-#elif NETCOREAPP3_0
+#elif NETCOREAPP
             return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
 #else
 #error Update target frameworks
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Identity
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
 #if NETSTANDARD2_0
                 return ByteArraysEqual(actualSubkey, expectedSubkey);
-#elif NETCOREAPP3_0
+#elif NETCOREAPP
                 return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
 #else
 #error Update target frameworks

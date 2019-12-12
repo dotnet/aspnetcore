@@ -3,7 +3,7 @@
   <Import Project="../FunctionalTest.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>

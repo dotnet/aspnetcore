@@ -66,8 +66,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return services.Configure(configure)
-                .AddSignalR();
+            var signalrBuilder = services.AddSignalR();
+            // Setup users settings after we've setup ours
+            services.Configure(configure);
+            return signalrBuilder;
         }
     }
 }

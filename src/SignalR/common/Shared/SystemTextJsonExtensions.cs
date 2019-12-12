@@ -57,6 +57,18 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        public static bool ReadAsBoolean(this ref Utf8JsonReader reader, string propertyName)
+        {
+            reader.Read();
+
+            return reader.TokenType switch
+            {
+                JsonTokenType.False => false,
+                JsonTokenType.True => true,
+                _ => throw new InvalidDataException($"Expected '{propertyName}' to be true or false."),
+            };
+        }
+
         public static string ReadAsString(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();

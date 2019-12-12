@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>

@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var existingUserSecretsId = projectDocument.XPathSelectElements("//UserSecretsId").FirstOrDefault();
 
             // Check if a UserSecretsId is already set
-            if (existingUserSecretsId != default)
+            if (existingUserSecretsId is object)
             {
                 // Only set the UserSecretsId if the user specified an explicit value
                 if (string.IsNullOrWhiteSpace(OverrideId))

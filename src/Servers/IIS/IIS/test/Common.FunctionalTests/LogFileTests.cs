@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp30)
+                .WithTfms(Tfm.NetCoreApp31)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels();
 
@@ -231,6 +231,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task DisableRedirectionNoLogs()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.HandlerSettings["enableOutOfProcessConsoleRedirection"] = "false";
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
         }
 
         [ConditionalFact]

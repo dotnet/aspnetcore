@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to support certificate authentication.</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>

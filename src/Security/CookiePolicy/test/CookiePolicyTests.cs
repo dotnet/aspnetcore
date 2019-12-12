@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             await RunTest("/sameSiteNone",
                 new CookiePolicyOptions
                 {
-                    MinimumSameSitePolicy = (Http.SameSiteMode)(-1)
+                    MinimumSameSitePolicy = Http.SameSiteMode.Unspecified
                 },
                 SameSiteCookieAppends,
                 new RequestTest("http://example.com/sameSiteNone",

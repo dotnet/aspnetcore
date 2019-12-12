@@ -11,25 +11,18 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class InteropReliabilityTests : IgnitorTest<AspNetSiteServerFixture>
+    public class InteropReliabilityTests : IgnitorTest<ServerStartup>
     {
-        public InteropReliabilityTests(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+        public InteropReliabilityTests(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
-        }
-
-        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
-        {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
         protected async override Task InitializeAsync()
