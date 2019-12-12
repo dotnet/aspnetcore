@@ -10,10 +10,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal static class HttpConnectionBuilderExtensions
     {
-        public static IConnectionBuilder UseHttpServer<TContext>(this IConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
+        public static IConnectionBuilder UseHttp1Server<TContext>(this IConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application)
         {
-            var middleware = new HttpConnectionMiddleware<TContext>(serviceContext, application, protocols);
+            var middleware = new Http1ConnectionMiddleware<TContext>(serviceContext, application, protocols);
             return builder.Use(next =>
+            {
+                return middleware.OnConnectionAsync;
+            });
+        }
+
+        public static IConnectionBuilder UseHttp2Server<TContext>(this IConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application)
+        {
+            var middleware = new Http2ConnectionMiddleware<TContext>(serviceContext, application, protocols);
+            return builder.Use(next =>
+            {
+                return middleware.OnConnectionAsync;
+            });
+        }
+
+        public static IMultiplexedConnectionBuilder UseHttp3Server<TContext>(this IMultiplexedConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
+        {
+            var middleware = new Http3ConnectionMiddleware<TContext>(serviceContext, application);
+            return builder.UseMultiplexed(next =>
             {
                 return middleware.OnConnectionAsync;
             });

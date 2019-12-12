@@ -9,17 +9,15 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class HttpMultiplexedConnectionMiddleware<TContext>
+    internal class Http3ConnectionMiddleware<TContext>
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
-        private readonly HttpProtocols _protocols;
 
-        public HttpMultiplexedConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
+        public Http3ConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application)
         {
             _serviceContext = serviceContext;
             _application = application;
-            _protocols = protocols;
         }
 
         public Task OnConnectionAsync(MultiplexedConnectionContext connectionContext)
