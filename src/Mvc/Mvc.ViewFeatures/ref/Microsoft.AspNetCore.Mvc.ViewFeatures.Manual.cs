@@ -264,6 +264,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
     }
     internal readonly partial struct LifecycleProperty
     {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public LifecycleProperty(System.Reflection.PropertyInfo propertyInfo, string key) { throw null; }
         public string Key { get { throw null; } }
         public System.Reflection.PropertyInfo PropertyInfo { get { throw null; } }
@@ -363,6 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct MemberExpressionCacheKey
     {
+        private readonly object _dummy;
         public MemberExpressionCacheKey(System.Type modelType, System.Linq.Expressions.MemberExpression memberExpression) { throw null; }
         public MemberExpressionCacheKey(System.Type modelType, System.Reflection.MemberInfo[] members) { throw null; }
         public System.Linq.Expressions.MemberExpression MemberExpression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -590,6 +593,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct ComponentRenderedText
     {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public ComponentRenderedText(int componentId, System.Collections.Generic.IEnumerable<string> tokens) { throw null; }
         public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IEnumerable<string> Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

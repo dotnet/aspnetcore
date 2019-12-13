@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Components
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     internal readonly partial struct CascadingParameterState
     {
+        private readonly object _dummy;
         public CascadingParameterState(string localValueName, Microsoft.AspNetCore.Components.ICascadingValueComponent valueSupplier) { throw null; }
         public string LocalValueName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.ICascadingValueComponent ValueSupplier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
